@@ -1486,7 +1486,7 @@ command is specified in the `textractor` target in the [`Makefile`][makefile].
 
 ## License
 
-Kamite
+Kamite\
 Copyright (C) 2021-2022 Piotr Grabowski
 
 This program is free software: you can redistribute it and/or modify it under
