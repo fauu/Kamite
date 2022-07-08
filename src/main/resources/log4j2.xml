@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" packages="">
+  <Properties>
+    <Property name="log-path">log</Property>
+  </Properties>
+  <Appenders>
+    <Console name="for-console" target="SYSTEM_OUT">
+      <PatternLayout pattern="[%-5level] %d{HH:mm:ss} [%t] %c{1} - %msg%n"/>
+    </Console>
+    <JTextAreaAppender name="for-controlgui" maxLines="100">
+      <PatternLayout>
+        <pattern>[%-5level] %d{HH:mm:ss} %msg%n</pattern>
+      </PatternLayout>
+    </JTextAreaAppender>
+  </Appenders>
+  <Loggers>
+    <Root level="error" additivity="false">
+      <AppenderRef ref="for-console"/>
+    </Root>
+    <Logger level="info" name="io.github.kamitejp" additivity="false">
+      <AppenderRef ref="for-console"/>
+      <AppenderRef ref="for-controlgui" level="info"/>
+    </Logger>
+  </Loggers>
+</Configuration>

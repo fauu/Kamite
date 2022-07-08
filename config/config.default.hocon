@@ -1,0 +1,47 @@
+keybindings {
+  global {
+    ocr {
+      # Note: The lines below are commented out
+      # manualBlock = meta S
+      # autoBlock = meta D
+    }
+  }
+}
+
+lookup {
+  targets = [
+    ${LOOKUP_TARGETS.deepl}
+    ${LOOKUP_TARGETS.ichimoe}
+    ${LOOKUP_TARGETS.jpdb}
+    ${LOOKUP_TARGETS.googleImages}
+  ]
+}
+
+
+ocr {
+  engine = none
+}
+
+LOOKUP_TARGETS {
+  deepl {
+    symbol = DEP
+    name = DeepL
+    url = "https://www.deepl.com/translator#ja/en/{}"
+  }
+  ichimoe {
+    symbol = ICH
+    name = ichi.moe
+    url = "https://ichi.moe/cl/qr/?q={}&r=kana"
+  }
+  jpdb {
+    symbol = JDB
+    name = jpdb
+    url = "https://jpdb.io/search?q={}"
+  }
+  googleImages {
+    symbol = GLI
+    name = Google Images
+    url = "https://www.google.com/search?q={}%20site%3Ajp&tbm=isch"
+    newTab = true
+  }
+}

@@ -1,0 +1,48 @@
+package io.github.kamitejp;
+
+import static java.util.stream.Collectors.toMap;
+
+import java.util.Arrays;
+import java.util.Map;
+
+public final class Main {
+  private Main() {}
+
+  public static void main(String[] args) {
+    var argMap = parseArgs(args);
+
+    if (argMap.get("version") != null) {
+      System.out.println("Kamite %s".formatted(BuildInfo.read().getVersion()));
+      System.exit(0);
+    } else if (argMap.get("help") != null) {
+      System.out.println("""
+Usage: kamite [options]
+    Options:
+        --help
+            Display the usage message and exit
+        --version
+            Display the program version and exit.
+        --debug[=all]
+            Print debug messages to the console, optionally also from
+            third-party components
+        --profile=<profile-id>
+            Load the config file 'config.<profile-id>.hocon' on top of the main
+            config file
+
+        Additional options are available, corresponding to the available config
+        keys. Please consult the sections 'Command-line' parameters and 'Config'
+        in the included README.md file.""");
+      System.exit(0);
+    }
+
+    (new Kamite()).run(argMap, BuildInfo.read());
+  }
+
+  private static Map<String, String> parseArgs(String[] args) {
+    return Arrays.stream(args)
+      .filter(arg -> arg.startsWith("--"))
+      .map(arg -> arg.substring(2))
+      .map(arg -> arg.split("=", 2))
+      .collect(toMap(segs -> segs[0], segs -> segs.length == 2 ? segs[1] : "true"));
+  }
+}

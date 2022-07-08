@@ -1,0 +1,143 @@
+package io.github.kamitejp.geometry;
+
+public final class Rectangle {
+  private int left;
+  private int top;
+  private int right;
+  private int bottom;
+ 
+  private Rectangle(int left, int top, int right, int bottom) {
+    this.left = left;
+    this.top = top;
+    this.right = right;
+    this.bottom = bottom;
+  }
+
+  public int getWidth() {
+    return right - left;
+  }
+
+  public int getHeight() {
+    return bottom - top;
+  }
+
+  public int getArea() {
+    return getWidth() * getHeight();
+  }
+
+  public float getRatio() {
+    return (float) getWidth() / getHeight();
+  }
+
+  public boolean dimensionsWithin(int min, int max) {
+    var w = getWidth();
+    var h = getHeight();
+    return w >= min && w <= max && h >= min && h <= max;
+  }
+
+  public boolean widthWithin(int min, int max) {
+    return getWidth() >= min && getWidth() <= max;
+  }
+
+  public boolean heightWithin(int min, int max) {
+    return getHeight() >= min && getHeight() <= max;
+  }
+
+  public Rectangle clamped(int rightMax, int bottomMax) {
+    var nleft   =  left   > rightMax  ? rightMax  : left;
+    var nright  =  right  > rightMax  ? rightMax  : right;
+    var ntop    =  top    > bottomMax ? bottomMax : top;
+    var nbottom =  bottom > bottomMax ? bottomMax : bottom;
+    return nleft != left || nright != right || ntop != top || nbottom != bottom
+      ? new Rectangle(nleft, ntop, nright, nbottom)
+      : this;
+  }
+
+  public Rectangle expanded(int amount) {
+    var nleft = left - amount;
+    if (nleft < 0) {
+      nleft = 0;
+    }
+    var nright = right + amount;
+
+    var ntop = top - amount;
+    if (ntop < 0) {
+      ntop = 0;
+    }
+    var nbottom = bottom + amount;
+
+    return new Rectangle(nleft, ntop, nright, nbottom);
+  }
+
+  public Rectangle shifted(int shift) {
+    return shifted(shift, shift);
+  }
+
+  public Rectangle shifted(int xShift, int yShift) {
+    return new Rectangle(left + xShift, top + yShift, right + xShift, bottom + yShift);
+  }
+
+  public Point getCenter() {
+    return new Point((int) (left + (getWidth() / 2)), (int) (top + (getHeight() / 2)));
+  }
+
+  public java.awt.Rectangle toAWT() {
+    return new java.awt.Rectangle(left, top, getWidth(), getHeight());
+  }
+
+  public static Rectangle around(Point p, int halfside) {
+    return new Rectangle(p.x() - halfside, p.y() - halfside, p.x() + halfside, p.y() + halfside);
+  }
+
+  public static Rectangle ofEdges(int left, int top, int right, int bottom) {
+    return new Rectangle(left, top, right, bottom);
+  }
+
+  public static Rectangle ofStartAndDimensions(int x, int y, int width, int height) {
+    return new Rectangle(x, y, x + width, y + height);
+  }
+
+  public int getLeft() {
+    return left;
+  }
+
+  public int getTop() {
+    return top;
+  }
+
+  public int getRight() {
+    return right;
+  }
+
+  public int getBottom() {
+    return bottom;
+  }
+
+  public static Rectangle fromAWT(java.awt.Rectangle r) {
+    return Rectangle.ofStartAndDimensions(
+      (int) r.getX(),
+      (int) r.getY(),
+      (int) r.getWidth(),
+      (int) r.getHeight()
+    );
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (o instanceof Rectangle other) {
+      return left == other.left
+        && top == other.top
+        && right == other.right
+        && bottom == other.bottom;
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return 31 * (31 * (31 * left + top) + right) + bottom;
+  }
+}

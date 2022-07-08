@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Kamite
+Icon=kamite
+TryExec=kamite
+Exec=kamite
+Categories=Education;Languages;
+Keywords=japanese;language;learning;immersion;anime;manga;
+SingleMainWindow=true

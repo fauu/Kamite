@@ -1,0 +1,42 @@
+root: true
+parser: "@typescript-eslint/parser"
+parserOptions:
+  project: ["./tsconfig.json"]
+  ecmaVersion: 2018
+  ecmaFeatures:
+    jsx: true
+  sourceType: module
+plugins: ["@typescript-eslint"]
+extends:
+  - "eslint:recommended"
+  - "plugin:@typescript-eslint/eslint-recommended"
+  - "plugin:@typescript-eslint/recommended"
+  - "plugin:@typescript-eslint/recommended-requiring-type-checking"
+rules:
+  "@typescript-eslint/explicit-function-return-type": off
+  "@typescript-eslint/no-non-null-assertion": off
+  "@typescript-eslint/no-explicit-any": off
+  "@typescript-eslint/no-unused-vars":
+    - error
+    - argsIgnorePattern: ^_
+      varsIgnorePattern: ^_
+      ignoreRestSiblings: true
+  "@typescript-eslint/no-namespace": off
+  "@typescript-eslint/consistent-type-imports": error
+  "semi": off
+  "@typescript-eslint/semi": error
+  "quotes": off
+  "@typescript-eslint/quotes": error
+  "@typescript-eslint/member-delimiter-style":
+    - error
+    -
+      multiline:
+        delimiter: comma
+        requireLast: true
+      singleline:
+        delimiter: comma
+        requireLast: false
+      multilineDetection: last-member
+  "no-extra-semi": off
+  "@typescript-eslint/no-extra-semi": error
+

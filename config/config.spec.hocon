@@ -1,0 +1,77 @@
+#@define enum
+UILayout = [STANDARD, STANDARD_FLIPPED]
+
+#@define enum
+OCREngine = [TESSERACT, MANGAOCR, NONE]
+
+controlWindow = "boolean | true"
+launchBrowser = "boolean | true"
+
+chunk {
+  showFurigana = false
+  throttleMS = "int | 1000"
+  correct = true
+  flash = true
+}
+
+commands {
+  player {
+    showExtra = "boolean | true"
+  }
+
+  #@optional
+  custom = [{
+    symbol = string
+    name = string
+    command = string
+  }]
+}
+
+dev {
+  serveStaticInDevMode = "boolean | false"
+}
+
+keybindings {
+  global {
+    ocr {
+      manualBlock = "string?"
+      autoBlock = "string?"
+    }
+  }
+}
+
+lookup {
+  targets = [{
+    symbol = string
+    name = string
+    url = string
+    newTab = "boolean | false"
+  }]
+}
+
+ocr {
+  engine = OCREngine
+
+  #@optional
+  regions = [{
+    symbol = string
+    description = "string?"
+    x = int
+    y = int
+    width = int
+    height = int
+    autoNarrow = "boolean | false"
+  }]
+}
+
+
+server {
+  port = "int | 4110"
+}
+
+ui {
+  layout = UILayout
+  notebook {
+    height = "int | 60"
+  }
+}
