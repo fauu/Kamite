@@ -2,7 +2,7 @@ package io.github.kamitejp.api;
 
 import io.github.kamitejp.util.Result;
 
-public record CommandKind(String group, String name) {
+record CommandKind(String group, String name) {
   static Result<CommandKind, String> fromString(String kind) {
     var segs = kind.split("_");
     if (segs.length != 2) {

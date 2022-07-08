@@ -8,11 +8,12 @@ import java.util.Map;
 public final class Main {
   private Main() {}
 
+  @SuppressWarnings("UseOfSystemOutOrSystemErr")
   public static void main(String[] args) {
     var argMap = parseArgs(args);
 
     if (argMap.get("version") != null) {
-      System.out.println("Kamite %s".formatted(BuildInfo.read().getVersion()));
+      System.out.printf("Kamite %s%n", BuildInfo.read().getVersion());
       System.exit(0);
     } else if (argMap.get("help") != null) {
       System.out.println("""

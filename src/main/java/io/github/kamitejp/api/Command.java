@@ -129,7 +129,7 @@ public sealed interface Command
       name = kind.name();
     }
 
-    return Command.of(group, name, paramsNode);
+    return of(group, name, paramsNode);
   }
 
   static Result<Command, String> of(String group, String name, JsonNode paramsNode) {
@@ -202,7 +202,7 @@ public sealed interface Command
     } catch (JsonProcessingException e) {
       return Result.Err(
         "parsing command params for input '%s': %s"
-          .formatted(Command.debugString(group, name, paramsNode), e)
+          .formatted(debugString(group, name, paramsNode), e)
       );
     }
 
@@ -210,7 +210,7 @@ public sealed interface Command
       return Result.Ok(parsedCommand);
     } else {
       return Result.Err(
-        "unrecognized command type: %s".formatted(Command.debugString(group, name, paramsNode))
+        "unrecognized command type: %s".formatted(debugString(group, name, paramsNode))
       );
     }
   }

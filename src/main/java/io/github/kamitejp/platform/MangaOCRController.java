@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +27,7 @@ public class MangaOCRController {
   private static final int RECOGNITION_TIMEOUT_S = 8;
 
   private State state;
-  private Consumer<MangaOCREvent> eventCb;
+  private final Consumer<MangaOCREvent> eventCb;
   private final String[] cmd;
   private final String launchMsgMethod;
   private Process process;
@@ -43,11 +44,11 @@ public class MangaOCRController {
 
     cmd = new String[] { "python", platform.getMangaOCRWrapperPath().toString() };
     var launchMsgMethod = "`python` executable in $PATH";
-    var userLauncherScriptPath = platform.getConfigDirPath()
+    var userLauncherPath = platform.getConfigDirPath()
       .map(p -> p.resolve(GenericPlatform.MANGAOCR_USER_LAUNCHER_SCRIPT_FILENAME))
       .orElse(null);
-    if (userLauncherScriptPath != null && Files.isExecutable(userLauncherScriptPath)) {
-      cmd[0] = userLauncherScriptPath.toString();
+    if (userLauncherPath != null && Files.isExecutable(userLauncherPath)) {
+      cmd[0] = userLauncherPath.toString();
       launchMsgMethod = "user-provided launcher script";
     }
     this.launchMsgMethod = launchMsgMethod;
@@ -62,7 +63,9 @@ public class MangaOCRController {
     pb.redirectErrorStream(true); // Needed to catch the "Downloading" messages
     try {
       process = pb.start();
-      outputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      outputReader = new BufferedReader(
+        new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
+      );
 
       var ready = false;
       var sentDownloadingEvent = false;
@@ -70,6 +73,7 @@ public class MangaOCRController {
         LOG.debug("Received output line from manga-ocr: {}", line);
         if (!sentDownloadingEvent && line.startsWith("Downloading")) {
           LOG.info("manga-ocr is downloading OCR model. This might take a while");
+          //noinspection ObjectAllocationInLoop
           eventCb.accept(new MangaOCREvent.StartedDownloadingModel());
           sentDownloadingEvent = true;
         }
@@ -90,7 +94,7 @@ public class MangaOCRController {
     state = State.STARTED;
   }
 
-  private Supplier<String> outputLineSupplier = () -> {
+  private final Supplier<String> outputLineSupplier = () -> {
     try {
       return outputReader.readLine();
     } catch (IOException e) {
@@ -107,9 +111,9 @@ public class MangaOCRController {
     try {
       // Send image
       var imgBytes = ImageOps.encodeIntoByteArrayOutputStream(img).toByteArray();
-      var imgBytesSizeAsByteArr = ByteBuffer.allocate(4).putInt(imgBytes.length).array();
+      var encodedImgBytesSize = ByteBuffer.allocate(4).putInt(imgBytes.length).array();
       var out = process.getOutputStream();
-      out.write(imgBytesSizeAsByteArr);
+      out.write(encodedImgBytesSize);
       out.flush();
       out.write(imgBytes);
       out.flush();

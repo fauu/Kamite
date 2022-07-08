@@ -1,11 +1,13 @@
 package io.github.kamitejp.config;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 
@@ -29,7 +31,8 @@ public final class ConfigManager {
 
   private ConfigManager() {}
 
-  public record ReadSuccess(Config config, String[] loadedProfileNames) {};
+  @SuppressWarnings("WeakerAccess") // Mistaken
+  public record ReadSuccess(Config config, String[] loadedProfileNames) {}
 
   public static Result<ReadSuccess, String> read(
     Path configDirPath,
@@ -53,6 +56,10 @@ public final class ConfigManager {
 
     try {
       var tsConfig = configFromArgs(args);
+      if (tsConfig == null) {
+        return Result.Err("Failed to parse command line arguments into a Config object");
+      }
+
       if (profileConfigPath != null) {
         tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(profileConfigPath.toFile()));
       }
@@ -77,9 +84,9 @@ public final class ConfigManager {
 
     LOG.info( // NOPMD
       "Main config file is not accessible: {}. Creating a default config file",
-      filePath.toString()
+      filePath
     );
-    var res = ConfigManager.createDefaultConfig(dirPath, filePath);
+    var res = createDefaultConfig(dirPath, filePath);
     if (res.isOk()) {
       LOG.info("Created a default config file at '{}'", filePath);
     }
@@ -93,10 +100,12 @@ public final class ConfigManager {
         Files.createDirectory(dirPath);
       }
       Files.copy(
-        ConfigManager.class.getResourceAsStream(DEFAULT_CONFIG_FILE_RESOURCE_PATH),
+        Objects.requireNonNull(
+          ConfigManager.class.getResourceAsStream(DEFAULT_CONFIG_FILE_RESOURCE_PATH)
+        ),
         filePath
       );
-    } catch (Exception e) {
+    } catch (IOException | RuntimeException e) {
       return Result.Err(
         "Failed to create a default config file at '%s': %s".formatted(filePath, e)
       );
@@ -132,6 +141,7 @@ public final class ConfigManager {
     return null;
   }
 
+  @SuppressWarnings("ThrowsRuntimeException")
   private static void validateExtra(Config config) throws ConfigException {
     validateExtraList(config.commands().custom(), "commands.custom[%d]", (c, key) -> {
       validateSymbolLength(c.symbol(), key.apply("symbol"));
@@ -154,6 +164,7 @@ public final class ConfigManager {
     });
   }
 
+  @SuppressWarnings("ThrowsRuntimeException")
   private static <T> void validateExtraList(
     List<T> list, String keyPrefixTpl, BiConsumer<T, UnaryOperator<String>> validateElementFn
   ) throws ConfigException {
@@ -163,32 +174,43 @@ public final class ConfigManager {
     for (var i = 0; i < list.size(); i++) {
       var el = list.get(i);
       var keyPrefix = keyPrefixTpl.formatted(i);
+      //noinspection ObjectAllocationInLoop
       validateElementFn.accept(el, (key) -> "%s.%s".formatted(keyPrefix, key));
     }
   }
 
-  private static void validateSymbolLength(String symbol, String key) throws ConfigException {
+  @SuppressWarnings("ThrowsRuntimeException")
+  private static void validateSymbolLength(
+    CharSequence symbol, String key
+  ) throws ConfigException.BadValue {
     var len = symbol.length();
     if (len < 1 || len > 3) {
       throw new ConfigException.BadValue(key, "should be between 1 and 3 characters");
     }
   }
 
-  private static void validateStringNonEmpty(String s, String key) throws ConfigException {
-    if (s.length() == 0) {
+  @SuppressWarnings("ThrowsRuntimeException")
+  private static void validateStringNonEmpty(
+    CharSequence s, String key
+  ) throws ConfigException.BadValue {
+    if (s.isEmpty()) {
       throw new ConfigException.BadValue(key, "should not be empty");
     }
   }
 
-  private static void validateStringNonEmptyOrNull(String s, String key) throws ConfigException {
+  @SuppressWarnings("ThrowsRuntimeException")
+  private static void validateStringNonEmptyOrNull(
+    CharSequence s, String key
+  ) throws ConfigException.BadValue {
     if (s != null) {
       validateStringNonEmpty(s, key);
     }
   }
 
+  @SuppressWarnings({"SameParameterValue", "ThrowsRuntimeException"})
   private static void validateStringContains(
     String s, String substring, String key
-  ) throws ConfigException {
+  ) throws ConfigException.BadValue {
     if (!s.contains(substring)) {
       throw new ConfigException.BadValue(key, "should contain '%s'".formatted(substring));
     }

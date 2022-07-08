@@ -17,7 +17,6 @@ public record Request(long timestamp, Body body) {
     var body = switch (kind) {
       case "add-furigana" -> new Request.Body.AddFurigana(bodyNode.get("text").textValue());
       default -> null;
-      // default -> Result.Err("unhandled request kind for request '%s'".formatted(root.toString()));
     };
     if (body == null) {
       return Result.Err("parsing request body for request '%s'".formatted(root.toString()));

@@ -5,14 +5,16 @@ import java.util.Arrays;
 import java.util.Properties;
 
 public final class BuildInfo {
+  private static final char VERSION_PREFIX = 'v';
   private static final String GIT_PROPERTIES_RESOURCE_PATH = "/git.properties";
 
-  private String branch;
-  private String commitIDAbbr;
-  private String[] tags;
+  private final String branch;
+  private final String commitIDAbbr;
+  private final String[] tags;
   private String version;
 
   private BuildInfo(String branch, String commitIDAbbr, String tags) {
+    // TODO: Introduce an utility function to check for null or empty string
     if (
       branch == null || branch.isEmpty()
       || commitIDAbbr == null || commitIDAbbr.isEmpty()
@@ -29,7 +31,9 @@ public final class BuildInfo {
 
   private String generateVersion() {
     if ("master".equals(branch)) {
-      var maybeVersionTag = Arrays.stream(tags).filter(t -> t.startsWith("v")).findFirst();
+      var maybeVersionTag = Arrays.stream(tags)
+        .filter(t -> !t.isEmpty() && t.charAt(0) == VERSION_PREFIX)
+        .findFirst();
       if (maybeVersionTag.isPresent()) {
         return maybeVersionTag.get().substring(1);
       }
