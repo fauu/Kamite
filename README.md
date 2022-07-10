@@ -285,8 +285,13 @@ This requires [wl-clipboard] to be installed.
 This can be useful for beginners whose comprehension is not yet at the level
 needed to follow even simple video content at the natural pace. The *sub-pause*
 mpv script from [mpv-sub-scripts] can be used for this purpose. Once the script
-is installed, press `n` inside mpv to enable auto-pausing. Note that you can
-pause/unpause in mpv with a right-click.
+is installed, press `n` inside mpv to enable auto-pausing.
+
+Additional tips:
+
+* You can pause/unpause in mpv with a right-click.
+* With the *sub-pause* script, you can replay from the start of the last
+  subtitle by pressing `Ctrl+r` in mpv.
 
 [mpv-sub-scripts]: https://github.com/Ben-Kerman/mpv-sub-scripts
 
