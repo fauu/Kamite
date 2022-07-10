@@ -2,13 +2,9 @@
  * Adapted from HTTPRequest - https://github.com/elnormous/HTTPRequest (Public Domain)
  * For Kamite project license information, please see the COPYING.md file.
  */
-
-#ifndef HTTPREQUEST_HPP
-#define HTTPREQUEST_HPP
-
+#pragma once
 #pragma comment(lib, "Ws2_32.lib")
 
-#include <windows.h> // Not used here but must be included before winsock2.h
 #include <cctype>
 #include <cstddef>
 #include <cstdint>
@@ -774,5 +770,3 @@ namespace http
         std::string path;
     };
 }
-
-#endif // HTTPREQUEST_HPP

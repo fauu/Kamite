@@ -1,5 +1,11 @@
-#include "TextractorExtension.h"
+/*
+ * Adapted from Textractor - https://github.com/Artikash/Textractor
+ * (https://github.com/Artikash/Textractor/blob/master/LICENSE)
+ *
+ * For Kamite project license information, please see the COPYING.md file.
+ */
 #include "KamiteSend.h"
+#include "TextractorExtension.h"
 
 extern "C" __declspec(dllexport) wchar_t* OnNewSentence(wchar_t* sentence, const InfoForExtension* sentenceInfo) {
 	try {

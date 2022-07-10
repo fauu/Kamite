@@ -1,10 +1,11 @@
-#include "TextractorExtension.h"
-#include "HTTPRequest.h"
-#include "common.h"
-#include "json.hpp"
 #include "KamiteSend.h"
 
 #include <fstream>
+
+#include "TextractorExtension.h"
+#include "HTTPRequest.h"
+#include "String.h"
+#include "JSON.h"
 
 constexpr auto CONFIG_FILENAME = "KamiteSend.txt";
 

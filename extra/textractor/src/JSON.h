@@ -1,5 +1,8 @@
 /*
  * Adapted from JSON for Modern C++ - https://github.com/nlohmann/json
+ * For Kamite project license information, please see the COPYING.md file.
+ *
+ * The following is the license notice from the underlying work:
  *
  *  Copyright © 2013-2022 Niels Lohmann
  *
@@ -21,6 +24,7 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
+#pragma once
 
 #include <string>
 
