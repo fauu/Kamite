@@ -76,7 +76,7 @@ public sealed interface Command
     CommandKind kind = null;
     String group = null;
     String name = null;
-    JsonNode paramsNode = null;
+    JsonNode paramsNode;
 
     switch (incoming) {
       case IncomingCommand.CombinedJSON cmd -> {
