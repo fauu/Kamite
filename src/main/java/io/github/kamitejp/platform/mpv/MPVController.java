@@ -161,6 +161,15 @@ public final class MPVController {
       state = State.NOT_CONNECTED;
       LOG.info("mpv connection closed");
 
+      // Give a moment for the socket to close. Without this we would immediately connect to the
+      // expired socket and cause an exception by trying to write to it
+      try {
+        Thread.sleep(CONNECTION_RETRY_INTERVAL_MS);
+      } catch (InterruptedException e) {
+        LOG.error("Exception while waiting for mpv socket to close", e);
+        return;
+      }
+
       // Wait for a new connection
       run();
     }
