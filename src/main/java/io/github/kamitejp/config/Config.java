@@ -13,6 +13,7 @@ public record Config(
   boolean launchBrowser,
   Config.Lookup lookup,
   Config.Ocr2 ocr,
+  Config.Secrets secrets,
   Config.Server server,
   Config.Ui ui
 ) {
@@ -21,6 +22,7 @@ public record Config(
   public enum OCREngine {
     TESSERACT,
     MANGAOCR,
+    OCRSPACE,
     NONE;
   }
   public enum UILayout {
@@ -253,6 +255,17 @@ public record Config(
     }
   }
   
+  public static record Secrets(
+    java.lang.String ocrspace
+  ) {
+    
+    public Secrets(com.typesafe.config.Config c, java.lang.String parentPath, $TsCfgValidator $tsCfgValidator) {
+      this(
+        c.hasPathOrNull("ocrspace") ? c.getString("ocrspace") : null
+      );
+    }
+  }
+  
   public static record Server(
     int port
   ) {
@@ -297,6 +310,7 @@ public record Config(
       !c.hasPathOrNull("launchBrowser") || c.getBoolean("launchBrowser"),
       c.hasPathOrNull("lookup") ? new Config.Lookup(c.getConfig("lookup"), "lookup.", $tsCfgValidator) : new Config.Lookup(com.typesafe.config.ConfigFactory.parseString("lookup{}"), "lookup.", $tsCfgValidator),
       c.hasPathOrNull("ocr") ? new Config.Ocr2(c.getConfig("ocr"), "ocr.", $tsCfgValidator) : new Config.Ocr2(com.typesafe.config.ConfigFactory.parseString("ocr{}"), "ocr.", $tsCfgValidator),
+      c.hasPathOrNull("secrets") ? new Config.Secrets(c.getConfig("secrets"), "secrets.", $tsCfgValidator) : new Config.Secrets(com.typesafe.config.ConfigFactory.parseString("secrets{}"), "secrets.", $tsCfgValidator),
       c.hasPathOrNull("server") ? new Config.Server(c.getConfig("server"), "server.", $tsCfgValidator) : new Config.Server(com.typesafe.config.ConfigFactory.parseString("server{}"), "server.", $tsCfgValidator),
       c.hasPathOrNull("ui") ? new Config.Ui(c.getConfig("ui"), "ui.", $tsCfgValidator) : new Config.Ui(com.typesafe.config.ConfigFactory.parseString("ui{}"), "ui.", $tsCfgValidator)
     );

@@ -199,17 +199,21 @@ public class Kamite {
   private void initRecognizer() {
     var unavailable = true;
     try {
-      var configEngine = config.ocr().engine();
-      if (configEngine != Config.OCREngine.NONE) {
-        var engine = OCREngine.fromConfigOCREngine(configEngine);
-        platform.initOCR(engine);
-        recognizer = new Recognizer(
-          platform,
-          engine,
-          status.isDebug(),
-          this::handleRecognizerEvent
-        );
-        unavailable = false;
+      var engineRes = OCREngine.uninitializedFromConfig(config);
+      if (engineRes.isErr()) {
+        LOG.error("Error setting up OCR engine for initialization: {}", engineRes.err());
+      } else {
+        var engine = engineRes.get();
+        if (!(engine instanceof OCREngine.None)) {
+          platform.initOCR(engine);
+          recognizer = new Recognizer(
+            platform,
+            engine,
+            status.isDebug(),
+            this::handleRecognizerEvent
+          );
+          unavailable = false;
+        }
       }
     } catch (PlatformOCRInitializationException.MissingDependencies e) {
       LOG.error( // NOPMD
@@ -396,7 +400,7 @@ public class Kamite {
         case SELECTION_CANCELLED -> null;
         case INPUT_TOO_SMALL     -> "Input image is too small";
         case ZERO_VARIANTS       -> "Could not recognize any text";
-        default                  -> "Box recognition has failed to execute";
+        default -> "Box recognition has failed. Check control window or console for errors";
       };
       recognitionAbandon(errorNotification, recognitionRes.err());
       return;
@@ -496,6 +500,15 @@ public class Kamite {
   }
 
   private void handleCommand(IncomingCommand incoming, CommandSource source) {
+    try {
+      doHandleCommand(incoming, source);
+    } catch (Exception e) {
+      LOG.error("Unhandled exception while handling a command. See stderr for the stack trace");
+      e.printStackTrace();
+    }
+  }
+
+  private void doHandleCommand(IncomingCommand incoming, CommandSource source) {
     var cmdParseRes = Command.fromIncoming(incoming);
     if (cmdParseRes.isErr()) {
       LOG.warn("Error parsing command: {}", cmdParseRes.err()); // NOPMD

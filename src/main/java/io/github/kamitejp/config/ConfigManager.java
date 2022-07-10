@@ -162,6 +162,8 @@ public final class ConfigManager {
       validateSymbolLength(r.symbol(), key.apply("symbol"));
       validateStringNonEmptyOrNull(r.description(), key.apply("description"));
     });
+
+    validateStringNonEmptyOrNull(config.secrets().ocrspace(), "secrets.ocrspace");
   }
 
   @SuppressWarnings("ThrowsRuntimeException")

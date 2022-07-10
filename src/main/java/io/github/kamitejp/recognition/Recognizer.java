@@ -51,38 +51,41 @@ public class Recognizer {
   private final OCREngine engine;
   private final boolean debug;
   private final Consumer<RecognizerEvent> eventCb;
-  private final MangaOCRController mangaOCRController;
 
   public Recognizer(
     Platform platform,
-    OCREngine engine,
+    OCREngine uninitializedEngine,
     boolean debug,
     Consumer<RecognizerEvent> eventCb
   ) throws RecognizerInitializationException {
     this.platform = platform;
-    this.engine = engine;
     this.debug = debug;
     this.eventCb = eventCb;
 
-    try {
-      mangaOCRController =
-        engine == OCREngine.MANGAOCR
-        ? new MangaOCRController(platform, this::handleMangaOCREvent)
-        : null;
-    } catch (MangaOCRInitializationException e) {
-      throw new RecognizerInitializationException( // NOPMD
-        "Could not initialize manga-ocr: %s".formatted(e.getMessage())
-      );
-    }
+    this.engine = switch (uninitializedEngine) {
+      case OCREngine.Tesseract engine ->
+        engine;
+      case OCREngine.MangaOCR engine -> {
+        try {
+          yield engine.initialized(platform, this::handleMangaOCREvent);
+        } catch (MangaOCRInitializationException e) {
+          throw new RecognizerInitializationException( // NOPMD
+            "Could not initialize manga-ocr: %s".formatted(e.getMessage())
+          );
+        }
+      }
+      case OCREngine.OCRSpace engine ->
+        engine.initialized();
+      case OCREngine.None engine ->
+        engine;
+    };
 
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
-    LOG.info("Initialized recognizer (engine: {})", engine);
+    LOG.info("Initialized recognizer (engine: {})", uninitializedEngine.displayName());
   }
 
   public void destroy() {
-    if (mangaOCRController != null) {
-      mangaOCRController.destroy();
-    }
+    engine.destroy();
   }
 
   private record LabelledTesseractResult(String label, TesseractResult result) {
@@ -108,14 +111,17 @@ public class Recognizer {
     ) {
       return Result.Err(RecognitionOpError.INPUT_TOO_SMALL);
     }
+    LOG.debug("Starting box recognition");
     return switch (engine) {
-      case TESSERACT -> recognizeBoxTesseract(img, textOrientation);
-      case MANGAOCR  -> recognizeBoxMangaOCR(img);
-      case NONE      -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+      case OCREngine.Tesseract ignored -> recognizeBoxTesseract(img, textOrientation);
+      case OCREngine.MangaOCR engine   -> recognizeBoxMangaOCR(engine.controller(), img);
+      case OCREngine.OCRSpace engine   -> recognizeBoxOCRSpace(engine.adapter(), img);
+      case OCREngine.None ignored      -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
     };
   }
 
   public Optional<BufferedImage> grabAutoBlock(BufferedImage img, AutoBlockHeuristic heuristic) {
+    LOG.debug("Grabbing auto block");
     return switch (heuristic) {
       case GAME_TEXTBOX        -> grabAutoBlockGameTextbox(img);
       case MANGA_FULL          -> grabAutoBlockManga(img, false);
@@ -124,18 +130,38 @@ public class Recognizer {
   }
 
   private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxMangaOCR(
+    MangaOCRController controller,
     BufferedImage img
   ) {
-    var maybeOut = mangaOCRController.recognize(img);
-    if (maybeOut.isEmpty()) {
+    var maybeText = controller.recognize(img);
+    if (maybeText.isEmpty()) {
       return Result.Err(RecognitionOpError.OCR_ERROR);
     }
-    var out = maybeOut.get();
-    if (out.isBlank()) {
+    var text = maybeText.get();
+    if (text.isBlank()) {
       return Result.Err(RecognitionOpError.ZERO_VARIANTS);
     }
-    return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(out)));
+    return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
   }
+
+  private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxOCRSpace(
+    OCRSpaceAdapter adapter,
+    BufferedImage img
+  ) {
+    var res = adapter.ocr(ImageOps.encodeIntoByteArrayOutputStream(img).toByteArray());
+    if (res.isErr()) {
+      LOG.error("OCR.space error: {}", res.err());
+      return Result.Err(RecognitionOpError.OCR_ERROR);
+    }
+
+    var text = res.get();
+    if (text.isBlank()) {
+      return Result.Err(RecognitionOpError.ZERO_VARIANTS);
+    }
+
+    return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
+  }
+
 
   private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxTesseract(
     BufferedImage img, TextOrientation textOrientation
@@ -895,24 +921,23 @@ public class Recognizer {
   }
 
   private List<String> getAvailableCommands() {
-    return switch (engine) {
-      case MANGAOCR ->
-        List.of("ocr_manual-block", "ocr_auto-block", "ocr_region");
-      case TESSERACT ->
-        List.of(
-          "ocr_manual-block-vertical",
-          "ocr_manual-block-horizontal",
-          "ocr_auto-block",
-          "ocr_region"
-        );
-      case NONE ->
-        List.of();
-    };
+    if (engine instanceof OCREngine.MangaOCR || engine instanceof OCREngine.OCRSpace) {
+      return List.of("ocr_manual-block", "ocr_auto-block", "ocr_region");
+    } else if (engine instanceof OCREngine.Tesseract) {
+      return List.of(
+        "ocr_manual-block-vertical",
+        "ocr_manual-block-horizontal",
+        "ocr_auto-block",
+        "ocr_region"
+      );
+    } else {
+      return List.of();
+    }
   }
 
   private void handleMangaOCREvent(MangaOCREvent event) {
     var transformedEvent = switch (event) {
-      case MangaOCREvent.Started __ ->
+      case MangaOCREvent.Started ignored ->
         null;
       case MangaOCREvent.StartedDownloadingModel __ ->
         new RecognizerEvent.MangaOCRStartedDownloadingModel();

@@ -2,7 +2,7 @@
 UILayout = [STANDARD, STANDARD_FLIPPED]
 
 #@define enum
-OCREngine = [TESSERACT, MANGAOCR, NONE]
+OCREngine = [TESSERACT, MANGAOCR, OCRSPACE, NONE]
 
 controlWindow = "boolean | true"
 launchBrowser = "boolean | true"
@@ -64,6 +64,9 @@ ocr {
   }]
 }
 
+secrets {
+  ocrspace = "string?"
+}
 
 server {
   port = "int | 4110"
