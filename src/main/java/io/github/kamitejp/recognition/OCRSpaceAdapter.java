@@ -145,7 +145,6 @@ public class OCRSpaceAdapter {
     Map<String, Object> data,
     @SuppressWarnings("SameParameterValue") String boundary
   ) throws IOException {
-    @SuppressWarnings({"MagicNumber", "TypeMayBeWeakened"})
     var byteArrays = new ArrayList<byte[]>(40);
 
     var separator = "--%s\r\nContent-Disposition: form-data; name="

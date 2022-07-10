@@ -6,12 +6,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -129,7 +124,7 @@ public class Recognizer {
     };
   }
 
-  private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxMangaOCR(
+  private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxMangaOCR(
     MangaOCRController controller,
     BufferedImage img
   ) {
@@ -144,7 +139,7 @@ public class Recognizer {
     return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
   }
 
-  private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxOCRSpace(
+  private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxOCRSpace(
     OCRSpaceAdapter adapter,
     BufferedImage img
   ) {
@@ -198,9 +193,8 @@ public class Recognizer {
         tmpModel = TesseractModel.VERTICAL;
         tmpAltModel = TesseractModel.VERTICAL_ALT;
       }
-      case HORIZONTAL -> {
+      case HORIZONTAL ->
         tmpModel = TesseractModel.HORIZONTAL;
-      }
     }
     final var model = tmpModel;
     final var altModel = tmpAltModel;
@@ -212,7 +206,7 @@ public class Recognizer {
     ));
 
     // Queue OCR on the initial screenshot using the alternative model
-    if (tmpAltModel != null) {
+    if (altModel != null) {
       tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
         new LabelledTesseractResult("initial-alt", platform.tesseractOCR(initial, altModel))
       ));
@@ -226,7 +220,7 @@ public class Recognizer {
         new LabelledTesseractResult("inverted", platform.tesseractOCR(negated, model))
       ));
 
-      if (tmpAltModel != null) {
+      if (altModel != null) {
         tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
           new LabelledTesseractResult("inverted-alt", platform.tesseractOCR(negated, altModel))
         ));
@@ -283,7 +277,7 @@ public class Recognizer {
       .filter(Objects::nonNull)
       .toList();
 
-    if (variants.size() == 0) {
+    if (variants.isEmpty()) {
       LOG.debug("All of the Tesseract calls have failed");
       return Result.Err(RecognitionOpError.OCR_ERROR);
     } else if (variants.size() < tesseractResultFutures.size()) {
@@ -302,16 +296,16 @@ public class Recognizer {
     return Result.Ok(new BoxRecognitionOutput(parsedVariants));
   }
 
-  private class LineBucket {
+  private static class LineBucket {
     private float avgX = Float.NaN;
     private int minY = Integer.MAX_VALUE;
     private int maxY = Integer.MIN_VALUE;
-    private List<Rectangle> rects = new ArrayList<>();
+    private final List<Rectangle> rects = new ArrayList<>();
 
     public void add(Rectangle rect) {
       var center = rect.getCenter();
       var n = rects.size();
-      avgX = n == 0 ? center.x() : ((this.avgX * n) + center.x()) / (n + 1); // NOPMD
+      avgX = n == 0 ? center.x() : ((avgX * n) + center.x()) / (n + 1); // NOPMD
       minY = Math.min(minY, rect.getTop());
       maxY = Math.max(maxY, rect.getBottom());
       rects.add(rect);
@@ -325,7 +319,7 @@ public class Recognizer {
   // DEV
   @SuppressWarnings("unused")
   private List<Rectangle> detectVerticalTextLines(BufferedImage img) {
-    var lineRects = new ArrayList<Rectangle>();
+    var lineRects = new ArrayList<Rectangle>(16);
 
     Graphics debugGfx = null;
     BufferedImage debugImg = null;
@@ -343,14 +337,14 @@ public class Recognizer {
     final var ccMetrics = new Object() { int totalWidth; int totalHeight; };
     var ccs = Arrays.stream(ccExtractor.extract(imgArr, img.getWidth(), img.getHeight()))
       .skip(1)
-      .map(cc -> cc.rectangle())
+      .map(ConnectedComponent::rectangle)
       .filter(cc -> cc.dimensionsWithin(1, 150) && cc.getArea() < 4000)
       .peek(cc -> { 
         ccMetrics.totalWidth += cc.getWidth(); 
         ccMetrics.totalHeight += cc.getHeight(); 
       })
       .toList();
-    if (ccs.size() == 0) {
+    if (ccs.isEmpty()) {
       return lineRects;
     }
 
@@ -365,7 +359,7 @@ public class Recognizer {
     }
 
     var lineToleranceX = ccAvgWidth * 1.5;
-    var lineBuckets = new ArrayList<LineBucket>();
+    var lineBuckets = new ArrayList<LineBucket>(16);
     for (var cc : ccs) {
       LineBucket targetBucket = null;
       var xDistToTargetBucket = Float.POSITIVE_INFINITY;
@@ -387,7 +381,7 @@ public class Recognizer {
     for (var b : lineBuckets) {
       var discontinuityIndices = Stream.of(0).collect(toList());
       var rects = b.getRects();
-      Collections.sort(rects, (r1, r2) -> r1.getTop() - r2.getTop());
+      rects.sort(Comparator.comparingInt(Rectangle::getTop));
       for (int i = 1; i < rects.size(); i++) {
         if (rects.get(i).getTop() - rects.get(i - 1).getBottom() > lineToleranceY) {
           discontinuityIndices.add(i);
@@ -479,7 +473,7 @@ public class Recognizer {
     var ccExtractor = new ConnectedComponentExtractor();
     var ccs = Arrays.stream(ccExtractor.extract(imgArr, img.getWidth(), img.getHeight()))
       .skip(1)
-      .map(cc -> cc.rectangle())
+      .map(ConnectedComponent::rectangle)
       .filter(cc -> cc.dimensionsWithin(4, 150) && cc.getArea() < 4000)
       .toList();
 
@@ -939,11 +933,11 @@ public class Recognizer {
     var transformedEvent = switch (event) {
       case MangaOCREvent.Started ignored ->
         null;
-      case MangaOCREvent.StartedDownloadingModel __ ->
+      case MangaOCREvent.StartedDownloadingModel ignored ->
         new RecognizerEvent.MangaOCRStartedDownloadingModel();
-      case MangaOCREvent.Crashed __ ->
+      case MangaOCREvent.Crashed ignored ->
         new RecognizerEvent.Crashed();
-      case MangaOCREvent.TimedOutAndRestarting __ ->
+      case MangaOCREvent.TimedOutAndRestarting ignored ->
         new RecognizerEvent.Restarting(RecognizerRestartReason.MANGA_OCR_TIMED_OUT_AND_RESTARTING);
     };
     if (transformedEvent != null) {
