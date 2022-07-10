@@ -149,7 +149,7 @@ public final class MPVController {
       LOG.info("Connected to mpv UNIX socket at {}", UNIX_SOCKET_ADDR);
 
       var readerFuture = CompletableFuture.runAsync(
-              new Reader(linuxEndpointSocketChannel, messageCb)
+        new Reader(linuxEndpointSocketChannel, messageCb)
       );
       try {
         readerFuture.get();
@@ -170,7 +170,7 @@ public final class MPVController {
     @Override
     public SocketChannel get() {
       try {
-        while(true) {
+        while (true) {
           var channel = openConnection();
           if (channel != null) {
             return channel;
