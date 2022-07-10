@@ -57,6 +57,7 @@ public final class MPVController {
 
   public void sendCommand(MPVCommand cmd) {
     if (linuxEndpointSocketChannel == null) {
+      LOG.debug("Tried to send command to mpv while there was no connection");
       return;
     }
 
@@ -76,7 +77,7 @@ public final class MPVController {
         LOG.debug("Sent mpv IPC command: {}", ipcCmd.replace("\n", "\\n"));
       }
     } catch (IOException e) {
-      LOG.error("Exception while writing to mpv UNIX socket: ", e);
+      LOG.error("Failed to write to mpv UNIX socket: ", e);
     }
   }
 
@@ -94,7 +95,7 @@ public final class MPVController {
       try {
         linuxEndpointSocketChannel.close();
       } catch (IOException e) {
-        LOG.error("Exception while closing mpv UNIX socket connection", e);
+        LOG.error("Failed to close mpv UNIX socket connection", e);
       }
     }
   }
@@ -131,7 +132,7 @@ public final class MPVController {
 
     @Override
     public void run() {
-      LOG.debug("Waiting for mpv IPC connection");
+      LOG.debug("Waiting for mpv connection");
       // This will block until we connect to the socket
       var socketChannelFuture = CompletableFuture.supplyAsync(new Connecter());
       try {
@@ -158,7 +159,7 @@ public final class MPVController {
       }
       statusUpdateCb.accept(PlayerStatus.DISCONNECTED);
       state = State.NOT_CONNECTED;
-      LOG.info("mpv IPC connection closed");
+      LOG.info("mpv connection closed");
 
       // Wait for a new connection
       run();
