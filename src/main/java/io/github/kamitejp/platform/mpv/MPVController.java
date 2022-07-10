@@ -26,6 +26,17 @@ public final class MPVController {
     UnixDomainSocketAddress.of("/tmp/kamite-mpvsocket");
   private static final int GET_PAUSE_REQUEST_ID = 100;
 
+  private static final String OUT_COMMAND_PLAYPAUSE = "\"cycle\", \"pause\"]";
+  private static final String OUT_COMMAND_SEEK_BACK = "\"seek\", -1, \"exact\"]";
+  private static final String OUT_COMMAND_SEEK_FORWARD = "\"seek\", 1, \"exact\"]";
+  private static final String OUT_COMMAND_SEEK_START_SUB = "\"sub-seek\", 0]";
+  private static final String OUT_COMMAND_GET_PAUSE = "\"get_property\", \"pause\"]";
+
+  private static final String IN_MESSAGE_PAUSE = "\"pause\"";
+  private static final String IN_MESSAGE_UNPAUSE = "\"unpause\"";
+  private static final String IN_MESSAGE_PAUSE_RESPONSE =
+    "\"request_id\":%s".formatted(GET_PAUSE_REQUEST_ID);
+
   private Consumer<PlayerStatus> statusUpdateCb;
   private State state;
   private SocketChannel linuxEndpointSocketChannel;
@@ -51,12 +62,12 @@ public final class MPVController {
 
     var ipcCmd = "{\"command\": ["
       + switch (cmd) {
-        case PLAYPAUSE      -> "\"cycle\", \"pause\"]";
-        case SEEK_BACK      -> "\"seek\", -1, \"exact\"]";
-        case SEEK_FORWARD   -> "\"seek\", 1, \"exact\"]";
-        case SEEK_START_SUB -> "\"sub-seek\", 0]";
+        case PLAYPAUSE      -> OUT_COMMAND_PLAYPAUSE;
+        case SEEK_BACK      -> OUT_COMMAND_SEEK_BACK;
+        case SEEK_FORWARD   -> OUT_COMMAND_SEEK_FORWARD;
+        case SEEK_START_SUB -> OUT_COMMAND_SEEK_START_SUB;
         case GET_PAUSE ->
-          "\"get_property\", \"pause\"], \"request_id\": " + GET_PAUSE_REQUEST_ID;
+          "%s, \"request_id\": %d".formatted(OUT_COMMAND_GET_PAUSE, GET_PAUSE_REQUEST_ID);
       }
       + "}\n";
     try {
@@ -92,18 +103,20 @@ public final class MPVController {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Received mpv message: {}", msg.replace("\n", "\\n"));
     }
+
     PlayerStatus update = null;
-    if (msg.contains("\"pause\"")) {
+    if (msg.contains(IN_MESSAGE_PAUSE)) {
       update = PlayerStatus.PAUSED;
-    } else if (msg.contains("\"unpause\"")) {
+    } else if (msg.contains(IN_MESSAGE_UNPAUSE)) {
       update = PlayerStatus.PLAYING;
-    } else if (msg.contains("\"request_id\":" + GET_PAUSE_REQUEST_ID)) {
+    } else if (msg.contains(IN_MESSAGE_PAUSE_RESPONSE)) {
       if (msg.contains("true")) {
         update = PlayerStatus.PAUSED;
       } else  {
         update = PlayerStatus.PLAYING;
       }
     }
+
     if (update != null) {
       statusUpdateCb.accept(update);
     }
