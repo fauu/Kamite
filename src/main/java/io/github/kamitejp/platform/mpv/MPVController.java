@@ -143,7 +143,7 @@ public final class MPVController {
       }
 
       // The external world will be notified of the established connection as we handle the
-      // response to the following command
+      // response to this command
       sendCommand(MPVCommand.GET_PAUSE);
       state = State.CONNECTED;
       LOG.info("Connected to mpv UNIX socket at {}", UNIX_SOCKET_ADDR);
