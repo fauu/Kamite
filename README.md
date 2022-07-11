@@ -311,28 +311,36 @@ Additional tips:
 
 ### Manga text extraction
 
-Kamite integrates with two alternative OCR (Optical Character Recognition)
-programs to make it easy to get from a manga page displayed on screen to a text
-chunk within Kamite. The available OCR engines are:
+Kamite integrates with three alternative OCR (Optical Character Recognition)
+providers to enable the extraction of text from manga pages displayed on screen.
+The available OCR engines are:
 
 * [manga-ocr]
+* [OCR.space]
 * [Tesseract OCR][tesseract]
 
-**Manga-ocr is the recommended choice, as it gives superior results**. However,
-it is also *relatively* storage- and resource-intensive as well as less simple
-to set up compared with Tesseract. This is why the latter is also supported.
+**Manga-ocr is the recommended choice**, as it gives superior results for manga
+and does not require sending data to a third party. However, compared with the
+other options, it is also storage- and resource-intensive as well as less simple
+to set up. Therefore, the above alternatives are provided.
 
 [manga-ocr]: https://github.com/kha-white/manga-ocr
 [tesseract]: https://github.com/tesseract-ocr/tesseract
 
 **By default, OCR is disabled.** To enable it, set the [config](#config) key
-`ocr.engine` to either `mangaocr` or `tesseract` and go through the
-corresponding setup procedure as well as the setup procedure for extra platform
-dependencies, both described in what follows.
+`ocr.engine` to one of: `mangaocr`, `ocrspace`, or `tesseract` and go through:
+1\) the corresponding engine setup procedure, and 2\) the setup procedure for
+extra platform dependencies, both described below.
+
+* [Setting up manga-ocr](#setting-up-manga-ocr)
+* [Setting up OCR.space](#setting-up-ocrspace)
+* [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
+<br><br>
+* [Setting up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
 
 #### Setting up manga-ocr
 
-> Requires python. Python 3.10 (the latest version) *is* supported.
+> Requires Python; version 3.10 (the latest) *is* supported.
 
 **Note:** Manga-ocr will use up to 2.5 GB of storage space. While initializing,
 it will use up to 1 GB of additional memory over what Kamite normally uses.
@@ -425,7 +433,7 @@ this result.
     PYTHONPATH=$PYTHONPATH:$PROJECT_PATH poetry run python "$1"
     ```
 
-1. Launch Kamite with the config key `ocr.engine` set to `mangaocr` to verify
+Remember to launch Kamite with the config key `ocr.engine` set to `mangaocr`.
 
 ***
 
@@ -449,18 +457,52 @@ To completely reclaim your disk space from manga-ocr in this scenario:
 1. Find the ~450 MB file in `~/.cache/huggingface/transformers/` and delete it
    too
 
+#### Setting up OCR.space
+
+> **Note:** OCR.space is an online service, so using it involves sending
+screenshots of portions of your screen to a third-party. Here is [the stated
+privacy policy of OCR.space](ocrspace-privacy-policy).
+
+The usage of the [OCR.space] free API is limited. The limits are defined by the
+provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
+
+1. Register for a free API key
+
+    Fill the form at <https://ocr.space/ocrapi/freekey>. You will need to
+    provide your email address, to which the key will be sent.
+
+1. Put the API key in Kamite’s [config file](#config):
+
+    > **Note:** This is unsafe plain-text storage. Abort if you deem your key too
+    sensitive for this kind of storage
+
+    ```sh
+    …
+    secrets {
+      ocrspace = THE KEY GOES HERE
+    }
+    …
+    ```
+
+Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
+
+[ocrspace-privacy-policy]: https://ocr.space/privacypolicy
+
 #### Setting up Tesseract OCR
 
 1. Install Tesseract
 
-   Tesseract is available in the default repositories of most distributions. For
-   example, under `tesseract-ocr` in Ubuntu or under `tesseract` in Arch Linux.
+    Tesseract is available in the default repositories of most distributions.
+    For example, under `tesseract-ocr` in Ubuntu or under `tesseract` in Arch
+    Linux.
 
 1. Install Tesseract models prepared and verified for use with Kamite
 
     Download [`tesseract_traineddata_jpn_Kamite.zip`](https://mega.nz/file/9SsQBYTT#SDUSPerJ3iDsgSf08FlOWlVgbu7UICC_Oc7vg4D_YdQ)
     and extract the `.traineddata` files from the archive into Tesseract’s
     `tessdata` directory (usually `/usr/[local/]share/tessdata/`).
+
+Remember to launch Kamite with the config key `ocr.engine` set to `tesseract`.
 
 #### Setting up extra OCR dependencies
 
@@ -1198,6 +1240,14 @@ ui {
     height = 60
   }
 }
+
+# Secrets used for authentication to third-party services.
+# Note: This is unsafe plain-text storage. Do not put data here that you deem
+#       too sensitive for this kind of storage
+secrets {
+  # The OCR.space API key
+  ocrspace = …
+}
 ```
 
 [HOCON]: https://github.com/lightbend/config#using-hocon-the-json-superset
@@ -1552,3 +1602,4 @@ the original license notices.
 [Yomichan]: https://foosoft.net/projects/yomichan/
 [Gomics-v]: https://github.com/fauu/gomicsv
 [Sway]: https://swaywm.org/
+[OCR.space]: https://ocr.space/
