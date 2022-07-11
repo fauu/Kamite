@@ -22,6 +22,7 @@ import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.websocket.WsConfig;
+import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
@@ -32,7 +33,8 @@ public class Server {
   private static final int WS_CLOSE_CODE_SUPERSEDED_BY_ANOTHER_CLIENT = 4000;
 
   private Javalin javalinInstance;
-  private WsContext wsClient;
+  private WsContext wsClientContext;
+  private WsContext wsPendingClientContext; // The connection that's about to replace the prev. one
   private final Path configDirPath;
   private Consumer<ServerEvent> eventCb;
 
@@ -99,14 +101,14 @@ public class Server {
       return;
     }
     eventCb.accept(new ServerEvent.AboutToSendMessage(message));
-    if (wsClient == null) {
+    if (wsClientContext == null) {
       LOG.debug( // NOPMD
         "Tried to send a message of kind '{}', but the client was not connected",
         message.getKind()
       );
       return;
     }
-    wsClient.send(messageJson);
+    wsClientContext.send(messageJson);
     LOG.debug("Sent a '{}' message", message.getKind()); // NOPMD
   }
 
@@ -131,20 +133,32 @@ public class Server {
   }
 
   private void setupWS(WsConfig ws) {
-    ws.onConnect(ctx -> {
-      if (wsClient != null) {
-        wsClient.closeSession(WS_CLOSE_CODE_SUPERSEDED_BY_ANOTHER_CLIENT, null);
-        LOG.info("Dropping previous client websocket connection");
-      }
-      wsClient = ctx;
-      eventCb.accept(new ServerEvent.ClientConnected());
-    });
+    ws.onConnect(this::handleClientConnect);
     ws.onMessage(this::handleClientMessage);
     ws.onClose(ctx -> {
       LOG.info("Client websocket connection closed: code {}", ctx.status()); // NOPMD
-      wsClient = null;
+      // We juggle the contexts like this because we want to set `wsClientContext` to null here, but
+      // only if this close event isn't the result of a new client connection replacing the old one.
+      // And the status code doesn't let us distinguish that case from, e.g., a browser crash
+      if (wsPendingClientContext != null) {
+        wsClientContext = wsPendingClientContext;
+        wsPendingClientContext = null;
+      } else {
+        wsClientContext = null;
+      }
     });
     ws.onError(ctx -> LOG.info("Client websocket connection error: {}", ctx.error().toString()));
+  }
+
+  private void handleClientConnect(WsConnectContext ctx) {
+    if (wsClientContext != null) {
+      LOG.info("Dropping previous client websocket connection");
+      wsPendingClientContext = ctx;
+      wsClientContext.closeSession(WS_CLOSE_CODE_SUPERSEDED_BY_ANOTHER_CLIENT, null);
+    } else {
+      wsClientContext = ctx;
+    }
+    eventCb.accept(new ServerEvent.ClientConnected());
   }
 
   private void handleClientMessage(WsMessageContext ctx) {

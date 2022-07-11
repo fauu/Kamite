@@ -1,3 +1,5 @@
+import { Accessor, createSignal } from "solid-js";
+
 import type { Command, InMessage, OutMessage, Request, RequestMain } from "./core";
 import { requestKindToResponseKind } from "./core";
 import { WSCloseCode } from "./ws";
@@ -14,27 +16,39 @@ type PendingRequest = {
 type InMessagePromiseResolveFn = Parameters<ConstructorParameters<typeof Promise<InMessage>>[0]>[0];
 
 type Callbacks = {
-  onConnectedChange: (connected: boolean) => void,
   onMessage: (msg: InMessage) => void,
 };
+
+export type BackendConnectionState =
+  | "initial"
+  | "first-connecting"
+  | "connected"
+  | "just-disconnected"
+  | "reconnecting"
+  | "disconnected-wont-reconnect";
 
 export class Backend {
   #cbs: Callbacks;
   #ws?: WebSocket;
   #pendingRequests: Map<number, PendingRequest>;
-  #firstReconnectAttempt = true;
+
+  #connectionStateSignal = createSignal<BackendConnectionState>("initial");
+  #connectionState = this.#connectionStateSignal[0];
+  #setConnectionState = this.#connectionStateSignal[1];
 
   constructor(cbs: Callbacks) {
     this.#cbs = cbs;
     this.#pendingRequests = new Map();
+    this.#connect();
+    this.#setConnectionState("first-connecting");
   }
 
-  connect() {
-    const ws = new WebSocket(WS_ENDPOINT_ADDR);
-    ws.onopen = this.#handleConnectionOpen.bind(this);
-    ws.onmessage = this.#handleMessage.bind(this);
-    ws.onclose = this.#handleConnectionClose.bind(this);
-    this.#ws = ws;
+  reconnect() {
+    const state = this.#connectionState();
+    if (state === "just-disconnected" || state === "disconnected-wont-reconnect") {
+      this.#setConnectionState("reconnecting");
+      this.#connect();
+    }
   }
 
   command(command: Command | Command["kind"]) {
@@ -61,8 +75,25 @@ export class Backend {
     return promise as Promise<T>; // We verify the response kind later, before resolving
   }
 
+  get connectionState(): Accessor<BackendConnectionState> {
+    return this.#connectionState;
+  }
+
   static customCSSUrl(): string {
     return `http://${HOST}/custom.css`;
+  }
+
+  #connect() {
+    const state = this.#connectionState();
+    if (state !== "initial" && state !== "reconnecting") {
+      return;
+    }
+    const ws = new WebSocket(WS_ENDPOINT_ADDR);
+    ws.onopen = this.#handleConnectionOpen.bind(this);
+    ws.onmessage = this.#handleMessage.bind(this);
+    ws.onclose = this.#handleConnectionClose.bind(this);
+    ws.onerror = this.#handleConnectionError.bind(this);
+    this.#ws = ws;
   }
 
   #send(msg: OutMessage) {
@@ -94,29 +125,37 @@ export class Backend {
   }
 
   #handleConnectionOpen() {
-    this.#cbs.onConnectedChange(true);
-    this.#firstReconnectAttempt = true;
+    this.#setConnectionState("connected");
   }
 
   #handleConnectionClose(event: CloseEvent) {
     if (event.code !== WSCloseCode.AbnormalClosure) {
       // Isn't a failed connection attempt
-      this.#cbs.onConnectedChange(false);
+      this.#setConnectionState("just-disconnected");
     }
     if (event.code === WSCloseCode.SupersededByAnotherClient) {
       // Don't reconnect
-      // TODO: Don't show "Waiting for backend connection…" message when we aren't actually
-      //       trying to connect. Show a "Reconnect" button instead
+      this.#setConnectionState("disconnected-wont-reconnect");
       return;
     }
 
-    // This is executed after disconnecting and after a failed connection attempt
+    // This point is reached after disconnecting AND after a failed connection attempt
 
-    if (this.#firstReconnectAttempt) {
-      this.connect();
-      this.#firstReconnectAttempt = false;
-    } else {
-      setTimeout(this.connect.bind(this), RECONNECT_INTERVAL_MS);
+    // If just disconnected, try to reconnect immediately, then try it recurrently
+    switch (this.#connectionState()) {
+      case "just-disconnected":
+        this.reconnect();
+        break;
+      case "reconnecting":
+        setTimeout(this.#connect.bind(this), RECONNECT_INTERVAL_MS);
+        break;
+    }
+  }
+
+  #handleConnectionError() {
+    const state = this.#connectionState();
+    if (state === "first-connecting" || state === "reconnecting") {
+      this.reconnect();
     }
   }
 }

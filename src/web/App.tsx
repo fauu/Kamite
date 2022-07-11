@@ -13,7 +13,7 @@ import type {
   PlayerStatus, RecognizerStatus, UILayout
 } from "~/backend";
 import {
-  Backend, BackendConnectionPendingScreen, parseBackendConstant, parseRecognizerStatus,
+  Backend, BackendNotConnectedScreen, parseBackendConstant, parseRecognizerStatus,
   playerStatusGotConnected
 } from "~/backend";
 import { ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState } from "~/chunk";
@@ -41,8 +41,6 @@ export const App: VoidComponent = () => {
 
   // === STATE =====================================================================================
 
-  const [connected, setConnected] =
-    createSignal(false);
   const [config, setConfig] =
     createSignal<Config>();
   const [recognizerStatus, setRecognizerStatus] =
@@ -75,10 +73,7 @@ export const App: VoidComponent = () => {
 
   const [settings, setSettings] = createStore<Setting[]>(DEFAULT_SETTINGS);
 
-  const backend = new Backend({
-    onConnectedChange: setConnected,
-    onMessage:         handleBackendMessage,
-  });
+  const backend = new Backend({ onMessage: handleBackendMessage });
 
   const chunks = createChunksState({
     backend,
@@ -133,8 +128,6 @@ export const App: VoidComponent = () => {
   });
 
   onMount(() => {
-    backend.connect();
-
     if (import.meta.env.DEV) {
       setTimeout(() =>
         void chunks.insert(
@@ -273,6 +266,8 @@ export const App: VoidComponent = () => {
   };
 
   const handleRootMouseLeave = () => chunks.textSelection.set(undefined);
+
+  const handleReconnectClick = () => backend.reconnect();
 
   const handleChunkInput = (newText: string) => chunks.setEditText(newText);
 
@@ -571,8 +566,13 @@ export const App: VoidComponent = () => {
       onMouseLeave={handleRootMouseLeave}
       id="root"
     >
-      <Show when={!connected()}>
-        <BackendConnectionPendingScreen contentDisplayDelayMS={1000} dotAnimationStepMS={1000}/>
+      <Show when={backend.connectionState() !== "connected"}>
+        <BackendNotConnectedScreen
+          connectionState={backend.connectionState()}
+          contentDisplayDelayMS={1000}
+          dotAnimationStepMS={1000}
+          onReconnectClick={handleReconnectClick}
+        />
       </Show>
       <MainSection ref={mainSectionEl} id="main-section">
         <Toolbar id="toolbar">
