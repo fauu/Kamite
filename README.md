@@ -23,7 +23,7 @@ Kamite is cost-free and licensed under the GNU AGPL v3 or later (see
 [License](#license)).
 
 **Currently supported platforms: Linux/Xorg, Linux/wlroots.**\
-(Planned for the beta release: Windows, Linux / GNOME Wayland, Linux / Plasma).
+(Planned for the beta release: Windows, Linux / GNOME Wayland, Linux/Plasma).
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 https://user-images.githubusercontent.com/4130634/178029301-075cb207-a154-42d2-adb5-ce8fdbcd722f.mp4
@@ -33,14 +33,14 @@ Featured in the demo:
 
 * (All shots) Firefox, [Sway].
 
-* (Shot 1) [Gomics-v] manga reader (*Kaguya-sama wa Kokurasetai*, ch. 140),
+* (Shot 1) [Gomics-v] manga reader (*Kaguya-sama wa Kokurasetai*, ch. 140);
 [Yomichan] (dictionaries: *JMDict*, *Kanjium Pitch Accents*, *Narou
 Freq*, *VN Freq*).
 
 * (Shot 2) [mpv] (*Suzumiya Haruhi no Yuuutsu (2006)*, ep. 9).
 
-* (Shot 3) *Summer Pockets*, [`contrib/kamite-toggle-visibility.sh`](contrib/kamite-toggle-visibility.sh)
-script, [waycorner][waycorner-icxes].
+* (Shot 3) *Summer Pockets*; [`contrib/kamite-toggle-visibility.sh`](contrib/kamite-toggle-visibility.sh)
+script; [waycorner][waycorner-icxes].
 
 [deepl]: https://deepl.com/
 [ichi.moe]: https://ichi.moe/
@@ -188,8 +188,9 @@ The Kamite mpv script can be found in the `extra/mpv` directory within the
 release package. To load it into mpv, either: 1) copy it to the `scripts`
 subdirectory of the mpv configuration directory (on Linux usually
 `~/.config/mpv/scripts`) and launch mpv as usual, or 2) pass the script’s path
-as the value of the `--script` parameter when launching mpv (see also: [mpv
-reference: Script location][mpv-ref-script-location]).
+as the value of the `--script` parameter when launching mpv.
+
+> See also: [mpv reference: Script location][mpv-ref-script-location].
 
 The Kamite mpv script sends the *primary* video subtitles as chunks to Kamite.
 If *secondary* subtitles are present, it sends those as **chunk translations**.
@@ -239,10 +240,11 @@ mpv /path/to/video/*<part-of-anime-name>*$1*.mkv \ # Episode no. passed as an ar
 #### Mining anime
 
 Kamite works well with [Anacreon’s mpv script][anacreon-mpv] used for
-automatically enhancing [Anki] cards with video content. After creating a card,
-with the script installed, simply press `Ctrl+c` in the Kamite tab, followed by
-`Ctrl+c` in the mpv window. If you want the card context to span not one but
-several chunks, select them in Kamite’s history window before pressing `Ctrl+c`.
+automatically enhancing [Anki] cards with video-derived content. After creating
+a card, with the script installed, simply press `Ctrl+c` in the Kamite tab,
+followed by `Ctrl+c` in the mpv window. If you want the card context to span not
+one but several chunks, select them in Kamite’s history window before pressing
+`Ctrl+c`.
 
 [Anki]: https://apps.ankiweb.net/
 
@@ -300,7 +302,7 @@ Additional tips:
 #### Alternatives for anime
 
 <dl>
-  <dt><a href="https://github.com/ripose-jp/Memento">Memento</a></dt>
+  <dt><a href="https://ripose-jp.github.io/Memento/">Memento</a></dt>
   <dd>An mpv-based video player that includes Yomichan-like dictionary lookup
   integrated right within the subtitle overlay as well as Anki support.</dd>
   <dt><a href="https://github.com/animebook/animebook.github.io">Animebook</a></dt>
@@ -321,10 +323,10 @@ The available OCR engines are:
 * [OCR.space]
 * [Tesseract OCR][tesseract]
 
-**“Manga OCR” is the recommended choice**, as it gives superior results for manga
+**“Manga OCR” is the recommended choice** as it gives superior results for manga
 and does not require sending data to a third party. However, compared with the
 other options, it is also storage- and resource-intensive as well as less simple
-to set up. Therefore, the above alternatives are provided.
+to set up.
 
 [manga-ocr]: https://github.com/kha-white/manga-ocr
 [tesseract]: https://github.com/tesseract-ocr/tesseract
@@ -374,7 +376,7 @@ environment for an easy complete removal, see the *Advanced option* just below.
     images from clipboard…`, as it is irrelevant for Kamite’s use of “Manga
     OCR”.
 
-[pip]: https://pypi.org/project/pip/
+[pip]: https://pip.pypa.io/en/stable/installation/
 
 ##### Advanced option: Custom installation (Poetry)
 
@@ -423,7 +425,7 @@ this result.
 
 1. Tell Kamite how to launch “Manga OCR”
 
-    A launcher script must be created that: 1) prepares the python environment
+    A launcher script must be created that: 1) prepares the Python environment
     containing the “Manga OCR” installation, and 2) inside that environment
     launches a “Manga OCR” wrapper script provided by Kamite. The launcher script
     must be named `mangaocr.sh` and placed directly in Kamite’s config directory
@@ -465,7 +467,7 @@ To completely reclaim your disk space from “Manga OCR” in this scenario:
 
 > **Note:** OCR.space is an online service, so using it involves sending
 screenshots of portions of your screen to a third-party. Here is [the stated
-privacy policy of OCR.space](ocrspace-privacy-policy).
+privacy policy of OCR.space][ocrspace-privacy-policy].
 
 The usage of the [OCR.space] free API is limited. The limits are defined by the
 provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
@@ -623,7 +625,7 @@ line count of the target text box (i.e., first region encompassing just one line
 of text, second region encompassing the first and the second line, and so on)
 and choose between them on the fly.
 
-See also: [Config](#config), [Visual novel / game text extraction](#visual-novel-game-text-extraction),
+See also: [Config](#config), [Visual novel / game text extraction](#visual-novel--game-text-extraction),
 [Alternatives for games](#alternatives-for-games).
 
 ***
@@ -747,7 +749,7 @@ extracted by it from other programs to Kamite.
 > For games that do not work with Textractor, the experimental
 [Region recognition](#region-ocr) feature might prove an alternative.
 
-To install the *Kamite Send* Textractor extension:
+To install the *KamiteSend* Textractor extension:
 
 1. Copy the `KamiteSend.xdll` file from either the `extra/textractor/x86`
    (32-bit Textractor) or `extra/textractor/x64` (64-bit Textractor) within the
@@ -758,8 +760,8 @@ To install the *Kamite Send* Textractor extension:
    list, choose `Add extension` and select the `KamiteSend.xdll` file copied
    earlier.
 
-For Textractor’s text processing extensions (such as `Remove Repeated Characters`)
-to be executed before sending the text to Kamite, position `Kamite Send` below
+For Textractor’s text processing extensions (such as Remove Repeated Characters)
+to be executed before sending the text to Kamite, position KamiteSend below
 them on the extensions list.
 
 #### Changing the default Textractor extension endpoint
@@ -867,7 +869,7 @@ for embedding.
 1. In the extension's configuration screen, set the field *Url Patterns* to
    `https://www.deepl.com/*;https://jpdb.io/*`
 
-1. Below that, enter the following parameters for DeepL:
+1. Below that, enter the following parameters (for DeepL):
 
     | Field              | Value                     |
     |--------------------|---------------------------|
@@ -875,8 +877,8 @@ for embedding.
     | Header Field Name  | `content-security-policy` |
     | Apply on           | `Response`                |
 
-1. Click *New line* and enter the following for jpdb into the second line of
-   fields:
+1. Click *New line* and enter the following into the second line of fields (for
+   jpdb):
 
     | Field              | Value                     |
     |--------------------|---------------------------|
@@ -1462,7 +1464,7 @@ Seeks to the start of the current subtitle.
 
 ## Privacy
 
-Kamite never stores your data to disk.
+Kamite never saves your data to disk.
 
 Kamite never sends your data through the network, with the following exceptions:
 
@@ -1553,7 +1555,7 @@ The Readme’s table of contents is generated with [mdtoc.rb].
 
 ### Textractor extension
 
-The C++ source for the *Kamite Send* Textractor extension is placed under the
+The C++ source for the *KamiteSend* Textractor extension is placed under the
 [`extra/textractor/src`][textractor-kamite-send-src] directory. The build
 command is specified in the `textractor` target in the [`Makefile`][makefile].
 [Zig] is used for compilation and linking.
