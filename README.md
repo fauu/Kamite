@@ -678,6 +678,8 @@ screen corners but also edges)
   <dd>Takes manga images and generates HTML files where detected text blocks
   are overlaid with selectable text as recognized by manga-ocr, allowing for
   direct lookup with pop-up dictionaries.</dd>
+  <dt><a href="https://github.com/bluaxees/Cloe">Cloe</a></dt>
+  <dd>OCRs a screen selection to clipboard using manga-ocr.</dd>
   <dt><a href="https://github.com/bluaxees/Poricom">Poricom</a></dt>
   <dd>Manga reader with built-in manga-ocr and Tesseract support. Can
   also be used to capture text from external programs.</dd>
