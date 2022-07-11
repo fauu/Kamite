@@ -18,22 +18,22 @@ public final class Main {
     } else if (argMap.get("help") != null) {
       System.out.println("""
 Usage: kamite [options]
-    Options:
-        --help
-            Display the usage message and exit
-        --version
-            Display the program version and exit.
-        --debug[=all]
-            Print debug messages to the console, optionally also from
-            third-party components
-        --profile=<profile-id>
-            Load the config file 'config.<profile-id>.hocon' on top of the main
-            config file
+Options:
+  --help
+      Print the usage message and exit
+  --version
+      Print the program version and exit
+  --debug[=all]
+      Print debug messages to the console, optionally also from third-party
+      components
+  --profile=<profile-id>
+      Load the config file 'config.<profile-id>.hocon' on top of the main config
+      file
 
-        Additional options are available, corresponding to the available config
-        keys. Please consult the sections 'Command-line' parameters and 'Config'
-        in the included README.md file.""");
-      System.exit(0);
+  Additional options are available, corresponding to the available config keys.
+  Please consult the sections 'Command-line parameters' and 'Config' in the
+  included README.md file.""");
+  System.exit(0);
     }
 
     (new Kamite()).run(argMap, BuildInfo.read());
