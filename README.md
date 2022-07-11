@@ -59,6 +59,7 @@ script, [waycorner][waycorner-icxes].
         * [Alternatives for anime](#alternatives-for-anime)
     * [Manga text extraction](#manga-text-extraction)
         * [Setting up manga-ocr](#setting-up-manga-ocr)
+        * [Setting up OCR.space](#setting-up-ocrspace)
         * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
         * [Setting up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
         * [OCR usage](#ocr-usage)
@@ -97,8 +98,9 @@ script, [waycorner][waycorner-icxes].
         * [`character-counter_` commands](#character-counter_-commands)
         * [`session-timer_` commands](#session-timer_-commands)
         * [`chunk_` commands](#chunk_-commands)
-12. [Development](#development)
-13. [License](#license)
+12. [Privacy](#privacy)
+13. [Development](#development)
+14. [License](#license)
     * [Third-party components](#third-party-components)
 
 ## Installing Kamite
