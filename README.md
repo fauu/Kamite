@@ -58,7 +58,7 @@ script, [waycorner][waycorner-icxes].
         * [Tip: auto-pausing at the end of subtitle](#tip-auto-pausing-at-the-end-of-subtitle)
         * [Alternatives for anime](#alternatives-for-anime)
     * [Manga text extraction](#manga-text-extraction)
-        * [Setting up manga-ocr](#setting-up-manga-ocr)
+        * [Setting up “Manga OCR”](#setting-up-manga-ocr)
         * [Setting up OCR.space](#setting-up-ocrspace)
         * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
         * [Setting up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
@@ -317,11 +317,11 @@ Kamite integrates with three alternative OCR (Optical Character Recognition)
 providers to enable the extraction of text from manga pages displayed on screen.
 The available OCR engines are:
 
-* [manga-ocr]
+* [“Manga OCR”][manga-ocr]
 * [OCR.space]
 * [Tesseract OCR][tesseract]
 
-**Manga-ocr is the recommended choice**, as it gives superior results for manga
+**“Manga OCR” is the recommended choice**, as it gives superior results for manga
 and does not require sending data to a third party. However, compared with the
 other options, it is also storage- and resource-intensive as well as less simple
 to set up. Therefore, the above alternatives are provided.
@@ -334,26 +334,26 @@ to set up. Therefore, the above alternatives are provided.
 1\) the corresponding engine setup procedure, and 2\) the setup procedure for
 extra platform dependencies, both described below.
 
-* [Setting up manga-ocr](#setting-up-manga-ocr)
+* [Setting up “Manga OCR”](#setting-up-manga-ocr)
 * [Setting up OCR.space](#setting-up-ocrspace)
 * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
 <br><br>
 * [Setting up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
 
-#### Setting up manga-ocr
+#### Setting up “Manga OCR”
 
 > Requires Python; version 3.10 (the latest) *is* supported.
 
-**Note:** Manga-ocr will use up to 2.5 GB of storage space. While initializing,
+**Note:** “Manga OCR” will use up to 2.5 GB of storage space. While initializing,
 it will use up to 1 GB of additional memory over what Kamite normally uses.
 
 ##### Basic option: Global installation
 
 > Note that this method will make it harder to reclaim *all* the disk space
-when uninstalling manga-ocr, although more than 90% of it could be reclaimed by
+when uninstalling “Manga OCR”, although more than 90% of it could be reclaimed by
 simply running `pip3 uninstall manga-ocr torch` and cleaning the
 `~/.cache/huggingface/transformers/` directory.\
-> If you want to install manga-ocr with all its dependencies into a separate
+> If you want to install “Manga OCR” with all its dependencies into a separate
 environment for an easy complete removal, see the *Advanced option* just below.
 
 1. Get the [pip] package installer and then run:
@@ -368,16 +368,17 @@ environment for an easy complete removal, see the *Advanced option* just below.
     manga_ocr
     ```
 
-    Manga-ocr will now download its model. Wait for an output line such as
-    `manga_ocr.ocr:__init__:29 - OCR ready`. Once it is displayed, manga-ocr is
-    ready for use with Kamite. Ignore the error `NotImplementedError: Reading
-    images from clipboard…`, as it is irrelevant for Kamite’s use of manga-ocr.
+    “Manga OCR” will now download its model. Wait for an output line such as
+    `manga_ocr.ocr:__init__:29 - OCR ready`. Once it is displayed, “Manga OCR”
+    is ready for use with Kamite. Ignore the error `NotImplementedError: Reading
+    images from clipboard…`, as it is irrelevant for Kamite’s use of “Manga
+    OCR”.
 
 [pip]: https://pypi.org/project/pip/
 
 ##### Advanced option: Custom installation (Poetry)
 
-Here is an example of how to manually install manga-ocr into its own [python
+Here is an example of how to manually install “Manga OCR” into its own [python
 virtual environment][python-venv]. This particular example will use the [Poetry
 dependency manager][python-poetry], but this is not the only way of achieving
 this result.
@@ -385,7 +386,7 @@ this result.
 [python-venv]: https://docs.python.org/3/tutorial/venv.html
 [python-poetry]: https://python-poetry.org/docs/
 
-1. Clone the manga-ocr repository
+1. Clone the “Manga OCR” repository
 
     ```sh
     git clone "https://github.com/kha-white/manga-ocr.git"
@@ -398,7 +399,7 @@ this result.
     poetry init -n
     ```
 
-1. Register manga-ocr’s dependencies with the Poetry project
+1. Register “Manga OCR”’s dependencies with the Poetry project
 
     ```sh
     cat requirements.txt | xargs poetry add -vvv
@@ -414,16 +415,17 @@ this result.
     poetry run python -m manga_ocr
     ```
 
-    Manga-ocr will now download its model. Wait for an output line such as
-    `manga_ocr.ocr:__init__:29 - OCR ready`. Once it is displayed, manga-ocr is
-    ready for use with Kamite. Ignore the error `NotImplementedError: Reading
-    images from clipboard…`, as it is irrelevant for Kamite’s use of manga-ocr.
+    “Manga OCR” will now download its model. Wait for an output line such as
+    `manga_ocr.ocr:__init__:29 - OCR ready`. Once it is displayed, “Manga OCR”
+    is ready for use with Kamite. Ignore the error `NotImplementedError: Reading
+    images from clipboard…`, as it is irrelevant for Kamite’s use of “Manga
+    OCR”.
 
-1. Tell Kamite how to launch manga-ocr
+1. Tell Kamite how to launch “Manga OCR”
 
     A launcher script must be created that: 1) prepares the python environment
-    containing the manga-ocr installation, and 2) inside that environment
-    launches a manga-ocr wrapper script provided by Kamite. The launcher script
+    containing the “Manga OCR” installation, and 2) inside that environment
+    launches a “Manga OCR” wrapper script provided by Kamite. The launcher script
     must be named `mangaocr.sh` and placed directly in Kamite’s config directory
     (next to the `config.hocon` file). The following is an example of such
     script for a Poetry project:
@@ -439,7 +441,7 @@ Remember to launch Kamite with the config key `ocr.engine` set to `mangaocr`.
 
 ***
 
-To completely reclaim your disk space from manga-ocr in this scenario:
+To completely reclaim your disk space from “Manga OCR” in this scenario:
 
 1. Delete the Poetry project’s virtual environment
 
@@ -720,12 +722,12 @@ screen corners but also edges)
 <dl>
   <dt><a href="https://github.com/kha-white/mokuro">mokuro</a></dt>
   <dd>Takes manga images and generates HTML files where detected text blocks
-  are overlaid with selectable text as recognized by manga-ocr, allowing for
+  are overlaid with selectable text as recognized by “Manga OCR”, allowing for
   direct lookup with pop-up dictionaries.</dd>
   <dt><a href="https://github.com/bluaxees/Cloe">Cloe</a></dt>
-  <dd>OCRs a screen selection to clipboard using manga-ocr.</dd>
+  <dd>OCRs a screen selection to clipboard using “Manga OCR”.</dd>
   <dt><a href="https://github.com/bluaxees/Poricom">Poricom</a></dt>
-  <dd>Manga reader with built-in manga-ocr and Tesseract support. Can
+  <dd>Manga reader with built-in “Manga OCR” and Tesseract support. Can
   also be used to capture text from external programs.</dd>
 </dl>
 

@@ -56,7 +56,7 @@ public sealed interface OCREngine
   default String displayName() {
     return switch (this) {
       case OCREngine.Tesseract ignored -> "Tesseract OCR";
-      case OCREngine.MangaOCR ignored  -> "manga-ocr";
+      case OCREngine.MangaOCR ignored  -> "“Manga OCR”";
       case OCREngine.OCRSpace ignored  -> "OCR.space";
       case OCREngine.None ignored      -> "None";
     };

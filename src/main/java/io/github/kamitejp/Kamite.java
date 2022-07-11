@@ -244,7 +244,7 @@ public class Kamite {
       case RecognizerEvent.MangaOCRStartedDownloadingModel ignored ->
         server.notify(
           NotificationKind.INFO,
-          "manga-ocr is downloading OCR model. This might take a while…"
+          "“Manga OCR” is downloading OCR model. This might take a while…"
         );
       case RecognizerEvent.Crashed ignored -> {
         LOG.info("Recognizer has crashed and will not be restarted");
@@ -255,7 +255,7 @@ public class Kamite {
         switch (e.reason()) {
           case MANGA_OCR_TIMED_OUT_AND_RESTARTING -> {
             updateAndSendRecognizerStatus(RecognizerStatus.Kind.INITIALIZING);
-            notifyError("manga-ocr is taking too long to answer. Restarting");
+            notifyError("“Manga OCR” is taking too long to answer. Restarting");
           }
           default -> throw new IllegalStateException("Unhandled recognizer restart reason");
         }

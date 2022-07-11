@@ -65,7 +65,7 @@ public class Recognizer {
           yield engine.initialized(platform, this::handleMangaOCREvent);
         } catch (MangaOCRInitializationException e) {
           throw new RecognizerInitializationException( // NOPMD
-            "Could not initialize manga-ocr: %s".formatted(e.getMessage())
+            "Could not initialize “Manga OCR”: %s".formatted(e.getMessage())
           );
         }
       }
