@@ -571,7 +571,7 @@ Define a screen area in the config file and Kamite will OCR it as is.
 This is intended as an alternative for games that do not work well with
 Textractor.
 
-**Note:** The feature is experimental and might currently work poorly in most
+**Note:** The feature is experimental and might currently not be usable in many
 use cases.
 
 Below is an illustration of setting up a region in the [config file](#config).
@@ -606,14 +606,22 @@ REGIONS = [
 
     # Whether to try to automatically narrow the region’s screenshot to just
     # text before OCR-ing it.
-    # Note: The implementation of this function is currently very basic. It
-    #       might prove unhelpful in most cases.
+    # Note: The implementation of this function is currently very basic. It may
+    #       prove unreliable in most cases.
     autoNarrow = false
   }
   ...
 ]
 ...
 ```
+
+“Manga OCR” and OCR.space engines should be viable here in at least some cases.
+However, they both work best when the screenshot they are provided with is
+narrowed to just the text. And since the current auto-narrowing algorithm is not
+very reliable, for now it might be best to create separate regions for each possible
+line count of the target text box (i.e., first region encompassing just one line
+of text, second region encompassing the first and the second line, and so on)
+and choose between them on the fly.
 
 See also: [Config](#config), [Visual novel / game text extraction](#visual-novel-game-text-extraction),
 [Alternatives for games](#alternatives-for-games).
