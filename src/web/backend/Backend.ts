@@ -97,7 +97,9 @@ export class Backend {
   }
 
   #send(msg: OutMessage) {
-    this.#ws && this.#ws.send(JSON.stringify(msg));
+    if (this.#ws && this.#connectionState() === "connected") {
+      this.#ws.send(JSON.stringify(msg));
+    }
   }
 
   #handleMessage(e: MessageEvent) {
