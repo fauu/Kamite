@@ -1448,6 +1448,15 @@ Seeks to the start of the current subtitle.
 
 **`show-translation`** `(translation: string)`
 
+## Privacy
+
+Kamite never stores your data to disk.
+
+Kamite never sends your data through the network, with the following exceptions:
+
+* When `ocr.engine` is set to `ocrspace`, screenshots of portions of the user’s
+  screen are sent to [OCR.space] for text recognition.
+
 ## Development
 
 ### Technology
