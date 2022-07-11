@@ -400,7 +400,7 @@ public class Kamite {
         case SELECTION_CANCELLED -> null;
         case INPUT_TOO_SMALL     -> "Input image is too small";
         case ZERO_VARIANTS       -> "Could not recognize any text";
-        default -> "Box recognition has failed. Check control window or console for errors";
+        default -> "Box recognition has failed.\nCheck control window or console for errors";
       };
       recognitionAbandon(errorNotification, recognitionRes.err());
       return;
