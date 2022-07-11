@@ -39,7 +39,7 @@ Freq*, *VN Freq*).
 
 * (Shot 2) [mpv] (*Suzumiya Haruhi no Yuuutsu (2006)*, ep. 9).
 
-* (Shot 3) *Summer Pockets*; [`contrib/kamite-toggle-visibility.sh`](contrib/kamite-toggle-visibility.sh)
+* (Shot 3) *Summer Pockets*; [Textractor]; [`contrib/kamite-toggle-visibility.sh`](contrib/kamite-toggle-visibility.sh)
 script; [waycorner][waycorner-icxes].
 
 [deepl]: https://deepl.com/
