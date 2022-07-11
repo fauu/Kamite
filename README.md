@@ -447,21 +447,26 @@ To completely reclaim your disk space from “Manga OCR” in this scenario:
 
 1. Delete the Poetry project’s virtual environment
 
-   While in the project directory, run:
+    While in the project directory, run:
 
-   ```sh
-   poetry env remove python
-   ```
+    ```sh
+    poetry env remove python
+    ```
 
 1. Delete the project itself
 
-   ```sh
-   cd ..
-   rm -rf manga-ocr
-   ```
+    ```sh
+    cd ..
+    rm -rf manga-ocr
+    ```
+
+1. Clear Poetry package cache
+
+    ```sh
+    poetry cache clear pypi --all
+    ```
 
 1. Find the ~450 MB file in `~/.cache/huggingface/transformers/` and delete it
-   too
 
 #### Setting up OCR.space
 
