@@ -367,7 +367,7 @@ public final class ImageOps {
     int[] pixels = new int[arr.length / 3];
     for (var i = 0; i < pixels.length; i++) {
       var s = i * 3;
-      pixels[i] = arr[s] << 16 | arr[s + 1] << 8 | arr[s + 2];
+      pixels[i] = (arr[s] & 0xFF) << 16 | (arr[s + 1] & 0xFF) << 8 | (arr[s + 2] & 0xFF);
     }
     return arrayToBufferedImage(pixels, w, h);
   }
