@@ -2,14 +2,14 @@
 
 ## [Unreleased]
 
-## 0.2 (2022-07-12)
+## [0.2] (2022-07-12)
 
 Fixes:
 
 * Images incoming through the `ocr_image` command are now converted properly and
   no longer produce degraded OCR results.
 
-## 0.1 (2022-07-12)
+## [0.1] (2022-07-12)
 
 Initial release.
 
