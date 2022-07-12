@@ -363,6 +363,15 @@ public final class ImageOps {
     return true;
   }
 
+  public static BufferedImage arrayToBufferedImage(byte[] arr, int w, int h) {
+    int[] pixels = new int[arr.length / 3];
+    for (var i = 0; i < pixels.length; i++) {
+      var s = i * 3;
+      pixels[i] = arr[s] << 16 | arr[s + 1] << 8 | arr[s + 2];
+    }
+    return arrayToBufferedImage(pixels, w, h);
+  }
+
   public static BufferedImage arrayToBufferedImage(int[] srcArr, int w, int h) {
     var img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
     int[] destArr = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();

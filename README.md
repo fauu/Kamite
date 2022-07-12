@@ -1424,10 +1424,10 @@ after applying an algorithm designed to narrow the area to just text (if `autoNa
 is `true`). **Note:** This is an experimental future, it might function poorly
 in most use-cases.
 
-**`image`** `(pixels: string; width, height: number)`\
-Kamite OCRs as is the image supplied as a string of comma-delimited integer pixel
-values. Consult the [Gomics-v Kamite integration
-code][gomicsv-kamite-src] for usage example.
+**`image`** `(bytesB64: string; width, height: number)`\
+Kamite OCRs as is the image supplied as base64 string encoded from image bytes
+(R, G, B, R, G, B… from the top-left of the image). Consult the
+[Gomics-v Kamite integration code][gomicsv-kamite-src] for usage example.
 
 [gomicsv-kamite-src]: https://github.com/fauu/gomicsv/blob/master/kamite.go
 

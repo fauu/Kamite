@@ -3,7 +3,7 @@ package io.github.kamitejp.api;
 public interface CommandParams {
   interface OCR {
     record Region(int x, int y, int width, int height, boolean autoNarrow) {};
-    record Image(String pixels, int width, int height) {};
+    record Image(String bytesB64, int width, int height) {};
   }
 
   interface Chunk {

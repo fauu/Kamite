@@ -3,6 +3,7 @@ package io.github.kamitejp;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Base64;
 import java.util.Map;
 
 import org.apache.logging.log4j.Level;
@@ -548,7 +549,7 @@ public class Kamite {
           case Command.OCR.Region cm ->
             recognizeRegion(cm.region(), cm.autoNarrow());
           case Command.OCR.Image cm ->
-            handleOCRImageCommand(cm.pixels(), cm.size());
+            handleOCRImageCommand(cm.bytesB64(), cm.size());
           default -> throw new IllegalStateException("Unhandled command type");
         }
       }
@@ -613,19 +614,8 @@ public class Kamite {
     }
   }
 
-  private void handleOCRImageCommand(String pixels, Dimension size) {
-    var length = size.width() * size.height();
-    var bytes = new int[length];
-    var byteStrings = pixels.split(",");
-    for (int i = 0; i < length; i++) {
-      try {
-        bytes[i] = Integer.parseInt(byteStrings[i]);
-      } catch (NumberFormatException e) {
-        LOG.debug("Error reading image bytes when handling ocr_image command");
-        return;
-      }
-    }
-
+  private void handleOCRImageCommand(String bytesB64, Dimension size) {
+    var bytes = Base64.getDecoder().decode(bytesB64);
     var img = ImageOps.arrayToBufferedImage(bytes, size.width(), size.height());
     recognizeAutoBlockImageProvided(img, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_FULL);
   }

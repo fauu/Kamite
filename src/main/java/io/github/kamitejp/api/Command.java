@@ -32,7 +32,7 @@ public sealed interface Command
     record AutoBlock() implements OCR {}
     record AutoColumn() implements OCR {}
     record Region(Rectangle region, boolean autoNarrow) implements OCR {}
-    record Image(String pixels, Dimension size) implements OCR {}
+    record Image(String bytesB64, Dimension size) implements OCR {}
   }
 
   sealed interface Player extends Command
@@ -152,7 +152,7 @@ public sealed interface Command
           }
           case "image" -> {
             var p = JSON.mapper().treeToValue(paramsNode, CommandParams.OCR.Image.class);
-            yield new OCR.Image(p.pixels(), new Dimension(p.width(), p.height()));
+            yield new OCR.Image(p.bytesB64(), new Dimension(p.width(), p.height()));
           }
           default -> null;
         };
