@@ -469,22 +469,44 @@ public class Recognizer {
     var imgArr = ImageOps.toGrayArray(eroded);
     ImageOps.otsuThreshold(imgArr);
 
+    Graphics debugGfx = null;
+    if (debug) {
+      debugGfx = img.createGraphics();
+    }
+
     // Get connected components (ccs), excluding those that almost certainly aren't characters
     var ccExtractor = new ConnectedComponentExtractor();
-    var ccs = Arrays.stream(ccExtractor.extract(imgArr, img.getWidth(), img.getHeight()))
+    var initialCCs = Arrays.stream(ccExtractor.extract(imgArr, img.getWidth(), img.getHeight()))
       .skip(1)
       .map(ConnectedComponent::rectangle)
-      .filter(cc -> cc.dimensionsWithin(4, 150) && cc.getArea() < 4000)
       .toList();
 
-    Graphics gfx = null;
-    if (debug) {
-      gfx = img.createGraphics();
-    }
+    // if (debug) {
+    //   debugGfx.setColor(Color.GREEN);
+    //   for (var cc : initialCCs) {
+    //     debugGfx.drawRect(cc.getLeft() - 3, cc.getTop() - 3, cc.getWidth() + 6, cc.getHeight() + 6);
+    //   }
+    // }
+
+    var prefilteredCCs = initialCCs.stream()
+      .filter(cc ->
+        cc.dimensionsWithin(2, 150)
+        && (cc.getWidth() > 5 || cc.getHeight() > 5)
+        && cc.getArea() < 4000
+      )
+      .toList();
+
+    // if (debug) {
+    //   debugGfx.setColor(Color.RED);
+    //   for (var cc : prefilteredCCs) {
+    //     debugGfx.drawRect(cc.getLeft() - 2, cc.getTop() - 2, cc.getWidth() + 4, cc.getHeight() + 4);
+    //   }
+    // }
+    // sendDebugImage(img);
 
     // Find ccs near the user's click point (assumed to be the center of the input image)
     var nearCcs = new ArrayList<Rectangle>();
-    for (var cc : ccs) {
+    for (var cc : prefilteredCCs) {
       var ccCenter = cc.getCenter();
       var dist = Math.sqrt(
         Math.pow(center.x() - ccCenter.x(), 2)
@@ -500,9 +522,9 @@ public class Recognizer {
     }
 
     if (debug) {
-      gfx.setColor(Color.PINK);
+      debugGfx.setColor(Color.ORANGE);
       for (var cc : nearCcs) {
-        gfx.drawRect(cc.getLeft(), cc.getTop(), cc.getWidth(), cc.getHeight());
+        debugGfx.drawRect(cc.getLeft() - 1, cc.getTop() - 1, cc.getWidth() + 2, cc.getHeight() + 2);
       }
     }
 
@@ -515,22 +537,23 @@ public class Recognizer {
       nearWidthTotal += cc.getWidth();
       nearHeightTotal += cc.getHeight();
     }
-    var exemplarCCWidth = nearWidthTotal / nearCcs.size();
-    var exemplarCCHeight = nearHeightTotal / nearCcs.size();
+    final var exemplarCCWidth = nearWidthTotal / nearCcs.size();
+    final var exemplarCCHeight = nearHeightTotal / nearCcs.size();
+
+    final var maxW = exemplarCCWidth * 3;
+    final var maxH = exemplarCCHeight * 4;
+    final var maxArea = exemplarCCWidth * exemplarCCHeight * 5;
 
     var processedCcs = new ArrayList<Rectangle>();
-    for (var cc : ccs) {
+    for (var cc : prefilteredCCs) {
       if (debug) {
-        gfx.setColor(Color.GRAY);
-        gfx.drawRect(cc.getLeft(), cc.getTop(), cc.getWidth(), cc.getHeight());
+        debugGfx.setColor(Color.GRAY);
+        debugGfx.drawRect(cc.getLeft(), cc.getTop(), cc.getWidth(), cc.getHeight());
       }
 
       // Use our assumed exemplar character cc to weed out ccs that, judging from their dimensions,
       // probably don't represent characters
-      var maxW = exemplarCCWidth * 3;
-      var maxH = exemplarCCHeight * 4;
-      var maxArea = exemplarCCWidth * exemplarCCHeight * 5;
-      if (!cc.widthWithin(5, maxW) || !cc.heightWithin(5, maxH) || cc.getArea() > maxArea) {
+      if (!cc.widthWithin(2, maxW) || !cc.heightWithin(2, maxH) || cc.getArea() > maxArea) {
         continue;
       }
 
@@ -596,8 +619,8 @@ public class Recognizer {
       processedCcs.add(grown);
 
       if (debug) {
-        gfx.setColor(Color.MAGENTA);
-        gfx.drawRect(grown.getLeft(), grown.getTop(), grown.getWidth(), grown.getHeight());
+        debugGfx.setColor(Color.MAGENTA);
+        debugGfx.drawRect(grown.getLeft(), grown.getTop(), grown.getWidth(), grown.getHeight());
       }
     }
 
@@ -620,7 +643,7 @@ public class Recognizer {
     var maskArr = ImageOps.maskImageToBinaryArray(mask);
     var contours = new ContourFinder().find(maskArr, mask.getWidth(), mask.getHeight());
     if (debug) {
-      gfx.setColor(Color.BLUE);
+      debugGfx.setColor(Color.BLUE);
     }
     Rectangle largestContourBBoxContainingCenter = null;
     int largestBBoxArea = 0;
@@ -657,7 +680,7 @@ public class Recognizer {
       }
 
       if (debug) {
-        gfx.drawRect(xmin, ymin, width, height);
+        debugGfx.drawRect(xmin, ymin, width, height);
       }
     }
 
@@ -665,12 +688,12 @@ public class Recognizer {
     BufferedImage result = null;
     if (largestContourBBoxContainingCenter != null) {
       var c = largestContourBBoxContainingCenter
-        .expanded(2)
+        .expanded(4)
         .clamped(img.getWidth() - 1, img.getHeight() - 1);
 
       if (debug) {
-        gfx.setColor(Color.GREEN);
-        gfx.drawRect(c.getLeft(), c.getTop(), c.getWidth(), c.getHeight());
+        debugGfx.setColor(Color.GREEN);
+        debugGfx.drawRect(c.getLeft(), c.getTop(), c.getWidth(), c.getHeight());
       }
 
       var cropped = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -686,7 +709,7 @@ public class Recognizer {
     }
 
     if (debug) {
-      gfx.dispose();
+      debugGfx.dispose();
       sendDebugImage(img);
     }
 
@@ -727,9 +750,9 @@ public class Recognizer {
       .filter(cc -> cc.dimensionsWithin(2, 150) && cc.getArea() < 4000)
       .toList();
 
-    Graphics gfx = null;
+    Graphics debugGfx = null;
     if (debug) {
-      gfx = img.createGraphics();
+      debugGfx = img.createGraphics();
     }
 
     var nearCcs = new ArrayList<Rectangle>();
@@ -749,9 +772,9 @@ public class Recognizer {
     }
 
     if (debug) {
-      gfx.setColor(Color.PINK);
+      debugGfx.setColor(Color.PINK);
       for (var cc : nearCcs) {
-        gfx.drawRect(cc.getLeft(), cc.getTop(), cc.getWidth(), cc.getHeight());
+        debugGfx.drawRect(cc.getLeft(), cc.getTop(), cc.getWidth(), cc.getHeight());
       }
     }
 
@@ -767,8 +790,8 @@ public class Recognizer {
     var processedCcs = new ArrayList<Rectangle>();
     for (var cc : ccs) {
       if (debug) {
-        gfx.setColor(Color.GRAY);
-        gfx.drawRect(cc.getLeft(), cc.getTop(), cc.getWidth(), cc.getHeight());
+        debugGfx.setColor(Color.GRAY);
+        debugGfx.drawRect(cc.getLeft(), cc.getTop(), cc.getWidth(), cc.getHeight());
       }
 
       if (
@@ -821,8 +844,8 @@ public class Recognizer {
       processedCcs.add(grown);
 
       if (debug) {
-        gfx.setColor(Color.MAGENTA);
-        gfx.drawRect(grown.getLeft(), grown.getTop(), grown.getWidth(), grown.getHeight());
+        debugGfx.setColor(Color.MAGENTA);
+        debugGfx.drawRect(grown.getLeft(), grown.getTop(), grown.getWidth(), grown.getHeight());
       }
     }
 
@@ -842,7 +865,7 @@ public class Recognizer {
     var maskArr = ImageOps.maskImageToBinaryArray(mask);
     var contours = new ContourFinder().find(maskArr, mask.getWidth(), mask.getHeight());
     if (debug) {
-      gfx.setColor(Color.BLUE);
+      debugGfx.setColor(Color.BLUE);
     }
     Rectangle largestContourBBoxContainingCenter = null;
     var largestBBoxArea = 0;
@@ -879,7 +902,7 @@ public class Recognizer {
       }
 
       if (debug) {
-        gfx.drawRect(xmin, ymin, width, height);
+        debugGfx.drawRect(xmin, ymin, width, height);
       }
     }
 
@@ -890,8 +913,8 @@ public class Recognizer {
         .clamped(img.getWidth() - 1, img.getHeight() - 1);
 
       if (debug) {
-        gfx.setColor(Color.GREEN);
-        gfx.drawRect(c.getLeft(), c.getTop(), c.getWidth(), c.getHeight());
+        debugGfx.setColor(Color.GREEN);
+        debugGfx.drawRect(c.getLeft(), c.getTop(), c.getWidth(), c.getHeight());
       }
 
       var cropped = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -907,7 +930,7 @@ public class Recognizer {
     }
 
     if (debug) {
-      gfx.dispose();
+      debugGfx.dispose();
       sendDebugImage(img);
     }
 
