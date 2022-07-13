@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.CallbackHandler;
 import org.freedesktop.dbus.interfaces.DBusInterface;
@@ -24,7 +25,7 @@ public class DBusClient implements Receiver {
 
   public void init() throws DBusClientInitializationException {
     try {
-      conn = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION);
+      conn = DBusConnectionBuilder.forSessionBus().withShared(false).build();
       conn.requestBusName(BUS_NAME);
       conn.exportObject(this);
     } catch (DBusException e) {
