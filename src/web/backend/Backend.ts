@@ -1,4 +1,4 @@
-import { Accessor, createSignal } from "solid-js";
+import { type Accessor, createSignal } from "solid-js";
 
 import type { Command, InMessage, OutMessage, Request, RequestMain } from "./core";
 import { requestKindToResponseKind } from "./core";

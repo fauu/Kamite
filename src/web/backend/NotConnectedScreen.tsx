@@ -1,7 +1,7 @@
 import { createEffect, createSignal, onCleanup, Show, type VoidComponent } from "solid-js";
 import { styled } from "solid-styled-components";
 
-import { BackendConnectionState } from "./Backend";
+import type { BackendConnectionState } from "./Backend";
 
 const MAX_DOT_COUNT = 3;
 
@@ -38,7 +38,7 @@ export const BackendNotConnectedScreen: VoidComponent<BackendNotConnectedScreenP
     const handleReconnectClick = () => {
       setDisplayConent(false);
       props.onReconnectClick();
-    }
+    };
 
     return <Root id="backend-connection-pending-screen">
       <Show when={displayContent()}>
