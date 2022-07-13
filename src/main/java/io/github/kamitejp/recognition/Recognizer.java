@@ -6,7 +6,12 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -14,6 +19,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.MangaOCRController;
@@ -30,7 +36,7 @@ public class Recognizer {
 
   // Width and height of the area around the user's cursor used for auto block recognition
   // ROBUSTNESS: Should probably depend on the screen resolution
-  public static final int AUTO_BLOCK_AREA_DIMENSION = 800;
+  public static final Dimension AUTO_BLOCK_AREA_SIZE = new Dimension(550, 900);
 
   // Minimum dimension size allowed for box recognition input image
   private static final int BOX_RECOGNITION_INPUT_MIN_DIMENSION = 16;
@@ -460,8 +466,8 @@ public class Recognizer {
     var clean = ImageOps.copied(gray);
 
     // Invert if light text on dark background suspected
-    var darkCheckRadius = 25;
-    if (ImageOps.isDarkDominated(gray, Rectangle.around(center, darkCheckRadius))) {
+    var darkCheckAreaDim = 50;
+    if (ImageOps.isDarkDominated(gray, Rectangle.around(center, darkCheckAreaDim))) {
       ImageOps.negate(gray);
     }
 
@@ -734,8 +740,8 @@ public class Recognizer {
 
     var clean = ImageOps.copied(gray);
 
-    var darkCheckRadius = 25;
-    if (ImageOps.isDarkDominated(gray, Rectangle.around(start, darkCheckRadius))) {
+    var darkCheckAreaDim = 50;
+    if (ImageOps.isDarkDominated(gray, Rectangle.around(start, darkCheckAreaDim))) {
       ImageOps.negate(gray);
     }
 

@@ -356,7 +356,7 @@ public class Kamite {
 
     var point = Point.fromAWT(selectionRes.get());
     var screenshotRes = platform.takeAreaScreenshot(
-      Rectangle.around(point, Recognizer.AUTO_BLOCK_AREA_DIMENSION / 2)
+      Rectangle.around(point, Recognizer.AUTO_BLOCK_AREA_SIZE)
     );
     if (screenshotRes.isErr()) {
       var errorNotification = switch (screenshotRes.err()) {

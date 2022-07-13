@@ -85,9 +85,20 @@ public final class Rectangle {
     return new java.awt.Rectangle(left, top, getWidth(), getHeight());
   }
 
-  public static Rectangle around(Point p, int halfside) {
-    return new Rectangle(p.x() - halfside, p.y() - halfside, p.x() + halfside, p.y() + halfside);
+  public static Rectangle around(Point p, Dimension dimension) {
+    return around(p, dimension.width(), dimension.height());
   }
+
+  public static Rectangle around(Point p, int dimension) {
+    return around(p, dimension, dimension);
+  }
+
+  public static Rectangle around(Point p, int width, int height) {
+    var halfW = width / 2;
+    var halfH = height / 2;
+    return new Rectangle(p.x() - halfW, p.y() - halfH, p.x() + halfW, p.y() + halfH);
+  }
+
 
   public static Rectangle ofEdges(int left, int top, int right, int bottom) {
     return new Rectangle(left, top, right, bottom);
