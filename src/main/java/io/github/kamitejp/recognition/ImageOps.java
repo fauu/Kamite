@@ -52,6 +52,7 @@ public final class ImageOps {
     return ret;
   }
 
+
   public static BufferedImage withBorder(BufferedImage img, Color color, int w) {
     var ret = new BufferedImage(img.getWidth() + 2 * w, img.getHeight() + 2 * w, img.getType());
     var gfx = ret.createGraphics();
@@ -238,15 +239,18 @@ public final class ImageOps {
   }
 
   public static boolean isMostlyColorless(BufferedImage img) {
-    final var th = 20;
-
+    final var threshold = 20;
     var numColorfulPixels = 0;
     var imgArr = toArray(img);
     for (var px : imgArr) {
       var r = r(px);
       var g = g(px);
       var b = b(px);
-      if (Math.abs(r - g) > th || Math.abs(r - b) > th || Math.abs(g - b) > th) {
+      if (
+        Math.abs(r - g) > threshold
+        || Math.abs(r - b) > threshold
+        || Math.abs(g - b) > threshold
+      ) {
         numColorfulPixels++;
       }
     }
@@ -482,10 +486,7 @@ public final class ImageOps {
     int[] imgArr = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
     for (var i = 0; i < imgArr.length; i++) {
       var px = imgArr[i];
-      var r = (px >> 16) & 0xFF;
-      var g = (px >> 8) & 0xFF;
-      var b = px & 0xFF;
-      imgArr[i] = fn.apply(r, g, b);
+      imgArr[i] = fn.apply(r(px), g(px), b(px));
     }
   }
 
@@ -497,10 +498,7 @@ public final class ImageOps {
     var w = img.getWidth();
     for (var i = 0; i < imgArr.length; i++) {
       var px = imgArr[i];
-      var r = (px >> 16) & 0xFF;
-      var g = (px >> 8) & 0xFF;
-      var b = px & 0xFF;
-      imgArr[i] = fn.apply(r, g, b, i % w, i / w);
+      imgArr[i] = fn.apply(r(px), g(px), b(px), i % w, i / w);
     }
   }
 
