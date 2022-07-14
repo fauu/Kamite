@@ -130,7 +130,7 @@ public final class Rectangle {
     gfx.drawRect(getLeft(), getTop(), getWidth(), getHeight());
   }
 
-  public static Rectangle fromAWT(java.awt.Rectangle r) {
+  public static <T extends java.awt.geom.Rectangle2D> Rectangle fromAWT(T r) {
     return Rectangle.ofStartAndDimensions(
       (int) r.getX(),
       (int) r.getY(),
