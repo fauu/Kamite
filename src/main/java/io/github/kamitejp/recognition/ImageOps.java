@@ -52,6 +52,22 @@ public final class ImageOps {
     return ret;
   }
 
+  public static BufferedImage cropped(BufferedImage img, Rectangle rect) {
+    var res = new BufferedImage(
+      rect.getWidth(),
+      rect.getHeight(),
+      BufferedImage.TYPE_INT_RGB
+    );
+    var croppedGfx = res.getGraphics();
+    croppedGfx.drawImage(
+      img,
+      0, 0, rect.getWidth(), rect.getHeight(),
+      rect.getLeft(), rect.getTop(), rect.getRight(), rect.getBottom(), 
+      null
+    );
+    croppedGfx.dispose();
+    return res;
+  }
 
   public static BufferedImage withBorder(BufferedImage img, Color color, int w) {
     var ret = new BufferedImage(img.getWidth() + 2 * w, img.getHeight() + 2 * w, img.getType());
