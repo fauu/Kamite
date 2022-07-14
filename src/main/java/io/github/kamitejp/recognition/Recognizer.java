@@ -2,14 +2,20 @@ package io.github.kamitejp.recognition;
 
 import static java.util.stream.Collectors.toList;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -48,10 +54,17 @@ public class Recognizer {
   private static final int BG_REMOVAL_FLOODFILL_NUM_EDGE_FLOOD_POINTS = 24;
   private static final int BG_REMOVAL_FLOODFILL_THRESHOLD = 90;
 
+  private static final Point DEBUG_IMAGE_LABEL_ORIGIN = new Point(3, 3);
+  private static final Color DEBUG_IMAGE_LABEL_OUTLINE_COLOR = Color.BLACK;
+  private static final Color DEBUG_IMAGE_LABEL_FILL_COLOR = Color.WHITE;
+  private static final Stroke DEBUG_IMAGE_LABEL_STROKE =
+    new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+
   private final Platform platform;
   private final OCREngine engine;
   private final boolean debug;
   private final Consumer<RecognizerEvent> eventCb;
+  private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
 
   public Recognizer(
     Platform platform,
@@ -62,6 +75,7 @@ public class Recognizer {
     this.platform = platform;
     this.debug = debug;
     this.eventCb = eventCb;
+    this.autoBlockDetectors = new HashMap<>();
 
     this.engine = switch (uninitializedEngine) {
       case OCREngine.Tesseract engine ->
@@ -121,13 +135,19 @@ public class Recognizer {
     };
   }
 
-  public Optional<BufferedImage> grabAutoBlock(BufferedImage img, AutoBlockHeuristic heuristic) {
-    LOG.debug("Grabbing auto block");
-    return switch (heuristic) {
-      case GAME_TEXTBOX        -> grabAutoBlockGameTextbox(img);
-      case MANGA_FULL          -> grabAutoBlockManga(img, false);
-      case MANGA_SINGLE_COLUMN -> grabAutoBlockManga(img, true);
-    };
+  public Optional<BufferedImage> autoNarrowToTextBlock(
+    BufferedImage img, AutoBlockHeuristic heuristic
+  ) {
+    LOG.debug("Detecting a text block");
+    var detector = autoBlockDetectors.get(heuristic);
+    if (detector == null) {
+      detector = AutoBlockDetector.fromHeuristic(heuristic);
+    }
+    if (detector == null) {
+      return Optional.empty();
+    }
+    var block = detector.detect(img, debug, this::sendDebugImage);
+    return block.map(b -> ImageOps.cropped(img, b));
   }
 
   private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxMangaOCR(
@@ -451,535 +471,6 @@ public class Recognizer {
     return lineRects;
   }
 
-  private Optional<BufferedImage> grabAutoBlockManga(BufferedImage img, boolean singleColumn) {
-    // Remove alpha channel
-    if (img.getType() != BufferedImage.TYPE_INT_RGB) {
-      img = ImageOps.withoutAlphaChannel(img);
-      img = ImageOps.copied(img, BufferedImage.TYPE_INT_RGB);
-    }
-
-    var center = new Point(img.getWidth() / 2, img.getHeight() / 2);
-
-    var gray = ImageOps.copied(img);
-    ImageOps.toGrayscale(gray);
-
-    var clean = ImageOps.copied(gray);
-
-    // Invert if light text on dark background suspected
-    var darkCheckAreaDim = 50;
-    if (ImageOps.isDarkDominated(gray, Rectangle.around(center, darkCheckAreaDim))) {
-      ImageOps.negate(gray);
-    }
-
-    var eroded = ImageOps.eroded(gray, 2, 2);
-    var imgArr = ImageOps.toGrayArray(eroded);
-    ImageOps.otsuThreshold(imgArr);
-
-    Graphics debugGfx = null;
-    if (debug) {
-      debugGfx = img.createGraphics();
-    }
-
-    // Get connected components (ccs), excluding those that almost certainly aren't characters
-    var ccExtractor = new ConnectedComponentExtractor();
-    var initialCCs = Arrays.stream(ccExtractor.extract(imgArr, img.getWidth(), img.getHeight()))
-      .skip(1)
-      .map(ConnectedComponent::rectangle)
-      .toList();
-
-    // if (debug) {
-    //   debugGfx.setColor(Color.GREEN);
-    //   for (var cc : initialCCs) {
-    //     debugGfx.drawRect(cc.getLeft() - 3, cc.getTop() - 3, cc.getWidth() + 6, cc.getHeight() + 6);
-    //   }
-    // }
-
-    var prefilteredCCs = initialCCs.stream()
-      .filter(cc ->
-        cc.dimensionsWithin(2, 150)
-        && (cc.getWidth() > 5 || cc.getHeight() > 5)
-        && cc.getArea() < 4000
-      )
-      .toList();
-
-    // if (debug) {
-    //   debugGfx.setColor(Color.RED);
-    //   for (var cc : prefilteredCCs) {
-    //     debugGfx.drawRect(cc.getLeft() - 2, cc.getTop() - 2, cc.getWidth() + 4, cc.getHeight() + 4);
-    //   }
-    // }
-    // sendDebugImage(img);
-
-    // Find ccs near the user's click point (assumed to be the center of the input image)
-    var nearCcs = new ArrayList<Rectangle>();
-    for (var cc : prefilteredCCs) {
-      var dist = cc.getCenter().distanceFrom(center);
-      if (dist < 50) {
-        nearCcs.add(cc);
-      }
-    }
-
-    if (nearCcs.isEmpty()) {
-      return Optional.empty();
-    }
-
-    // if (debug) {
-    //   debugGfx.setColor(Color.ORANGE);
-    //   for (var cc : nearCcs) {
-    //     debugGfx.drawRect(cc.getLeft() - 1, cc.getTop() - 1, cc.getWidth() + 2, cc.getHeight() + 2);
-    //   }
-    // }
-
-    // Find the average dimensions of the near ccs and take them as the dimensions of an exemplar
-    // character cc. We assume that the user has clicked somewhere within the text block to be
-    // detected, so the near ccs are most likely to represent characters
-    var nearWidthTotal = 0;
-    var nearHeightTotal = 0;
-    for (var cc : nearCcs) {
-      nearWidthTotal += cc.getWidth();
-      nearHeightTotal += cc.getHeight();
-    }
-    final var exemplarCCWidth = nearWidthTotal / nearCcs.size();
-    final var exemplarCCHeight = nearHeightTotal / nearCcs.size();
-    final var exemplarCCAvgDim = (exemplarCCWidth + exemplarCCHeight) / 2;
-
-    final var maxW = exemplarCCWidth * 3;
-    final var maxH = exemplarCCHeight * 4;
-    final var maxArea = exemplarCCWidth * exemplarCCHeight * 5;
-
-    var processedCcs = new ArrayList<Rectangle>();
-    for (var cc : prefilteredCCs) {
-      if (debug) {
-        debugGfx.setColor(Color.GRAY);
-        debugGfx.drawRect(cc.getLeft(), cc.getTop(), cc.getWidth(), cc.getHeight());
-      }
-
-      // Use our assumed exemplar character cc to weed out ccs that, judging from their dimensions,
-      // probably don't represent characters
-      if (!cc.widthWithin(2, maxW) || !cc.heightWithin(2, maxH) || cc.getArea() > maxArea) {
-        continue;
-      }
-
-      // If we're only interested in a single text column, omit the cc if it's too much horizontally
-      // displaced relative to the exemplar cc
-      var leeway = exemplarCCWidth * 1.5 - cc.getWidth();
-      if (leeway < 0) {
-        leeway = 0;
-      }
-      if (
-        singleColumn
-        && (center.x() < (cc.getLeft() - leeway) || center.x() > (cc.getRight() + leeway))
-      ) {
-        continue;
-      }
-
-      // Prepare coefficients for growing the cc towards the center of the image (the presumed
-      // center of the text block)
-      var ccCenter = cc.getCenter();
-      var normalizedDist = ccCenter.distanceFrom(center) / exemplarCCAvgDim;
-      var distCoeffFactorA = 50;
-      var distCoeffFactorB = 1.35;
-      var distCoeff =
-        distCoeffFactorA
-        / (Math.pow(normalizedDist, distCoeffFactorB) + distCoeffFactorA);
-      var growX = exemplarCCWidth * 1.7 * distCoeff;
-      var growY = exemplarCCHeight * 1.0 * distCoeff;
-
-      // Special case hack: こ, に and similar tend to be detected as separate components, so we
-      // need to grow them vertically a lot more than in the ordinary case
-      var ratio = cc.getRatio();
-      if (cc.getHeight() < exemplarCCHeight && ratio > 1.75 && ratio < 3.25) {
-        growY = cc.getHeight() * 3.75 * distCoeff;
-      }
-      // Analogous hack for certain fonts' い, as well as some characters that are overall slender
-      if (cc.getWidth() < exemplarCCWidth && ratio > 0.3 && ratio < 0.55) {
-        growX = cc.getWidth() * 3.75 * distCoeff;
-      }
-
-      var left = cc.getLeft();
-      var right = cc.getRight();
-      var top = cc.getTop();
-      var bottom = cc.getBottom();
-
-      // Grow the cc towards the center of the image, with clamping
-      if (center.x() < left) {
-        left = left - (int) growX;
-        if (left < 0) {
-          left = 0;
-        }
-      } else if (center.x() > right) {
-        right = right + (int) growX;
-        if (right >= img.getWidth()) {
-          right = img.getWidth() - 1;
-        }
-      }
-      if (center.y() < top) {
-        top = top - (int) growY;
-        if (top < 0) {
-          top = 0;
-        }
-      } else if (center.y() > bottom) {
-        bottom = bottom + (int) growY;
-        if (bottom >= img.getHeight()) {
-          bottom = img.getHeight() - 1;
-        }
-      }
-
-      var grown = Rectangle.ofEdges(left, top, right, bottom);
-      processedCcs.add(grown);
-
-      if (debug) {
-        debugGfx.setColor(Color.MAGENTA);
-        debugGfx.drawRect(grown.getLeft(), grown.getTop(), grown.getWidth(), grown.getHeight());
-      }
-    }
-
-    // Fill a mask with the rectangles of the previously filtered and enlarged ccs
-    var mask = new BufferedImage(img.getWidth(), img.getHeight(), img.getType());
-    var maskGfx = mask.createGraphics();
-    maskGfx.setColor(Color.BLACK);
-    maskGfx.fillRect(0, 0, img.getWidth(), img.getHeight());
-    maskGfx.setColor(Color.WHITE);
-    for (var b : processedCcs) {
-      maskGfx.fillRect(b.getLeft(), b.getTop(), b.getWidth(), b.getHeight());
-    }
-    maskGfx.dispose();
-    // if (debug) {
-    //   sendDebugImage(mask);
-    // }
-
-    // Find the bounding box of the largest contour in the mask image containing the center point.
-    // This is the presumed location of our text block
-    var maskArr = ImageOps.maskImageToBinaryArray(mask);
-    var contours = ContourFinder.find(maskArr, mask.getWidth(), mask.getHeight());
-    if (contours.size() == 0) {
-      LOG.debug("Could not find contours of the auto-block mask");
-      return Optional.empty();
-    }
-
-    if (debug) {
-      debugGfx.setColor(Color.BLUE);
-    }
-    Rectangle largestOverlappingContourBBox = null;
-    int largestOverlappingContourIdx = -1;
-    int largestBBoxArea = 0;
-    for (var i = 0; i < contours.size(); i++) {
-      var contour = contours.get(i);
-      if (contour.type == Contour.Type.HOLE) {
-        continue;
-      }
-      var bbox = contour.getBoundingBox();
-
-      if (
-        bbox.getLeft() <= center.x() && center.x() <= bbox.getRight()
-        && bbox.getTop() <= center.y() && center.y() <= bbox.getBottom()
-      ) {
-        var area = bbox.getArea();
-        if (area > largestBBoxArea) {
-          largestBBoxArea = area;
-          largestOverlappingContourIdx = i;
-          largestOverlappingContourBBox = bbox;
-        }
-      }
-
-      if (debug) {
-        bbox.drawWith(debugGfx);
-      }
-    }
-
-    // This is to detect some cases when the chosen contour contains multiple neighbouring text
-    // blocks. If the text blocks are sufficiently vertically displaced, we can limit the result
-    // to just our block of interest by following the chosen contour's upper edge in both directions
-    // starting at `center.x` and slicing it at the first locations where we encounter significant
-    // changes in the edge's y-position. We assume that those are the points at which one text
-    // block passess into another.
-    //
-    // TODO: When calculating the final bounding box, discard sudden drops in the bottom edge's
-    //       y-position near the side edges of our sliced contour, since those are contaminations
-    //       from the neighbouring blocks we've just cut off.
-    var chosenContour = contours.get(largestOverlappingContourIdx);
-    var topEdge = new int[largestOverlappingContourBBox.getWidth()];
-    Arrays.fill(topEdge, -1);
-    for (var p : chosenContour.points) {
-      var xRel = p.x() - largestOverlappingContourBBox.getLeft();
-      if (topEdge[xRel] == -1 || p.y() < topEdge[xRel]) {
-        topEdge[xRel] = p.y();
-      }
-      // if (debug) {
-      //   debugGfx.drawRect(p.x(), p.y(), 1, 1);
-      // }
-    }
-
-    int leftCutoff = 0;
-    int rightCutoff = topEdge.length - 1;
-    var centerXRel = center.x() - largestOverlappingContourBBox.getLeft();
-    for (var x = centerXRel; x > 0; x--) {
-      var delta = Math.abs(topEdge[x] - topEdge[x - 1]);
-      if (delta >= exemplarCCHeight) {
-        leftCutoff = x;
-        break;
-      }
-    }
-    for (var x = centerXRel; x < topEdge.length - 1; x++) {
-      var delta = Math.abs(topEdge[x] - topEdge[x + 1]);
-      if (delta >= exemplarCCHeight) {
-        rightCutoff = x;
-        break;
-      }
-    }
-
-    // if (debug) {
-    //   debugGfx.setColor(Color.RED);
-    //   for (var x = leftCutoff; x <= rightCutoff; x++) {
-    //     debugGfx.drawRect(largestOverlappingContourBBox.getLeft() + x, topEdge[x], 1, 3);
-    //   }
-    // }
-    leftCutoff += largestOverlappingContourBBox.getLeft(); // Countour bbox coords -> image coords
-    rightCutoff += largestOverlappingContourBBox.getLeft();
-    var finalBBox = chosenContour.getBoundingBox(leftCutoff, rightCutoff);
-
-    // Crop the original image to where we've determined the text block is. This is the final result
-    var margin = exemplarCCAvgDim / 3;
-    BufferedImage result = null;
-    var cropRect = finalBBox
-      .expanded(margin)
-      .clamped(img.getWidth() - 1, img.getHeight() - 1);
-
-    if (debug) {
-      debugGfx.setColor(Color.GREEN);
-      debugGfx.drawRect(
-        cropRect.getLeft(),
-        cropRect.getTop(),
-        cropRect.getWidth(),
-        cropRect.getHeight()
-      );
-    }
-
-    var cropped = new BufferedImage(
-      cropRect.getWidth(),
-      cropRect.getHeight(),
-      BufferedImage.TYPE_INT_RGB
-    );
-    var croppedGfx = cropped.getGraphics();
-    croppedGfx.drawImage(
-      clean,
-      0, 0, cropRect.getWidth(), cropRect.getHeight(),
-      cropRect.getLeft(), cropRect.getTop(), cropRect.getRight(), cropRect.getBottom(), 
-      null
-    );
-    croppedGfx.dispose();
-    result = cropped;
-
-    if (debug) {
-      debugGfx.dispose();
-      sendDebugImage(img);
-    }
-
-    return Optional.ofNullable(result);
-  }
-
-  // NOTE: This is a temporary stand-in algorithm copy-pasted with few modifications from
-  //       `grabAutoBlockGameManga`. It doesn't need to be refactored/deduplicated, since it is to
-  //       be replaced in the future.
-  private Optional<BufferedImage> grabAutoBlockGameTextbox(BufferedImage img) {
-    if (img.getType() != BufferedImage.TYPE_INT_RGB) {
-      img = ImageOps.withoutAlphaChannel(img);
-      img = ImageOps.copied(img, BufferedImage.TYPE_INT_RGB);
-    }
-
-    var startX = img.getWidth() <= 50 ? img.getWidth() - 1 : 50;
-    var startY = img.getHeight() <= 10 ? img.getHeight() - 1 : 10;
-    var start = new Point(startX, startY);
-
-    var gray = ImageOps.copied(img);
-    ImageOps.toGrayscale(gray);
-
-    var clean = ImageOps.copied(gray);
-
-    var darkCheckAreaDim = 50;
-    if (ImageOps.isDarkDominated(gray, Rectangle.around(start, darkCheckAreaDim))) {
-      ImageOps.negate(gray);
-    }
-
-    var eroded = ImageOps.eroded(gray, 2, 2);
-    var imgArr = ImageOps.toGrayArray(eroded);
-    ImageOps.otsuThreshold(imgArr);
-
-    var ccExtractor = new ConnectedComponentExtractor();
-    var ccs = Arrays.stream(ccExtractor.extract(imgArr, img.getWidth(), img.getHeight()))
-      .skip(1)
-      .map(cc -> cc.rectangle())
-      .filter(cc -> cc.dimensionsWithin(2, 150) && cc.getArea() < 4000)
-      .toList();
-
-    Graphics debugGfx = null;
-    if (debug) {
-      debugGfx = img.createGraphics();
-    }
-
-    var nearCcs = new ArrayList<Rectangle>();
-    for (var cc : ccs) {
-      var dist = cc.getCenter().distanceFrom(start);
-      if (dist < 50) {
-        nearCcs.add(cc);
-      }
-    }
-
-    if (nearCcs.isEmpty()) {
-      return Optional.empty();
-    }
-
-    if (debug) {
-      debugGfx.setColor(Color.PINK);
-      for (var cc : nearCcs) {
-        debugGfx.drawRect(cc.getLeft(), cc.getTop(), cc.getWidth(), cc.getHeight());
-      }
-    }
-
-    var nearWidthTotal = 0;
-    var nearHeightTotal = 0;
-    for (var cc : nearCcs) {
-      nearWidthTotal += cc.getWidth();
-      nearHeightTotal += cc.getHeight();
-    }
-    var nearWidthAvg = nearWidthTotal / nearCcs.size();
-    var nearHeightAvg = nearHeightTotal / nearCcs.size();
-
-    var processedCcs = new ArrayList<Rectangle>();
-    for (var cc : ccs) {
-      if (debug) {
-        debugGfx.setColor(Color.GRAY);
-        debugGfx.drawRect(cc.getLeft(), cc.getTop(), cc.getWidth(), cc.getHeight());
-      }
-
-      if (
-        cc.getWidth() < 5 && cc.getHeight() < 5
-        || cc.getWidth() > nearWidthAvg * 3
-        || cc.getHeight() > nearHeightAvg * 4 
-        || cc.getArea() > nearWidthAvg * nearHeightAvg * 5
-      ) {
-        continue;
-      }
-
-      var growX = (int) (nearWidthAvg * 5);
-      var growY = (int) (nearHeightAvg * 1.5);
-
-      var ratio = cc.getRatio();
-      if (cc.getHeight() < nearHeightAvg && ratio > 1.75 && ratio < 3.25) {
-        growY = cc.getHeight() * 3;
-      }
-
-      var left = cc.getLeft();
-      var right = cc.getRight();
-      var top = cc.getTop();
-      var bottom = cc.getBottom();
-
-      if (start.x() < left) {
-        left = left - growX;
-        if (left < 0) {
-          left = 0;
-        }
-      } else if (start.x() > right) {
-        right = right + growX;
-        if (right >= img.getWidth()) {
-          right = img.getWidth() - 1;
-        }
-      }
-
-      if (start.y() < top) {
-        top = top - growY;
-        if (top < 0) {
-          top = 0;
-        }
-      } else if (start.y() > bottom) {
-        bottom = bottom + growY;
-        if (bottom >= img.getHeight()) {
-          bottom = img.getHeight() - 1;
-        }
-      }
-
-      var grown = Rectangle.ofEdges(left, top, right, bottom);
-      processedCcs.add(grown);
-
-      if (debug) {
-        debugGfx.setColor(Color.MAGENTA);
-        debugGfx.drawRect(grown.getLeft(), grown.getTop(), grown.getWidth(), grown.getHeight());
-      }
-    }
-
-    var mask = new BufferedImage(img.getWidth(), img.getHeight(), img.getType());
-    var maskGfx = mask.createGraphics();
-    maskGfx.setColor(Color.BLACK);
-    maskGfx.fillRect(0, 0, img.getWidth(), img.getHeight());
-    maskGfx.setColor(Color.WHITE);
-    for (var b : processedCcs) {
-      maskGfx.fillRect(b.getLeft(), b.getTop(), b.getWidth(), b.getHeight());
-    }
-    maskGfx.dispose();
-    // if (debug) {
-    //   sendDebugImageFn.accept(mask);
-    // }
-
-    var maskArr = ImageOps.maskImageToBinaryArray(mask);
-    var contours = ContourFinder.find(maskArr, mask.getWidth(), mask.getHeight());
-    if (debug) {
-      debugGfx.setColor(Color.BLUE);
-    }
-    Rectangle largestContourBBoxContainingCenter = null;
-    var largestBBoxArea = 0;
-    for (var c : contours) {
-      if (c.type == Contour.Type.HOLE) {
-        continue;
-      }
-      var bbox = c.getBoundingBox();
-
-      if (
-        bbox.getLeft() <= start.x() && start.x() <= bbox.getRight()
-        && bbox.getTop() <= start.y() && start.y() <= bbox.getBottom()
-      ) {
-        var area = bbox.getArea();
-        if (area > largestBBoxArea) {
-          largestBBoxArea = area;
-          largestContourBBoxContainingCenter = bbox;
-        }
-      }
-
-      if (debug) {
-        bbox.drawWith(debugGfx);
-      }
-    }
-
-    BufferedImage result = null;
-    if (largestContourBBoxContainingCenter != null) {
-      var c = largestContourBBoxContainingCenter
-        .expanded(2)
-        .clamped(img.getWidth() - 1, img.getHeight() - 1);
-
-      if (debug) {
-        debugGfx.setColor(Color.GREEN);
-        debugGfx.drawRect(c.getLeft(), c.getTop(), c.getWidth(), c.getHeight());
-      }
-
-      var cropped = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_RGB);
-      var croppedGfx = cropped.getGraphics();
-      croppedGfx.drawImage(
-        clean,
-        0, 0, c.getWidth(), c.getHeight(),
-        c.getLeft(), c.getTop(), c.getRight(), c.getBottom(), 
-        null
-      );
-      croppedGfx.dispose();
-      result = cropped;
-    }
-
-    if (debug) {
-      debugGfx.dispose();
-      sendDebugImage(img);
-    }
-
-    return Optional.ofNullable(result);
-  }
-
   private List<String> getAvailableCommands() {
     if (engine instanceof OCREngine.MangaOCR || engine instanceof OCREngine.OCRSpace) {
       return List.of("ocr_manual-block", "ocr_auto-block", "ocr_region");
@@ -1011,7 +502,42 @@ public class Recognizer {
     }
   }
 
+  private void sendDebugImage(BufferedImage image, String label) {
+    var gfx = image.getGraphics();
+    drawDebugLabel(gfx, label);
+    gfx.dispose();
+    sendDebugImage(image);
+  }
+
   private void sendDebugImage(BufferedImage image) {
     eventCb.accept(new RecognizerEvent.DebugImageSubmitted(image));
   }
+
+  // https://stackoverflow.com/a/35222059/2498764
+  private void drawDebugLabel(Graphics gfx, String text) {
+    var gfx2d = (Graphics2D) gfx;
+
+    var originalStroke = gfx2d.getStroke();
+    var originalHints = gfx2d.getRenderingHints();
+
+    var glyphVector = gfx.getFont().createGlyphVector(gfx2d.getFontRenderContext(), text);
+    var textShape = glyphVector.getOutline();
+
+    gfx2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    gfx2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+    gfx2d.setColor(DEBUG_IMAGE_LABEL_OUTLINE_COLOR);
+    gfx2d.setStroke(DEBUG_IMAGE_LABEL_STROKE);
+    gfx2d.translate(
+      DEBUG_IMAGE_LABEL_ORIGIN.x(),
+      DEBUG_IMAGE_LABEL_ORIGIN.y() + gfx.getFontMetrics().getAscent()
+    );
+    gfx2d.draw(textShape);
+    gfx2d.setColor(DEBUG_IMAGE_LABEL_FILL_COLOR);
+    gfx2d.fill(textShape);
+
+    gfx2d.setStroke(originalStroke);
+    gfx2d.setRenderingHints(originalHints);
+  }
+
 }

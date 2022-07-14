@@ -384,7 +384,7 @@ public class Kamite {
   private void doRecognizeAutoBlockImageProvided(
     BufferedImage img, TextOrientation textOrientation, AutoBlockHeuristic heuristic
   ) {
-    var maybeBlockImg = recognizer.grabAutoBlock(img, heuristic);
+    var maybeBlockImg = recognizer.autoNarrowToTextBlock(img, heuristic);
     if (maybeBlockImg.isEmpty()) {
       var msg = "Text block detection has failed";
       notifyError(msg);
