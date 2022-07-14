@@ -14,11 +14,11 @@ public final class Rectangle {
   }
 
   public int getWidth() {
-    return right - left;
+    return right - left + 1;
   }
 
   public int getHeight() {
-    return bottom - top;
+    return bottom - top + 1;
   }
 
   public int getArea() {
