@@ -545,6 +545,7 @@ public class Recognizer {
     }
     final var exemplarCCWidth = nearWidthTotal / nearCcs.size();
     final var exemplarCCHeight = nearHeightTotal / nearCcs.size();
+    final var exemplarCCAvgDim = (exemplarCCWidth + exemplarCCHeight) / 2;
 
     final var maxW = exemplarCCWidth * 3;
     final var maxH = exemplarCCHeight * 4;
@@ -584,7 +585,6 @@ public class Recognizer {
         Math.pow(center.x() - ccCenter.x(), 2)
         + Math.pow(center.y() - ccCenter.y(), 2)
       );
-      var exemplarCCAvgDim = (exemplarCCWidth + exemplarCCHeight) / 2;
       var normalizedDist = dist / exemplarCCAvgDim;
       var distCoeffFactorA = 50;
       var distCoeffFactorB = 1.35;
@@ -592,7 +592,7 @@ public class Recognizer {
         distCoeffFactorA
         / (Math.pow(normalizedDist, distCoeffFactorB) + distCoeffFactorA);
       var growX = exemplarCCWidth * 1.5 * distCoeff;
-      var growY = exemplarCCHeight / 1.15 * distCoeff;
+      var growY = exemplarCCHeight * 1.0 * distCoeff;
 
       // Special case hack: こ, に and similar tend to be detected as separate components, so we
       // need to grow them vertically a lot more than in the ordinary case
@@ -704,10 +704,11 @@ public class Recognizer {
     }
 
     // Crop the original image to where we've determined the text block is. This is the final result
+    var margin = exemplarCCAvgDim / 4;
     BufferedImage result = null;
     if (largestContourBBoxContainingCenter != null) {
       var c = largestContourBBoxContainingCenter
-        .expanded(4)
+        .expanded(margin)
         .clamped(img.getWidth() - 1, img.getHeight() - 1);
 
       if (debug) {
