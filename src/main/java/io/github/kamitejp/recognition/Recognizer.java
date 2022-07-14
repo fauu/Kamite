@@ -578,18 +578,31 @@ public class Recognizer {
 
       // Prepare coefficients for growing the cc towards the center of the image (the presumed
       // center of the text block)
-      var growX = (int) (exemplarCCWidth * 1.45);
-      var growY = (int) (exemplarCCHeight / 1.30);
+      var ccCenter = cc.getCenter();
+      // XXX: DRY, distance function
+      var dist = Math.sqrt(
+        Math.pow(center.x() - ccCenter.x(), 2)
+        + Math.pow(center.y() - ccCenter.y(), 2)
+      );
+      var exemplarCCAvgDim = (exemplarCCWidth + exemplarCCHeight) / 2;
+      var normalizedDist = dist / exemplarCCAvgDim;
+      var distCoeffFactorA = 50;
+      var distCoeffFactorB = 1.35;
+      var distCoeff =
+        distCoeffFactorA
+        / (Math.pow(normalizedDist, distCoeffFactorB) + distCoeffFactorA);
+      var growX = exemplarCCWidth * 1.5 * distCoeff;
+      var growY = exemplarCCHeight / 1.15 * distCoeff;
 
       // Special case hack: こ, に and similar tend to be detected as separate components, so we
       // need to grow them vertically a lot more than in the ordinary case
       var ratio = cc.getRatio();
       if (cc.getHeight() < exemplarCCHeight && ratio > 1.75 && ratio < 3.25) {
-        growY = cc.getHeight() * 3;
+        growY = cc.getHeight() * 3.75 * distCoeff;
       }
       // Analogous hack for certain fonts' い, as well as some characters that are overall slender
       if (cc.getWidth() < exemplarCCWidth && ratio > 0.3 && ratio < 0.55) {
-        growX = cc.getWidth() * 3;
+        growX = cc.getWidth() * 3.75 * distCoeff;
       }
 
       var left = cc.getLeft();
@@ -599,23 +612,23 @@ public class Recognizer {
 
       // Grow the cc towards the center of the image, with clamping
       if (center.x() < left) {
-        left = left - growX;
+        left = left - (int) growX;
         if (left < 0) {
           left = 0;
         }
       } else if (center.x() > right) {
-        right = right + growX;
+        right = right + (int) growX;
         if (right >= img.getWidth()) {
           right = img.getWidth() - 1;
         }
       }
       if (center.y() < top) {
-        top = top - growY;
+        top = top - (int) growY;
         if (top < 0) {
           top = 0;
         }
       } else if (center.y() > bottom) {
-        bottom = bottom + growY;
+        bottom = bottom + (int) growY;
         if (bottom >= img.getHeight()) {
           bottom = img.getHeight() - 1;
         }
