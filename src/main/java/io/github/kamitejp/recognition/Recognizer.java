@@ -513,11 +513,7 @@ public class Recognizer {
     // Find ccs near the user's click point (assumed to be the center of the input image)
     var nearCcs = new ArrayList<Rectangle>();
     for (var cc : prefilteredCCs) {
-      var ccCenter = cc.getCenter();
-      var dist = Math.sqrt(
-        Math.pow(center.x() - ccCenter.x(), 2)
-        + Math.pow(center.y() - ccCenter.y(), 2)
-      );
+      var dist = cc.getCenter().distanceFrom(center);
       if (dist < 50) {
         nearCcs.add(cc);
       }
@@ -527,12 +523,12 @@ public class Recognizer {
       return Optional.empty();
     }
 
-    if (debug) {
-      debugGfx.setColor(Color.ORANGE);
-      for (var cc : nearCcs) {
-        debugGfx.drawRect(cc.getLeft() - 1, cc.getTop() - 1, cc.getWidth() + 2, cc.getHeight() + 2);
-      }
-    }
+    // if (debug) {
+    //   debugGfx.setColor(Color.ORANGE);
+    //   for (var cc : nearCcs) {
+    //     debugGfx.drawRect(cc.getLeft() - 1, cc.getTop() - 1, cc.getWidth() + 2, cc.getHeight() + 2);
+    //   }
+    // }
 
     // Find the average dimensions of the near ccs and take them as the dimensions of an exemplar
     // character cc. We assume that the user has clicked somewhere within the text block to be
@@ -580,18 +576,13 @@ public class Recognizer {
       // Prepare coefficients for growing the cc towards the center of the image (the presumed
       // center of the text block)
       var ccCenter = cc.getCenter();
-      // XXX: DRY, distance function
-      var dist = Math.sqrt(
-        Math.pow(center.x() - ccCenter.x(), 2)
-        + Math.pow(center.y() - ccCenter.y(), 2)
-      );
-      var normalizedDist = dist / exemplarCCAvgDim;
+      var normalizedDist = ccCenter.distanceFrom(center) / exemplarCCAvgDim;
       var distCoeffFactorA = 50;
       var distCoeffFactorB = 1.35;
       var distCoeff =
         distCoeffFactorA
         / (Math.pow(normalizedDist, distCoeffFactorB) + distCoeffFactorA);
-      var growX = exemplarCCWidth * 1.5 * distCoeff;
+      var growX = exemplarCCWidth * 1.7 * distCoeff;
       var growY = exemplarCCHeight * 1.0 * distCoeff;
 
       // Special case hack: こ, に and similar tend to be detected as separate components, so we
@@ -654,79 +645,130 @@ public class Recognizer {
     }
     maskGfx.dispose();
     // if (debug) {
-    //   sendDebugImageFn.accept(mask);
+    //   sendDebugImage(mask);
     // }
 
     // Find the bounding box of the largest contour in the mask image containing the center point.
     // This is the presumed location of our text block
     var maskArr = ImageOps.maskImageToBinaryArray(mask);
-    var contours = new ContourFinder().find(maskArr, mask.getWidth(), mask.getHeight());
+    var contours = ContourFinder.find(maskArr, mask.getWidth(), mask.getHeight());
+    if (contours.size() == 0) {
+      LOG.debug("Could not find contours of the auto-block mask");
+      return Optional.empty();
+    }
+
     if (debug) {
       debugGfx.setColor(Color.BLUE);
     }
-    Rectangle largestContourBBoxContainingCenter = null;
+    Rectangle largestOverlappingContourBBox = null;
+    int largestOverlappingContourIdx = -1;
     int largestBBoxArea = 0;
-    for (var c : contours) {
-      if (c.type == ContourFinder.ContourType.HOLE) {
+    for (var i = 0; i < contours.size(); i++) {
+      var contour = contours.get(i);
+      if (contour.type == Contour.Type.HOLE) {
         continue;
       }
-      var xmin = mask.getWidth() - 1;
-      var ymin = mask.getHeight() - 1;
-      int xmax = 0;
-      int ymax = 0;
-      for (var p : c.points) {
-        if (p.x() < xmin) xmin = p.x(); // NOPMD
-        if (p.x() > xmax) xmax = p.x(); // NOPMD
-        if (p.y() < ymin) ymin = p.y(); // NOPMD
-        if (p.y() > ymax) ymax = p.y(); // NOPMD
-        // if (debug) {
-        //   gfx.drawRect(p.x(), p.y(), 1, 1);
-        // }
-      }
-
-      var width = xmax - xmin;
-      var height = ymax - ymin;
+      var bbox = contour.getBoundingBox();
 
       if (
-        xmin <= center.x() && center.x() <= xmax
-        && ymin <= center.y() && center.y() <= ymax
+        bbox.getLeft() <= center.x() && center.x() <= bbox.getRight()
+        && bbox.getTop() <= center.y() && center.y() <= bbox.getBottom()
       ) {
-        var area = width * height;
+        var area = bbox.getArea();
         if (area > largestBBoxArea) {
           largestBBoxArea = area;
-          largestContourBBoxContainingCenter = Rectangle.ofEdges(xmin, ymin, xmax, ymax);
+          largestOverlappingContourIdx = i;
+          largestOverlappingContourBBox = bbox;
         }
       }
 
       if (debug) {
-        debugGfx.drawRect(xmin, ymin, width, height);
+        bbox.drawWith(debugGfx);
       }
     }
+
+    // This is to detect some cases when the chosen contour contains multiple neighbouring text
+    // blocks. If the text blocks are sufficiently vertically displaced, we can limit the result
+    // to just our block of interest by following the chosen contour's upper edge in both directions
+    // starting at `center.x` and slicing it at the first locations where we encounter significant
+    // changes in the edge's y-position. We assume that those are the points at which one text
+    // block passess into another.
+    //
+    // TODO: When calculating the final bounding box, discard sudden drops in the bottom edge's
+    //       y-position near the side edges of our sliced contour, since those are contaminations
+    //       from the neighbouring blocks we've just cut off.
+    var chosenContour = contours.get(largestOverlappingContourIdx);
+    var topEdge = new int[largestOverlappingContourBBox.getWidth()];
+    Arrays.fill(topEdge, -1);
+    for (var p : chosenContour.points) {
+      var xRel = p.x() - largestOverlappingContourBBox.getLeft();
+      if (topEdge[xRel] == -1 || p.y() < topEdge[xRel]) {
+        topEdge[xRel] = p.y();
+      }
+      // if (debug) {
+      //   debugGfx.drawRect(p.x(), p.y(), 1, 1);
+      // }
+    }
+
+    int leftCutoff = 0;
+    int rightCutoff = topEdge.length - 1;
+    var centerXRel = center.x() - largestOverlappingContourBBox.getLeft();
+    for (var x = centerXRel; x > 0; x--) {
+      var delta = Math.abs(topEdge[x] - topEdge[x - 1]);
+      if (delta >= exemplarCCHeight) {
+        leftCutoff = x;
+        break;
+      }
+    }
+    for (var x = centerXRel; x < topEdge.length - 1; x++) {
+      var delta = Math.abs(topEdge[x] - topEdge[x + 1]);
+      if (delta >= exemplarCCHeight) {
+        rightCutoff = x;
+        break;
+      }
+    }
+
+    // if (debug) {
+    //   debugGfx.setColor(Color.RED);
+    //   for (var x = leftCutoff; x <= rightCutoff; x++) {
+    //     debugGfx.drawRect(largestOverlappingContourBBox.getLeft() + x, topEdge[x], 1, 3);
+    //   }
+    // }
+    leftCutoff += largestOverlappingContourBBox.getLeft(); // Countour bbox coords -> image coords
+    rightCutoff += largestOverlappingContourBBox.getLeft();
+    var finalBBox = chosenContour.getBoundingBox(leftCutoff, rightCutoff);
 
     // Crop the original image to where we've determined the text block is. This is the final result
-    var margin = exemplarCCAvgDim / 4;
+    var margin = exemplarCCAvgDim / 3;
     BufferedImage result = null;
-    if (largestContourBBoxContainingCenter != null) {
-      var c = largestContourBBoxContainingCenter
-        .expanded(margin)
-        .clamped(img.getWidth() - 1, img.getHeight() - 1);
+    var cropRect = finalBBox
+      .expanded(margin)
+      .clamped(img.getWidth() - 1, img.getHeight() - 1);
 
-      if (debug) {
-        debugGfx.setColor(Color.GREEN);
-        debugGfx.drawRect(c.getLeft(), c.getTop(), c.getWidth(), c.getHeight());
-      }
-
-      var cropped = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_RGB);
-      var croppedGfx = cropped.getGraphics();
-      croppedGfx.drawImage(
-        clean,
-        0, 0, c.getWidth(), c.getHeight(),
-        c.getLeft(), c.getTop(), c.getRight(), c.getBottom(), 
-        null
+    if (debug) {
+      debugGfx.setColor(Color.GREEN);
+      debugGfx.drawRect(
+        cropRect.getLeft(),
+        cropRect.getTop(),
+        cropRect.getWidth(),
+        cropRect.getHeight()
       );
-      croppedGfx.dispose();
-      result = cropped;
     }
+
+    var cropped = new BufferedImage(
+      cropRect.getWidth(),
+      cropRect.getHeight(),
+      BufferedImage.TYPE_INT_RGB
+    );
+    var croppedGfx = cropped.getGraphics();
+    croppedGfx.drawImage(
+      clean,
+      0, 0, cropRect.getWidth(), cropRect.getHeight(),
+      cropRect.getLeft(), cropRect.getTop(), cropRect.getRight(), cropRect.getBottom(), 
+      null
+    );
+    croppedGfx.dispose();
+    result = cropped;
 
     if (debug) {
       debugGfx.dispose();
@@ -777,11 +819,7 @@ public class Recognizer {
 
     var nearCcs = new ArrayList<Rectangle>();
     for (var cc : ccs) {
-      var ccCenter = cc.getCenter();
-      var dist = Math.sqrt(
-        Math.pow(start.x() - ccCenter.x(), 2)
-        + Math.pow(start.y() - ccCenter.y(), 2)
-      );
+      var dist = cc.getCenter().distanceFrom(start);
       if (dist < 50) {
         nearCcs.add(cc);
       }
@@ -883,46 +921,31 @@ public class Recognizer {
     // }
 
     var maskArr = ImageOps.maskImageToBinaryArray(mask);
-    var contours = new ContourFinder().find(maskArr, mask.getWidth(), mask.getHeight());
+    var contours = ContourFinder.find(maskArr, mask.getWidth(), mask.getHeight());
     if (debug) {
       debugGfx.setColor(Color.BLUE);
     }
     Rectangle largestContourBBoxContainingCenter = null;
     var largestBBoxArea = 0;
     for (var c : contours) {
-      if (c.type == ContourFinder.ContourType.HOLE) {
+      if (c.type == Contour.Type.HOLE) {
         continue;
       }
-      var xmin = mask.getWidth() - 1;
-      var ymin = mask.getHeight() - 1;
-      var xmax = 0;
-      var ymax = 0;
-      for (var p : c.points) {
-        if (p.x() < xmin) xmin = p.x(); // NOPMD
-        if (p.x() > xmax) xmax = p.x(); // NOPMD
-        if (p.y() < ymin) ymin = p.y(); // NOPMD
-        if (p.y() > ymax) ymax = p.y(); // NOPMD
-        // if (debug) {
-        //   gfx.drawRect(p.x(), p.y(), 1, 1);
-        // }
-      }
-
-      var width = xmax - xmin;
-      var height = ymax - ymin;
+      var bbox = c.getBoundingBox();
 
       if (
-        xmin <= start.x() && start.x() <= xmax
-        && ymin <= start.y() && start.y() <= ymax
+        bbox.getLeft() <= start.x() && start.x() <= bbox.getRight()
+        && bbox.getTop() <= start.y() && start.y() <= bbox.getBottom()
       ) {
-        var area = width * height;
+        var area = bbox.getArea();
         if (area > largestBBoxArea) {
           largestBBoxArea = area;
-          largestContourBBoxContainingCenter = Rectangle.ofEdges(xmin, ymin, xmax, ymax);
+          largestContourBBoxContainingCenter = bbox;
         }
       }
 
       if (debug) {
-        debugGfx.drawRect(xmin, ymin, width, height);
+        bbox.drawWith(debugGfx);
       }
     }
 

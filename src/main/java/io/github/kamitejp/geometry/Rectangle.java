@@ -1,5 +1,7 @@
 package io.github.kamitejp.geometry;
 
+import java.awt.Graphics;
+
 public final class Rectangle {
   private int left;
   private int top;
@@ -122,6 +124,10 @@ public final class Rectangle {
 
   public int getBottom() {
     return bottom;
+  }
+
+  public void drawWith(Graphics gfx) {
+    gfx.drawRect(getLeft(), getTop(), getWidth(), getHeight());
   }
 
   public static Rectangle fromAWT(java.awt.Rectangle r) {

@@ -354,7 +354,7 @@ public class Kamite {
 
     updateAndSendRecognizerStatus(RecognizerStatus.Kind.PROCESSING);
 
-    var point = Point.fromAWT(selectionRes.get());
+    var point = Point.from(selectionRes.get());
     var screenshotRes = platform.takeAreaScreenshot(
       Rectangle.around(point, Recognizer.AUTO_BLOCK_AREA_SIZE)
     );
