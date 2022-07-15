@@ -27,6 +27,7 @@ public final class ImageOps {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String DEFAULT_IMAGE_FORMAT = "png";
+  private static final Color DEFAULT_BG_COLOR = Color.WHITE;
 
   private ImageOps() {}
 
@@ -45,7 +46,7 @@ public final class ImageOps {
   public static BufferedImage withoutAlphaChannel(BufferedImage img) {
     var ret = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
     var gfx = ret.createGraphics();
-    gfx.setColor(Color.WHITE);
+    gfx.setColor(DEFAULT_BG_COLOR);
     gfx.fillRect(0, 0, ret.getWidth(), ret.getHeight());
     gfx.drawImage(img, 0, 0, ret.getWidth(), ret.getHeight(), null);
     gfx.dispose();

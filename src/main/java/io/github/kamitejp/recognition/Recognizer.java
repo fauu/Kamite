@@ -503,10 +503,11 @@ public class Recognizer {
   }
 
   private void sendDebugImage(BufferedImage image, String label) {
-    var gfx = image.getGraphics();
+    var copied = ImageOps.copied(image);
+    var gfx = copied.getGraphics();
     drawDebugLabel(gfx, label);
     gfx.dispose();
-    sendDebugImage(image);
+    sendDebugImage(copied);
   }
 
   private void sendDebugImage(BufferedImage image) {

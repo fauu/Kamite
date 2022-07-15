@@ -7,7 +7,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +24,10 @@ public class GameTextboxAutoBlockDetector implements AutoBlockDetector {
   //       refactored/deduplicated, since it is to be reworked
   @Override
   public Optional<Rectangle> detect(
-    BufferedImage img, boolean debug, Consumer<BufferedImage> sendDebugImage
+    BufferedImage img, boolean debug, BiConsumer<BufferedImage, String> sendDebugImage
   ) {
     if (img.getType() != BufferedImage.TYPE_INT_RGB) {
       img = ImageOps.withoutAlphaChannel(img);
-      img = ImageOps.copied(img, BufferedImage.TYPE_INT_RGB);
     }
 
     var startX = img.getWidth() <= 50 ? img.getWidth() - 1 : 50;
@@ -205,7 +204,7 @@ public class GameTextboxAutoBlockDetector implements AutoBlockDetector {
 
     if (debug) {
       debugGfx.dispose();
-      sendDebugImage.accept(img);
+      sendDebugImage.accept(img, "Game textbox auto block final");
     }
 
     return Optional.ofNullable(result);
