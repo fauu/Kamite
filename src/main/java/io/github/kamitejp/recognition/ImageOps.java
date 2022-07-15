@@ -26,8 +26,10 @@ import io.github.kamitejp.util.TriFunction;
 public final class ImageOps {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private static final double GAMMA = 2.2;
   private static final String DEFAULT_IMAGE_FORMAT = "png";
   private static final Color DEFAULT_BG_COLOR = Color.WHITE;
+
 
   private ImageOps() {}
 
@@ -63,7 +65,7 @@ public final class ImageOps {
     croppedGfx.drawImage(
       img,
       0, 0, rect.getWidth(), rect.getHeight(),
-      rect.getLeft(), rect.getTop(), rect.getRight(), rect.getBottom(), 
+      rect.getLeft(), rect.getTop(), rect.getRight(), rect.getBottom(),
       null
     );
     croppedGfx.dispose();
@@ -83,22 +85,27 @@ public final class ImageOps {
   public static BufferedImage eroded(BufferedImage img, int radiusX, int radiusY) {
     int w = img.getWidth();
     int h = img.getHeight();
-    var result = new BufferedImage(w, h, img.getType());
+    int[] imgArr = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
+
+    var result = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+    int[] resultArr = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
+
+    var i = 0;
     for (int y = 0; y < h; y++) {
       for (int x = 0; x < w; x++) {
-        result.setRGB(x, y, getMinPixel(img, x, y, radiusX, radiusY));
+        resultArr[i] = getMinPixelArr(imgArr, w, h, x, y, radiusX, radiusY);
+        i++;
       }
     }
+
     return result;
   }
 
-  private static int getMinPixel(BufferedImage img, int x, int y, int rx, int ry) {
+  private static int getMinPixelArr(int[] imgArr, int w, int h, int x, int y, int rx, int ry) {
     int minR = 255;
     int minG = 255;
     int minB = 255;
 
-    var w = img.getWidth();
-    var h = img.getHeight();
     var iStart = -ry / 2;
     var iEnd = -iStart;
     var jStart = -rx / 2;
@@ -114,7 +121,7 @@ public final class ImageOps {
         var xx = x + j;
         var yy = y + i;
         if (xx >= 0 && xx < w && yy >= 0 && yy < h && i * i + j * j < rx * ry) {
-          var px = img.getRGB(x + j, y + i);
+          var px = imgArr[((y + i) * w) + (x + j)];
           minR = Math.min(minR, r(px));
           minG = Math.min(minG, g(px));
           minB = Math.min(minB, b(px));
@@ -149,7 +156,7 @@ public final class ImageOps {
 
     var gfx = scaled.createGraphics();
     gfx.setRenderingHint(
-      RenderingHints.KEY_INTERPOLATION, 
+      RenderingHints.KEY_INTERPOLATION,
       RenderingHints.VALUE_INTERPOLATION_BILINEAR
     );
     gfx.setRenderingHint(
@@ -497,8 +504,9 @@ public final class ImageOps {
   }
 
   private static void transformPixels(
-      BufferedImage img,
-      TriFunction<Integer, Integer, Integer, Integer> fn) {
+    BufferedImage img,
+    TriFunction<Integer, Integer, Integer, Integer> fn
+  ) {
     // ASSUMPTION: `img` is of TYPE_INT_RGB
     int[] imgArr = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
     for (var i = 0; i < imgArr.length; i++) {
@@ -508,24 +516,32 @@ public final class ImageOps {
   }
 
   private static void transformPixels(
-      BufferedImage img,
-      PentaFunction<Integer, Integer, Integer, Integer, Integer, Integer> fn) {
+    BufferedImage img,
+    PentaFunction<Integer, Integer, Integer, Integer, Integer, Integer> fn
+  ) {
     // ASSUMPTION: `img` is of TYPE_INT_RGB
     int[] imgArr = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
     var w = img.getWidth();
+    var x = 0;
+    var y = 0;
     for (var i = 0; i < imgArr.length; i++) {
       var px = imgArr[i];
-      imgArr[i] = fn.apply(r(px), g(px), b(px), i % w, i / w);
+      imgArr[i] = fn.apply(r(px), g(px), b(px), x, y);
+
+      x++;
+      if (x == w) {
+        x = 0;
+        y++;
+      }
     }
   }
 
   private static int rgbGrayLevel(int r, int g, int b) {
-    final var gamma = 2.2;
-    var rr = Math.pow(r / 255.0, gamma);
-    var gg = Math.pow(g / 255.0, gamma);
-    var bb = Math.pow(b / 255.0, gamma);
+    var rr = Math.pow(r / 255.0, GAMMA);
+    var gg = Math.pow(g / 255.0, GAMMA);
+    var bb = Math.pow(b / 255.0, GAMMA);
     var luminance = rgbLuminance(rr, gg, bb);
-    return (int) (255.0 * Math.pow(luminance, 1 / gamma));
+    return (int) (255.0 * Math.pow(luminance, 1 / GAMMA));
   }
 
   private static int r(int px) {
