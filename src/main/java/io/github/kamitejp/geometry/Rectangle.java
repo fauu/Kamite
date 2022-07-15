@@ -1,13 +1,14 @@
 package io.github.kamitejp.geometry;
 
 import java.awt.Graphics;
+import java.util.List;
 
 public final class Rectangle {
   private int left;
   private int top;
   private int right;
   private int bottom;
- 
+
   private Rectangle(int left, int top, int right, int bottom) {
     this.left = left;
     this.top = top;
@@ -83,6 +84,10 @@ public final class Rectangle {
     return new Point((int) (left + (getWidth() / 2)), (int) (top + (getHeight() / 2)));
   }
 
+  public boolean contains(Point p) {
+    return getLeft() <= p.x() && p.x() <= getRight() && getTop() <= p.y() && p.y() <= getBottom();
+  }
+
   public java.awt.Rectangle toAWT() {
     return new java.awt.Rectangle(left, top, getWidth(), getHeight());
   }
@@ -101,6 +106,27 @@ public final class Rectangle {
     return new Rectangle(p.x() - halfW, p.y() - halfH, p.x() + halfW, p.y() + halfH);
   }
 
+  public static Rectangle around(List<Rectangle> rects) {
+    var top = Integer.MAX_VALUE;
+    var bottom = Integer.MIN_VALUE;
+    var left = Integer.MAX_VALUE;
+    var right = Integer.MIN_VALUE;
+    for (var r : rects) {
+      if (r.getLeft() < left) {
+        left = r.getLeft();
+      }
+      if (r.getTop() < top) {
+        top = r.getTop();
+      }
+      if (r.getRight() > right) {
+        right = r.getRight();
+      }
+      if (r.getBottom() > bottom) {
+        bottom = r.getBottom();
+      }
+    }
+    return Rectangle.ofEdges(left, top, right, bottom);
+  }
 
   public static Rectangle ofEdges(int left, int top, int right, int bottom) {
     return new Rectangle(left, top, right, bottom);

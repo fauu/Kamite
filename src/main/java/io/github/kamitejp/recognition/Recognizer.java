@@ -419,7 +419,7 @@ public class Recognizer {
       var longestContinuitySize = Integer.MIN_VALUE;
       for (int i = 1; i < discontinuityIndices.size(); i++) {
         var prev = discontinuityIndices.get(i - 1);
-        var prevContinuitySize = discontinuityIndices.get(i) - prev; 
+        var prevContinuitySize = discontinuityIndices.get(i) - prev;
         if (prevContinuitySize > longestContinuitySize) {
           longestContinuityStartIdx = prev;
           longestContinuitySize = prevContinuitySize;
@@ -430,27 +430,7 @@ public class Recognizer {
         longestContinuityStartIdx,
         longestContinuityStartIdx + longestContinuitySize
       );
-
-      var top = Integer.MAX_VALUE;
-      var bottom = Integer.MIN_VALUE;
-      var left = Integer.MAX_VALUE;
-      var right = Integer.MIN_VALUE;
-      for (var r : rectsOfCurrLine) {
-        if (r.getLeft() < left) {
-          left = r.getLeft();
-        }
-        if (r.getTop() < top) {
-          top = r.getTop();
-        }
-        if (r.getRight() > right) {
-          right = r.getRight();
-        }
-        if (r.getBottom() > bottom) {
-          bottom = r.getBottom();
-        }
-      }
-
-      lineRects.add(Rectangle.ofEdges(left, top, right, bottom));
+      lineRects.add(Rectangle.around(rectsOfCurrLine));
     }
 
     if (debug) {
