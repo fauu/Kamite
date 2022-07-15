@@ -111,45 +111,60 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     //   sendDebugImage.accept(mask, "Mask with grown connected components");
     // }
 
-    // Find the bounding box of the largest contour in the mask image containing the center point.
-    // This is the presumed location of our text block
+    // Find the bounding box of the largest contour in the mask image containing the center point
     var maskArr = ImageOps.maskImageToBinaryArray(mask);
     var contours = ContourFinder.find(maskArr, mask.getWidth(), mask.getHeight());
     if (contours.size() == 0) {
       LOG.debug("Could not find contours of the auto-block mask");
       return Optional.empty();
     }
-    var preliminaryBlockRes = preliminaryBlock(contours, center, debug, debugGfx);
+    var preliminaryBoxRes = preliminaryBox(contours, center, debug, debugGfx);
 
-    // This is to detect some cases when the preliminary block contains multiple neighbouring text
-    // blocks. If the text blocks are sufficiently vertically displaced, we can limit the result
-    // to just our block of interest by following the preliminary block's contour's upper edge in
-    // both directions starting at `center.x` and slicing it at the first locations where we
-    // encounter significant changes in the edge's y-position. We assume that those are the points
-    // at which one text block passess into another.
-    var finalBlock = sliceOffNeighbouringBlocks(
-      preliminaryBlockRes.block(),
-      preliminaryBlockRes.blockContour(),
+    // The preliminary box can still contain undesirable parts, especially neighbouring text blocks
+    // that were either too close to it to be distinguished as separate or linked were to it by
+    // elements misidentified as characters.
+    //   We can remove some of those parts by examining the top edge of the contour from which the
+    // preliminary box was made. Assuming that the our target text box has an approximately flat
+    // top edge (since this is how the text is generally laid out), we will slice off the sides
+    // of the preliminary box where the y-position of the top edge abruptly changes.
+    var reducedBox = cutOffBoxSidesByDiscongruousTopEdge(
+      preliminaryBoxRes.box(),
+      preliminaryBoxRes.sourceContour(),
       center,
       exemplarCC,
       debug,
       debugGfx
     );
+    if (debug) {
+      debugGfx.setColor(Color.GREEN);
+      reducedBox.drawWith(debugGfx);
+    }
 
-    // Crop the original image to where we've determined the text block is. This is the final result
+    // The box we have now might've been extended by CCs which lie mostly beyond its bounds. It's
+    // useless to include them, however, because even if they're characters, they probably aren't
+    // going to be recognized when half or more of each of them is cut off.
+    //   We can get rid of this possible excessive extension by going over all the viable CCs again
+    // and creating a new box according to the extends of only those CCs whose centers lie within
+    // `reducedBox`.
+    var ccsWithinReducedBox = exemplarFilteredCCs.stream()
+      .filter(cc -> reducedBox.contains(cc.getCenter()))
+      .toList();
+    var remadeBox = Rectangle.around(ccsWithinReducedBox);
+
+    // Add a margin
     var margin = exemplarCC.averageDimension() / 3;
-    var finalRect = finalBlock
+    var finalBox = remadeBox
       .expanded(margin)
       .clamped(img.getWidth() - 1, img.getHeight() - 1);
 
     if (debug) {
-      debugGfx.setColor(Color.GREEN);
-      finalRect.drawWith(debugGfx);
+      debugGfx.setColor(Color.RED);
+      finalBox.drawWith(debugGfx);
       sendDebugImage.accept(debugImg, "Manga auto block final");
       debugGfx.dispose();
     }
 
-    return Optional.ofNullable(finalRect);
+    return Optional.ofNullable(finalBox);
   }
 
   private List<Rectangle> extractCCs(int[] imgArr, int w, int h) {
@@ -291,33 +306,30 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     return mask;
   }
 
-  private record PreliminaryBlockResult(Rectangle block, Contour blockContour) {}
+  private record PreliminaryBoxResult(Rectangle box, Contour sourceContour) {}
 
-  private PreliminaryBlockResult preliminaryBlock(
+  private PreliminaryBoxResult preliminaryBox(
     List<Contour> contours, Point center, boolean debug, Graphics debugGfx
   ) {
     if (debug) {
       debugGfx.setColor(Color.BLUE);
     }
-    Rectangle block = null;
-    Contour blockContour = null;
-    int largestViableBlockArea = 0;
+    Rectangle box = null;
+    Contour sourceContour = null;
+    int largestViableBoxArea = 0;
     for (var i = 0; i < contours.size(); i++) {
       var contour = contours.get(i);
       if (contour.type == Contour.Type.HOLE) {
         continue;
       }
-      var bbox = contour.getBoundingBox();
 
-      if (
-        bbox.getLeft() <= center.x() && center.x() <= bbox.getRight()
-        && bbox.getTop() <= center.y() && center.y() <= bbox.getBottom()
-      ) {
+      var bbox = contour.getBoundingBox();
+      if (bbox.contains(center)) {
         var area = bbox.getArea();
-        if (area > largestViableBlockArea) {
-          largestViableBlockArea = area;
-          blockContour = contour;
-          block = bbox;
+        if (area > largestViableBoxArea) {
+          largestViableBoxArea = area;
+          sourceContour = contour;
+          box = bbox;
         }
       }
 
@@ -325,24 +337,24 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
         bbox.drawWith(debugGfx);
       }
     }
-    return new PreliminaryBlockResult(block, blockContour);
+    return new PreliminaryBoxResult(box, sourceContour);
   }
 
-  private Rectangle sliceOffNeighbouringBlocks(
-    Rectangle block,
-    Contour blockContour,
+  private Rectangle cutOffBoxSidesByDiscongruousTopEdge(
+    Rectangle box,
+    Contour sourceContour,
     Point center,
     ExemplarConnectedComponent exemplar,
     boolean debug,
     Graphics debugGfx
   ) {
-    var topEdge = new int[block.getWidth()];
+    var topEdge = new int[box.getWidth()];
     Arrays.fill(topEdge, -1);
     // if (debug) {
     //   debugGfx.setColor(Color.RED);
     // }
-    for (var p : blockContour.points) {
-      var xRel = p.x() - block.getLeft();
+    for (var p : sourceContour.points) {
+      var xRel = p.x() - box.getLeft();
       if (topEdge[xRel] == -1 || p.y() < topEdge[xRel]) {
         topEdge[xRel] = p.y();
       }
@@ -351,9 +363,11 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       // }
     }
 
+    // Traverse from the center towards left and right edges until discongruities are found (or
+    // until we reach the edges)
     int leftCutoff = 0;
     int rightCutoff = topEdge.length - 1;
-    var centerXRel = center.x() - block.getLeft();
+    var centerXRel = center.x() - box.getLeft();
     for (var x = centerXRel; x > 0; x--) {
       var delta = Math.abs(topEdge[x] - topEdge[x - 1]);
       if (delta > exemplar.height() * 1.5) {
@@ -368,19 +382,14 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
         break;
       }
     }
-
-    // TODO: When calculating the final bounding box, discard sudden drops in the bottom edge's
-    //       y-position near the side edges of our sliced contour, since those are contaminations
-    //       from the neighbouring blocks we've just cut off.
-
     // if (debug) {
     //   debugGfx.setColor(Color.RED);
     //   for (var x = leftCutoff; x <= rightCutoff; x++) {
     //     debugGfx.drawRect(largestOverlappingContourBBox.getLeft() + x, topEdge[x], 1, 3);
     //   }
     // }
-    leftCutoff += block.getLeft(); // Countour bbox coords -> image coords
-    rightCutoff += block.getLeft();
-    return blockContour.getBoundingBox(leftCutoff, rightCutoff);
+    leftCutoff += box.getLeft(); // Countour bbox coords -> image coords
+    rightCutoff += box.getLeft();
+    return sourceContour.getBoundingBox(leftCutoff, rightCutoff);
   }
 }
