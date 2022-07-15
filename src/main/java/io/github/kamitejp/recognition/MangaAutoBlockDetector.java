@@ -257,13 +257,16 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     var chosenContour = contours.get(largestOverlappingContourIdx);
     var topEdge = new int[largestOverlappingContourBBox.getWidth()];
     Arrays.fill(topEdge, -1);
+    // if (debug) {
+    //    debugGfx.setColor(Color.RED);
+    // }
     for (var p : chosenContour.points) {
       var xRel = p.x() - largestOverlappingContourBBox.getLeft();
       if (topEdge[xRel] == -1 || p.y() < topEdge[xRel]) {
         topEdge[xRel] = p.y();
       }
       // if (debug) {
-      //   debugGfx.drawRect(p.x(), p.y(), 1, 1);
+      //   debugGfx.drawRect(p.x(), p.y(), 3, 3);
       // }
     }
 
@@ -272,14 +275,14 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     var centerXRel = center.x() - largestOverlappingContourBBox.getLeft();
     for (var x = centerXRel; x > 0; x--) {
       var delta = Math.abs(topEdge[x] - topEdge[x - 1]);
-      if (delta >= exemplarCCHeight) {
+      if (delta > exemplarCCHeight * 1.5) {
         leftCutoff = x;
         break;
       }
     }
     for (var x = centerXRel; x < topEdge.length - 1; x++) {
       var delta = Math.abs(topEdge[x] - topEdge[x + 1]);
-      if (delta >= exemplarCCHeight) {
+      if (delta > exemplarCCHeight * 1.5) {
         rightCutoff = x;
         break;
       }
