@@ -354,7 +354,7 @@ public class Recognizer {
       debugGfx = debugImg.createGraphics();
     }
 
-    // DEV: Doesn't work for white-on-black
+    // DEV: Doesn't work as expected for white-on-black
     var eroded = ImageOps.eroded(img, 2, 2);
     var imgArr = ImageOps.toGrayArray(eroded);
     ImageOps.otsuThreshold(imgArr);
@@ -365,9 +365,9 @@ public class Recognizer {
       .skip(1)
       .map(ConnectedComponent::rectangle)
       .filter(cc -> cc.dimensionsWithin(1, 150) && cc.getArea() < 4000)
-      .peek(cc -> { 
-        ccMetrics.totalWidth += cc.getWidth(); 
-        ccMetrics.totalHeight += cc.getHeight(); 
+      .peek(cc -> {
+        ccMetrics.totalWidth += cc.getWidth();
+        ccMetrics.totalHeight += cc.getHeight();
       })
       .toList();
     if (ccs.isEmpty()) {
