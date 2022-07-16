@@ -1,9 +1,9 @@
 package io.github.kamitejp.platform.linux.wlroots.dependencies.slurp;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.BaseSimpleDependency;
 import io.github.kamitejp.platform.process.ProcessHelper;

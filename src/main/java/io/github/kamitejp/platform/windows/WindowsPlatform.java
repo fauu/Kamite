@@ -1,7 +1,6 @@
 package io.github.kamitejp.platform.windows;
 
 import java.awt.MouseInfo;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -14,6 +13,7 @@ import com.tulskiy.keymaster.common.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
@@ -61,7 +61,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   @Override
   public Result<Point, RecognitionOpError> getUserSelectedPoint() {
-    return Result.Ok(MouseInfo.getPointerInfo().getLocation());
+    return Result.Ok(Point.from(MouseInfo.getPointerInfo().getLocation()));
   }
 
   @Override
@@ -72,7 +72,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
     var futureArea = selector.getRegion();
     var area = futureArea.join();
     selector.setVisible(false);
-    
+
     return Result.Ok(area);
   }
 

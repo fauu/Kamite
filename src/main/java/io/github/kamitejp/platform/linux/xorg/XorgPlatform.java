@@ -1,7 +1,6 @@
 package io.github.kamitejp.platform.linux.xorg;
 
 import java.awt.MouseInfo;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
@@ -11,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.tulskiy.keymaster.common.Provider;
 
+import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.PlatformCreationException;
@@ -54,7 +54,7 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
 
   @Override
   public Result<Point, RecognitionOpError> getUserSelectedPoint() {
-    return Result.Ok(MouseInfo.getPointerInfo().getLocation());
+    return Result.Ok(Point.from(MouseInfo.getPointerInfo().getLocation()));
   }
 
   @Override

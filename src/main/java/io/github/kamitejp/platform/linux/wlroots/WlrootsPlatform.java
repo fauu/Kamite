@@ -1,6 +1,5 @@
 package io.github.kamitejp.platform.linux.wlroots;
 
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
@@ -8,6 +7,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;

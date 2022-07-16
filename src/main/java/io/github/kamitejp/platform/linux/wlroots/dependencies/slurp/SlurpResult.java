@@ -13,6 +13,6 @@ public sealed interface SlurpResult
   record Error(String error) implements SlurpResult {}
   record Cancelled() implements SlurpResult {}
   record FormatDifferentFromExpected(String expected) implements SlurpResult {}
-  record Point(java.awt.Point point) implements SlurpResult {}
+  record Point(io.github.kamitejp.geometry.Point point) implements SlurpResult {}
   record Area(Rectangle area) implements SlurpResult {}
 }

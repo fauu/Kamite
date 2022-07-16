@@ -1,6 +1,5 @@
 package io.github.kamitejp.platform;
 
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -11,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.kamitejp.Env;
+import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;

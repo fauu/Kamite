@@ -23,7 +23,6 @@ import io.github.kamitejp.config.ConfigManager;
 import io.github.kamitejp.controlgui.ControlGUI;
 import io.github.kamitejp.dbus.DBusEvent;
 import io.github.kamitejp.geometry.Dimension;
-import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.Platform;
@@ -354,7 +353,7 @@ public class Kamite {
 
     updateAndSendRecognizerStatus(RecognizerStatus.Kind.PROCESSING);
 
-    var point = Point.from(selectionRes.get());
+    var point = selectionRes.get();
     var screenshotRes = platform.takeAreaScreenshot(
       Rectangle.around(point, Recognizer.AUTO_BLOCK_AREA_SIZE)
     );
