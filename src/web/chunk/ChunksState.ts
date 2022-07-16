@@ -327,6 +327,8 @@ export function createChunksState(
       }
     }
 
+    const initialInsert = chunks.length === 1 && current().text.base === "";
+    const inPlace = params.inPlace || initialInsert;
     batch(() => {
       if (
         params.flash
@@ -343,8 +345,6 @@ export function createChunksState(
         playbackTimeS: params.playbackTimeS,
       });
 
-      const initialInsert = chunks.length === 1 && current().text.base === "";
-      const inPlace = params.inPlace || initialInsert;
       if (inPlace) {
         newChunk.selected = current().selected;
         setChunks(pointer(), newChunk);
@@ -360,8 +360,9 @@ export function createChunksState(
 
       textSelection.set(undefined);
     });
-
-    setPointer(chunks.length - 1);
+    if (!inPlace) {
+      setPointer(chunks.length - 1);
+    }
 
     // Remove those translation segments from the n-2 chunk that were supplemented to its
     // translation but later turned out to be intended as for the n-1 chunk. We can only do this
