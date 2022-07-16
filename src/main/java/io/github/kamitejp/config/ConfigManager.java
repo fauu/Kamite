@@ -11,15 +11,15 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigOrigin;
 import com.typesafe.config.impl.ConfigImpl;
 
 import io.github.kamitejp.util.Result;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class ConfigManager {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
