@@ -2,12 +2,14 @@ import { type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
 import { CharMaybeNewline } from "~/common";
+import { BgFlashingClass } from "~/globalStyles";
 
 interface ChunkCharProps {
   value: string,
   idx: number,
   selected: boolean,
   highlighted: boolean,
+  flashing?: boolean,
 }
 
 export const ChunkChar: VoidComponent<ChunkCharProps> = (props) =>
@@ -16,6 +18,7 @@ export const ChunkChar: VoidComponent<ChunkCharProps> = (props) =>
     classList={{
       [SelectedClass]: props.selected,
       [HighlightedClass]: props.highlighted,
+      [BgFlashingClass]: props.flashing,
     }}
     data-char-idx={props.idx}
   >

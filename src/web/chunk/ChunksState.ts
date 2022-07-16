@@ -72,9 +72,9 @@ export function createChunksState(
   const [textHighlight, setTextHighlight] =
     createSignal<[number, number]>();
 
-  // Whether the current chunk is playing the flash animation
-  const [currentFlashing, setCurrentFlashing] =
-    createSignal(false);
+  // State of the flash animation for the current chunk
+  const [currentFlashState, setCurrentFlashState] =
+    createSignal<ChunkFlashState>({ kind: "not-flashing" });
 
   // Whether the current chunk's translation is being selected in
   const [selectingInTranslation, setSelectingInTranslation] =
@@ -335,7 +335,7 @@ export function createChunksState(
         && transformedInput !== ""
         && transformedInput !== current().text.base
       ) {
-        flashCurrent();
+        flashEffectiveCurrent();
       }
 
       const newChunk = chunk({
@@ -605,16 +605,22 @@ export function createChunksState(
       notify("info", `Copied ${originalPart}text to clipboard`);
 
       const selInfo = selectionInfo();
-      selInfo.otherThanCurrentSelected ? flashInHistory(selInfo.selectedIndices) : flashCurrent();
+      selInfo.otherThanCurrentSelected
+        ? flashInHistory(selInfo.selectedIndices)
+        : flashEffectiveCurrent();
     }
   }
 
-  function flashCurrent() {
+  function flashEffectiveCurrent() {
     if (!allowedToFlash()) {
       return;
     }
-    setCurrentFlashing(true);
-    setTimeout(() => setCurrentFlashing(false), BG_FLASH_DURATION_MS);
+    const sel = textSelection.get();
+    const flashState: ChunkFlashState = sel && !textSelection.isWholeTextSelected()
+      ? { kind: "range-flashing", range: sel?.range }
+      : { kind: "whole-flashing" };
+    setCurrentFlashState(flashState);
+    setTimeout(() => setCurrentFlashState({ kind: "not-flashing" }), BG_FLASH_DURATION_MS);
   }
 
   function flashInHistory(indices: number[]) {
@@ -640,8 +646,8 @@ export function createChunksState(
     setWaiting,
     textHighlight,
     setTextHighlight,
-    currentFlashing,
-    //setCurrentFlashing,
+    currentFlashState,
+    //setCurrentFlashState,
     selectingInTranslation,
     setSelectingInTranslation,
 
@@ -680,3 +686,11 @@ type SelectionInfo = {
   someHaveOriginalText: boolean,
   otherThanCurrentSelected: boolean,
 };
+
+export type ChunkFlashState =
+  | { kind: "not-flashing" }
+  | { kind: "whole-flashing" }
+  | ChunkRangeFlashingState;
+
+export type ChunkRangeFlashingState = { kind: "range-flashing", range: [number, number] };
+

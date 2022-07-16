@@ -6,27 +6,27 @@ import { BgFlashingClass } from "~/globalStyles";
 
 import { ChunkChar } from "./Char";
 import { ChunkCharString } from "./CharString";
+import { ChunkFlashState, ChunkRangeFlashingState } from "./ChunksState";
 import type { ChunkText } from "./Text";
 import { ChunkTextClass } from "./TextClass";
 import type { ChunkTextSelection } from "./TextSelectionState";
 
 interface ChunkLabelProps {
   text: ChunkText,
-  flashing: boolean,
+  flashState: ChunkFlashState,
   selection?: ChunkTextSelection,
 
   // We need to display the highlight, i.e. the browser native selection, manually, because Chrome
   // apparently doesn't realize that "user-select: none" doesn't mean that a selection can't be
   // created programatically, and consequently fails to display it at all in such case
   highlight?: [number, number],
-
   ref: Ref<HTMLSpanElement>,
 }
 
 export const ChunkLabel: VoidComponent<ChunkLabelProps> = (props) =>
   <Root lang="ja" class={ChunkTextClass}>
     <span
-      classList={{ [BgFlashingClass]: props.flashing }}
+      classList={{ [BgFlashingClass]: props.flashState.kind === "whole-flashing" }}
       ref={props.ref}
       id="chunk-label"
     >
@@ -43,6 +43,12 @@ export const ChunkLabel: VoidComponent<ChunkLabelProps> = (props) =>
               range(props.text.base.length)
                 .map(i => isCharHighlighted(props.highlight, i))
             }
+            flashing={
+              props.flashState.kind === "range-flashing"
+              ? range(props.text.base.length)
+                  .map(i => isCharFlashing((props.flashState as ChunkRangeFlashingState).range, i))
+              : undefined
+            }
           />
         }
       >
@@ -54,6 +60,11 @@ export const ChunkLabel: VoidComponent<ChunkLabelProps> = (props) =>
                 value={mro.maybeRuby.base}
                 selected={isCharSelected(props.selection, mro.offset)}
                 highlighted={isCharHighlighted(props.highlight, mro.offset)}
+                flashing={
+                  props.flashState.kind === "range-flashing"
+                  ? isCharFlashing(props.flashState.range, mro.offset)
+                  : undefined
+                }
                 idx={mro.offset}
               />
             }
@@ -68,6 +79,15 @@ export const ChunkLabel: VoidComponent<ChunkLabelProps> = (props) =>
                 highlighted={
                   range(props.text.base.length)
                     .map(i => isCharHighlighted(props.highlight, mro.offset + i))
+                }
+                flashing={
+                  props.flashState.kind === "range-flashing"
+                  ? range(props.text.base.length)
+                      .map(i => isCharFlashing(
+                        (props.flashState as ChunkRangeFlashingState).range,
+                        mro.offset + i,
+                      ))
+                  : undefined
                 }
                 startIdx={mro.offset}
               />
@@ -100,6 +120,10 @@ function isCharSelected(selection: ChunkTextSelection | undefined, idx: number):
 
 function isCharHighlighted(range: [number, number] | undefined, idx: number): boolean {
   return (range && rangeIncludes(range, idx)) ?? false;
+}
+
+function isCharFlashing(flashRange: [number, number], idx: number): boolean {
+  return rangeIncludes(flashRange, idx);
 }
 
 function rangeIncludes([a, b]: [number, number], x: number): boolean {
