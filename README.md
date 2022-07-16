@@ -24,7 +24,7 @@ Kamite is cost-free and licensed under the GNU AGPL v3 or later (see
 
 **Currently supported platforms: Linux/Xorg, Linux/wlroots.**\
 (Planned for the beta release: Windows, Linux/Plasma).\
-(Blocked by upstream: [Linux / GNOME Wayland](linux--gnome-wayland-support)).
+(Blocked by upstream: [Linux / GNOME Wayland](#linux--gnome-wayland-support)).
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 https://user-images.githubusercontent.com/4130634/178029301-075cb207-a154-42d2-adb5-ce8fdbcd722f.mp4
@@ -104,7 +104,6 @@ script; [waycorner][waycorner-icxes].
 13. [Privacy](#privacy)
 14. [Development](#development)
 15. [License](#license)
-    * [Third-party components](#third-party-components)
     * [Third-party components](#third-party-components)
 
 ## Installing Kamite
