@@ -455,8 +455,10 @@ export function createChunksState(
       ignoreEditing: true,
       mayRequestEnhancement: false
     });
-    // Enhance separately to avoid flashing old content when waiting for enhance response
-    void enhanceCurrent();
+    if (getSetting(settings, "show-furigana") === true) {
+      // Enhance separately to avoid flashing old content when waiting for enhance response
+      void enhanceCurrent();
+    }
     setEditing(false);
   }
 
