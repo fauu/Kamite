@@ -23,7 +23,8 @@ Kamite is cost-free and licensed under the GNU AGPL v3 or later (see
 [License](#license)).
 
 **Currently supported platforms: Linux/Xorg, Linux/wlroots.**\
-(Planned for the beta release: Windows, Linux / GNOME Wayland, Linux/Plasma).
+(Planned for the beta release: Windows, Linux/Plasma).\
+(Blocked by upstream: [Linux / GNOME Wayland](linux--gnome-wayland-support)).
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 https://user-images.githubusercontent.com/4130634/178029301-075cb207-a154-42d2-adb5-ce8fdbcd722f.mp4
@@ -98,9 +99,12 @@ script; [waycorner][waycorner-icxes].
         * [`character-counter_` commands](#character-counter_-commands)
         * [`session-timer_` commands](#session-timer_-commands)
         * [`chunk_` commands](#chunk_-commands)
-12. [Privacy](#privacy)
-13. [Development](#development)
-14. [License](#license)
+12. [Upcoming](#upcoming)
+    * [Linux / GNOME Wayland support](#linux--gnome-wayland-support)
+13. [Privacy](#privacy)
+14. [Development](#development)
+15. [License](#license)
+    * [Third-party components](#third-party-components)
     * [Third-party components](#third-party-components)
 
 ## Installing Kamite
@@ -1466,6 +1470,15 @@ Seeks to the start of the current subtitle.
 **`show`** `(chunk: string)`
 
 **`show-translation`** `(translation: string)`
+
+## Upcoming
+
+### Linux / GNOME Wayland support
+
+GNOME Wayland support for Kamite was basically complete, but unfortunately GNOME
+has decided to prevent third-party programs from accessing the screenshot API
+required for OCR functions without there being any alternatives whatsoever.
+That platform will be supported as soon as such alternative appears.
 
 ## Privacy
 
