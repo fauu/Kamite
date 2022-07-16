@@ -179,7 +179,7 @@ export function createChunksState(
   });
 
   // === EFFECTS ===================================================================================
-  
+
   createEffect(on(pointer, selectOnlyCurrent));
 
   // Make those two mutually exclusive: 1) text selection within the current chunk, and 2) selection
@@ -288,7 +288,7 @@ export function createChunksState(
 
     let shouldEnhance =
       params.mayRequestEnhancement
-      && getSetting(settings, "show-furigana") === true 
+      && getSetting(settings, "show-furigana") === true
       && typeof transformedInput === "string" // Otherwise this is was already enhanced text
       && transformedInput !== "";
     let newRawText;
@@ -508,7 +508,7 @@ export function createChunksState(
     copyToClipboard("original-text");
   }
 
-  function select(idx: number, value: boolean) { 
+  function select(idx: number, value: boolean) {
     setChunks(idx, "selected", value);
   }
 
@@ -530,7 +530,7 @@ export function createChunksState(
     setPointer(newPointer(step).value);
   }
 
-  function travelTo(idx: number) { 
+  function travelTo(idx: number) {
     if (idx < 0 || idx >= chunks.length) {
       return;
     }
@@ -586,7 +586,7 @@ export function createChunksState(
   function initTranslationOfLatest(translationSegment: ChunkTranslationSegment) {
     setChunks(chunks.length - 1, "translation", ChunkTranslation.withSegment(translationSegment));
   }
-  
+
   type CopyToClipboardMode = "text" | "original-text";
   function copyToClipboard(mode: CopyToClipboardMode) {
     const textSegs =
