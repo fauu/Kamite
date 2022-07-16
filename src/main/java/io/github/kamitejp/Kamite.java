@@ -95,7 +95,7 @@ public class Kamite {
       return;
     }
     LOG.info("Initialized support for platform {}", platform.getClass().getSimpleName()); // NOPMD
-  
+
     // Load config
     var maybeConfigDirPath = platform.getConfigDirPath();
     if (maybeConfigDirPath.isEmpty()) {
@@ -182,8 +182,8 @@ public class Kamite {
   }
 
   private static void showFatalError(String message, String details) {
-    var detailsPart = details == null ? "" : details;
-    LOG.error("{}. The program will not continue. Details: {}", message, detailsPart);
+    var detailsPart = details == null ? "" : " Details: %s".formatted(details);
+    LOG.error("{}. The program will not continue.{}", message, detailsPart);
   }
 
   private void initMPVController() {
