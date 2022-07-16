@@ -7,7 +7,7 @@
 #include "String.h"
 #include "JSON.h"
 
-constexpr auto CONFIG_FILENAME = "KamiteSend.txt";
+constexpr auto CONFIG_FILENAME = "Kamite Send.txt";
 
 std::string host = "localhost:4110";
 

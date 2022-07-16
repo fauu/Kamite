@@ -57,8 +57,8 @@ textractor:
 	mkdir -p target/textractor/x86; \
 	mkdir -p target/textractor/x64; \
 	zig c++ -shared -target i386-windows-gnu -l ws2_32 \
-		-o target/textractor/x86/KamiteSend.xdll \
+		-o "target/textractor/x86/Kamite Send.xdll" \
 		extra/textractor/src/KamiteSend.cpp extra/textractor/src/KamiteSendImpl.cpp; \
 	zig c++ -shared -target x86_64-windows-gnu -l ws2_32 \
-		-o target/textractor/x64/KamiteSend.xdll \
+		-o "target/textractor/x64/Kamite Send.xdll" \
 		extra/textractor/src/KamiteSend.cpp extra/textractor/src/KamiteSendImpl.cpp; \

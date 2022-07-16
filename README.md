@@ -754,19 +754,19 @@ extracted by it from other programs to Kamite.
 > For games that do not work with Textractor, the experimental
 [Region recognition](#region-ocr) feature might prove an alternative.
 
-To install the *KamiteSend* Textractor extension:
+To install the *Kamite Send* Textractor extension:
 
-1. Copy the `KamiteSend.xdll` file from either the `extra/textractor/x86`
+1. Copy the `Kamite Send.xdll` file from either the `extra/textractor/x86`
    (32-bit Textractor) or `extra/textractor/x64` (64-bit Textractor) within the
    release package to the main Textractor directory (the one that contains
    `Textractor.exe`).
 
 2. In Textractor, press the `Extensions` button, right-click in the extension
-   list, choose `Add extension` and select the `KamiteSend.xdll` file copied
+   list, choose `Add extension` and select the `Kamite Send.xdll` file copied
    earlier.
 
 For Textractor’s text processing extensions (such as Remove Repeated Characters)
-to be executed before sending the text to Kamite, position KamiteSend below
+to be executed before sending the text to Kamite, position Kamite Send below
 them on the extensions list.
 
 #### Changing the default Textractor extension endpoint
@@ -774,8 +774,8 @@ them on the extensions list.
 By default, the extension expects Kamite to listen for commands at the address
 `localhost:4110`. If it is running on a different address (e.g., because you
 have Textractor in a virtual machine and Kamite on the host), the extension
-needs to be configured correspondingly. To do so, create a `KamiteSend.txt`
-file next to `KamiteSend.xdll` in the Textractor directory, containing Kamite’s
+needs to be configured correspondingly. To do so, create a `Kamite Send.txt`
+file next to `Kamite Send.xdll` in the Textractor directory, containing Kamite’s
 network address from the perspective of the machine running Textractor, e.g.:
 
 ```txt
@@ -1560,7 +1560,7 @@ The Readme’s table of contents is generated with [mdtoc.rb].
 
 ### Textractor extension
 
-The C++ source for the *KamiteSend* Textractor extension is placed under the
+The C++ source for the *Kamite Send* Textractor extension is placed under the
 [`extra/textractor/src`][textractor-kamite-send-src] directory. The build
 command is specified in the `textractor` target in the [`Makefile`][makefile].
 [Zig] is used for compilation and linking.
