@@ -67,7 +67,7 @@ public class OCRSpaceAdapter {
       "file", new ImageUpload(PARAM_IMAGE_FILENAME, PARAM_IMAGE_MIMETYPE, imageBytes)
       // "detectOrientation", "true", TODO: Test this
     );
-    
+
     HttpRequest req;
     try {
       req = HttpRequest.newBuilder()
