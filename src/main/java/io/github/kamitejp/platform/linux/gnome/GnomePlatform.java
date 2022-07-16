@@ -1,13 +1,17 @@
 package io.github.kamitejp.platform.linux.gnome;
 
-import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.PlatformCreationException;
@@ -20,6 +24,8 @@ import io.github.kamitejp.util.Result;
 @SuppressWarnings("PMD")
 public class GnomePlatform extends LinuxPlatform {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private static final String TMP_SCREENSHOT_PATH = "/tmp/kamite-screenshot.png";
 
   private GnomeScreenshotDBusInterface screenshotDBusObject;
 
@@ -54,7 +60,11 @@ public class GnomePlatform extends LinuxPlatform {
 
   @Override
   public Result<Point, RecognitionOpError> getUserSelectedPoint() {
-    throw new UnsupportedOperationException("Not implemented");
+    var areaRes = getUserSelectedArea();
+    if (areaRes.isErr()) {
+      return Result.Err(areaRes.err());
+    }
+    return Result.Ok(areaRes.get().getCenter());
   }
 
   @Override
@@ -66,43 +76,55 @@ public class GnomePlatform extends LinuxPlatform {
       new GnomeScreenshotSelectAreaCallbackHandler(futureArea)
     );
 
-    var area = futureArea.join();
-
-    // DEV
-    LOG.debug("Received area: {}", area);
+    Rectangle area = null;
+    try {
+      area = futureArea.join();
+    } catch (CompletionException e) {
+      LOG.debug("GNOME screenshot API call failed", e.getCause()); // NOPMD
+      return Result.Err(RecognitionOpError.SELECTION_FAILED);
+    }
 
     return Result.Ok(area);
   }
 
   @Override
   public Result<BufferedImage, RecognitionOpError> takeAreaScreenshot(Rectangle area) {
-    var futureRes = new CompletableFuture<GnomeScreenshotAreaResult>();
+    var futureRes = new CompletableFuture<GnomeScreenshotScreenshotAreaResult>();
     dbusClient.callWithCallback(
       screenshotDBusObject,
       "ScreenshotArea",
-      new GnomeScreenshotAreaCallbackHandler(futureRes),
+      new GnomeScreenshotScreenshotAreaCallbackHandler(futureRes),
       new Object[] {
         area.getLeft(),
         area.getTop(),
         area.getWidth(),
         area.getHeight(),
         /* flash */ true,
-        /* filename DEV */ "/tmp/kamite-screenshot.png"
+        TMP_SCREENSHOT_PATH
       }
     );
 
-    var res = futureRes.join();
-    if (res.success() == false) {
-      LOG.error("GNOME screenshot API reported lack of success taking area screenshot");
+    GnomeScreenshotScreenshotAreaResult res = null;
+    try {
+      res = futureRes.join();
+      if (res.success() == false) {
+        LOG.debug("GNOME screenshot API reported lack of success taking area screenshot");
+        return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
+      }
+    } catch (CompletionException e) {
+      LOG.debug("GNOME screenshot API call failed", e); // NOPMD
       return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
     }
-
-    // DEV
-    LOG.debug("Received screenshot filename: {}", res.filenameUsed());
 
     var img = GenericPlatform.openImage(res.filenameUsed());
     if (img.isEmpty()) {
       return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
+    }
+
+    try {
+      Files.delete(Paths.get(res.filenameUsed()));
+    } catch (IOException e) {
+      LOG.debug("Failed to delete temporary screenshot '{}': {}", res.filenameUsed(), e); // NOPMD
     }
 
     return Result.Ok(img.get());

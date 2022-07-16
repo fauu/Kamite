@@ -25,6 +25,6 @@ public class GnomeScreenshotSelectAreaCallbackHandler
 
   @Override
   public void handleError(DBusExecutionException e) {
-    throw new UnsupportedOperationException("Not implemented");
+    futureArea.completeExceptionally(e);
   }
 }
