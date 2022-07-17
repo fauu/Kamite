@@ -95,7 +95,7 @@ public abstract class GenericPlatform {
   }
 
   public void initOCR(OCREngine engine) throws PlatformOCRInitializationException {
-    if (engine instanceof OCREngine.Tesseract) { 
+    if (engine instanceof OCREngine.Tesseract) {
       tesseract = new Tesseract();
       if (!tesseract.checkIsAvailable()) {
         throw new PlatformOCRInitializationException.MissingDependencies(tesseract.NAME);

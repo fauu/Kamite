@@ -12,7 +12,7 @@ import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
 import io.github.kamitejp.platform.RecognitionOpError;
-import io.github.kamitejp.platform.linux.LinuxPlatform;
+import io.github.kamitejp.platform.linux.WaylandPlatform;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.grim.Grim;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.grim.GrimResult;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.slurp.Slurp;
@@ -21,16 +21,14 @@ import io.github.kamitejp.platform.linux.wlroots.dependencies.slurp.SlurpResult;
 import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.util.Result;
 
-public class WlrootsPlatform extends LinuxPlatform {
+public class WlrootsPlatform extends WaylandPlatform {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private Slurp slurp;
   private Grim grim;
 
   public WlrootsPlatform() throws PlatformCreationException {
-    if (getEnvVarAsNonNullableString("WAYLAND_DISPLAY").isEmpty()) {
-      throw new PlatformCreationException("WAYLAND_DISPLAY is not set");
-    }
+    // Empty
   }
 
   @Override

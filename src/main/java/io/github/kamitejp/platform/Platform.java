@@ -25,10 +25,7 @@ import io.github.kamitejp.util.Result;
 public interface Platform {
   Logger LOG = LoggerFactory.getLogger(Platform.class);
 
-  // This will determine the order in which the platforms are checked. If a
-  // platform placed near the top has insufficient checks, it will cause
-  // the wrong platform support to be initialized when in fact running on
-  // one of the platforms placed below.
+  // This determines the order in which the platforms are checked
   List<Class<? extends Platform>> KNOWN_PLATFORMS =
     List.of(
       WindowsPlatform.class,
@@ -81,15 +78,12 @@ public interface Platform {
         break;
       } catch (InvocationTargetException e) {
         LOG.debug(
-          "Could not create platform {}. Cause: {}",
+          "Rejected platform {}. Cause: {}",
           tentativePlatform.getSimpleName(),
           "" + e.getCause()
         );
       } catch (IllegalAccessException | InstantiationException | NoSuchMethodException e) {
-        LOG.error(
-          "Internal error when instatiating Platform object."
-          + " See stderr for stack trace"
-        );
+        LOG.error("Internal error when instatiating Platform object. See stderr for stack trace");
         e.printStackTrace();
         return null;
       }

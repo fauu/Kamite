@@ -17,12 +17,12 @@ import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
 import io.github.kamitejp.platform.RecognitionOpError;
-import io.github.kamitejp.platform.linux.LinuxPlatform;
+import io.github.kamitejp.platform.linux.WaylandPlatform;
 import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.util.Result;
 
 @SuppressWarnings("PMD")
-public class GnomePlatform extends LinuxPlatform {
+public class GnomePlatform extends WaylandPlatform {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String TMP_SCREENSHOT_PATH = "/tmp/kamite-screenshot.png";

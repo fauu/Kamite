@@ -42,7 +42,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
     }
 
     try {
-      this.robotScreenshoter = new RobotScreenshoter();
+      robotScreenshoter = new RobotScreenshoter();
     } catch (RobotScreenshoterUnavailableException e) {
       throw new PlatformCreationException("Could not initialize Robot Screenshoter", e);
     }
