@@ -33,6 +33,10 @@ public sealed interface Command
     record AutoColumn() implements OCR {}
     record Region(Rectangle region, boolean autoNarrow) implements OCR {}
     record Image(String bytesB64, Dimension size) implements OCR {}
+
+    default boolean isGlobalOCRCommand() {
+      return !(this instanceof OCR.Region || this instanceof OCR.Image);
+    }
   }
 
   sealed interface Player extends Command

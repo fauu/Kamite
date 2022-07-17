@@ -37,6 +37,8 @@ public interface Platform {
 
   List<Class<? extends Platform>> SUPPORTED_PLATFORMS =
     List.of(
+      GnomePlatform.class,
+      PlasmaPlatform.class,
       WlrootsPlatform.class,
       XorgPlatform.class
     );
@@ -46,6 +48,10 @@ public interface Platform {
   String getName();
 
   OSFamily getOSFamily();
+
+  default List<PlatformDependentFeature> getUnsupportedFeatures() {
+    return List.of();
+  }
 
   void initOCR(OCREngine engine) throws PlatformOCRInitializationException;
 

@@ -32,6 +32,7 @@ import io.github.kamitejp.platform.MangaOCRController;
 import io.github.kamitejp.platform.MangaOCREvent;
 import io.github.kamitejp.platform.MangaOCRInitializationException;
 import io.github.kamitejp.platform.Platform;
+import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
@@ -452,7 +453,9 @@ public class Recognizer {
   }
 
   private List<String> getAvailableCommands() {
-    if (engine instanceof OCREngine.MangaOCR || engine instanceof OCREngine.OCRSpace) {
+    if (platform.getUnsupportedFeatures().contains(PlatformDependentFeature.GLOBAL_OCR)) {
+      return List.of();
+    } else if (engine instanceof OCREngine.MangaOCR || engine instanceof OCREngine.OCRSpace) {
       return List.of("ocr_manual-block", "ocr_auto-block", "ocr_region");
     } else if (engine instanceof OCREngine.Tesseract) {
       return List.of(

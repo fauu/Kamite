@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -15,6 +16,7 @@ import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.PlatformCreationException;
+import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
 import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.linux.WaylandPlatform;
@@ -31,8 +33,13 @@ public class GnomePlatform extends WaylandPlatform {
 
   public GnomePlatform() throws PlatformCreationException {
     if (!"GNOME".equalsIgnoreCase(getEnvVarAsNonNullableString("XDG_CURRENT_DESKTOP"))) {
-      throw new PlatformCreationException("XDG_CURRENT_DESKTOP does not match GNOME");
+      throw new PlatformCreationException("XDG_CURRENT_DESKTOP does not match 'GNOME'");
     }
+  }
+
+  @Override
+  public List<PlatformDependentFeature> getUnsupportedFeatures() {
+    return List.of(PlatformDependentFeature.GLOBAL_OCR);
   }
 
   @Override

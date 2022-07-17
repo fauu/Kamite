@@ -1,5 +1,7 @@
 package io.github.kamitejp;
 
+import static java.util.stream.Collectors.joining;
+
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
@@ -26,6 +28,7 @@ import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.Platform;
+import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformInitializationException;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
 import io.github.kamitejp.platform.RecognitionOpError;
@@ -117,7 +120,18 @@ public class Kamite {
       LOG.info("Created control window (Kamite version {})", buildInfo.getVersion()); // NOPMD
     }
 
-    // Config load message deferred until control GUI is potentially available to display it
+    // Unsupported platform features message deferred until control GUI potentially present
+    var unsupportedFeatures = platform.getUnsupportedFeatures();
+    if (unsupportedFeatures.size() > 0) {
+      LOG.warn( // NOPMD
+        "The current platform does *not* support the following features:\n{}",
+        unsupportedFeatures.stream()
+          .map(f -> "– %s (%s)".formatted(f.getDisplayName(), f.getDescription()))
+          .collect(joining("\n"))
+      );
+    }
+
+    // Config load message deferred until control GUI potentially present
     if (configReadSuccess.loadedProfileNames() != null) {
       LOG.info( // NOPMD
         "Loaded config profiles: {}",
@@ -443,7 +457,7 @@ public class Kamite {
 
   private void notifyError(String content) {
     server.notify(NotificationKind.ERROR, content);
-  } 
+  }
 
   private void handleServerEvent(ServerEvent event) {
     switch (event) {
@@ -521,13 +535,20 @@ public class Kamite {
     switch (command) {
       case Command.OCR cmd -> {
         var refuseMsg = switch (status.getRecognizerStatus().getKind()) {
-          case UNAVAILABLE                     ->
+          case UNAVAILABLE ->
             "Text recognition is not available in this session";
-          case INITIALIZING                     ->
+          case INITIALIZING ->
             "Text recognizer is still initializing. Please wait";
           case AWAITING_USER_INPUT, PROCESSING ->
             "Another text recognition operation is already in progress";
-          default -> null;
+          default -> {
+            var noGlobalOCR = platform.getUnsupportedFeatures()
+              .contains(PlatformDependentFeature.GLOBAL_OCR);
+            if (noGlobalOCR && cmd.isGlobalOCRCommand()) {
+              yield "The current platform does not support global OCR commands";
+            }
+            yield null;
+          }
         };
         if (refuseMsg != null) {
           server.send(new NotificationOutMessage(NotificationKind.INFO, refuseMsg));
@@ -603,7 +624,7 @@ public class Kamite {
           runCustomCommand(cmd.command());
         }
       }
-      
+
       default ->
         throw new IllegalStateException("Unhandled command type");
     }
