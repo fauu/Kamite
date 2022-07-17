@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.PlatformCreationException;
-import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
 import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.linux.WaylandPlatform;
@@ -30,11 +29,6 @@ public class WlrootsPlatform extends WaylandPlatform {
 
   public WlrootsPlatform() throws PlatformCreationException {
     // Empty
-  }
-
-  @Override
-  public List<PlatformDependentFeature> getUnsupportedFeatures() {
-    return List.of(PlatformDependentFeature.GLOBAL_OCR);
   }
 
   @Override

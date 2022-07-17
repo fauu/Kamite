@@ -163,6 +163,7 @@ public final class ConfigManager {
       validateStringNonEmptyOrNull(r.description(), key.apply("description"));
     });
 
+    validateStringNonEmptyOrNull(config.ocr().watchDir(), "ocr.watchDir");
     validateStringNonEmptyOrNull(config.secrets().ocrspace(), "secrets.ocrspace");
   }
 

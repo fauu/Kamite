@@ -76,8 +76,16 @@ public abstract class GenericPlatform {
   }
 
   public static Optional<BufferedImage> openImage(String path) {
+    return openImage(new File(path));
+  }
+
+  public static Optional<BufferedImage> openImage(Path path) {
+    return openImage(path.toFile());
+  }
+
+  public static Optional<BufferedImage> openImage(File file) {
     try {
-      return Optional.of(ImageIO.read(new File(path)));
+      return Optional.ofNullable(ImageIO.read(file));
     } catch (IOException e) {
       LOG.error("Could not load image", e);
       return Optional.empty();

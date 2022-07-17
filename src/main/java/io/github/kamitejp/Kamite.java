@@ -73,6 +73,7 @@ public class Kamite {
   private Config config;
   private Server server;
   private Platform platform;
+  private OCRDirectoryWatcher ocrDirectoryWatcher;
   private Recognizer recognizer;
   private TextProcessor textProcessor;
   private MPVController mpvController;
@@ -139,6 +140,15 @@ public class Kamite {
       );
     }
 
+    var ocrWatchDir = config.ocr().watchDir();
+    if (ocrWatchDir != null) {
+      try {
+        ocrDirectoryWatcher = new OCRDirectoryWatcher(ocrWatchDir, this::recognizeBox);
+      } catch (OCRDirectoryWatcherCreationException e) {
+        LOG.error("Failed to create OCR directory watcher: {}", e.toString());
+      }
+    }
+
     // Init DBus communication
     if (platform instanceof LinuxPlatform linuxPlatform) {
       linuxPlatform.getDBusClient().ifPresent((client) -> {
@@ -174,6 +184,9 @@ public class Kamite {
       new Thread(() -> {
         server.destroy();
         platform.destroy();
+        if (ocrDirectoryWatcher != null) {
+          ocrDirectoryWatcher.destroy();
+        }
         if (recognizer != null) {
           recognizer.destroy();
         }

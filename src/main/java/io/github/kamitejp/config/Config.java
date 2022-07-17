@@ -193,7 +193,8 @@ public record Config(
   
   public static record Ocr2(
     OCREngine engine,
-    java.util.List<Ocr2.Region> regions
+    java.util.List<Ocr2.Region> regions,
+    java.lang.String watchDir
   ) {
     public static record Region(
       boolean autoNarrow,
@@ -243,7 +244,8 @@ public record Config(
     public Ocr2(com.typesafe.config.Config c, java.lang.String parentPath, $TsCfgValidator $tsCfgValidator) {
       this(
         c.hasPath("engine") ? OCREngine.valueOf(c.getString("engine").toUpperCase()) : OCREngine.NONE,
-        c.hasPathOrNull("regions") ? $_LOcr2_Region(c.getList("regions"), parentPath, $tsCfgValidator) : null
+        c.hasPathOrNull("regions") ? $_LOcr2_Region(c.getList("regions"), parentPath, $tsCfgValidator) : null,
+        c.hasPathOrNull("watchDir") ? c.getString("watchDir") : null
       );
     }
     private static java.util.List<Ocr2.Region> $_LOcr2_Region(com.typesafe.config.ConfigList cl, java.lang.String parentPath, $TsCfgValidator $tsCfgValidator) {

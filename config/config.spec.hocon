@@ -51,6 +51,7 @@ lookup {
 
 ocr {
   engine = OCREngine
+  watchDir = "string?"
 
   #@optional
   regions = [{
