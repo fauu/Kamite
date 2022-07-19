@@ -433,7 +433,8 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     double discongruityThreshold,
     int relevantDiscongruityWidth
   ) {
-    // Will compare the y-coordinate of the top edge at x and x+-compareDist to detect discongruity
+    // Will compare the y-coordinate of the top edge at x and x+-compareDist to detect discongruity.
+    // This is to not miss changes that are quick but not instantaneous.
     var compareDist = 4;
 
     var state = EdgeTraversalState.NORMAL;
