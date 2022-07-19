@@ -21,6 +21,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
 
   private static final int NEAR_CC_MAX_DISTANCE = 75;
 
+  private static boolean DEBUG_OTSU            = false;
   private static boolean DEBUG_INITIAL_CCS     = false;
   private static boolean DEBUG_PREFILTERED_CCS = false;
   private static boolean DEBUG_NEAR_CCS        = false;
@@ -42,18 +43,22 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
 
     var center = new Point(img.getWidth() / 2, img.getHeight() / 2);
 
-    var gray = ImageOps.copied(img);
-    ImageOps.toGrayscale(gray);
+    var grayImg = ImageOps.copied(img);
+    ImageOps.toGrayscale(grayImg);
 
     // Invert if light text on dark background suspected
     var darkCheckAreaDim = 50;
-    if (ImageOps.isDarkDominated(gray, Rectangle.around(center, darkCheckAreaDim))) {
-      ImageOps.negate(gray);
+    if (ImageOps.isDarkDominated(grayImg, Rectangle.around(center, darkCheckAreaDim))) {
+      ImageOps.negate(grayImg);
     }
 
-    var eroded = ImageOps.eroded(gray, 2, 2);
-    var imgArr = ImageOps.toGrayArray(eroded);
+    var erodedImg = ImageOps.eroded(grayImg, 2, 2);
+    var imgArr = ImageOps.toGrayArray(erodedImg);
     ImageOps.otsuThreshold(imgArr);
+    if (debug && DEBUG_OTSU) {
+      var otsuImg = ImageOps.grayArrayToBufferedImage(imgArr, img.getWidth(), img.getHeight());
+      sendDebugImage.accept(otsuImg, "Otsu threshold");
+    }
 
     // Init debug
     BufferedImage debugImg = null;
@@ -71,7 +76,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       initialCCs.forEach(cc -> cc.drawWith(debugGfx));
       sendDebugImage.accept(debugImg, "Initial connected components");
     }
-    var prefilteredCCs = prefilteredCCs(initialCCs);
+    var prefilteredCCs = prefilteredCCs(grayImg, img.getWidth(), initialCCs);
     if (debug && DEBUG_PREFILTERED_CCS) {
       debugGfx.setColor(Color.RED);
       prefilteredCCs.forEach(cc -> cc.drawWith(debugGfx));
@@ -188,15 +193,21 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       .toList();
   }
 
-  private List<Rectangle> prefilteredCCs(List<Rectangle> ccs) {
+  private List<Rectangle> prefilteredCCs(BufferedImage img, int w, List<Rectangle> ccs) {
     return ccs.stream()
       .filter(cc ->
         cc.dimensionsWithin(2, 150)
-        && (cc.getWidth() > 5 || cc.getHeight() > 5)
-        && !(cc.getRatio() > 0.65 && cc.getRatio() < 1.5 && cc.getWidth() < 8)
+        && !isLikelyTinyFurigana(img, w, cc)
         && cc.getArea() < 4000
       )
       .toList();
+  }
+
+  private boolean isLikelyTinyFurigana(BufferedImage img, int w, Rectangle cc) {
+    if (cc.getWidth() > 8 || cc.getHeight() > 8 || cc.getRatio() < 0.65 || cc.getRatio() > 1.5) {
+      return false;
+    }
+    return ImageOps.deviation(img, w, cc) < 45;
   }
 
   private List<Rectangle> nearCCs(List<Rectangle> ccs, Point p) {
