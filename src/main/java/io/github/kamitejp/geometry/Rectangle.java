@@ -9,6 +9,7 @@ public final class Rectangle {
   private int right;
   private int bottom;
 
+  // ASSUMPTION: Coordinates are non-negative
   private Rectangle(int left, int top, int right, int bottom) {
     this.left = left;
     this.top = top;
@@ -129,10 +130,19 @@ public final class Rectangle {
   }
 
   public static Rectangle ofEdges(int left, int top, int right, int bottom) {
+    if (left < 0 || top < 0 || right < left || bottom < top) {
+      throw new IllegalArgumentException("Incorrect edges provided for a rectangle");
+    }
     return new Rectangle(left, top, right, bottom);
   }
 
   public static Rectangle ofStartAndDimensions(int x, int y, int width, int height) {
+    if (x < 0 || y < 0) {
+      throw new IllegalArgumentException("Incorrect start point provided for a rectangle");
+    }
+    if (width < 1 || height < 1) {
+      throw new IllegalArgumentException("Incorrect dimensions provided for a rectangle");
+    }
     return new Rectangle(x, y, x + width, y + height);
   }
 
