@@ -205,6 +205,28 @@ public final class ImageOps {
     });
   }
 
+  public static int deviation(BufferedImage img, int w, Rectangle area) {
+    var sum = 0;
+    var values = new int[area.getArea()];
+    var n = 0;
+    for (var y = area.getTop(); y <= area.getBottom(); y++) {
+      for (var x = area.getLeft(); x <= area.getRight(); x++) {
+        // ASSUMPTION: Image is greyscale
+        var value = b(img.getRGB(x, y));
+        sum += value;
+        values[n] = value;
+        n++;
+      }
+    }
+    var avg = sum / n;
+    var sumSq = 0;
+    for (var value : values) {
+      var diff = value - avg;
+      sumSq += diff * diff;
+    }
+    return (int) Math.sqrt(sumSq / n);
+  }
+
   public static boolean isDarkDominated(BufferedImage img) {
     return isDarkDominated(img, null);
   }
