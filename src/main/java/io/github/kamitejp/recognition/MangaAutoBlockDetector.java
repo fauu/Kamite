@@ -21,6 +21,17 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
 
   private static final int NEAR_CC_MAX_DISTANCE = 75;
 
+  private static boolean DEBUG_INITIAL_CCS     = false;
+  private static boolean DEBUG_PREFILTERED_CCS = false;
+  private static boolean DEBUG_NEAR_CCS        = false;
+  private static boolean DEBUG_EXEMPLAR_CC     = false;
+  private static boolean DEBUG_GROWN_CCS       = true;
+  private static boolean DEBUG_MASK            = false;
+  private static boolean DEBUG_PRELIMINARY_BOX = false;
+  private static boolean DEBUG_REDUCED_BOX     = true;
+  private static boolean DEBUG_CONTOUR         = false;
+  private static boolean DEBUG_TOP_EDGE_CUTOFF = false;
+
   @Override
   public Optional<Rectangle> detect(
     BufferedImage img, boolean debug, BiConsumer<BufferedImage, String> sendDebugImage
@@ -55,17 +66,17 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
 
     // Extract and pre-filter connected components (ccs)
     var initialCCs = extractCCs(imgArr, img.getWidth(), img.getHeight());
-    // if (debug) {
-    //   debugGfx.setColor(Color.GREEN);
-    //   initialCCs.forEach(cc -> cc.drawWith(debugGfx));
-    //   sendDebugImage.accept(debugImg, "Initial connected components");
-    // }
+    if (debug && DEBUG_INITIAL_CCS) {
+      debugGfx.setColor(Color.GREEN);
+      initialCCs.forEach(cc -> cc.drawWith(debugGfx));
+      sendDebugImage.accept(debugImg, "Initial connected components");
+    }
     var prefilteredCCs = prefilteredCCs(initialCCs);
-    // if (debug) {
-    //   debugGfx.setColor(Color.RED);
-    //   prefilteredCCs.forEach(cc -> cc.drawWith(debugGfx));
-    //   sendDebugImage.accept(debugImg, "Pre-filtered connected components");
-    // }
+    if (debug && DEBUG_PREFILTERED_CCS) {
+      debugGfx.setColor(Color.RED);
+      prefilteredCCs.forEach(cc -> cc.drawWith(debugGfx));
+      sendDebugImage.accept(debugImg, "Pre-filtered connected components");
+    }
 
     // Find ccs near the user's click point (assumed to be the center of the input image)
     var nearCCs = nearCCs(prefilteredCCs, center);
@@ -73,24 +84,24 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       LOG.debug("Found no near connected compoments");
       return Optional.empty();
     }
-    // if (debug) {
-    //   debugGfx.setColor(Color.ORANGE);
-    //   nearCCs.forEach(cc -> cc.drawWith(debugGfx));
-    //   sendDebugImage.accept(debugImg, "Near connected components");
-    // }
+    if (debug && DEBUG_NEAR_CCS) {
+      debugGfx.setColor(Color.ORANGE);
+      nearCCs.forEach(cc -> cc.drawWith(debugGfx));
+      sendDebugImage.accept(debugImg, "Near connected components");
+    }
 
     // Find the average dimensions of the near ccs and take them as the dimensions of an exemplar
     // character cc. We assume that the user has clicked somewhere within the text block to be
     // detected, so the near ccs are most likely to represent characters
     var exemplarCC = createExemplarCC(nearCCs);
-    // if (debug) {
-    //   debugGfx.setColor(Color.ORANGE);
-    //   Rectangle.ofStartAndDimensions(
-    //     center.x(), center.y() - 300, exemplarCC.width(), exemplarCC.height()
-    //   )
-    //     .drawWith(debugGfx);
-    //   sendDebugImage.accept(debugImg, "Exemplar CC");
-    // }
+    if (debug && DEBUG_EXEMPLAR_CC) {
+      debugGfx.setColor(Color.ORANGE);
+      Rectangle.ofStartAndDimensions(
+        center.x(), center.y() - 300, exemplarCC.width(), exemplarCC.height()
+      )
+        .drawWith(debugGfx);
+      sendDebugImage.accept(debugImg, "Exemplar CC");
+    }
 
     // Use our assumed exemplar character cc to weed out ccs that probably don't represent chars
     var exemplarFilteredCCs = exemplarFilteredCCs(exemplarCC, prefilteredCCs);
@@ -99,7 +110,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     var grownCCs = growCCs(
       exemplarFilteredCCs, center, img.getWidth() - 1, img.getHeight() - 1, exemplarCC
     );
-    if (debug) {
+    if (debug && DEBUG_GROWN_CCS) {
       debugGfx.setColor(Color.MAGENTA);
       grownCCs.forEach(cc -> cc.drawWith(debugGfx));
       sendDebugImage.accept(debugImg, "Grown connected components");
@@ -107,9 +118,9 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
 
     // Fill a mask with the rectangles of the previously filtered and enlarged ccs
     var mask = createMaskWithCCs(img, grownCCs);
-    // if (debug) {
-    //   sendDebugImage.accept(mask, "Mask with grown connected components");
-    // }
+    if (debug && DEBUG_MASK) {
+      sendDebugImage.accept(mask, "Mask with grown connected components");
+    }
 
     // Find the bounding box of the largest contour in the mask image containing the center point
     var maskArr = ImageOps.maskImageToBinaryArray(mask);
@@ -137,7 +148,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       debug,
       debugGfx
     );
-    if (debug) {
+    if (debug && DEBUG_REDUCED_BOX) {
       debugGfx.setColor(Color.GREEN);
       reducedBox.drawWith(debugGfx);
     }
@@ -248,8 +259,8 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       var distCoeff =
         distCoeffFactorA
         / (Math.pow(normalizedDist, distCoeffFactorB) + distCoeffFactorA);
-      var growX = exemplar.width() * 1.7 * distCoeff;
-      var growY = exemplar.height() * 1.0 * distCoeff;
+      var growX = exemplar.width() * 1.9 * distCoeff;
+      var growY = exemplar.height() * 1.3 * distCoeff;
 
       // Special case hack: こ, に and similar tend to be detected as separate components, so we
       // need to grow them vertically a lot more than in the ordinary case
@@ -313,7 +324,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
   private Optional<PreliminaryBoxResult> preliminaryBox(
     List<Contour> contours, Point center, boolean debug, Graphics debugGfx
   ) {
-    if (debug) {
+    if (debug && DEBUG_PRELIMINARY_BOX) {
       debugGfx.setColor(Color.BLUE);
     }
     Rectangle box = null;
@@ -335,7 +346,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
         }
       }
 
-      if (debug) {
+      if (debug && DEBUG_PRELIMINARY_BOX) {
         bbox.drawWith(debugGfx);
       }
     }
@@ -354,17 +365,17 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
   ) {
     var topEdge = new int[box.getWidth()];
     Arrays.fill(topEdge, -1);
-    // if (debug) {
-    //   debugGfx.setColor(Color.RED);
-    // }
+    if (debug && DEBUG_CONTOUR) {
+      debugGfx.setColor(Color.RED);
+    }
     for (var p : sourceContour.points) {
       var xRel = p.x() - box.getLeft();
       if (topEdge[xRel] == -1 || p.y() < topEdge[xRel]) {
         topEdge[xRel] = p.y();
       }
-      // if (debug) {
-      //   debugGfx.drawRect(p.x(), p.y(), 2, 2);
-      // }
+      if (debug && DEBUG_CONTOUR) {
+        debugGfx.drawRect(p.x(), p.y(), 2, 2);
+      }
     }
 
     // Traverse from the center towards left and right edges until sufficiently wide discongruities
@@ -402,12 +413,12 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       discongruityThreshold,
       relevantDiscongruityWidth
     );
-    // if (debug) {
-    //   debugGfx.setColor(Color.RED);
-    //   for (var x = leftCutoff; x <= rightCutoff; x++) {
-    //     debugGfx.drawRect(box.getLeft() + x, topEdge[x], 1, 3);
-    //   }
-    // }
+    if (debug && DEBUG_TOP_EDGE_CUTOFF) {
+      debugGfx.setColor(Color.RED);
+      for (var x = leftCutoff; x <= rightCutoff; x++) {
+        debugGfx.drawRect(box.getLeft() + x, topEdge[x], 1, 3);
+      }
+    }
 
 
     leftCutoff += box.getLeft(); // Countour bbox coords -> image coords
