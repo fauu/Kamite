@@ -386,7 +386,6 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     }
     var normalY = ySum / (normalXSampleEnd - normalXSampleStart);
 
-    // Leftward
     var leftCutoff = findCutoffByEdgeDiscongruity(
       topEdge,
       centerXRel,
