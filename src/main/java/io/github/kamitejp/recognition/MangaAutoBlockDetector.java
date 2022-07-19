@@ -114,11 +114,12 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     // Find the bounding box of the largest contour in the mask image containing the center point
     var maskArr = ImageOps.maskImageToBinaryArray(mask);
     var contours = ContourFinder.find(maskArr, mask.getWidth(), mask.getHeight());
-    if (contours.size() == 0) {
-      LOG.debug("Could not find contours of the auto-block mask");
+    var maybePreliminaryBoxRes = preliminaryBox(contours, center, debug, debugGfx);
+    if (maybePreliminaryBoxRes.isEmpty()) {
+      LOG.debug("Could not determine preliminary block");
       return Optional.empty();
     }
-    var preliminaryBoxRes = preliminaryBox(contours, center, debug, debugGfx);
+    var preliminaryBoxRes = maybePreliminaryBoxRes.get();
 
     // The preliminary box can still contain undesirable parts, especially neighbouring text blocks
     // that were either too close to it to be distinguished as separate or linked were to it by
@@ -126,8 +127,9 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     //   We can remove some of those parts by examining the top edge of the contour from which the
     // preliminary box was made. Assuming that the our target text box has an approximately flat
     // top edge (since this is how the text is generally laid out), we will slice off the sides
-    // of the preliminary box where the y-position of the top edge abruptly changes.
-    var reducedBox = cutOffBoxSidesByDiscongruousTopEdge(
+    // of the preliminary box where the y-position of the top edge abruptly changes and doesn't
+    // promptly change back.
+    var reducedBox = cutOffBoxSidesByTopEdgeDiscongruity(
       preliminaryBoxRes.box(),
       preliminaryBoxRes.sourceContour(),
       center,
@@ -308,7 +310,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
 
   private record PreliminaryBoxResult(Rectangle box, Contour sourceContour) {}
 
-  private PreliminaryBoxResult preliminaryBox(
+  private Optional<PreliminaryBoxResult> preliminaryBox(
     List<Contour> contours, Point center, boolean debug, Graphics debugGfx
   ) {
     if (debug) {
@@ -337,10 +339,12 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
         bbox.drawWith(debugGfx);
       }
     }
-    return new PreliminaryBoxResult(box, sourceContour);
+    return box == null
+      ? Optional.empty()
+      : Optional.of(new PreliminaryBoxResult(box, sourceContour));
   }
 
-  private Rectangle cutOffBoxSidesByDiscongruousTopEdge(
+  private Rectangle cutOffBoxSidesByTopEdgeDiscongruity(
     Rectangle box,
     Contour sourceContour,
     Point center,
@@ -359,37 +363,123 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
         topEdge[xRel] = p.y();
       }
       // if (debug) {
-      //   debugGfx.drawRect(p.x(), p.y(), 3, 3);
+      //   debugGfx.drawRect(p.x(), p.y(), 2, 2);
       // }
     }
 
-    // Traverse from the center towards left and right edges until discongruities are found (or
-    // until we reach the edges)
-    int leftCutoff = 0;
-    int rightCutoff = topEdge.length - 1;
+    // Traverse from the center towards left and right edges until sufficiently wide discongruities
+    // are found (or until we reach the edges of the edge)
+
+    // Treat this much of a change in height as a discongruity
+    var discongruityThreshold = exemplar.height() * 1.75;
+    // Ignore discongruities below this width
+    var relevantDiscongruityWidth = (int) (exemplar.width() * 2);
+
     var centerXRel = center.x() - box.getLeft();
-    for (var x = centerXRel; x > 0; x--) {
-      var delta = Math.abs(topEdge[x] - topEdge[x - 1]);
-      if (delta > exemplar.height() * 1.5) {
-        leftCutoff = x;
-        break;
-      }
+
+    var normalXSampleRadius = exemplar.width();
+    var normalXSampleStart = Math.max(0, centerXRel - normalXSampleRadius);
+    var normalXSampleEnd = Math.min(centerXRel + normalXSampleRadius, box.getWidth());
+    var ySum = 0;
+    for (var x = normalXSampleStart; x < normalXSampleEnd; x++) {
+      ySum += topEdge[x];
     }
-    for (var x = centerXRel; x < topEdge.length - 1; x++) {
-      var delta = Math.abs(topEdge[x] - topEdge[x + 1]);
-      if (delta > exemplar.height() * 1.5) {
-        rightCutoff = x;
-        break;
-      }
-    }
+    var normalY = ySum / (normalXSampleEnd - normalXSampleStart);
+
+    // Leftward
+    var leftCutoff = findCutoffByEdgeDiscongruity(
+      topEdge,
+      centerXRel,
+      normalY,
+      EdgeTraversalDirection.LEFTWARD,
+      discongruityThreshold,
+      relevantDiscongruityWidth
+    );
+    var rightCutoff = findCutoffByEdgeDiscongruity(
+      topEdge,
+      centerXRel,
+      normalY,
+      EdgeTraversalDirection.RIGHTWARD,
+      discongruityThreshold,
+      relevantDiscongruityWidth
+    );
     // if (debug) {
     //   debugGfx.setColor(Color.RED);
     //   for (var x = leftCutoff; x <= rightCutoff; x++) {
-    //     debugGfx.drawRect(largestOverlappingContourBBox.getLeft() + x, topEdge[x], 1, 3);
+    //     debugGfx.drawRect(box.getLeft() + x, topEdge[x], 1, 3);
     //   }
     // }
+
+
     leftCutoff += box.getLeft(); // Countour bbox coords -> image coords
     rightCutoff += box.getLeft();
     return sourceContour.getBoundingBox(leftCutoff, rightCutoff);
+  }
+
+  private enum EdgeTraversalDirection {
+    LEFTWARD,
+    RIGHTWARD;
+  }
+
+  private enum EdgeTraversalState {
+    NORMAL,
+    IN_DISCONGRUITY;
+  }
+
+  private int findCutoffByEdgeDiscongruity(
+    int[] topEdge,
+    int startX,
+    int normalY,
+    EdgeTraversalDirection direction,
+    double discongruityThreshold,
+    int relevantDiscongruityWidth
+  ) {
+    // Will compare the y-coordinate of the top edge at x and x+-compareDist to detect discongruity
+    var compareDist = 4;
+
+    var state = EdgeTraversalState.NORMAL;
+    Integer currDiscongruityStartX = null;
+
+    // For leftward direction
+    var cutoff = 0;
+    var xStep = -1;
+    var stopMod = 1;
+    if (direction == EdgeTraversalDirection.RIGHTWARD) {
+      cutoff = topEdge.length - 1;
+      xStep = 1;
+      stopMod = -1; // For reversing the stop condition
+    }
+    var stopX = cutoff;
+
+    traversal: for (var x = startX; x * stopMod > stopX * stopMod; x += xStep) {
+      switch (state) {
+        case NORMAL:
+          var earlierX = x - (xStep * compareDist);
+          var earlierY = topEdge[earlierX];
+          var yDiffFromEarlier = Math.abs(topEdge[x] - earlierY);
+          if (yDiffFromEarlier >= discongruityThreshold) {
+            state = EdgeTraversalState.IN_DISCONGRUITY;
+            currDiscongruityStartX = earlierX + 1; // Inexact
+          }
+          break;
+
+        case IN_DISCONGRUITY:
+          var yDiffFromNormal = Math.abs(topEdge[x] - normalY);
+          if (yDiffFromNormal < discongruityThreshold) {
+            // Discongruity has ended before reaching a width that would classify it as relevant
+            state = EdgeTraversalState.NORMAL;
+            currDiscongruityStartX = null;
+          } else if (Math.abs(x - currDiscongruityStartX) >= relevantDiscongruityWidth) {
+            break traversal;
+          }
+          break;
+      }
+    }
+    if (state == EdgeTraversalState.IN_DISCONGRUITY) {
+      // We treat irrelevant discongruities as relevant if they persist until the edge of the edge
+      cutoff = currDiscongruityStartX;
+    }
+
+    return cutoff;
   }
 }
