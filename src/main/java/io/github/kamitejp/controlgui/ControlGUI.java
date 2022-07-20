@@ -87,8 +87,8 @@ public class ControlGUI extends JFrame {
         .addComponent(msgAreaScrollPane, 200, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         .addComponent(
           quitButton,
-          GroupLayout.DEFAULT_SIZE, 
-          GroupLayout.DEFAULT_SIZE, 
+          GroupLayout.DEFAULT_SIZE,
+          GroupLayout.DEFAULT_SIZE,
           Short.MAX_VALUE
         )
     );
