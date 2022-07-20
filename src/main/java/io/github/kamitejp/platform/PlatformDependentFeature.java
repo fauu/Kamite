@@ -2,7 +2,7 @@ package io.github.kamitejp.platform;
 
 public enum PlatformDependentFeature {
   GLOBAL_OCR("Global OCR", "text recognition of arbitrary screen areas"),
-  GLOBAL_KEYBINDINGS("Registering global keybindings", "automatically set up keybindings that work outside the client’s browser tab");
+  GLOBAL_KEYBINDINGS("Registering global keybindings", "automatically setting up keybindings that work outside the client’s browser tab");
 
   public final String displayName;
   public final String description;
