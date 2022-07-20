@@ -14,7 +14,6 @@ import io.github.kamitejp.dbus.DBusClientInitializationException;
 import io.github.kamitejp.platform.CPUArchitecture;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.OS;
-import io.github.kamitejp.platform.OSFamily;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformInitializationException;
@@ -28,7 +27,7 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
 
   protected LinuxPlatform() throws PlatformCreationException {
     super("linux");
-    if (!isOS(OS.LINUX)) {
+    if (getOS() != OS.LINUX) {
       throw new PlatformCreationException("Detected OS is not Linux");
     }
   }
@@ -47,11 +46,6 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
       );
       dbusClient = null;
     }
-  }
-
-  @Override
-  public OSFamily getOSFamily() {
-    return OSFamily.UNIX;
   }
 
   @Override

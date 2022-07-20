@@ -18,7 +18,6 @@ import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.OS;
-import io.github.kamitejp.platform.OSFamily;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.RecognitionOpError;
@@ -37,7 +36,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
   public WindowsPlatform() throws PlatformCreationException {
     super("win");
 
-    if (!isOS(OS.WINDOWS)) {
+    if (getOS() != OS.WINDOWS) {
       throw new PlatformCreationException("Detected OS is not Windows");
     }
 
@@ -46,11 +45,6 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
     } catch (RobotScreenshoterUnavailableException e) {
       throw new PlatformCreationException("Could not initialize Robot Screenshoter", e);
     }
-  }
-
-  @Override
-  public OSFamily getOSFamily() {
-    return OSFamily.WINDOWS;
   }
 
   @Override
@@ -78,7 +72,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   @Override
   public Result<BufferedImage, RecognitionOpError> takeAreaScreenshot(Rectangle area) {
-    var maybeScreenshot = this.robotScreenshoter.takeScreenshotOfArea(area.toAWT());
+    var maybeScreenshot = robotScreenshoter.takeScreenshotOfArea(area.toAWT());
     if (maybeScreenshot.isEmpty()) {
       return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
     }
@@ -114,7 +108,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   @Override
   public Provider getKeymasterProvider() {
-    return this.keymasterProvider;
+    return keymasterProvider;
   }
 
   @Override

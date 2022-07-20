@@ -195,15 +195,15 @@ public class Kamite {
     );
   }
 
-  private static void createControlGUI() {
-    (new ControlGUI()).init();
+  private void createControlGUI() {
+    (new ControlGUI()).init(platform);
   }
 
-  private static void createControlGUIAndShowFatalError(String message) {
+  private void createControlGUIAndShowFatalError(String message) {
     createControlGUIAndShowFatalError(message, null);
   }
 
-  private static void createControlGUIAndShowFatalError(String message, String details) {
+  private void createControlGUIAndShowFatalError(String message, String details) {
     createControlGUI();
     showFatalError(message, details);
   }

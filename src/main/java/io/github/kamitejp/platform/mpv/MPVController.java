@@ -42,7 +42,7 @@ public final class MPVController {
   private SocketChannel linuxEndpointSocketChannel;
 
   public MPVController(Platform platform, Consumer<PlayerStatus> statusUpdateCb) {
-    if (platform.getOSFamily() != OSFamily.UNIX) {
+    if (platform.getOS().getFamily() != OSFamily.UNIX) {
       LOG.error("mpv controller is not supported on the current platform");
       return;
     }

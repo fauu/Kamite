@@ -40,6 +40,7 @@ public abstract class GenericPlatform {
     List.of("target/java", "lib/generic");
 
   private String binName;
+  private OS os;
   private Path programPath;
 
   private Tesseract tesseract;
@@ -60,19 +61,27 @@ public abstract class GenericPlatform {
     return binName;
   }
 
-  public static Optional<OS> getOS() {
+  public OS getOS() {
+    if (os == null) {
+      os = detectOS();
+    }
+    return os;
+  }
+
+  public static OS detectOS() {
     OS os = null;
     var osName = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
     if (osName.contains("win")) {
       os = OS.WINDOWS;
-    } else if (osName.contains("nux")) {
+    } else if (osName.contains("lin")) {
+      os = OS.LINUX;
+    } else if (osName.contains("mac")) {
+      os = OS.MACOS;
+    } else {
+      LOG.warn("OS detection failed. Assuming Linux");
       os = OS.LINUX;
     }
-    return Optional.ofNullable(os);
-  }
-
-  public static boolean isOS(OS expectedOS) {
-    return getOS().filter(os -> os == expectedOS).isPresent();
+    return os;
   }
 
   public static Optional<BufferedImage> openImage(String path) {
@@ -93,14 +102,23 @@ public abstract class GenericPlatform {
   }
 
   public static boolean writeImage(BufferedImage img, String path) {
+    return writeImage(img, new File(path));
+  }
+
+  public static boolean writeImage(BufferedImage img, Path path) {
+    return writeImage(img, path.toFile());
+  }
+
+  public static boolean writeImage(BufferedImage img, File file) {
     try {
-      ImageIO.write(img, "png", new File(path));
+      ImageIO.write(img, "png", file);
     } catch (IOException e) {
       LOG.error("Could not save image", e);
       return false;
     }
     return true;
   }
+
 
   public void initOCR(OCREngine engine) throws PlatformOCRInitializationException {
     if (engine instanceof OCREngine.Tesseract) {

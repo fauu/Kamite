@@ -36,7 +36,7 @@ public class MangaOCRController {
   public MangaOCRController(
     Platform platform, Consumer<MangaOCREvent> eventCb
   ) throws MangaOCRInitializationException {
-    if (platform.getOSFamily() != OSFamily.UNIX) {
+    if (platform.getOS().getFamily() != OSFamily.UNIX) {
       throw new MangaOCRInitializationException("not supported on the current platform");
     }
 

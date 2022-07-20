@@ -18,6 +18,7 @@ import io.github.kamitejp.platform.linux.gnome.GnomePlatform;
 import io.github.kamitejp.platform.linux.kde.PlasmaPlatform;
 import io.github.kamitejp.platform.linux.wlroots.WlrootsPlatform;
 import io.github.kamitejp.platform.linux.xorg.XorgPlatform;
+import io.github.kamitejp.platform.macos.MacOSPlatform;
 import io.github.kamitejp.platform.windows.WindowsPlatform;
 import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.util.Result;
@@ -29,6 +30,7 @@ public interface Platform {
   List<Class<? extends Platform>> KNOWN_PLATFORMS =
     List.of(
       WindowsPlatform.class,
+      MacOSPlatform.class,
       GnomePlatform.class,
       PlasmaPlatform.class,
       WlrootsPlatform.class,
@@ -47,7 +49,7 @@ public interface Platform {
 
   String getName();
 
-  OSFamily getOSFamily();
+  OS getOS();
 
   default List<PlatformDependentFeature> getUnsupportedFeatures() {
     return List.of();

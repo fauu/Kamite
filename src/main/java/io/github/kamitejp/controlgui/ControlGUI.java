@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import io.github.kamitejp.Kamite;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.OS;
+import io.github.kamitejp.platform.Platform;
 
 public class ControlGUI extends JFrame {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -33,11 +34,15 @@ public class ControlGUI extends JFrame {
   private static final Font APP_NAME_LABEL_FONT = new Font("Sans Serif", Font.BOLD, 32);
   private static final Font MSG_AREA_FONT = new Font("Courier", Font.PLAIN, 13);
 
-  public void init() {
+  public void init(Platform platform) {
+    OS os = null;
+    if (platform != null) {
+      os = platform.getOS();
+    } else {
+      os = GenericPlatform.detectOS();
+    }
     try {
-      UIManager.setLookAndFeel(
-        GenericPlatform.isOS(OS.LINUX) ? LINUX_LAF_CLASSNAME : DEFAULT_LAF_CLASSNAME
-      );
+      UIManager.setLookAndFeel(os == OS.LINUX ? LINUX_LAF_CLASSNAME : DEFAULT_LAF_CLASSNAME);
       SwingUtilities.updateComponentTreeUI(this);
     } catch (Exception e) {
       LOG.debug("Could not change Look and Feel", e);
