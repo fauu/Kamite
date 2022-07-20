@@ -141,6 +141,10 @@ public final class MPVController {
         LOG.error("Exception while waiting for mpv IPC Connecter", e);
         return;
       }
+      if (unixSocketChannel == null) {
+        LOG.error("Received a null UNIX socket channel. Aborting");
+        return;
+      }
 
       // The external world will be notified of the established connection as we handle the
       // response to this command
@@ -166,7 +170,7 @@ public final class MPVController {
       try {
         Thread.sleep(CONNECTION_RETRY_INTERVAL_MS);
       } catch (InterruptedException e) {
-        LOG.error("Exception while waiting for mpv socket to close", e);
+        LOG.error("Interrupted while waiting for mpv socket to close. Aborting");
         return;
       }
 
@@ -188,8 +192,9 @@ public final class MPVController {
           Thread.sleep(CONNECTION_RETRY_INTERVAL_MS);
         }
       } catch (InterruptedException e) {
-        throw new RuntimeException("InterruptedException in mpv controller connecter", e);
+        LOG.debug("Connecter thread was interrupted. Aborting", e);
       }
+      return null;
     }
 
     private static SocketChannel openConnection() {
