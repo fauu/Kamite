@@ -119,7 +119,6 @@ public abstract class GenericPlatform {
     return true;
   }
 
-
   public void initOCR(OCREngine engine) throws PlatformOCRInitializationException {
     if (engine instanceof OCREngine.Tesseract) {
       tesseract = new Tesseract();
