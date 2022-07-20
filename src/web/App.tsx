@@ -56,6 +56,7 @@ export const App: VoidComponent = () => {
   const [middleMouseButtonLikelyDown, setMiddleMouseButtonLikelyDown] =
     createSignal(false);
 
+  let rootEl: HTMLDivElement;
   let mainSectionEl: HTMLDivElement | undefined;
   let commandPaletteEl: HTMLDivElement | undefined;
   let chunkLabelEl: HTMLSpanElement;
@@ -137,6 +138,10 @@ export const App: VoidComponent = () => {
         300
       );
     }
+
+    // Catch in capturing phase so that when we exit chunk edit mode by clicking on a lookup button
+    // the editing changes are committed before the lookup button handler initiates lookup
+    rootEl.addEventListener("click", handleRootClick, { capture: true });
   });
 
   // === ON INIT =============================================================================
@@ -153,11 +158,13 @@ export const App: VoidComponent = () => {
     if (!target) {
       return;
     }
-    // Exit Chunk edit mode with a mouse click except when clicked inside the following elements
-    const exceptionalEls = [commandPaletteEl, chunkInputEl, chunkPickerEl];
-    const insideExceptionalEl = exceptionalEls.some(el => el && el.contains(target as Node));
-    if (!insideExceptionalEl) {
-      chunks.finishEditing();
+    if (chunks.editing()) {
+      // Exit Chunk edit mode with a mouse click except when clicked inside the following elements
+      const exceptionalEls = [commandPaletteEl, chunkInputEl, chunkPickerEl];
+      const insideExceptionalEl = exceptionalEls.some(el => el && el.contains(target as Node));
+      if (!insideExceptionalEl) {
+        chunks.finishEditing();
+      }
     }
   };
 
@@ -559,12 +566,12 @@ export const App: VoidComponent = () => {
 
   return <ThemeProvider theme={theme}>
     <Root
-      onClick={handleRootClick}
       onMouseDown={handleRootMouseDown}
       onMouseUp={handleRootMouseUp}
       onMouseMove={handleRootMouseMove}
       onMouseLeave={handleRootMouseLeave}
       id="root"
+      ref={el => rootEl = el}
     >
       <Show when={backend.connectionState() !== "connected"}>
         <BackendNotConnectedScreen
