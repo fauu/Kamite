@@ -23,6 +23,9 @@ import io.github.kamitejp.Kamite;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.OS;
 import io.github.kamitejp.platform.Platform;
+import io.github.kamitejp.platform.linux.gnome.GnomePlatform;
+import io.github.kamitejp.platform.linux.xorg.XorgDesktop;
+import io.github.kamitejp.platform.linux.xorg.XorgPlatform;
 
 public class ControlGUI extends JFrame {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -48,12 +51,16 @@ public class ControlGUI extends JFrame {
       LOG.debug("Could not change Look and Feel", e);
     }
 
+    var toolkit = Toolkit.getDefaultToolkit();
+
     setTitle(Kamite.APP_NAME_DISPLAY);
     setSize(DEFAULT_WINDOW_SIZE);
     setMinimumSize(DEFAULT_WINDOW_SIZE);
-    setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(ICON_RESOURCE_PATH)));
+    setIconImage(toolkit.getImage(getClass().getResource(ICON_RESOURCE_PATH)));
     setLocationRelativeTo(null);
     setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+    maybeApplyGnomeWindowNameFix(platform, toolkit);
 
     var pane = getContentPane();
     var layout = new GroupLayout(pane);
@@ -104,5 +111,26 @@ public class ControlGUI extends JFrame {
     setVisible(true);
 
     LOG.debug("Initialized control GUI");
+  }
+
+  private static void maybeApplyGnomeWindowNameFix(Platform platform, Toolkit toolkit) {
+    var isGnome = false;
+    if (platform instanceof GnomePlatform) {
+      isGnome = true;
+    } else if (platform instanceof XorgPlatform xorgPlatform) {
+      if (xorgPlatform.getDesktop() == XorgDesktop.GNOME) {
+        isGnome = true;
+      }
+    }
+    if (isGnome) {
+      try {
+        var awtAppClassNameField = toolkit.getClass().getDeclaredField("awtAppClassName");
+        awtAppClassNameField.setAccessible(true);
+        awtAppClassNameField.set(toolkit, Kamite.APP_NAME_DISPLAY);
+        LOG.debug("Applied GNOME control GUI window name fix");
+      } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
+        LOG.warn("Error while setting 'awtAppClassName'", e.toString());
+      }
+    }
   }
 }

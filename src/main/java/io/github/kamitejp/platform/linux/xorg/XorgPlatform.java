@@ -117,4 +117,10 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
   public void setKeymasterProvider(Provider provider) {
     this.keymasterProvider = provider;
   }
+
+  public XorgDesktop getDesktop() {
+    return "GNOME".equalsIgnoreCase(getEnvVarAsNonNullableString("XDG_CURRENT_DESKTOP"))
+      ? XorgDesktop.GNOME
+      : XorgDesktop.UNKNOWN;
+  }
 }
