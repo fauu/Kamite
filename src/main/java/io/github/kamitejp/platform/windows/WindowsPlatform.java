@@ -78,7 +78,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
     }
 
     // DEV
-    // GenericPlatform.writeImage(maybeScreenshot.get(), "C:/dev/test.png");
+    // GenericPlatform.writeImage(maybeScreenshot.get(), "C:/dev/kamite-test.png");
 
     return Result.Ok(maybeScreenshot.get());
   }
