@@ -708,23 +708,30 @@ public class Kamite {
     GlobalKeybindingProvider provider,
     Config.Keybindings.Global keybindings
   ) {
-    var registrationState = new Object() {
-      @SuppressWarnings("PackageVisibleField") boolean registeredAtLeastOne;
-    };
-    Map.<String, Runnable>of(
-      keybindings.ocr().manualBlock(), this::recognizeManualBlockDefault,
-      keybindings.ocr().autoBlock(), this::recognizeAutoBlockDefault
-    )
-      .forEach((binding, handler) -> {
-        if (binding != null) {
-          provider.registerKeybinding(binding, handler);
-          LOG.debug("Registered global keybinding: {}", binding);
-          registrationState.registeredAtLeastOne = true;
-        }
-      });
-    if (registrationState.registeredAtLeastOne) {
+    // TODO: (QUAL) Loop
+    var count = 0;
+    if (keybindings.ocr().manualBlock() != null) {
+      registerGlobalKeybinding(
+        provider, keybindings.ocr().manualBlock(), this::recognizeManualBlockDefault
+      );
+      count++;
+    }
+    if (keybindings.ocr().autoBlock() != null) {
+      registerGlobalKeybinding(
+        provider, keybindings.ocr().autoBlock(), this::recognizeAutoBlockDefault
+      );
+      count++;
+    }
+    if (count > 0) {
       LOG.info("Registered global keybindings");
     }
+  }
+
+  private void registerGlobalKeybinding(
+    GlobalKeybindingProvider provider, String binding, Runnable handler
+  ) {
+    provider.registerKeybinding(binding, handler);
+    LOG.debug("Registered global keybinding: {}", binding);
   }
 
   private record PreconfigArgs(boolean debug, String profileName) {}
