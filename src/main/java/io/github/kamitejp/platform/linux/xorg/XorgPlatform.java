@@ -1,6 +1,5 @@
 package io.github.kamitejp.platform.linux.xorg;
 
-import java.awt.MouseInfo;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
@@ -54,7 +53,16 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
 
   @Override
   public Result<Point, RecognitionOpError> getUserSelectedPoint() {
-    return Result.Ok(Point.from(MouseInfo.getPointerInfo().getLocation()));
+    if (slop == null) {
+      return Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+    }
+
+    var slopRunRes = runSlop();
+    if (slopRunRes.isErr()) {
+      return Result.Err(slopRunRes.err());
+    }
+
+    return Result.Ok(slopRunRes.get().getCenter());
   }
 
   @Override
@@ -63,7 +71,21 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
       return Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
     }
 
-    return switch (slop.getAreaSelectionFromUser()) {
+    var slopRunRes = runSlop();
+    if (slopRunRes.isErr()) {
+      return Result.Err(slopRunRes.err());
+    }
+
+    return Result.Ok(slopRunRes.get());
+  }
+
+  private Result<Rectangle, RecognitionOpError> runSlop() {
+    if (slop == null) {
+      return Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+    }
+
+    var slopRes = slop.getAreaSelectionFromUser();
+    return switch (slopRes) {
       case SlopResult.ExecutionFailed __ -> {
         LOG.error("slop did not execute properly");
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
@@ -74,7 +96,7 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
 
-      case SlopResult.Cancelled __ -> Result.Err(RecognitionOpError.SELECTION_CANCELLED);
+      case SlopResult.Cancelled ignored -> Result.Err(RecognitionOpError.SELECTION_CANCELLED);
 
       case SlopResult.FormatDifferentFromExpected expected -> {
         LOG.error( // NOPMD
@@ -84,7 +106,7 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
 
-      case SlopResult.ZeroArea __ -> {
+      case SlopResult.ZeroArea ignored -> {
         LOG.error("slop returned a zero area");
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
