@@ -20,7 +20,7 @@ public final class Tesseract extends BaseSimpleDependency {
   @Override
   public boolean checkIsAvailable() {
     var res = ProcessHelper.run(ProcessRunParams.ofCmd(BIN, "-v").withTimeout(1000));
-    return res.didComplete() && res.getStdout().startsWith("tesseract 5.");
+    return res.didComplete() && res.getStdout().startsWith("tesseract ");
   }
 
   public TesseractResult ocr(BufferedImage img, TesseractModel model) {
@@ -28,7 +28,7 @@ public final class Tesseract extends BaseSimpleDependency {
     var res = ProcessHelper.run(
       ProcessRunParams.ofCmd(
         BIN,
-        "stdin", "stdout", 
+        "stdin", "stdout",
         "-l", model.lang,
         "--dpi", DPI,
         "--oem", OEM,
