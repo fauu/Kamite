@@ -85,7 +85,7 @@ export const App: VoidComponent = () => {
   const notebook     = createNotebookState({ chunks });
   const debug        = createDebugState();
 
-  const statusPanelFader = createStatusPanelFader({ 
+  const statusPanelFader = createStatusPanelFader({
     chunkLabelAndTranslationEl: () => chunkLabelAndTranslationEl,
     statusPanelEl: () => statusPanelEl,
     notebook,
@@ -160,7 +160,7 @@ export const App: VoidComponent = () => {
       chunks.finishEditing();
     }
   };
-  
+
   const handleRootMouseDown = (event: MouseEvent) => {
     switch (event.button) {
       case 0: { // Left
@@ -190,7 +190,7 @@ export const App: VoidComponent = () => {
 
           // Start resizing Notebook
           const resizeHandleStart =
-            !themeLayoutFlipped(theme) 
+            !themeLayoutFlipped(theme)
             ? mainSectionEl!.offsetHeight
             : notebook.height().px;
           const withinResizeHandle =
@@ -224,7 +224,7 @@ export const App: VoidComponent = () => {
         break;
     }
   };
-  
+
   const handleRootMouseMove = (event: MouseEvent) => {
     const primaryButton = (event.buttons & 1) === 1;
     if (primaryButton) {
@@ -472,7 +472,7 @@ export const App: VoidComponent = () => {
             } else {
               allowDefault = true;
             }
-          } 
+          }
           if (allowDefault) {
             if (chunks.selectingInTranslation()) {
               // Allow default
@@ -556,7 +556,7 @@ export const App: VoidComponent = () => {
   document.addEventListener("blur", globalTooltip.hide);
 
   // ==============================================================================================
-  
+
   return <ThemeProvider theme={theme}>
     <Root
       onClick={handleRootClick}
