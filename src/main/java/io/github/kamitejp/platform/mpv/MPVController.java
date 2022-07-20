@@ -39,7 +39,7 @@ public final class MPVController {
 
   private Consumer<PlayerStatus> statusUpdateCb;
   private State state;
-  private SocketChannel linuxEndpointSocketChannel;
+  private SocketChannel unixSocketChannel;
 
   public MPVController(Platform platform, Consumer<PlayerStatus> statusUpdateCb) {
     if (platform.getOS().getFamily() != OSFamily.UNIX) {
@@ -56,7 +56,7 @@ public final class MPVController {
   }
 
   public void sendCommand(MPVCommand cmd) {
-    if (linuxEndpointSocketChannel == null) {
+    if (unixSocketChannel == null) {
       LOG.debug("Tried to send command to mpv while there was no connection");
       return;
     }
@@ -72,7 +72,7 @@ public final class MPVController {
       }
       + "}\n";
     try {
-      linuxEndpointSocketChannel.write(ByteBuffer.wrap(ipcCmd.getBytes(StandardCharsets.UTF_8)));
+      unixSocketChannel.write(ByteBuffer.wrap(ipcCmd.getBytes(StandardCharsets.UTF_8)));
       if (LOG.isDebugEnabled()) {
         LOG.debug("Sent mpv IPC command: {}", ipcCmd.replace("\n", "\\n"));
       }
@@ -91,9 +91,9 @@ public final class MPVController {
   }
 
   public void destroy() {
-    if (linuxEndpointSocketChannel != null) {
+    if (unixSocketChannel != null) {
       try {
-        linuxEndpointSocketChannel.close();
+        unixSocketChannel.close();
       } catch (IOException e) {
         LOG.error("Failed to close mpv UNIX socket connection", e);
       }
@@ -136,7 +136,7 @@ public final class MPVController {
       // This will block until we connect to the socket
       var socketChannelFuture = CompletableFuture.supplyAsync(new Connecter());
       try {
-        linuxEndpointSocketChannel = socketChannelFuture.get();
+        unixSocketChannel = socketChannelFuture.get();
       } catch (ExecutionException | InterruptedException e) {
         LOG.error("Exception while waiting for mpv IPC Connecter", e);
         return;
@@ -149,7 +149,7 @@ public final class MPVController {
       LOG.info("Connected to mpv UNIX socket at {}", UNIX_SOCKET_ADDR);
 
       var readerFuture = CompletableFuture.runAsync(
-        new Reader(linuxEndpointSocketChannel, messageCb)
+        new Reader(unixSocketChannel, messageCb)
       );
       try {
         readerFuture.get();
@@ -218,7 +218,7 @@ public final class MPVController {
       buffer = ByteBuffer.allocate(1024);
       this.messageCb = messageCb;
     }
-    
+
     @Override
     public void run() {
       try {
