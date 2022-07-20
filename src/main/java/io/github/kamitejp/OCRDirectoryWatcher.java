@@ -10,25 +10,23 @@ import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.kamitejp.platform.GenericPlatform;
-import io.github.kamitejp.recognition.TextOrientation;
 
 public class OCRDirectoryWatcher {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Path dirPath;
   private final WatchService watchService;
-  private final BiConsumer<BufferedImage, TextOrientation> recognizeBox;
+  private final Consumer<BufferedImage> recognizeBox;
   private final Thread worker;
 
   public OCRDirectoryWatcher(
-    String rawDirPath, BiConsumer<BufferedImage, TextOrientation> recognizeBox
+    String rawDirPath, Consumer<BufferedImage> recognizeBox
   ) throws OCRDirectoryWatcherCreationException {
     this.recognizeBox = recognizeBox;
     try {
@@ -71,7 +69,7 @@ public class OCRDirectoryWatcher {
       .ifPresentOrElse(
         img -> {
           LOG.debug("Recognizing image from watched directory: {}", absolutePath);
-          recognizeBox.accept(img, TextOrientation.UNKNOWN);
+          recognizeBox.accept(img);
         },
         () -> LOG.error("OCR directory watcher did not receive image: {}", absolutePath)
       );

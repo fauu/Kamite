@@ -143,7 +143,7 @@ public class Kamite {
     var ocrWatchDir = config.ocr().watchDir();
     if (ocrWatchDir != null) {
       try {
-        ocrDirectoryWatcher = new OCRDirectoryWatcher(ocrWatchDir, this::recognizeBox);
+        ocrDirectoryWatcher = new OCRDirectoryWatcher(ocrWatchDir, this::recognizeImageProvided);
       } catch (OCRDirectoryWatcherCreationException e) {
         LOG.error("Failed to create OCR directory watcher: {}", e.toString());
       }
@@ -327,7 +327,7 @@ public class Kamite {
     if (autoBlockHeuristic != null) {
       doRecognizeAutoBlockImageProvided(screenshotRes.get(), textOrientation, autoBlockHeuristic);
     } else {
-      recognizeBox(screenshotRes.get(), textOrientation);
+      doRecognizeBox(screenshotRes.get(), textOrientation);
     }
   }
 
@@ -361,6 +361,13 @@ public class Kamite {
 
   private void recognizeAutoBlockColumnDefault() {
     recognizeAutoBlock(TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_SINGLE_COLUMN);
+  }
+
+  private void recognizeImageProvided(BufferedImage img) {
+    LOG.debug("Handling image provided recognition request");
+    updateAndSendRecognizerStatus(RecognizerStatus.Kind.PROCESSING);
+    doRecognizeBox(img, TextOrientation.UNKNOWN);
+    updateAndSendRecognizerStatus(RecognizerStatus.Kind.IDLE);
   }
 
   @SuppressWarnings("SameParameterValue")
@@ -417,10 +424,10 @@ public class Kamite {
       LOG.info(msg);
       return;
     }
-    recognizeBox(maybeBlockImg.get(), textOrientation);
+    doRecognizeBox(maybeBlockImg.get(), textOrientation);
   }
 
-  private void recognizeBox(BufferedImage img, TextOrientation textOrientation) {
+  private void doRecognizeBox(BufferedImage img, TextOrientation textOrientation) {
     var recognitionRes = recognizer.recognizeBox(img, textOrientation);
     if (recognitionRes.isErr()) {
       var errorNotification = switch (recognitionRes.err()) {
