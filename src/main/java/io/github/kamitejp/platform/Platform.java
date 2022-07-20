@@ -55,6 +55,10 @@ public interface Platform {
     return List.of();
   }
 
+  default boolean supports(PlatformDependentFeature feature) {
+    return !getUnsupportedFeatures().contains(feature);
+  }
+
   void initOCR(OCREngine engine) throws PlatformOCRInitializationException;
 
   TesseractResult tesseractOCR(BufferedImage img, TesseractModel model);

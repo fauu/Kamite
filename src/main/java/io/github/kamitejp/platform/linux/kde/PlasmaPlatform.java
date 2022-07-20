@@ -27,7 +27,10 @@ public class PlasmaPlatform extends WaylandPlatform {
 
   @Override
   public List<PlatformDependentFeature> getUnsupportedFeatures() {
-    return List.of(PlatformDependentFeature.GLOBAL_OCR);
+    return List.of(
+      PlatformDependentFeature.GLOBAL_OCR,
+      PlatformDependentFeature.GLOBAL_KEYBINDINGS
+    );
   }
 
   @Override

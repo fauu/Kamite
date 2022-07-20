@@ -125,7 +125,7 @@ public class Kamite {
     var unsupportedFeatures = platform.getUnsupportedFeatures();
     if (unsupportedFeatures.size() > 0) {
       LOG.warn( // NOPMD
-        "The current platform does *not* support the following features:\n{}",
+        "The current platform does not support the following features:\n{}",
         unsupportedFeatures.stream()
           .map(f -> "– %s (%s)".formatted(f.getDisplayName(), f.getDescription()))
           .collect(joining("\n"))
@@ -555,8 +555,7 @@ public class Kamite {
           case AWAITING_USER_INPUT, PROCESSING ->
             "Another text recognition operation is already in progress";
           default -> {
-            var noGlobalOCR = platform.getUnsupportedFeatures()
-              .contains(PlatformDependentFeature.GLOBAL_OCR);
+            var noGlobalOCR = !platform.supports(PlatformDependentFeature.GLOBAL_OCR);
             if (noGlobalOCR && cmd.isGlobalOCRCommand()) {
               yield "The current platform does not support global OCR commands";
             }
@@ -699,8 +698,15 @@ public class Kamite {
       PlayerStatus.DISCONNECTED
     );
 
-    if (platform instanceof GlobalKeybindingProvider keybindingProvider) {
-      setupGlobalKeybindings(keybindingProvider, config.keybindings().global());
+    if (platform.supports(PlatformDependentFeature.GLOBAL_KEYBINDINGS)) {
+      if (platform instanceof GlobalKeybindingProvider keybindingProvider) {
+        setupGlobalKeybindings(keybindingProvider, config.keybindings().global());
+      } else {
+        LOG.warn(
+          "Platform reported supporting global keybindings, yet it does not implement the required"
+          + " interface. Global keybindings will be unavailable"
+        );
+      }
     }
   }
 
