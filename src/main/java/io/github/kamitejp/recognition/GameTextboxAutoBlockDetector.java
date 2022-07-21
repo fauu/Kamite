@@ -9,11 +9,15 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
+import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
+import io.github.kamitejp.recognition.imagefeature.Contour;
+import io.github.kamitejp.recognition.imagefeature.ContourFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
+import io.github.kamitejp.image.ImageOps;
 
 public class GameTextboxAutoBlockDetector implements AutoBlockDetector {
   @SuppressWarnings("unused")

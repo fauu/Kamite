@@ -1,11 +1,11 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.imagefeature;
 
 import java.util.List;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 
-class Contour {
+public class Contour {
   public List<Point> points;
   public int id;
   public int parent = 0;

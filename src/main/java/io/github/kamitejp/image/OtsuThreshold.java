@@ -26,7 +26,7 @@
  *  SOFTWARE.
  */
 
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.image;
 
 public final class OtsuThreshold {
   private OtsuThreshold() {}

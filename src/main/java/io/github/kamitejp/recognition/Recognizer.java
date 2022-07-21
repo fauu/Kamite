@@ -22,6 +22,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
+import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +38,7 @@ import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
+import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.util.Result;
 
 public class Recognizer {

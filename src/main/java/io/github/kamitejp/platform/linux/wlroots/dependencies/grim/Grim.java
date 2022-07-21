@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import io.github.kamitejp.platform.BaseSimpleDependency;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.platform.process.ProcessRunParams;
-import io.github.kamitejp.recognition.ImageOps;
+import io.github.kamitejp.image.ImageOps;
 
 public final class Grim extends BaseSimpleDependency {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

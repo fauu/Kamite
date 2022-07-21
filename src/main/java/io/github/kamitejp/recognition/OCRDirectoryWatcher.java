@@ -1,4 +1,4 @@
-package io.github.kamitejp;
+package io.github.kamitejp.recognition;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

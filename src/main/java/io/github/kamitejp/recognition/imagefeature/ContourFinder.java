@@ -27,7 +27,7 @@
  *  SOFTWARE.
  */
 
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.imagefeature;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ import java.util.List;
 import io.github.kamitejp.geometry.Point;
 
 @SuppressWarnings({"PMD.LocalVariableNamingConventions", "PMD.FormalParameterNamingConventions"})
-class ContourFinder {
+public class ContourFinder {
   private static final int N_PIXEL_NEIGHBOR = 8;
 
    // 0=background, 1=foreground, will be modified by the function

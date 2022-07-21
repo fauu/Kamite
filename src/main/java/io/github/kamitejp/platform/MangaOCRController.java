@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.kamitejp.recognition.ImageOps;
+import io.github.kamitejp.image.ImageOps;
 
 public class MangaOCRController {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

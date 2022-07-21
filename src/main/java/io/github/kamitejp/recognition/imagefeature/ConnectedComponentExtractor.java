@@ -20,7 +20,7 @@
  *  limitations under the License.
  */
 
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.imagefeature;
 
 @SuppressWarnings({"PMD.LocalVariableNamingConventions", "PMD.FormalParameterNamingConventions"})
 public class ConnectedComponentExtractor {
