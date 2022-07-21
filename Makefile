@@ -39,7 +39,7 @@ lint-docs:
 
 lint-java:
 	PMD_JAVA_OPTS=--enable-preview \
-		pmd -language java -version 17-preview -d src/main/java -f text \
+		pmd -language java -version 18-preview -d src/main/java -f text \
 			-R rulesets/java/quickstart.xml; \
 
 lint-ts:
