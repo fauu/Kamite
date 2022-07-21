@@ -1,9 +1,12 @@
-.PHONY: clean dist gen-config jar lint lint-docs lint-java lint-ts runtime textractor
+.PHONY: clean client dist gen-config jar lint lint-docs lint-java lint-ts runtime textractor
 
 clean:
 	rm -rf target/; \
 
-dist: gen-config jar runtime textractor
+client:
+	yarn build; \
+
+dist: jar runtime textractor
 	rm -rf target/dist; \
 	rm -rf target/*.zip; \
 	mkdir -p target/dist; \
@@ -28,7 +31,7 @@ dist: gen-config jar runtime textractor
 gen-config:
 	support/scripts/generate-config-classes.sh; \
 
-jar:
+jar: gen-config client
 	mvn package; \
 
 lint: lint-docs lint-java lint-js
