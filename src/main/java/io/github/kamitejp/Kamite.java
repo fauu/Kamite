@@ -102,7 +102,7 @@ public class Kamite {
 
     // Unsupported platform features message deferred until control GUI potentially present
     var unsupportedFeatures = platform.getUnsupportedFeatures();
-    if (unsupportedFeatures.size() > 0) {
+    if (!unsupportedFeatures.isEmpty()) {
       LOG.warn( // NOPMD
         "The current platform does not support the following features:\n{}",
         unsupportedFeatures.stream()
@@ -515,7 +515,7 @@ public class Kamite {
   private void handleCommand(IncomingCommand incoming, CommandSource source) {
     try {
       doHandleCommand(incoming, source);
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       LOG.error("Unhandled exception while handling a command. See stderr for the stack trace");
       e.printStackTrace();
     }
@@ -719,7 +719,7 @@ public class Kamite {
     }
   }
 
-  private void registerGlobalKeybinding(
+  private static void registerGlobalKeybinding(
     GlobalKeybindingProvider provider, String binding, Runnable handler
   ) {
     provider.registerKeybinding(binding, handler);

@@ -33,7 +33,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
   private static boolean DEBUG_EXEMPLAR_CC     = false;
   private static boolean DEBUG_GROWN_CCS       = true;
   private static boolean DEBUG_MASK            = false;
-  private static boolean DEBUG_PRELIMINARY_BOX = false;
+  private static boolean DEBUG_PRELIMINARY_BOX = true;
   private static boolean DEBUG_REDUCED_BOX     = true;
   private static boolean DEBUG_CONTOUR         = false;
   private static boolean DEBUG_TOP_EDGE_CUTOFF = false;
@@ -190,7 +190,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     return Optional.ofNullable(finalBox);
   }
 
-  private List<Rectangle> extractCCs(int[] imgArr, int w, int h) {
+  private static List<Rectangle> extractCCs(int[] imgArr, int w, int h) {
     var rawCCs = new ConnectedComponentExtractor().extract(imgArr, w, h);
     return Arrays.stream(rawCCs)
       .skip(1)
@@ -198,7 +198,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       .toList();
   }
 
-  private List<Rectangle> prefilteredCCs(BufferedImage img, int w, List<Rectangle> ccs) {
+  private static List<Rectangle> prefilteredCCs(BufferedImage img, int w, List<Rectangle> ccs) {
     return ccs.stream()
       .filter(cc ->
         cc.dimensionsWithin(2, 150)
@@ -208,15 +208,15 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       .toList();
   }
 
-  private boolean isLikelyTinyFurigana(BufferedImage img, int w, Rectangle cc) {
+  private static boolean isLikelyTinyFurigana(BufferedImage img, int w, Rectangle cc) {
     if (cc.getWidth() > 8 || cc.getHeight() > 8 || cc.getRatio() < 0.65 || cc.getRatio() > 1.5) {
       return false;
     }
     return ImageOps.deviation(img, w, cc) < 45;
   }
 
-  private List<Rectangle> nearCCs(List<Rectangle> ccs, Point p) {
-    var res = new ArrayList<Rectangle>();
+  private static List<Rectangle> nearCCs(List<Rectangle> ccs, Point p) {
+    var res = new ArrayList<Rectangle>(32);
     for (var cc : ccs) {
       var dist = cc.getCenter().distanceFrom(p);
       if (dist <= NEAR_CC_MAX_DISTANCE) {
@@ -228,7 +228,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
 
   private record ExemplarConnectedComponent(int width, int height, int averageDimension) {}
 
-  private ExemplarConnectedComponent createExemplarCC(List<Rectangle> sourceCCs) {
+  private static ExemplarConnectedComponent createExemplarCC(List<Rectangle> sourceCCs) {
     var wSum = 0;
     var hSum = 0;
     for (var cc : sourceCCs) {
@@ -240,13 +240,14 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     return new ExemplarConnectedComponent(w, h, (w + h) / 2);
   }
 
-  private List<Rectangle> exemplarFilteredCCs(
+  private static List<Rectangle> exemplarFilteredCCs(
     ExemplarConnectedComponent exemplar, List<Rectangle> ccs
   ) {
     final var maxW = exemplar.width() * 3;
     final var maxH = exemplar.height() * 4;
     final var maxArea = exemplar.averageDimension() * exemplar.averageDimension() * 5;
     final var minWForSquareish = exemplar.width() / 2;
+    //noinspection OverlyComplexBooleanExpression
     return ccs.stream()
       .filter(cc ->
         cc.widthWithin(2, maxW)
@@ -257,14 +258,14 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
         .toList();
   }
 
-  private List<Rectangle> growCCs(
+  private static List<Rectangle> growCCs(
     List<Rectangle> ccs,
     Point center,
     int xMax,
     int yMax,
     ExemplarConnectedComponent exemplar
   ) {
-    var res = new ArrayList<Rectangle>();
+    var res = new ArrayList<Rectangle>(ccs.size());
     for (var cc : ccs) {
       // Prepare coefficients for growing the cc towards the center of the image (the presumed
       // center of the text block)
@@ -324,7 +325,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     return res;
   }
 
-  private BufferedImage createMaskWithCCs(BufferedImage sourceImg, List<Rectangle> ccs) {
+  private static BufferedImage createMaskWithCCs(BufferedImage sourceImg, List<Rectangle> ccs) {
     var mask = new BufferedImage(sourceImg.getWidth(), sourceImg.getHeight(), sourceImg.getType());
     var gfx = mask.createGraphics();
     gfx.setColor(Color.BLACK);
@@ -337,7 +338,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
 
   private record PreliminaryBoxResult(Rectangle box, Contour sourceContour) {}
 
-  private Optional<PreliminaryBoxResult> preliminaryBox(
+  private static Optional<PreliminaryBoxResult> preliminaryBox(
     List<Contour> contours, Point center, boolean debug, Graphics debugGfx
   ) {
     if (debug && DEBUG_PRELIMINARY_BOX) {
@@ -346,8 +347,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     Rectangle box = null;
     Contour sourceContour = null;
     int largestViableBoxArea = 0;
-    for (var i = 0; i < contours.size(); i++) {
-      var contour = contours.get(i);
+    for (Contour contour : contours) {
       if (contour.type == Contour.Type.HOLE) {
         continue;
       }
@@ -371,7 +371,8 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       : Optional.of(new PreliminaryBoxResult(box, sourceContour));
   }
 
-  private Rectangle cutOffBoxSidesByTopEdgeDiscongruity(
+  @SuppressWarnings("MethodWithTooManyParameters")
+  private static Rectangle cutOffBoxSidesByTopEdgeDiscongruity(
     Rectangle box,
     Contour sourceContour,
     Point center,
@@ -437,7 +438,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     }
 
 
-    leftCutoff += box.getLeft(); // Countour bbox coords -> image coords
+    leftCutoff += box.getLeft(); // Contour bbox coords -> image coords
     rightCutoff += box.getLeft();
 
     // NOTE: Temporary; to be removed once the error in logic producing the illegal rectangle
@@ -468,7 +469,8 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     IN_DISCONGRUITY;
   }
 
-  private int findCutoffByEdgeDiscongruity(
+  @SuppressWarnings("MethodWithTooManyParameters")
+  private static int findCutoffByEdgeDiscongruity(
     int[] topEdge,
     int startX,
     int normalY,
@@ -496,7 +498,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
 
     traversal: for (var x = startX; x * stopMod > stopX * stopMod; x += xStep) {
       switch (state) {
-        case NORMAL:
+        case NORMAL -> {
           var earlierX = x - (xStep * compareDist);
           var earlierY = topEdge[earlierX];
           var yDiffFromEarlier = Math.abs(topEdge[x] - earlierY);
@@ -504,9 +506,8 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
             state = EdgeTraversalState.IN_DISCONGRUITY;
             currDiscongruityStartX = earlierX + 1; // Inexact
           }
-          break;
-
-        case IN_DISCONGRUITY:
+        }
+        case IN_DISCONGRUITY -> {
           var yDiffFromNormal = Math.abs(topEdge[x] - normalY);
           if (yDiffFromNormal < discongruityThreshold) {
             // Discongruity has ended before reaching a width that would classify it as relevant
@@ -515,7 +516,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
           } else if (Math.abs(x - currDiscongruityStartX) >= relevantDiscongruityWidth) {
             break traversal;
           }
-          break;
+        }
       }
     }
     if (state == EdgeTraversalState.IN_DISCONGRUITY) {
