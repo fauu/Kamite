@@ -54,13 +54,13 @@ public class OCRDirectoryWatcher {
   }
 
   public void destroy() {
+    worker.interrupt();
     try {
       watchService.close();
     } catch (IOException e) {
       LOG.debug("Failed to close watch service. See stderr for stack trace");
       e.printStackTrace();
     }
-    worker.interrupt();
   }
 
   private void handleFileModified(Path relativePath) {
@@ -75,7 +75,7 @@ public class OCRDirectoryWatcher {
       );
   }
 
-  private class Worker implements Runnable {
+  private static class Worker implements Runnable {
     private final WatchService watchService;
     private WatchKey watchKey;
     private final Consumer<Path> fileModifiedOrCreatedCb;
@@ -94,6 +94,10 @@ public class OCRDirectoryWatcher {
     public void run() {
       try {
         while ((watchKey = watchService.take()) != null) {
+          if (Thread.currentThread().isInterrupted()) {
+            LOG.debug("Worker thread was interrupted. Aborting");
+            return;
+          }
           for (var ev : watchKey.pollEvents()) {
             LOG.debug( // NOPMD
               "Received watch service event: kind='{}' context='{}'",
@@ -107,7 +111,7 @@ public class OCRDirectoryWatcher {
           watchKey.reset();
         }
       } catch (InterruptedException e) {
-        LOG.debug("Worker thread was interrupted. Finishing execution", e);
+        LOG.debug("Watch service was interrupted. Aborting", e);
       }
     }
   }
