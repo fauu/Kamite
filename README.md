@@ -22,9 +22,10 @@ text and can forward it to user-defined websites and external executables.
 Kamite is cost-free and licensed under the GNU AGPL v3 or later (see
 [License](#license)).
 
-**Currently supported platforms: Linux/Xorg, Linux/wlroots.**\
-(Planned for the beta release: Windows, Linux/Plasma).\
-(Blocked by upstream: [Linux / GNOME Wayland](#linux--gnome-wayland-support)).
+**Currently supported platforms: Linux (Xorg, wlroots, GNOME Wayland\*, Plasma
+Wayland\*).**\
+(Planned for the beta release: Windows, macOS).\
+\* OCR-ing arbitrary screen areas not supported on GNOME and Plasma on Wayland
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 https://user-images.githubusercontent.com/4130634/178029301-075cb207-a154-42d2-adb5-ce8fdbcd722f.mp4
@@ -64,6 +65,7 @@ script; [waycorner][waycorner-icxes].
         * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
         * [Setting up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
         * [OCR usage](#ocr-usage)
+        * [OCR directory watcher](#ocr-directory-watcher)
         * [Recommended manga viewer](#recommended-manga-viewer)
         * [Tip: quickly trigger OCR with mouse hot corners](#tip-quickly-trigger-ocr-with-mouse-hot-corners)
         * [Alternatives for manga](#alternatives-for-manga)
@@ -99,11 +101,9 @@ script; [waycorner][waycorner-icxes].
         * [`character-counter_` commands](#character-counter_-commands)
         * [`session-timer_` commands](#session-timer_-commands)
         * [`chunk_` commands](#chunk_-commands)
-12. [Upcoming](#upcoming)
-    * [Linux / GNOME Wayland support](#linux--gnome-wayland-support)
-13. [Privacy](#privacy)
-14. [Development](#development)
-15. [License](#license)
+12. [Privacy](#privacy)
+13. [Development](#development)
+14. [License](#license)
     * [Third-party components](#third-party-components)
 
 ## Installing Kamite
@@ -134,6 +134,9 @@ parameters](#command-line-parameters).
 
 Kamite’s main user interface is a webpage served by a local server that should
 be opened in your web browser. The default address is <http://localhost:4110>.
+
+**The web client is only guaranteed to work on the most recent versions of
+Firefox and Chrome**.
 
 Upon launch, Kamite will, by default: 1) navigate to the above address in the
 default web browser, 2) open an auxiliary “Control” window, which lets you
@@ -514,7 +517,8 @@ Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
 
     Download [`tesseract_traineddata_jpn_Kamite.zip`](https://mega.nz/file/9SsQBYTT#SDUSPerJ3iDsgSf08FlOWlVgbu7UICC_Oc7vg4D_YdQ)
     and extract the `.traineddata` files from the archive into Tesseract’s
-    `tessdata` directory (usually `/usr/[local/]share/tessdata/`).
+    `tessdata` directory (usually `/usr/[local/]share/tessdata/` or
+    `/usr/share/tesseract-ocr/<VERSION>/tessdata`).
 
 Remember to launch Kamite with the config key `ocr.engine` set to `tesseract`.
 
@@ -541,12 +545,22 @@ tasks. You need to install them on your own.
 
 #### OCR usage
 
-Text recognition is initiated when you issue one of the OCR commands. You can
-do this by:
+Text recognition can be initiated by:
 
-* clicking the corresponding buttons in the command palette,
-* pressing the configured [keyboard shortcut](#keyboard-shortcuts), or
-* [sending the commands through the API](#command-api).
+* Issuing an OCR command through:
+  * clicking the corresponding button in the command
+    palette,
+  * pressing the configured [keyboard shortcut](#keyboard-shortcuts), or
+  * [sending the command through the API](#command-api).
+* Adding or modifying an image in a directory provided to the [OCR directory
+  watcher](#ocr-directory-watcher).
+
+> **NOTE: On Linux / GNOME Wayland and Plasma Wayland**, only the following of
+> the above are available:
+>
+> * the [`ocr_image` command](#ocr_-commands) (including external software that
+>   uses it, for example [Gomics-v]),
+> * the [OCR directory watcher](#ocr-directory-watcher).
 
 The OCR commands directly available to the user are the following:
 
@@ -569,8 +583,13 @@ block.
 Select a point within a block of text; Kamite will try to infer the extent of
 the block and then OCR the resulting area.
 
-*This should be good enough for 95% of typical manga text blocks, although the
+*This should be good enough for 90% of typical manga text blocks, but the
 block detection algorithm has a lot of room for improvement.*
+
+**Note for Linux/Xorg users:** On Xorg, the point selection mechanism cannot be
+restricted to just a point, meaning that when the mouse is pressed and dragged,
+a rectangle area will be selected instead of a point. If this happens, Kamite
+will consider the center of this area as the selected point.
 
 ##### Region OCR
 
@@ -659,6 +678,33 @@ replacement.
 The OCR Variants view highlights characters that are unique to its variant to
 make it easier to identify potential replacements for a misrecognized character
 in the current chunk.
+
+#### OCR directory watcher
+
+Kamite can watch a specified directory for new/modified images and perform text
+recognition on them automatically. This is especially useful for platforms that
+do not support global OCR commands (Linux / GNOME Wayland and Plasma Wayland).
+
+To enable the directory watcher, specify the directory path in the [config
+file](#config):
+
+```sh
+...
+ocr {
+  watchDir = /full/path/to/the/directory
+}
+...
+```
+
+This can be used in conjunction with a platform-specific screenshot tool, for
+example [GNOME Screenshot] on GNOME Wayland and [Spectacle] on Plasma Wayland.
+
+Note that Kamite treats the entire input image as a single text block.
+Consequently, the provided images should be area screenshots containing just the
+text block to be recognized—not the entire screen or application window.
+
+[GNOME Screenshot]: https://en.wikipedia.org/wiki/GNOME_Screenshot
+[Spectacle]: https://apps.kde.org/spectacle/
 
 #### Recommended manga viewer
 
@@ -1222,6 +1268,9 @@ lookup {
 ocr {
   # Which OCR engine to use: none, tesseract, mangaocr
   engine = none
+  # (Directory path) Watch the specified directory for new/modified images and
+  # OCR them automatically
+  watchDir = …
 
   # A *list* of OCR regions, for each of which a region recognition command
   # button will be displayed in the command palette. See the "OCR region"
@@ -1469,15 +1518,6 @@ Seeks to the start of the current subtitle.
 **`show`** `(chunk: string)`
 
 **`show-translation`** `(translation: string)`
-
-## Upcoming
-
-### Linux / GNOME Wayland support
-
-GNOME Wayland support for Kamite was basically complete, but unfortunately GNOME
-has decided to prevent third-party programs from accessing the screenshot API
-required for OCR functions without there being any alternatives whatsoever.
-That platform will be supported as soon as such alternative appears.
 
 ## Privacy
 
