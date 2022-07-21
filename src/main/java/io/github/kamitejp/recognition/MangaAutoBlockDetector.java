@@ -434,7 +434,23 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
 
     leftCutoff += box.getLeft(); // Countour bbox coords -> image coords
     rightCutoff += box.getLeft();
-    return sourceContour.getBoundingBox(leftCutoff, rightCutoff);
+
+    // NOTE: Temporary; to be removed once the error in logic producing the illegal rectangle
+    //       parameters is identified
+    Rectangle newBox = null;
+    try {
+      newBox = sourceContour.getBoundingBox(leftCutoff, rightCutoff);
+    } catch (IllegalArgumentException e) {
+      LOG.debug(
+        "Error while getting contour bounding box. box = {}, leftCutoff = {}, rightCutoff = {}",
+        box,
+        leftCutoff,
+        rightCutoff
+      );
+      return box;
+    }
+
+    return newBox;
   }
 
   private enum EdgeTraversalDirection {
