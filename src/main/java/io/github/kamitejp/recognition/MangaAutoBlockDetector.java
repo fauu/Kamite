@@ -497,7 +497,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     var stopX = cutoff;
 
     traversal: for (var x = startX; x * stopMod > stopX * stopMod; x += xStep) {
-      switch (state) {
+      switch (state) { // NOPMD - misidentifies as non-exhaustive
         case NORMAL -> {
           var earlierX = x - (xStep * compareDist);
           var earlierY = topEdge[earlierX];

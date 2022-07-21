@@ -127,7 +127,7 @@ public class Server {
       var cssPath = configDirPath.resolve(CUSTOM_CSS_FILE_PATH_RELATIVE).toString();
       ctx.contentType("text/css").result(new FileInputStream(cssPath));
     } catch (FileNotFoundException e) {
-      LOG.debug("Custom CSS file not found", e.toString());
+      LOG.debug("Custom CSS file not found", e.toString()); // NOPMD
       throw new NotFoundResponse(); // NOPMD
     }
   }

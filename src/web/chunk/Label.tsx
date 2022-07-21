@@ -6,7 +6,7 @@ import { BgFlashingClass } from "~/globalStyles";
 
 import { ChunkChar } from "./Char";
 import { ChunkCharString } from "./CharString";
-import { ChunkFlashState, ChunkRangeFlashingState } from "./ChunksState";
+import type { ChunkFlashState, ChunkRangeFlashingState } from "./ChunksState";
 import type { ChunkText } from "./Text";
 import { ChunkTextClass } from "./TextClass";
 import type { ChunkTextSelection } from "./TextSelectionState";

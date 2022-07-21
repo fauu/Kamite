@@ -121,7 +121,7 @@ public final class ImageOps {
         var xx = x + j;
         var yy = y + i;
         if (xx >= 0 && xx < w && yy >= 0 && yy < h && i * i + j * j < rx * ry) {
-          var px = imgArr[((y + i) * w) + (x + j)];
+          var px = imgArr[((y + i) * w) + (x + j)]; // NOPMD - extra parentheses for readability
           minR = Math.min(minR, r(px));
           minG = Math.min(minG, g(px));
           minB = Math.min(minB, b(px));

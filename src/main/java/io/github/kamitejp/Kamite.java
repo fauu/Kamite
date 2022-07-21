@@ -37,10 +37,33 @@ import io.github.kamitejp.platform.linux.LinuxPlatform;
 import io.github.kamitejp.platform.mpv.MPVCommand;
 import io.github.kamitejp.platform.mpv.MPVController;
 import io.github.kamitejp.platform.process.ProcessHelper;
-import io.github.kamitejp.recognition.*;
-import io.github.kamitejp.server.*;
-import io.github.kamitejp.server.outmessage.*;
-import io.github.kamitejp.status.*;
+import io.github.kamitejp.recognition.AutoBlockHeuristic;
+import io.github.kamitejp.recognition.ChunkVariants;
+import io.github.kamitejp.recognition.OCRDirectoryWatcher;
+import io.github.kamitejp.recognition.OCRDirectoryWatcherCreationException;
+import io.github.kamitejp.recognition.OCREngine;
+import io.github.kamitejp.recognition.Recognizer;
+import io.github.kamitejp.recognition.RecognizerEvent;
+import io.github.kamitejp.recognition.RecognizerInitializationException;
+import io.github.kamitejp.recognition.RecognizerStatus;
+import io.github.kamitejp.recognition.TextOrientation;
+import io.github.kamitejp.server.InMessage;
+import io.github.kamitejp.server.NotificationKind;
+import io.github.kamitejp.server.Server;
+import io.github.kamitejp.server.ServerEvent;
+import io.github.kamitejp.server.ServerStartException;
+import io.github.kamitejp.server.outmessage.ChunkTranslationOutMessage;
+import io.github.kamitejp.server.outmessage.ChunkVariantsOutMessage;
+import io.github.kamitejp.server.outmessage.ChunkWithFuriganaOutMessage;
+import io.github.kamitejp.server.outmessage.ConfigOutMessage;
+import io.github.kamitejp.server.outmessage.DebugImageOutMessage;
+import io.github.kamitejp.server.outmessage.NotificationOutMessage;
+import io.github.kamitejp.server.outmessage.ProgramStatusOutMessage;
+import io.github.kamitejp.server.outmessage.ResponseOutMessage;
+import io.github.kamitejp.status.CharacterCounter;
+import io.github.kamitejp.status.PlayerStatus;
+import io.github.kamitejp.status.ProgramStatus;
+import io.github.kamitejp.status.SessionTimer;
 import io.github.kamitejp.textprocessing.TextProcessor;
 
 public class Kamite {
@@ -124,7 +147,7 @@ public class Kamite {
       try {
         ocrDirectoryWatcher = new OCRDirectoryWatcher(ocrWatchDir, this::recognizeImageProvided);
       } catch (OCRDirectoryWatcherCreationException e) {
-        LOG.error("Failed to create OCR directory watcher: {}", e.toString());
+        LOG.error("Failed to create OCR directory watcher: {}", e.toString()); // NOPMD
       }
     }
 
@@ -505,10 +528,9 @@ public class Kamite {
   }
 
   private void handleInMessage(InMessage message) {
-    switch (message) {
+    switch (message) { // NOPMD - misidentifies as non-exhaustive
       case InMessage.Command msg -> handleCommand(msg.incomingCommand(), CommandSource.CLIENT);
       case InMessage.Request msg -> handleRequest(msg.request());
-      default -> throw new IllegalStateException("Unhandled server message");
     }
   }
 

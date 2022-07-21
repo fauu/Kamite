@@ -35,8 +35,12 @@ import java.util.List;
 import io.github.kamitejp.geometry.Point;
 
 @SuppressWarnings({"PMD.LocalVariableNamingConventions", "PMD.FormalParameterNamingConventions"})
-public class ContourFinder {
+public final class ContourFinder {
   private static final int N_PIXEL_NEIGHBOR = 8;
+
+  private ContourFinder() {
+    // Empty
+  }
 
    // 0=background, 1=foreground, will be modified by the function
   public static List<Contour> find(int[] F, int w, int h) {
