@@ -180,6 +180,11 @@ public final class Rectangle {
   }
 
   @Override
+  public String toString() {
+    return "Rectangle[left=%s,top=%s,right=%s,bottom=%s]".formatted(left, top, right, bottom);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (o == this) {
       return true;
