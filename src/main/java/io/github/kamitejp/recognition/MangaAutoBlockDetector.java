@@ -123,7 +123,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     if (debug && DEBUG_GROWN_CCS) {
       debugGfx.setColor(Color.MAGENTA);
       grownCCs.forEach(cc -> cc.drawWith(debugGfx));
-      sendDebugImage.accept(debugImg, "Grown connected components");
+      // sendDebugImage.accept(debugImg, "Grown connected components");
     }
 
     // Fill a mask with the rectangles of the previously filtered and enlarged ccs
@@ -159,7 +159,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       debugGfx
     );
     if (debug && DEBUG_REDUCED_BOX) {
-      debugGfx.setColor(Color.GREEN);
+      debugGfx.setColor(Color.RED);
       reducedBox.drawWith(debugGfx);
     }
 
@@ -181,7 +181,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       .clamped(img.getWidth() - 1, img.getHeight() - 1);
 
     if (debug) {
-      debugGfx.setColor(Color.RED);
+      debugGfx.setColor(Color.GREEN);
       finalBox.drawWith(debugGfx);
       sendDebugImage.accept(debugImg, "Manga auto block final");
       debugGfx.dispose();
