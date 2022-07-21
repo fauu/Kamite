@@ -158,7 +158,7 @@ time of its launch. See [Config profiles](#config-profiles).
 Below are some non-obvious tips regarding the interface that might come useful.
 
 * Double-clicking on the *current chunk* activates the chunk edit mode. To exit
-  it, either click away or press `Ctrl+Enter`.
+  it, either click away or press <kbd>Ctrl</kbd> + <kbd>Enter</kbd>.
 
 * The *notebook* can be temporarily resized by dragging its edge with the mouse
   (in order for the setting to persist, however, it must be set in the [config
@@ -210,8 +210,8 @@ To run mpv with an external subtitle file, use the `--sub-file` launch
 parameter. It can be repeated for multiple files. To assign subtitles as
 *primary* (assumed by Kamite to be in Japanese) and *secondary* (assumed to be a
 translation), respectively, use the `--sid` and `--secondary-sid` mpv launch
-parameters. Which subtitle ids to specify can be glanced by pressing `F9` in mpv
-while the video file is open.
+parameters. Which subtitle ids to specify can be glanced by pressing
+<kbd>F9</kbd> in mpv while the video file is open.
 
 > See also: [mpv reference: Subtitle options][mpv-ref-sub-options].
 
@@ -252,10 +252,10 @@ mpv /path/to/video/*<part-of-anime-name>*$1*.mkv \ # Episode no. passed as an ar
 
 Kamite works well with [Anacreon’s mpv script][anacreon-mpv] used for
 automatically enhancing [Anki] cards with video-derived content. After creating
-a card, with the script installed, simply press `Ctrl+c` in the Kamite tab,
-followed by `Ctrl+c` in the mpv window. If you want the card context to span not
-one but several chunks, select them in Kamite’s history window before pressing
-`Ctrl+c`.
+a card, with the script installed, simply press <kbd>Ctrl</kbd> + <kbd>C</kbd>
+in the Kamite tab, followed by <kbd>Ctrl</kbd> + <kbd>V</kbd> in the mpv window.
+If you want the card context to span not one but several chunks, select them in
+Kamite’s history window before pressing <kbd>Ctrl</kbd> + <kbd>C</kbd>.
 
 [Anki]: https://apps.ankiweb.net/
 
@@ -265,7 +265,8 @@ Sometimes this error can be caused by a slight formatting correction that Kamite
 can apply to incoming text. However, every time Kamite makes such modifications,
 it also makes it possible to copy the original, unchanged text. In such cases,
 this is available under the “Copy original” buttons in the main and the chunk
-history action palettes or under the keyboard shortcut `Ctrl+Alt+c`.
+history action palettes or under the keyboard shortcut <kbd>Ctrl</kbd> +
+<kbd>Alt</kbd> + <kbd>C</kbd>.
 
 The corrections on the side of Kamite can also be disabled by setting the
 [config](#config) key `chunk.correct` to `false`.
@@ -300,13 +301,13 @@ This requires [wl-clipboard] to be installed.
 This can be useful for beginners whose comprehension is not yet at the level
 needed to follow even simple video content at the natural pace. The *sub-pause*
 mpv script from [mpv-sub-scripts] can be used for this purpose. Once the script
-is installed, press `n` inside mpv to enable auto-pausing.
+is installed, press <kbd>N</kbd> inside mpv to enable auto-pausing.
 
 Additional tips:
 
 * You can pause/unpause in mpv with a right-click.
 * With the *sub-pause* script, you can replay from the start of the last
-  subtitle by pressing `Ctrl+r` in mpv.
+  subtitle by pressing <kbd>Ctrl</kbd> + <kbd>R</kbd> in mpv.
 
 [mpv-sub-scripts]: https://github.com/Ben-Kerman/mpv-sub-scripts
 
@@ -849,8 +850,9 @@ Textractor for games. Some other alternatives are:
 
 ### Clipboard paste
 
-Text can be pasted from clipboard by pressing `Ctrl+c` in Kamite’s browser tab.
-This can be, for example, combined with “clipboard inserter” browser extensions.
+Text can be pasted from clipboard by pressing <kbd>Ctrl</kbd> + <kbd>V</kbd> in
+Kamite’s browser tab. This can be, for example, combined with “clipboard
+inserter” browser extensions.
 
 ### Custom source / alternative method text extraction
 
@@ -871,11 +873,12 @@ features that might be useful for that task.
 The main chunk text can be selected character by character using the mouse and
 transformed using actions that appear in the *action palette* near it, which are
 made available depending on the existence and the content of the selection.
-Characters can also be deleted by pressing `Delete` or `Backspace`.
+Characters can also be deleted by pressing <kbd>Delete</kbd> or
+<kbd>Backspace</kbd>.
 
 To enter chunk edit mode, which allows for direct insertion of typed text,
 double-click the main area. To exit it, either click away from the input field
-or press `Ctrl+Enter`.
+or press <kbd>Ctrl</kbd> + <kbd>Enter</kbd>.
 
 ### Pop-up dictionary
 
@@ -1061,40 +1064,43 @@ the time being.
 
 The following shortcuts apply only within the Kamite’s browser tab.
 
-`Backspace`, `Delete`\
+<kbd>Backspace</kbd>, <kbd>Delete</kbd>\
 Delete selected text from the current chunk.
 
-`Ctrl+a`\
+<kbd>Ctrl</kbd> + <kbd>A</kbd>\
 Select the entire current chunk text.
 
-`Ctrl+c`\
+<kbd>Ctrl</kbd> + <kbd>C</kbd>\
 Copy text depending on what is selected in the current chunk, the current chunk
 translation and chunk history.
 
-`Ctrl+Alt+c`\
+<kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>C</kbd>\
 Copy *original* text depending on what is selected in the current
 chunk or chunk history. Original text is available in cases Kamite has applied
 corrections to the text. Otherwise, this acts the same as `Ctrl+c`.
 
+<kbd>Ctrl</kbd> + <kbd>V</kbd>\
+Paste text from clipboard.
+
 #### Chunk edit mode keyboard shortcuts
 
-`Ctrl+Enter`\
+<kbd>Ctrl</kbd>+<kbd>Enter</kbd>\
 Exit chunk edit mode.
 
 #### Media player keyboard shortcuts (client)
 
 The following shortcuts work only when a media player is connected.
 
-`Space`\
+<kbd>Space</kbd>\
 Pause/unpause the playback.
 
-`Arrow_Left`\
+<kbd>◄</kbd>\
 Seek -1 seconds.
 
-`Alt+Arrow_Left`\
+<kbd>Alt</kbd> + <kbd>◄</kbd>\
 Seek to the start of the current subtitle.
 
-`Arrow_Right`\
+<kbd>►</kbd>\
 Seek +1 seconds.
 
 ### Global keyboard shortcuts
@@ -1121,7 +1127,7 @@ The values must be strings in the [Java Swing’s
 `getKeyStroke()`][swing-get-keystroke] format describing the key combinations to
 be assigned to the corresponding actions. Some examples of such strings are:
 
-* `meta S` (means “Windows key” + `S`),
+* `meta S` (means <kbd>Win</kbd> + <kbd>S</kbd>),
 * `ctrl shift 1`,
 * `INSERT`.
 
