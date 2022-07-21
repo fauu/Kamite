@@ -191,7 +191,12 @@ Extracting chunks from video is supported through a provided script for the
 **[mpv]** video player.
 
 The Kamite mpv script can be found in the `extra/mpv` directory within the
-release package. To load it into mpv, either: 1) copy it to the `scripts`
+release package.
+
+> **Note:** The script requires either *D-Bus* (the `dbus-send` command must be
+globally available) or *curl* for communication with Kamite.
+
+To load the script into mpv, either: 1) copy it to the `scripts`
 subdirectory of the mpv configuration directory (on Linux usually
 `~/.config/mpv/scripts`) and launch mpv as usual, or 2) pass the script’s path
 as the value of the `--script` parameter when launching mpv.
