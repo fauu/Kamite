@@ -73,7 +73,7 @@ public final class ConfigManager {
       var loadedProfileNames = profileName != null ? new String[] { profileName } : null;
       return Result.Ok(new ReadSuccess(config, loadedProfileNames));
     } catch (ConfigException e) {
-      return Result.Err("Failed to create a Config object: %s".formatted(e));
+      return Result.Err(e.toString());
     }
   }
 
