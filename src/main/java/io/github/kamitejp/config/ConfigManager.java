@@ -1,5 +1,6 @@
 package io.github.kamitejp.config;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
@@ -50,8 +51,15 @@ public final class ConfigManager {
       return Result.Err(ensureRes.err());
     }
 
-    if (profileConfigPath != null && !Files.isReadable(profileConfigPath)) {
-      LOG.warn("Config file for the requested profile is not accessible: {}", profileConfigPath);
+    String[] loadedProfileNames = null;
+    File profileConfigFile = null;
+    if (profileConfigPath != null) {
+      profileConfigFile = profileConfigPath.toFile();
+      if (!profileConfigFile.canRead()) {
+        LOG.warn("Config file for the requested profile is not accessible: {}", profileConfigPath);
+      } else {
+        loadedProfileNames = new String[] { profileName };
+      }
     }
 
     try {
@@ -59,9 +67,8 @@ public final class ConfigManager {
       if (tsConfig == null) {
         return Result.Err("Failed to parse command line arguments into a Config object");
       }
-
-      if (profileConfigPath != null) {
-        tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(profileConfigPath.toFile()));
+      if (profileConfigFile != null) {
+        tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(profileConfigFile));
       }
       tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(mainConfigPath.toFile()));
 
@@ -70,7 +77,6 @@ public final class ConfigManager {
 
       LOG.debug("Read config: {}", config);
 
-      var loadedProfileNames = profileName != null ? new String[] { profileName } : null;
       return Result.Ok(new ReadSuccess(config, loadedProfileNames));
     } catch (ConfigException e) {
       return Result.Err(e.toString());

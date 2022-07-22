@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+* Successfully loading a profile config file is no longer falsely reported when
+  the file is not readable.
+
 ## [0.3] – 2022-07-21
 
 ### Added
