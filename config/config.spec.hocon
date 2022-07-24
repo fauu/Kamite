@@ -12,6 +12,7 @@ chunk {
   throttleMS = "int | 1000"
   correct = true
   flash = true
+  translationOnlyMode = false
 }
 
 commands {

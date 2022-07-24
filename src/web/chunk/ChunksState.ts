@@ -125,18 +125,19 @@ export function createChunksState(
     let prevFilteredSegments: ChunkTranslationSegment[] | undefined = undefined;
     if (prev) {
       prevFilteredSegments = prev.segments.filter(seg => {
-        // Reject segments that weren't provided in a media playback context
-        if (!seg.playbackTimeS) {
+        if (!seg.playbackTimeS && !getSetting(settings, "translation-only-mode")) {
           return false;
         }
 
-        // Reject segments that are, in terms of the current chunk's playback time, either in the
-        // future or too old
-        const currPlaybackTime = current().playbackTimeS;
-        if (currPlaybackTime) {
-          const delta = currPlaybackTime - seg.playbackTimeS;
-          if (delta < 0 || delta > TRANSLATION_CONTEXT_KEEP_AROUND_TIME_S) {
-            return false;
+        if (seg.playbackTimeS) {
+          // Reject segments that are, in terms of the current chunk's playback time, either in the
+          // future or too old
+          const currPlaybackTime = current().playbackTimeS;
+          if (currPlaybackTime) {
+            const delta = currPlaybackTime - seg.playbackTimeS;
+            if (delta < 0 || delta > TRANSLATION_CONTEXT_KEEP_AROUND_TIME_S) {
+              return false;
+            }
           }
         }
 
@@ -208,6 +209,7 @@ export function createChunksState(
     mayRequestEnhancement?: boolean,
     ignoreEditing?: boolean,
     inPlace?: boolean,
+    keepTranslation?: boolean,
   };
 
   async function insert(
@@ -232,6 +234,9 @@ export function createChunksState(
     }
     if (params.inPlace === undefined) {
       params.inPlace = false;
+    }
+    if (params.keepTranslation === undefined) {
+      params.keepTranslation = false;
     }
 
     // Reject a likely repeat from the media player (e.g., when replaying from the start of the
@@ -304,25 +309,30 @@ export function createChunksState(
 
     // Determine the new chunk's initial translation
     let newTranslation: ChunkTranslation | undefined = undefined;
-    // Check for pending advanced translation from playback
-    if (params.playbackTimeS) {
-      if (pendingTranslation) {
-        const sinceArrival = params.playbackTimeS - pendingTranslation.playbackTimeS;
-        if (sinceArrival < TRANSLATION_INITIAL_MAX_ADVANCE_S) {
-          newTranslation = ChunkTranslation.withSegment(pendingTranslation);
-        }
-        pendingTranslation = undefined;
-      }
-    }
-    // It's possible that the current translation spans both the current chunk and this new chunk.
-    // If that's likely, keep the current translation for now.
     const currTranslation = current().translation;
-    if (!newTranslation && params.playbackTimeS && currTranslation) {
-      const currTranslationTime = currTranslation.lastSegmentPlaybackTimeS;
-      if (currTranslationTime) {
-        const delta = params.playbackTimeS - currTranslationTime;
-        if (delta > 0 && delta <= TRANSLATION_KEEP_AROUND_TIME_S) {
-          newTranslation = currTranslation.decaying();
+    if (params.keepTranslation) {
+      newTranslation = currTranslation;
+    } else {
+      // Check for pending advanced translation from playback
+      if (params.playbackTimeS) {
+        if (pendingTranslation) {
+          const sinceArrival = params.playbackTimeS - pendingTranslation.playbackTimeS;
+          if (sinceArrival < TRANSLATION_INITIAL_MAX_ADVANCE_S) {
+            newTranslation = ChunkTranslation.withSegment(pendingTranslation);
+          }
+          pendingTranslation = undefined;
+        }
+      }
+
+      // It's possible that the current translation spans both the current chunk and this new chunk.
+      // If that's likely, keep the current translation for now.
+      if (params.playbackTimeS && currTranslation) {
+        const currTranslationTime = currTranslation.lastSegmentPlaybackTimeS;
+        if (currTranslationTime) {
+          const delta = params.playbackTimeS - currTranslationTime;
+          if (delta > 0 && delta <= TRANSLATION_KEEP_AROUND_TIME_S) {
+            newTranslation = currTranslation.decaying();
+          }
         }
       }
     }
@@ -388,7 +398,14 @@ export function createChunksState(
     if (current().text.hasFurigana) {
       return;
     }
-    void insert(await fetchEnhanced(current().text.base), { op: "overwrite", inPlace: true });
+    void insert(
+      await fetchEnhanced(current().text.base),
+      {
+        op: "overwrite",
+        inPlace: true,
+        keepTranslation: getSetting(settings, "translation-only-mode")
+      }
+    );
   }
 
   function unenhanceCurrent() {
@@ -399,12 +416,22 @@ export function createChunksState(
   }
 
   function handleIncomingTranslation(text: string, playbackTimeS: number | null) {
+    if (getSetting(settings, "translation-only-mode")) {
+      void insert("", {
+        op: "overwrite",
+        playbackTimeS: playbackTimeS ?? undefined,
+        allowUnchangedText: true
+      });
+      initTranslationOfLatest({ text, playbackTimeS: playbackTimeS ?? undefined });
+      return;
+    }
+
     if (!playbackTimeS) {
       initTranslationOfLatest({ text });
       return;
     }
 
-    const segment = { text, playbackTimeS: playbackTimeS || undefined };
+    const segment = { text, playbackTimeS: playbackTimeS ?? undefined };
 
     const lastChunkPlaybackTime = chunks[chunks.length - 1].playbackTimeS;
     if (!lastChunkPlaybackTime) {
@@ -451,10 +478,13 @@ export function createChunksState(
     if (!editing()) {
       return;
     }
+    const translationOnlyMode = getSetting<boolean>(settings, "translation-only-mode");
     void insert(editText(), {
       op: "overwrite",
       ignoreEditing: true,
-      mayRequestEnhancement: false
+      mayRequestEnhancement: false,
+      inPlace: translationOnlyMode,
+      keepTranslation: translationOnlyMode
     });
     if (getSetting(settings, "show-furigana") === true) {
       // Enhance separately to avoid flashing old content when waiting for enhance response

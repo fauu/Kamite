@@ -33,7 +33,8 @@ public record Config(
     boolean correct,
     boolean flash,
     boolean showFurigana,
-    int throttleMS
+    int throttleMS,
+    boolean translationOnlyMode
   ) {
     
     public Chunk(com.typesafe.config.Config c, java.lang.String parentPath, $TsCfgValidator $tsCfgValidator) {
@@ -41,7 +42,8 @@ public record Config(
         !c.hasPathOrNull("correct") || c.getBoolean("correct"),
         !c.hasPathOrNull("flash") || c.getBoolean("flash"),
         c.hasPathOrNull("showFurigana") && c.getBoolean("showFurigana"),
-        c.hasPathOrNull("throttleMS") ? c.getInt("throttleMS") : 1000
+        c.hasPathOrNull("throttleMS") ? c.getInt("throttleMS") : 1000,
+        c.hasPathOrNull("translationOnlyMode") && c.getBoolean("translationOnlyMode")
       );
     }
   }

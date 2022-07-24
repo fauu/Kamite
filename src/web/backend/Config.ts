@@ -40,8 +40,9 @@ interface Server {
 
 interface Chunk {
   breakLines: boolean,
-  showFurigana: boolean,
   flash: boolean,
+  showFurigana: boolean,
+  translationOnlyMode: boolean,
 }
 
 interface Keybindings {

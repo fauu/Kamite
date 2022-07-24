@@ -41,16 +41,18 @@ export const ChunkHistory: VoidComponent<ChunkHistoryProps> = (props) => {
             [BgFlashingClass]: c.historyFlashing,
           }}
         >
-          <Show
-            when={c.text.length !== 0}
-            fallback={<Empty/>}
-          >
+          <Show when={c.text.length !== 0}>
             <CheckboxContainer>
               <Checkbox
                 checked={c.selected}
                 onChange={(e) => handleEntrySelectCheckboxChange(i(), e)}
               />
             </CheckboxContainer>
+          </Show>
+          <Show
+            when={c.text.length !== 0}
+            fallback={<Empty/>}
+          >
             <span
               class={EntryTextClass}
               onClick={[props.onEntryClick, i()]}
@@ -61,18 +63,18 @@ export const ChunkHistory: VoidComponent<ChunkHistoryProps> = (props) => {
             >
               <StringWithNewlines value={c.text.base} newlineAs={<Newline/>}/>
             </span>
-            <Show when={c.translation}>
-              <span
-                class={TranslationLabelClass}
-                use:tooltipAnchor={{
-                  tooltip,
-                  body: c.translation?.text,
-                  delayMS: 0,
-                }}
-              >
-                Translation
-              </span>
-            </Show>
+          </Show>
+          <Show when={c.translation}>
+            <span
+              class={TranslationLabelClass}
+              use:tooltipAnchor={{
+                tooltip,
+                body: c.translation?.text,
+                delayMS: 0,
+              }}
+            >
+              Translation
+            </span>
           </Show>
         </Entry>
       }</For>
@@ -130,7 +132,7 @@ const EntryTextClass = css`
   line-height: calc(var(--translation-label-height) - 2px);
   padding-top: calc(var(--padding) + 1px);
   text-overflow: ellipsis;
-  overflow: hidden; 
+  overflow: hidden;
   white-space: nowrap;
 
   &:hover {

@@ -10,7 +10,7 @@ export const DEFAULT_SETTINGS: Setting[] = [
     label: "Show furigana",
     configKey: (c) => c.chunk.showFurigana,
     kind: "toggle",
-    value: true,
+    value: false,
     warning: {
       text: "The furigana is auto-generated and frequently incorrect. Use cautiously",
       show: (value: boolean) => value,
@@ -22,11 +22,18 @@ export const DEFAULT_SETTINGS: Setting[] = [
     configKey: (c) => c.ui.layout,
     kind: "select",
     options: [
-      { label: "Standard",         value: "STANDARD" }, 
+      { label: "Standard",         value: "STANDARD" },
       { label: "Standard Flipped", value: "STANDARD_FLIPPED" }
     ],
     value: "STANDARD",
   },
+  {
+    id: "translation-only-mode",
+    label: "Translation-only mode",
+    configKey: (c) => c.chunk.translationOnlyMode,
+    kind: "toggle",
+    value: false,
+  }
 ];
 
 interface SettingsProps {
