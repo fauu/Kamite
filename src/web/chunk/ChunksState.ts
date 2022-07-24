@@ -209,7 +209,7 @@ export function createChunksState(
     mayRequestEnhancement?: boolean,
     ignoreEditing?: boolean,
     inPlace?: boolean,
-    keepTranslation?: boolean,
+    forceKeepTranslation?: boolean,
   };
 
   async function insert(
@@ -235,8 +235,8 @@ export function createChunksState(
     if (params.inPlace === undefined) {
       params.inPlace = false;
     }
-    if (params.keepTranslation === undefined) {
-      params.keepTranslation = false;
+    if (params.forceKeepTranslation === undefined) {
+      params.forceKeepTranslation = false;
     }
 
     // Reject a likely repeat from the media player (e.g., when replaying from the start of the
@@ -310,7 +310,7 @@ export function createChunksState(
     // Determine the new chunk's initial translation
     let newTranslation: ChunkTranslation | undefined = undefined;
     const currTranslation = current().translation;
-    if (params.keepTranslation) {
+    if (params.forceKeepTranslation) {
       newTranslation = currTranslation;
     } else {
       // Check for pending advanced translation from playback
@@ -403,7 +403,7 @@ export function createChunksState(
       {
         op: "overwrite",
         inPlace: true,
-        keepTranslation: getSetting(settings, "translation-only-mode")
+        forceKeepTranslation: getSetting(settings, "translation-only-mode")
       }
     );
   }
@@ -484,7 +484,7 @@ export function createChunksState(
       ignoreEditing: true,
       mayRequestEnhancement: false,
       inPlace: translationOnlyMode,
-      keepTranslation: translationOnlyMode
+      forceKeepTranslation: translationOnlyMode
     });
     if (getSetting(settings, "show-furigana") === true) {
       // Enhance separately to avoid flashing old content when waiting for enhance response
