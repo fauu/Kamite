@@ -216,13 +216,12 @@ public class Kamite {
   }
 
   private void initMPVController() {
-    mpvController = new MPVController(
-      platform,
-      /* statusUpdateCb */ (PlayerStatus newStatus) -> {
-        status.setPlayerStatus(newStatus);
-        sendStatus(ProgramStatusOutMessage.PlayerStatus.class);
-      }
-    );
+    mpvController = MPVController.forPlatform(platform, this::handlePlayerStatusUpdate);
+  }
+
+  private void handlePlayerStatusUpdate(PlayerStatus newStatus) {
+    status.setPlayerStatus(newStatus);
+    sendStatus(ProgramStatusOutMessage.PlayerStatus.class);
   }
 
   private void initRecognizer() {
