@@ -28,6 +28,7 @@ import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
+import io.github.kamitejp.platform.OS;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformInitializationException;
@@ -36,6 +37,8 @@ import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.linux.LinuxPlatform;
 import io.github.kamitejp.platform.mpv.MPVCommand;
 import io.github.kamitejp.platform.mpv.MPVController;
+import io.github.kamitejp.platform.mpv.UnixMPVController;
+import io.github.kamitejp.platform.mpv.WindowsMPVController;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.recognition.AutoBlockHeuristic;
 import io.github.kamitejp.recognition.ChunkVariants;
@@ -216,13 +219,24 @@ public class Kamite {
   }
 
   private void initMPVController() {
-    mpvController = new MPVController(
-      platform,
-      /* statusUpdateCb */ (PlayerStatus newStatus) -> {
-        status.setPlayerStatus(newStatus);
-        sendStatus(ProgramStatusOutMessage.PlayerStatus.class);
-      }
-    );
+    // XXX
+    if (platform.getOS() == OS.WINDOWS) {
+      mpvController = new WindowsMPVController(
+        platform,
+        /* statusUpdateCb */ (PlayerStatus newStatus) -> {
+          status.setPlayerStatus(newStatus);
+          sendStatus(ProgramStatusOutMessage.PlayerStatus.class);
+        }
+      );
+    } else {
+      mpvController = new UnixMPVController(
+        platform,
+        /* statusUpdateCb */ (PlayerStatus newStatus) -> {
+          status.setPlayerStatus(newStatus);
+          sendStatus(ProgramStatusOutMessage.PlayerStatus.class);
+        }
+      );
+    }
   }
 
   private void initRecognizer() {
