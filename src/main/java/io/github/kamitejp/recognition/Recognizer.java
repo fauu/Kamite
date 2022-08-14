@@ -294,6 +294,7 @@ public class Recognizer {
     CompletableFuture.allOf(tesseractResultFutures.toArray(new CompletableFuture[0])).join();
 
     // Transform the results
+    var numExecutions = tesseractResultFutures.size();
     var numExecutionFails = 0;
     var numTimeouts = 0;
     ArrayList<String> errorMsgs = null;
@@ -322,10 +323,16 @@ public class Recognizer {
 
     // Handle failures
     if (numExecutionFails > 0) {
-      LOG.error("Some of the Tesseract calls have failed to execute ({})", numExecutionFails);
+      LOG.error(
+        "Some of the Tesseract calls have failed to execute ({}/{})",
+        numExecutionFails, numExecutions
+      );
     }
     if (numTimeouts > 0) {
-      LOG.error("Some of the Tesseract calls have timed out ({})", numTimeouts);
+      LOG.error(
+        "Some of the Tesseract calls have timed out ({}/{})",
+        numTimeouts, numExecutions
+      );
     }
     if (errorMsgs != null) {
       LOG.error(
