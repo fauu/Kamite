@@ -43,6 +43,7 @@ public class AreaSelectorFrame extends JFrame {
     setAlwaysOnTop(true);
     setUndecorated(true);
     setBackground(frameBgColor);
+    setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 
     var fullBounds = new java.awt.Rectangle();
     for (var device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
