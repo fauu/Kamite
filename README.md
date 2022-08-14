@@ -187,24 +187,36 @@ source material:
 
 ### Anime (and other video) text extraction
 
-Extracting chunks from video is supported through a provided script for the
-**[mpv]** video player.
+Extracting chunks from video is by default supported through integration with
+the **[mpv]** video player.
 
-The Kamite mpv script can be found in the `extra/mpv` directory within the
-release package.
+On connecting to mpv, Kamite instructs it to load a script that sends the
+*primary* video subtitles as chunks to Kamite. If *secondary* subtitles are
+present, it sends those as **chunk translations**.
 
 > **Note:** The script requires either *D-Bus* (the `dbus-send` command must be
-globally available) or *curl* for communication with Kamite.
+globally available) or *curl* for sending subtitles.
 
-To load the script into mpv, either: 1) copy it to the `scripts`
-subdirectory of the mpv configuration directory (on Linux usually
-`~/.config/mpv/scripts`) and launch mpv as usual, or 2) pass the script’s path
-as the value of the `--script` parameter when launching mpv.
+To make Kamite automatically connect to a running instance of mpv, the latter
+must be run with the following exact value for the `input-ipc-server` parameter:
 
-> See also: [mpv reference: Script location][mpv-ref-script-location].
+```sh
+mpv file.mkv --input-ipc-server="/tmp/kamite-mpvsocket"
+```
 
-The Kamite mpv script sends the *primary* video subtitles as chunks to Kamite.
-If *secondary* subtitles are present, it sends those as **chunk translations**.
+Alternatively, the line
+
+```sh
+input-ipc-server=/tmp/kamite-mpvsocket
+```
+
+can be put into the [mpv config file][mpv-ref-config].
+
+In the former case, mpv will be only open for communication with Kamite when
+launched with the specified parameter. In the latter—it will be open always.
+
+> For more on the communication mechanism used, see the
+[mpv reference for JSON IPC][mpv-ref-json-ipc].
 
 To run mpv with an external subtitle file, use the `--sub-file` launch
 parameter. It can be repeated for multiple files. To assign subtitles as
@@ -214,19 +226,6 @@ parameters. Which subtitle ids to specify can be glanced by pressing
 <kbd>F9</kbd> in mpv while the video file is open.
 
 > See also: [mpv reference: Subtitle options][mpv-ref-sub-options].
-
-Beyond the above, Kamite offers further integration with mpv, currently
-amounting to displaying and controlling the play/pause status, as well as basic
-seeking. For this, the mpv JSON IPC communication mechanism is used.
-
-To make Kamite automatically connect to a running instance of mpv, the latter
-must be run with the exact following parameter:
-
-```sh
-mpv file.mkv --input-ipc-server="/tmp/kamite-mpvsocket"
-```
-
-> See also: [mpv reference: JSON IPC][mpv-ref-json-ipc]
 
 Below is an excerpt from an example bash script used to quickly launch an anime
 episode in mpv in such a way that it is immediately set up to work with Kamite.
@@ -244,7 +243,7 @@ mpv /path/to/video/*<part-of-anime-name>*$1*.mkv \ # Episode no. passed as an ar
 ```
 <!-- markdownlint-restore -->
 
-[mpv-ref-script-location]: https://mpv.io/manual/stable/#script-location
+[mpv-ref-config]: https://mpv.io/manual/stable/#configuration-files
 [mpv-ref-json-ipc]: https://mpv.io/manual/stable/#json-ipc
 [mpv-ref-sub-options]: https://mpv.io/manual/stable/#subtitles
 
