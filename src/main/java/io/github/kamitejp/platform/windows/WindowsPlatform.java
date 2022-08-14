@@ -63,11 +63,12 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
     selector = new AreaSelectorFrame();
     selector.setVisible(true);
 
-    var futureArea = selector.getRegion();
-    var area = futureArea.join();
+    var maybeArea = selector.getFutureArea().join();
     selector.setVisible(false);
 
-    return Result.Ok(area);
+    return maybeArea
+      .<Result<Rectangle, RecognitionOpError>>map(a -> Result.Ok(a))
+      .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
   }
 
   @Override
@@ -77,7 +78,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
       return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
     }
 
-    // DEV
+    // XXX: (DEV)
     // GenericPlatform.writeImage(maybeScreenshot.get(), "C:/dev/kamite-test.png");
 
     return Result.Ok(maybeScreenshot.get());

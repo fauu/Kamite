@@ -8,9 +8,12 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Stroke;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.swing.JFrame;
@@ -24,7 +27,11 @@ import io.github.kamitejp.geometry.Rectangle;
 public class AreaSelectorFrame extends JFrame {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private java.awt.Rectangle screenBounds;
+  private static final List<Integer> CANCEL_KEYS = List.of(KeyEvent.VK_ESCAPE, KeyEvent.VK_Q);
+  private static final Color FRAME_BG_COLOR = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+  private static final Color BG_FADE_COLOR = new Color(1.0f, 1.0f, 1.0f, 0.2f);
+  private static final Stroke SELECTION_BORDER_STROKE = new BasicStroke(2);
+  private static final Color SELECTION_BORDER_COLOR = Color.BLACK;
 
   // Selection start and end point coordinates. Cleared to 0
   private int xStart;
@@ -32,17 +39,13 @@ public class AreaSelectorFrame extends JFrame {
   private int xEnd;
   private int yEnd;
 
-  private CompletableFuture<Rectangle> futureArea;
-
-  private final Color frameBgColor = new Color(1.0f, 1.0f, 1.0f, 0.0f);
-  private final Color bgFadeColor = new Color(1.0f, 1.0f, 1.0f, 0.2f);
-  private final Stroke selectionBorderStroke = new BasicStroke(2);
-  private final Color selectionBorderColor = Color.BLACK;
+  private java.awt.Rectangle screenBounds;
+  private CompletableFuture<Optional<Rectangle>> futureArea;
 
   public AreaSelectorFrame() {
     setAlwaysOnTop(true);
     setUndecorated(true);
-    setBackground(frameBgColor);
+    setBackground(FRAME_BG_COLOR);
     setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     // POLISH: Should have its own modified icon
     setIconImage(
@@ -59,9 +62,11 @@ public class AreaSelectorFrame extends JFrame {
     screenBounds = fullBounds;
 
     var mouseListener = new MouseListener();
-
     addMouseListener(mouseListener);
     addMouseMotionListener(mouseListener);
+
+    var keyListener = new KeyListener();
+    addKeyListener(keyListener);
   }
 
   @Override
@@ -70,7 +75,7 @@ public class AreaSelectorFrame extends JFrame {
     var gfx2d = (Graphics2D) gfx;
     var oldStroke = gfx2d.getStroke();
 
-    gfx2d.setColor(bgFadeColor);
+    gfx2d.setColor(BG_FADE_COLOR);
 
     // Selecton area rectangle dimensions
     var w = Math.abs(xStart - xEnd);
@@ -98,15 +103,19 @@ public class AreaSelectorFrame extends JFrame {
     gfx2d.fillRect(0, top, left, h);
 
     // Draw the selection border around the rectangle
-    gfx2d.setStroke(selectionBorderStroke);
-    gfx2d.setColor(selectionBorderColor);
+    gfx2d.setStroke(SELECTION_BORDER_STROKE);
+    gfx2d.setColor(SELECTION_BORDER_COLOR);
     gfx2d.drawRect(left, top, w, h);
     gfx2d.setStroke(oldStroke);
   }
 
-  public CompletableFuture<Rectangle> getRegion() {
+  public CompletableFuture<Optional<Rectangle>> getFutureArea() {
     futureArea = new CompletableFuture<>();
     return futureArea;
+  }
+
+  private void cancel() {
+    futureArea.complete(Optional.empty());
   }
 
   private void reset() {
@@ -151,8 +160,27 @@ public class AreaSelectorFrame extends JFrame {
       if (w <= 0 || h <= 0) {
         return;
       }
-      futureArea.complete(Rectangle.ofStartAndDimensions(x, y, w, h));
+      futureArea.complete(Optional.of(Rectangle.ofStartAndDimensions(x, y, w, h)));
       reset();
+    }
+  }
+
+  private class KeyListener implements java.awt.event.KeyListener {
+    @Override
+    public void keyTyped(KeyEvent e) {
+      // Empty
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+      if (CANCEL_KEYS.contains(e.getKeyCode())) {
+        cancel();
+      }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+      // Empty
     }
   }
 }

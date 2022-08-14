@@ -64,11 +64,12 @@ public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKe
     this.selector = new AreaSelectorFrame();
     selector.setVisible(true);
 
-    var futureArea = selector.getRegion();
-    var area = futureArea.join();
+    var maybeArea = selector.getFutureArea().join();
     selector.setVisible(false);
 
-    return Result.Ok(area);
+    return maybeArea
+      .<Result<Rectangle, RecognitionOpError>>map(a -> Result.Ok(a))
+      .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
   }
 
   @Override
