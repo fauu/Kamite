@@ -12,6 +12,7 @@ public final class Tesseract extends BaseSimpleDependency {
   private static final String DPI = "70";
   private static final String OEM = "1";
   private static final Map<String, String> ENV = Map.of("OMP_THREAD_LIMIT", "1");
+  private static final int OCR_EXECUTION_TIMEOUT = 3000;
 
   public Tesseract() {
     super("tesseract", "Tesseract");
@@ -19,7 +20,7 @@ public final class Tesseract extends BaseSimpleDependency {
 
   @Override
   public boolean checkIsAvailable() {
-    var res = ProcessHelper.run(ProcessRunParams.ofCmd(BIN, "-v").withTimeout(1000));
+    var res = ProcessHelper.run(ProcessRunParams.ofCmd(BIN, "-v").withTimeout(500));
     return res.didComplete() && res.getStdout().startsWith("tesseract ");
   }
 
@@ -38,14 +39,16 @@ public final class Tesseract extends BaseSimpleDependency {
       )
         .withEnv(ENV)
         .withInputBytes(imgOS.toByteArray())
-        .withTimeout(3000)
+        .withTimeout(OCR_EXECUTION_TIMEOUT)
     );
-    if (!res.didComplete()) {
-      return new TesseractResult.ExecutionFailed();
-    } else if (res.didCompleteAndError()) {
-      return new TesseractResult.Error(res.getStderr());
-    } else {
+    if (res.didCompleteWithoutError()) {
       return new TesseractResult.HOCR(res.getStdout());
+    } else if (res.didCompleteWithError()) {
+      return new TesseractResult.Error(res.getStderr());
+    } else if (res.didTimeOut()) {
+      return new TesseractResult.TimedOut();
+    } else {
+      return new TesseractResult.ExecutionFailed();
     }
   }
 }

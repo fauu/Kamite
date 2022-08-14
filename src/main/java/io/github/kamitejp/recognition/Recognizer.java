@@ -1,5 +1,6 @@
 package io.github.kamitejp.recognition;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import java.awt.BasicStroke;
@@ -16,20 +17,18 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
-import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
+import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.MangaOCRController;
 import io.github.kamitejp.platform.MangaOCREvent;
 import io.github.kamitejp.platform.MangaOCRInitializationException;
@@ -38,7 +37,8 @@ import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
-import io.github.kamitejp.image.ImageOps;
+import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
+import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
 import io.github.kamitejp.util.Result;
 
 public class Recognizer {
@@ -107,14 +107,7 @@ public class Recognizer {
     engine.destroy();
   }
 
-  private record LabelledTesseractResult(String label, TesseractResult result) {
-    public LabelledTesseractHOCROutput asNullableLabelledHOCROutput() {
-      if (result instanceof TesseractResult.HOCR hocr) {
-        return new LabelledTesseractHOCROutput(label, hocr.hocr());
-      }
-      return null;
-    }
-  }
+  private record LabelledTesseractResult(String label, TesseractResult result) {}
 
   public record LabelledTesseractHOCROutput(String label, String hocr) {}
 
@@ -300,19 +293,49 @@ public class Recognizer {
     // Run the queued operations
     CompletableFuture.allOf(tesseractResultFutures.toArray(new CompletableFuture[0])).join();
 
-    // POLISH: Collect error results to a second list and handle them properly
-    var variants = tesseractResultFutures.stream()
-      .map(CompletableFuture::join)
-      .map(LabelledTesseractResult::asNullableLabelledHOCROutput)
-      .filter(Objects::nonNull)
-      .toList();
+    // Transform the results
+    var numExecutionFails = 0;
+    var numTimeouts = 0;
+    ArrayList<String> errorMsgs = null;
+    ArrayList<LabelledTesseractHOCROutput> variants = null;
+    for (var labelledResultFuture : tesseractResultFutures) {
+      var labelledResult = labelledResultFuture.join();
+      switch (labelledResult.result) {
+        case TesseractResult.ExecutionFailed ignored ->
+          numExecutionFails++;
+        case TesseractResult.TimedOut ignored ->
+          numTimeouts++;
+        case TesseractResult.Error error -> {
+          if (errorMsgs == null) {
+            errorMsgs = new ArrayList<>();
+          }
+          errorMsgs.add(error.error());
+        }
+        case TesseractResult.HOCR hocr -> {
+          if (variants == null) {
+            variants = new ArrayList<>();
+          }
+          variants.add(new LabelledTesseractHOCROutput(labelledResult.label, hocr.hocr()));
+        }
+      }
+    }
 
-    if (variants.isEmpty()) {
+    // Handle failures
+    if (numExecutionFails > 0) {
+      LOG.error("Some of the Tesseract calls have failed to execute ({})", numExecutionFails);
+    }
+    if (numTimeouts > 0) {
+      LOG.error("Some of the Tesseract calls have timed out ({})", numTimeouts);
+    }
+    if (errorMsgs != null) {
+      LOG.error(
+        "Some of the Tesseract calls have returned errors:\n{}",
+        errorMsgs.stream().distinct().collect(joining("\n"))
+      );
+    }
+    if (variants == null) {
       LOG.debug("All of the Tesseract calls have failed");
       return Result.Err(RecognitionOpError.OCR_ERROR);
-    } else if (variants.size() < tesseractResultFutures.size()) {
-      // POLISH: Distinguish timed out (process.timeoutElapsed())
-      LOG.debug("Some of the Tesseract calls have failed");
     }
 
     var parsedVariants = ChunkVariants.fromLabelledTesseractHOCROutputs(variants);
