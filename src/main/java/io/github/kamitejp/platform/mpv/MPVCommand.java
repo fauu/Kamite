@@ -1,21 +1,37 @@
 package io.github.kamitejp.platform.mpv;
 
-public enum MPVCommand {
-  OBSERVE_PAUSE,
-  PLAYPAUSE,
-  SEEK_BACK,
-  SEEK_FORWARD,
-  SEEK_START_SUB;
+public sealed interface MPVCommand
+  permits MPVCommand.LoadKamiteScript,
+          MPVCommand.InitKamiteScript,
+          MPVCommand.ObservePause,
+          MPVCommand.PlayPause,
+          MPVCommand.Seek,
+          MPVCommand.SeekStartSub {
+  static final String KAMITE_SCRIPT_NAME = "kamite_mpv";
 
-  public String toJSON() {
+  record LoadKamiteScript(String path) implements MPVCommand {}
+  record InitKamiteScript(int port) implements MPVCommand {}
+  record ObservePause() implements MPVCommand {}
+  record PlayPause() implements MPVCommand {}
+  record Seek(int seconds) implements MPVCommand {}
+  record SeekStartSub() implements MPVCommand {}
+
+  default String toJSON() {
     return "{\"command\": ["
       + switch (this) {
-        case OBSERVE_PAUSE  -> "\"observe_property\", 1, \"pause\"]";
-        case PLAYPAUSE      -> "\"cycle\", \"pause\"]";
-        case SEEK_BACK      -> "\"seek\", -1, \"exact\"]";
-        case SEEK_FORWARD   -> "\"seek\", 1, \"exact\"]";
-        case SEEK_START_SUB -> "\"sub-seek\", 0]";
+        case LoadKamiteScript cmd ->
+          "\"load-script\", \"%s\"".formatted(cmd.path);
+        case InitKamiteScript cmd ->
+          "\"script-message-to\", \"%s\", \"init\", \"%s\"".formatted(KAMITE_SCRIPT_NAME, cmd.port);
+        case ObservePause ignored ->
+          "\"observe_property\", 1, \"pause\"";
+        case PlayPause ignored ->
+          "\"cycle\", \"pause\"";
+        case Seek cmd ->
+          "\"seek\", %s, \"exact\"".formatted(cmd.seconds);
+        case SeekStartSub ignored ->
+          "\"sub-seek\", 0";
       }
-      + "}\n";
+      + "]}\n";
   }
 }

@@ -33,6 +33,7 @@ public abstract class GenericPlatform {
   protected static final String BIN_DIR_PATH_RELATIVE = "bin/";
   protected static final String GENERIC_PLATFORM_DIR_NAME = "generic";
   protected static final String CONFIG_DIR_PATH_RELATIVE = "kamite/";
+  protected static final String MANGAOCR_WRAPPER_FILENAME = "mangaocr_wrapper.py";
 
   // Where the Kamite jar could be found relative to the root directory both in development and in
   // release
@@ -132,6 +133,12 @@ public abstract class GenericPlatform {
     return tesseract.ocr(img, model);
   }
 
+  public Path getGenericLibDirPath() {
+    return getProgramPath()
+      .resolve(LIB_DIR_PATH_RELATIVE)
+      .resolve(GENERIC_PLATFORM_DIR_NAME);
+  }
+
   protected Path getProgramPath() {
     if (programPath == null) {
       try {
@@ -142,11 +149,11 @@ public abstract class GenericPlatform {
       } catch (IllegalArgumentException e) {
         throw new RuntimeException(
           "Exception while determining program path. If you are launching the program from a " +
-          "network drive, try moving it to your local drive first.", e
+          "network drive, try moving it to a local drive first.", e
         );
       }
     }
-    return this.programPath;
+    return programPath;
   }
 
   protected Result<Void, List<String>> checkIfDependenciesAvailable(

@@ -50,10 +50,7 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
 
   @Override
   public Path getMangaOCRWrapperPath() {
-    return getProgramPath()
-      .resolve(LIB_DIR_PATH_RELATIVE)
-      .resolve(GENERIC_PLATFORM_DIR_NAME)
-      .resolve("mangaocr_wrapper.py");
+    return getGenericLibDirPath().resolve(MANGAOCR_WRAPPER_FILENAME);
   }
 
   @Override

@@ -4,7 +4,7 @@ require"string"
 
 local utils = require"mp.utils"
 
-local port = 4110
+local port = nil
 
 local Command = {
   SHOW_CHUNK = 1,
@@ -25,7 +25,7 @@ local dbus_available = false
 
 local command_playback_time_field = "playbackTimeS"
 
-function send_command(command, text)
+local function send_command(command, text)
   local params = utils.format_json({
     [command_text_field[command]] = text,
     [command_playback_time_field] = mp.get_property_native("playback-time"),
@@ -46,27 +46,36 @@ function send_command(command, text)
   os.execute(os_cmd)
 end
 
-function handle_sub_text(_, t)
+local function handle_sub_text(_, t)
   if t ~= nil and t ~= "" then
     send_command(Command.SHOW_CHUNK, t)
   end
 end
 
-function handle_secondary_sub_text(_, t)
+local function handle_secondary_sub_text(_, t)
   if t ~= nil and t ~= "" then
     send_command(Command.SHOW_CHUNK_TRANSLATION, t)
   end
 end
 
-function check_dbus()
+local function check_dbus()
   local ret = os.execute("dbus-send")
   return ret / 256 == 1
 end
 
-function main()
-  dbus_available = check_dbus()
+local function init(port_str)
+  if port ~= nil then
+    return
+  end
+  port = port_str
   mp.observe_property("sub-text", "string", handle_sub_text)
   mp.observe_property("secondary-sub-text", "string", handle_secondary_sub_text)
+  mp.osd_message("Kamite script activated")
+end
+
+local function main()
+  dbus_available = check_dbus()
+  mp.register_script_message("init", init)
 end
 
 main()

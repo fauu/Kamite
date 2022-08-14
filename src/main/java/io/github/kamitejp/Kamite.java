@@ -216,7 +216,7 @@ public class Kamite {
   }
 
   private void initMPVController() {
-    mpvController = MPVController.forPlatform(platform, this::handlePlayerStatusUpdate);
+    mpvController = MPVController.create(platform, config, this::handlePlayerStatusUpdate);
   }
 
   private void handlePlayerStatusUpdate(PlayerStatus newStatus) {
@@ -595,10 +595,10 @@ public class Kamite {
 
       case Command.Player cmd -> {
         var mpvCmd = switch (cmd) {
-          case Command.Player.PlayPause ignored    -> MPVCommand.PLAYPAUSE;
-          case Command.Player.SeekBack ignored     -> MPVCommand.SEEK_BACK;
-          case Command.Player.SeekForward ignored  -> MPVCommand.SEEK_FORWARD;
-          case Command.Player.SeekStartSub ignored -> MPVCommand.SEEK_START_SUB;
+          case Command.Player.PlayPause ignored    -> new MPVCommand.PlayPause();
+          case Command.Player.SeekBack ignored     -> new MPVCommand.Seek(-1);
+          case Command.Player.SeekForward ignored  -> new MPVCommand.Seek(1);
+          case Command.Player.SeekStartSub ignored -> new MPVCommand.SeekStartSub();
           default -> throw new IllegalStateException("Unhandled command type");
         };
         mpvController.sendCommand(mpvCmd);

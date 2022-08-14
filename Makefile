@@ -15,7 +15,6 @@ dist: jar runtime textractor
 	cp -r lib/generic target/dist/lib; \
 	cp target/java/kamite-0.0.0.jar target/dist/lib/generic/kamite.jar; \
 	mkdir target/dist/extra; \
-	cp -r extra/mpv target/dist/extra; \
 	cp -r target/textractor target/dist/extra/textractor; \
 	cp -r target/dist target/kamite; \
 	cp -r bin target/kamite; \

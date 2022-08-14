@@ -4,28 +4,23 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.invoke.MethodHandles;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.kamitejp.status.PlayerStatus;
-
 public final class WindowsMPVController extends AbstractMPVController {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final String PIPE_ADDR = "\\\\.\\pipe\\%s".formatted(PIPE_FILENAME);
+  private static final String PIPE_ADDR = "\\\\.\\pipe\\%s".formatted(IPC_MEDIUM_FILENAME);
   private static final int READ_POLL_INTERVAL_MS = 333;
   private static final int MAX_EXPECTED_RESPONSE_TIME_MS = 33;
 
   private RandomAccessFile pipeFile;
   private Thread workerThread;
 
-  protected WindowsMPVController(Consumer<PlayerStatus> statusUpdateCb) {
-    super(statusUpdateCb);
-
-    workerThread = new Thread(new Worker(this::handleMessage));
+  protected WindowsMPVController() {
+    workerThread = new Thread(new Worker(this::handleMessages));
     LOG.debug("Starting mpv controller worker thread");
     workerThread.start();
   }
@@ -52,45 +47,21 @@ public final class WindowsMPVController extends AbstractMPVController {
     }
   }
 
-  private class Worker implements Runnable {
-    private final Function<String, Boolean> messageCb;
-
-    Worker(Function<String, Boolean> messageCb) {
-      this.messageCb = messageCb;
+  private class Worker extends AbstractMPVController.Worker {
+    Worker(Function<String, Boolean> messagesCb) {
+      super(messagesCb);
     }
 
     @Override
-    public void run() {
-      LOG.debug("Waiting for mpv connection");
-      // This will block until we connect to the pipe
+    protected boolean connect() {
+      // This will block until we connect
       pipeFile = waitForConnection();
       if (pipeFile == null) {
-        LOG.error("Received a null pipe file. Aborting");
-        return;
+        LOG.error("Received a null pipe. Aborting");
+        return false;
       }
-      state = State.CONNECTED;
       LOG.info("Connected to mpv pipe at {}", PIPE_ADDR);
-
-      // The external world will be notified of the established connection as we handle the incoming
-      // pause status update
-      sendCommand(MPVCommand.OBSERVE_PAUSE);
-
-      // This will block until the reader is asked to finish
-      runReader();
-
-      statusUpdateCb.accept(PlayerStatus.DISCONNECTED);
-      state = State.NOT_CONNECTED;
-      LOG.info("mpv disconnected");
-
-      try {
-        Thread.sleep(CONNECTION_RETRY_INTERVAL_MS);
-      } catch (InterruptedException e) {
-        LOG.error("Interrupted while waiting for mpv connection to close. Aborting");
-        return;
-      }
-
-      // Wait for a new connection
-      run();
+      return true;
     }
 
     private RandomAccessFile waitForConnection() {
@@ -120,13 +91,13 @@ public final class WindowsMPVController extends AbstractMPVController {
       }
     }
 
-    private void runReader() {
+    protected void runReader() {
       try {
         while (true) {
           // This blocks if there is nothing to read
-          var msg = read();
-          if (msg != null) {
-            var shouldFinish = messageCb.apply(msg);
+          var msgs = read();
+          if (msgs != null) {
+            var shouldFinish = messagesCb.apply(msgs);
             if (shouldFinish) {
               LOG.debug("Finishing mpv IPC reader as requested");
               break;

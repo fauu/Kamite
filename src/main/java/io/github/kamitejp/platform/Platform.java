@@ -63,6 +63,8 @@ public interface Platform {
 
   TesseractResult tesseractOCR(BufferedImage img, TesseractModel model);
 
+  Path getGenericLibDirPath();
+
   Path getMangaOCRWrapperPath();
 
   Result<Point, RecognitionOpError> getUserSelectedPoint();
@@ -95,8 +97,6 @@ public interface Platform {
           "" + e.getCause()
         );
       } catch (IllegalAccessException | InstantiationException | NoSuchMethodException e) {
-        LOG.error("Internal error when instatiating Platform object. See stderr for stack trace");
-        e.printStackTrace();
         return null;
       }
     }
