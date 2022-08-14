@@ -2,44 +2,56 @@ package io.github.kamitejp.platform.windows;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Stroke;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.CompletableFuture;
 
 import javax.swing.JFrame;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.github.kamitejp.controlgui.ControlGUI;
 import io.github.kamitejp.geometry.Rectangle;
 
 public class AreaSelectorFrame extends JFrame {
+  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   private java.awt.Rectangle screenBounds;
+
+  // Selection start and end point coordinates. Cleared to 0
   private int xStart;
   private int yStart;
   private int xEnd;
   private int yEnd;
+
   private CompletableFuture<Rectangle> futureArea;
 
-  private final Color bgColor = new Color(1.0f, 1.0f, 1.0f, 0.2f);
-  private final Stroke stroke = new BasicStroke(2);
-  private final Color color = Color.BLACK;
+  private final Color frameBgColor = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+  private final Color bgFadeColor = new Color(1.0f, 1.0f, 1.0f, 0.2f);
+  private final Stroke selectionBorderStroke = new BasicStroke(2);
+  private final Color selectionBorderColor = Color.BLACK;
 
   public AreaSelectorFrame() {
     setAlwaysOnTop(true);
     setUndecorated(true);
-    setBackground(Color.WHITE);
-    setOpacity(0.3f);
+    setBackground(frameBgColor);
 
     var fullBounds = new java.awt.Rectangle();
-    for (var device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) { 
+    for (var device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
       for (var conf : device.getConfigurations()) {
         fullBounds = fullBounds.union(conf.getBounds());
       }
     }
     setBounds(fullBounds);
-    this.screenBounds = fullBounds;
+    screenBounds = fullBounds;
 
     var mouseListener = new MouseListener();
 
@@ -53,30 +65,37 @@ public class AreaSelectorFrame extends JFrame {
     var gfx2d = (Graphics2D) gfx;
     var oldStroke = gfx2d.getStroke();
 
+    gfx2d.setColor(bgFadeColor);
+
+    // Selecton area rectangle dimensions
     var w = Math.abs(xStart - xEnd);
     var h = Math.abs(yStart - yEnd);
+    if (w == 0 || h == 0) {
+      // No selection rectangle to draw, fade the entire frame
+      gfx2d.fillRect(0, 0, getWidth(), getHeight());
+      return;
+    }
+
+    // Selecton area rectangle edges
     var top = Math.min(yStart, yEnd);
     var bottom = Math.max(yStart, yEnd);
     var left = Math.min(xStart, xEnd);
     var right = Math.max(xStart, xEnd);
-    if (w == 0 || h == 0) {
-      gfx2d.setColor(bgColor);
-      gfx2d.fillRect(0, 0, getWidth(), getHeight());
-    } else {
-      gfx2d.setColor(bgColor);
-      // Top background
-      gfx2d.fillRect(0, 0, getWidth(), top);
-      // Right background
-      gfx2d.fillRect(right, top, getWidth() - right, h);
-      // Bottom background
-      gfx2d.fillRect(0, bottom, getWidth(), getHeight() - bottom);
-      // Left background
-      gfx2d.fillRect(0, top, left, h);
 
-      gfx2d.setColor(color);
-      gfx2d.setStroke(stroke);
-      gfx2d.drawRect(left, top, w, h);
-    }
+    // Draw background fades around the rectangle
+    // Top
+    gfx2d.fillRect(0, 0, getWidth(), top);
+    // Right
+    gfx2d.fillRect(right, top, getWidth() - right, h);
+    // Bottom
+    gfx2d.fillRect(0, bottom, getWidth(), getHeight() - bottom);
+    // Left
+    gfx2d.fillRect(0, top, left, h);
+
+    // Draw the selection border around the rectangle
+    gfx2d.setStroke(selectionBorderStroke);
+    gfx2d.setColor(selectionBorderColor);
+    gfx2d.drawRect(left, top, w, h);
     gfx2d.setStroke(oldStroke);
   }
 
@@ -116,19 +135,19 @@ public class AreaSelectorFrame extends JFrame {
       setEndPoint(e.getX(), e.getY());
       repaint();
 
-      if (AreaSelectorFrame.this.futureArea == null) {
+      if (futureArea == null) {
         return;
       }
 
-      var x = Math.min(xStart, xEnd) + (int) AreaSelectorFrame.this.screenBounds.getX();
-      var y = Math.min(yStart, yEnd) + (int) AreaSelectorFrame.this.screenBounds.getY();
+      var x = Math.min(xStart, xEnd) + (int) screenBounds.getX();
+      var y = Math.min(yStart, yEnd) + (int) screenBounds.getY();
       var w = Math.abs(xStart - xEnd);
       var h = Math.abs(yStart - yEnd);
       if (w <= 0 || h <= 0) {
         return;
       }
-      AreaSelectorFrame.this.futureArea.complete(Rectangle.ofStartAndDimensions(x, y, w, h));
-      AreaSelectorFrame.this.reset();
+      futureArea.complete(Rectangle.ofStartAndDimensions(x, y, w, h));
+      reset();
     }
   }
 }

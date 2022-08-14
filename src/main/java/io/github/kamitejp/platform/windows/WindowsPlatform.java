@@ -60,7 +60,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   @Override
   public Result<Rectangle, RecognitionOpError> getUserSelectedArea() {
-    this.selector = new AreaSelectorFrame();
+    selector = new AreaSelectorFrame();
     selector.setVisible(true);
 
     var futureArea = selector.getRegion();
