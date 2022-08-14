@@ -526,7 +526,12 @@ Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
     `tessdata` directory (usually `/usr/[local/]share/tessdata/` or
     `/usr/share/tesseract-ocr/<VERSION>/tessdata`).
 
-Remember to launch Kamite with the config key `ocr.engine` set to `tesseract`.
+By default, Tesseract is expected to be available on `PATH` under the executable
+name `tesseract`. If this is not the case, the [config](#config) key
+`ocr.tesseract.path` needs to be set to the executable’s path.
+
+Once the setup is completed, you can launch Kamite with the config key
+`ocr.engine` set to `tesseract`.
 
 #### Setting up extra OCR dependencies
 
@@ -1282,6 +1287,11 @@ ocr {
   # (Directory path) Watch the specified directory for new/modified images and
   # OCR them automatically
   watchDir = …
+
+  tesseract {
+    # (File path) The path to Tesseract’s executable
+    path = "tesseract"
+  }
 
   # A *list* of OCR regions, for each of which a region recognition command
   # button will be displayed in the command palette. See the "OCR region"
