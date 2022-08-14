@@ -14,8 +14,8 @@ public final class Tesseract extends BaseSimpleDependency {
   private static final Map<String, String> ENV = Map.of("OMP_THREAD_LIMIT", "1");
   private static final int OCR_EXECUTION_TIMEOUT = 3000;
 
-  public Tesseract() {
-    super("tesseract", "Tesseract");
+  public Tesseract(String binPath) {
+    super(binPath, "Tesseract");
   }
 
   @Override

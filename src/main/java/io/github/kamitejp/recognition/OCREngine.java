@@ -14,7 +14,7 @@ public sealed interface OCREngine
           OCREngine.MangaOCR,
           OCREngine.OCRSpace,
           OCREngine.None {
-  public record Tesseract() implements OCREngine {}
+  public record Tesseract(String binPath) implements OCREngine {}
 
   public record MangaOCR(MangaOCRController controller) implements OCREngine {
     public static MangaOCR uninitialized() {
@@ -67,8 +67,10 @@ public sealed interface OCREngine
     String errorMessage = null;
 
     engine = switch (config.ocr().engine()) {
-      case TESSERACT -> new OCREngine.Tesseract();
-      case MANGAOCR  -> OCREngine.MangaOCR.uninitialized();
+      case TESSERACT ->
+        new OCREngine.Tesseract(config.ocr().tesseract().path());
+      case MANGAOCR  ->
+        OCREngine.MangaOCR.uninitialized();
       case OCRSPACE  -> {
         var apiKey = config.secrets().ocrspace();
         if (apiKey == null) {
@@ -77,7 +79,8 @@ public sealed interface OCREngine
         }
         yield OCREngine.OCRSpace.uninitialized(config.secrets().ocrspace());
       }
-      case NONE -> new OCREngine.None();
+      case NONE ->
+        new OCREngine.None();
     };
 
     return engine == null ? Result.Err(errorMessage) : Result.Ok(engine);

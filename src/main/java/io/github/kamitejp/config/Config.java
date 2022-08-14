@@ -196,6 +196,7 @@ public record Config(
   public static record Ocr2(
     OCREngine engine,
     java.util.List<Ocr2.Region> regions,
+    Ocr2.Tesseract tesseract,
     java.lang.String watchDir
   ) {
     public static record Region(
@@ -243,10 +244,22 @@ public record Config(
     
     }
     
+    public static record Tesseract(
+      java.lang.String path
+    ) {
+      
+      public Tesseract(com.typesafe.config.Config c, java.lang.String parentPath, $TsCfgValidator $tsCfgValidator) {
+        this(
+          c.hasPathOrNull("path") ? c.getString("path") : "tesseract"
+        );
+      }
+    }
+    
     public Ocr2(com.typesafe.config.Config c, java.lang.String parentPath, $TsCfgValidator $tsCfgValidator) {
       this(
         c.hasPath("engine") ? OCREngine.valueOf(c.getString("engine").toUpperCase()) : OCREngine.NONE,
         c.hasPathOrNull("regions") ? $_LOcr2_Region(c.getList("regions"), parentPath, $tsCfgValidator) : null,
+        c.hasPathOrNull("tesseract") ? new Ocr2.Tesseract(c.getConfig("tesseract"), parentPath + "tesseract.", $tsCfgValidator) : new Ocr2.Tesseract(com.typesafe.config.ConfigFactory.parseString("tesseract{}"), parentPath + "tesseract.", $tsCfgValidator),
         c.hasPathOrNull("watchDir") ? c.getString("watchDir") : null
       );
     }

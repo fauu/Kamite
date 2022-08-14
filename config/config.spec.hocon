@@ -54,6 +54,10 @@ ocr {
   engine = OCREngine
   watchDir = "string?"
 
+  tesseract {
+    path = "string | tesseract"
+  }
+
   #@optional
   regions = [{
     symbol = string
