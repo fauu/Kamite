@@ -44,6 +44,10 @@ public class AreaSelectorFrame extends JFrame {
     setUndecorated(true);
     setBackground(frameBgColor);
     setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+    // POLISH: Should have its own modified icon
+    setIconImage(
+      Toolkit.getDefaultToolkit().getImage(getClass().getResource(ControlGUI.ICON_RESOURCE_PATH))
+    );
 
     var fullBounds = new java.awt.Rectangle();
     for (var device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {

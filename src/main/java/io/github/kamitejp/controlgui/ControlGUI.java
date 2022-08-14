@@ -30,10 +30,11 @@ import io.github.kamitejp.platform.linux.xorg.XorgPlatform;
 public class ControlGUI extends JFrame {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  public static final String ICON_RESOURCE_PATH = "/icon-48.png";
+
   private static final String LINUX_LAF_CLASSNAME = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
   private static final String DEFAULT_LAF_CLASSNAME = UIManager.getSystemLookAndFeelClassName();
   private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(750, 600);
-  private static final String ICON_RESOURCE_PATH = "/icon-48.png";
   private static final Font APP_NAME_LABEL_FONT = new Font("Sans Serif", Font.BOLD, 32);
   private static final Font MSG_AREA_FONT = new Font("Courier", Font.PLAIN, 13);
 
