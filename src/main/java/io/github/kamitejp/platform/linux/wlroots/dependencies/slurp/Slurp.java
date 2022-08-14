@@ -35,7 +35,7 @@ public final class Slurp extends BaseSimpleDependency {
     var res = ProcessHelper.run(cmd);
     if (!res.didComplete()) {
       return new SlurpResult.ExecutionFailed();
-    } else if (res.didCompleteAndError()) {
+    } else if (res.didCompleteWithError()) {
       if ("selection cancelled".equalsIgnoreCase(res.getStderr())) {
         return new SlurpResult.Cancelled();
       }

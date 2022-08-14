@@ -24,19 +24,31 @@ public final class ProcessResult<T> {
     return new ProcessResult<>(ExecutionOutcome.COMPLETED, exitStatus, stdout, stderr);
   }
 
+  public static <T> ProcessResult<T> timedOut() {
+    return new ProcessResult<>(ExecutionOutcome.TIMED_OUT, null, null, "");
+  }
+
   public static <T> ProcessResult<T> failedToExecute() {
     return new ProcessResult<>(ExecutionOutcome.FAILED, null, null, "");
   }
 
   public boolean didComplete() {
-    return this.executionOutcome == ExecutionOutcome.COMPLETED;
+    return executionOutcome == ExecutionOutcome.COMPLETED;
   }
 
-  public boolean didFailOrError() {
-    return !didComplete() || exitStatus != 0;
+  public boolean didTimeOut() {
+    return executionOutcome == ExecutionOutcome.TIMED_OUT;
   }
 
-  public boolean didCompleteAndError() {
+  public boolean didFail() {
+    return executionOutcome == ExecutionOutcome.FAILED;
+  }
+
+  public boolean didCompleteWithoutError() {
+    return didComplete() && exitStatus == 0;
+  }
+
+  public boolean didCompleteWithError() {
     return didComplete() && exitStatus != 0;
   }
 
@@ -54,6 +66,7 @@ public final class ProcessResult<T> {
 
   private enum ExecutionOutcome {
     FAILED,
-    COMPLETED
+    TIMED_OUT,
+    COMPLETED;
   }
 }

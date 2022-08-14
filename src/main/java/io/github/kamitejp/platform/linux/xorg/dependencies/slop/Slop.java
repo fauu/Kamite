@@ -22,7 +22,7 @@ public final class Slop extends BaseSimpleDependency {
     var res = ProcessHelper.run(ProcessRunParams.ofCmd("slop", "-t", "0", "-f", "%x %y %w %h"));
     if (!res.didComplete()) {
       return new SlopResult.ExecutionFailed();
-    } else if (res.didCompleteAndError()) {
+    } else if (res.didCompleteWithError()) {
       if (res.getStderr().contains("Selection was cancelled")) {
         return new SlopResult.Cancelled();
       }

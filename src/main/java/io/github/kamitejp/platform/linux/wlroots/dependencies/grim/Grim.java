@@ -52,7 +52,7 @@ public final class Grim extends BaseSimpleDependency {
     var res = ProcessHelper.runWithBinaryOutput(ProcessRunParams.ofCmd(cmd).withTimeout(3000));
     if (!res.didComplete()) {
       return new GrimResult.ExecutionFailed();
-    } else if (res.didCompleteAndError()) {
+    } else if (res.didCompleteWithError()) {
       return new GrimResult.Error(res.getStderr());
     }
     return new GrimResult.Screenshot(ImageOps.fromBytes(res.getStdout()));

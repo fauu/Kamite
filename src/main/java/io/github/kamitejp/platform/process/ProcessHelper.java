@@ -32,6 +32,9 @@ public final class ProcessHelper {
       process.getOutputStream().close();
       var out = ProcessHelper.readStdoutAndStderr(process);
       return ProcessResult.completed(process.waitFor(), out.stdout(), out.stderr());
+    } catch (ProcessTimeoutException e) {
+      LOG.debug("Process '{}' has timed out", params.getCmd()[0]);
+      return ProcessResult.timedOut();
     } catch (Exception e) {
       LOG.debug("Exception while running process '{}': {}", params.getCmd()[0], e);
       return ProcessResult.failedToExecute();

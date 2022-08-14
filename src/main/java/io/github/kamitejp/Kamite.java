@@ -660,8 +660,8 @@ public class Kamite {
   }
 
   private void runCustomCommand(String[] command) {
-    if (ProcessHelper.run(command).didFailOrError()) {
-      notifyError("Custom command has failed");
+    if (!ProcessHelper.run(command).didCompleteWithoutError()) {
+      notifyError("Custom command did not run successfully");
     }
   }
 
