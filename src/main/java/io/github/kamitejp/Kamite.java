@@ -462,7 +462,7 @@ public class Kamite {
       case SCREENSHOT_API_COMMUNICATION_FAILED ->
         LOG.error("Failed to communicate with the screenshot API");
       case SELECTION_CANCELLED ->
-        LOG.debug("Screen area selection was cancelled by user");
+        LOG.debug("Screen area selection was cancelled by the user");
       case SELECTION_FAILED ->
         LOG.error("Failed to perform screen area selection");
       case SCREENSHOT_FAILED ->
