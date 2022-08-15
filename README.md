@@ -67,6 +67,7 @@ script; [waycorner][waycorner-icxes].
         * [OCR usage](#ocr-usage)
         * [OCR directory watcher](#ocr-directory-watcher)
         * [Recommended manga viewer](#recommended-manga-viewer)
+        * [Mining manga](#mining-manga)
         * [Tip: quickly trigger OCR with mouse hot corners](#tip-quickly-trigger-ocr-with-mouse-hot-corners)
         * [Alternatives for manga](#alternatives-for-manga)
     * [Visual novel / game text extraction](#visual-novel--game-text-extraction)
@@ -723,6 +724,50 @@ integration:
 selection.
 
 The integration must be enabled in Gomics-v under `Preferences › Kamite`.
+
+#### Mining manga
+
+The [`contrib/anki-screenshot.sh`](contrib/anki-screenshot.sh) script
+(Linux/wlroots and Xorg) is convenient for enhancing cards mined from manga
+with Kamite. When executed, it uses an external program to take a screenshot of
+a user-selected screen area, scales it down to a configured size, converts it to
+the storage-efficient WebP format, and adds it to the latest Anki card.
+
+The script takes an optional positional argument, which by default is put into
+the latest card’s Sentence field. This can be used to automatically update the
+card with text present in Kamite. Below is a [config](#config) excerpt
+illustrating how to achieve this.
+
+```sh
+commands {
+  ...
+  custom = [
+    ...
+    ${CUSTOM_COMMANDS.ankiScreenshot}
+    ...
+  ]
+  ...
+}
+...
+CUSTOM_COMMANDS {
+  ...
+  ankiScreenshot {
+    symbol = ASS
+    name = Anki screenshot
+    command = "/path/to/anki-screenshot.sh {effectiveText}"
+  }
+  ...
+}
+```
+
+This configuration will add a button labeled “SS” to the command palette
+that will execute the Anki Screenshot script, supplying it with Kamite’s
+`effectiveText` (see
+[Custom commands](#custom-commands-launching-external-executables)) as the
+positional argument.
+
+See near the top of the script file for a list of required dependencies and for
+the configuration options.
 
 #### Tip: quickly trigger OCR with mouse hot corners
 
