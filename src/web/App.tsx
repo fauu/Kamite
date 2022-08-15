@@ -34,6 +34,7 @@ import {
   CharacterCounter, createSessionTimerState, createStatusPanelFader, SessionTimer, StatusPanel
 } from "~/status-panel";
 
+import { integrateClipboardInserter } from "./clipboardInserter";
 import { useGlobalTooltip } from "./GlobalTooltip";
 import { createTheme, themeLayoutFlipped } from "./theme";
 
@@ -142,6 +143,10 @@ export const App: VoidComponent = () => {
     // Catch in capturing phase so that when we exit chunk edit mode by clicking on a lookup button
     // the editing changes are committed before the lookup button handler initiates lookup
     rootEl.addEventListener("click", handleRootClick, { capture: true });
+
+    integrateClipboardInserter(
+      /* onText */ text => backend.command({ kind: "chunk_show", params: { chunk: text } })
+    );
   });
 
   // === ON INIT =============================================================================
@@ -512,6 +517,7 @@ export const App: VoidComponent = () => {
   });
 
   document.addEventListener("paste", (event: ClipboardEvent) => {
+    console.log(event);
     if (middleMouseButtonLikelyDown()) {
       // Prevent Chrome's middle-click paste.
       // Reset the button state to not break pasting forever in cases when the button is once
