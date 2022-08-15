@@ -324,6 +324,8 @@ Additional tips:
   <dt><a href="https://github.com/killergerbah/asbplayer">asbplayer</a></dt>
   <dd>A browser-based media player for subtitle sentence mining. Supports
   various video streaming websites directly.</dd>
+  <dt><a href="https://github.com/marisukukise/japReader">japReader</a></dt>
+  <dd>A pop-up dictionary program that can track known words.</dd>
 </dl>
 
 ### Manga text extraction
@@ -839,11 +841,24 @@ screen corners but also edges)
   <dd>Takes manga images and generates HTML files where detected text blocks
   are overlaid with selectable text as recognized by “Manga OCR”, allowing for
   direct lookup with pop-up dictionaries.</dd>
+  <dt><a href="https://wonderwize.github.io/mangareader/">Mangareader</a></dt>
+  <dd>An in-browser manga reader with built-in support for OCR-ing selected
+  regions using an online API backed by “Manga OCR”.</dd>
+  <!-- Can be used in tandem with Kamite with the help of the Clipboard Inserter browser extension. -->
   <dt><a href="https://github.com/bluaxees/Cloe">Cloe</a></dt>
   <dd>OCRs a screen selection to clipboard using “Manga OCR”.</dd>
   <dt><a href="https://github.com/bluaxees/Poricom">Poricom</a></dt>
   <dd>Manga reader with built-in “Manga OCR” and Tesseract support. Can
   also be used to capture text from external programs.</dd>
+  <dt><a href="https://github.com/rampaa/JL">JL</a></dt>
+  <dd>A pop-up dictionary program for Windows with a convenient translucent UI
+  that can be displayed on top of other windows. For manga, needs a separate
+  program that can OCR to clipboard.</dd>
+  <dt><a href="https://github.com/marisukukise/japReader">japReader</a></dt>
+  <dd>A pop-up dictionary program that can track known words. For manga, needs
+  a separate OCR-to-clipboard program.</dd>
+  <dt><a href="https://github.com/Ajatt-Tools/transformers_ocr">transformers_ocr</a></dt>
+  <dd>A simple Linux/Xorg OCR-to-clipboard script using “Manga OCR”.</dd>
 </dl>
 
 ### Visual novel / game text extraction
@@ -889,15 +904,28 @@ Textractor for games. Some other alternatives are:
 
 <dl>
   <dt><a href="https://github.com/mathewthe2/Game2Text-Lightning">Game2Text-Lightning</a></dt>
-  <dd>An OCR-powered pop-up dictionary for games and other desktop
-  applications.</dd>
+  <dd>A Windows OCR-powered pop-up dictionary program for games and other
+  desktop applications.</dd>
+  <dt><a href="https://github.com/rampaa/JL">JL</a></dt>
+  <dd>A pop-up dictionary program for Windows with a convenient translucent UI
+  that can be displayed on top of the game window. Needs Textractor with Copy to
+  Clipboard extension or an external OCR-to-clipboard program.</dd>
+  <dt><a href="https://github.com/marisukukise/japReader">japReader</a></dt>
+  <dd>A pop-up dictionary program that can track known words.</dd>
 </dl>
 
 ### Clipboard paste
 
 Text can be pasted from clipboard by pressing <kbd>Ctrl</kbd> + <kbd>V</kbd> in
-Kamite’s browser tab. This can be, for example, combined with “clipboard
-inserter” browser extensions.
+Kamite’s browser tab.
+
+<!-- The Kamite browser client can automatically pick up the clipboard text
+with the Clipboard Inserter browser extension ([Firefox][clipboard-inserter-ff],
+[Chrome][clipboard-inserter-chrome]) extension (assumes default extension
+settings) -->
+
+[clipboard-inserter-ff]: https://addons.mozilla.org/en-US/firefox/addon/clipboard-inserter/
+[clipboard-inserter-chrome]: https://chrome.google.com/webstore/detail/clipboard-inserter/deahejllghicakhplliloeheabddjajm
 
 ### Custom source / alternative method text extraction
 
