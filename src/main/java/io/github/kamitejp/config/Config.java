@@ -22,6 +22,7 @@ public record Config(
   public enum OCREngine {
     TESSERACT,
     MANGAOCR,
+    MANGAOCR_ONLINE,
     OCRSPACE,
     NONE;
   }

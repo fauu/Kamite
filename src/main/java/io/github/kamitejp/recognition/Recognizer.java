@@ -93,6 +93,8 @@ public class Recognizer {
           );
         }
       }
+      case OCREngine.MangaOCROnline engine ->
+        engine.initialized();
       case OCREngine.OCRSpace engine ->
         engine.initialized();
       case OCREngine.None engine ->
@@ -125,10 +127,11 @@ public class Recognizer {
     }
     LOG.debug("Starting box recognition");
     return switch (engine) {
-      case OCREngine.Tesseract ignored -> recognizeBoxTesseract(img, textOrientation);
-      case OCREngine.MangaOCR engine   -> recognizeBoxMangaOCR(engine.controller(), img);
-      case OCREngine.OCRSpace engine   -> recognizeBoxOCRSpace(engine.adapter(), img);
-      case OCREngine.None ignored      -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+      case OCREngine.Tesseract ignored     -> recognizeBoxTesseract(img, textOrientation);
+      case OCREngine.MangaOCR engine       -> recognizeBoxMangaOCR(engine.controller(), img);
+      case OCREngine.MangaOCROnline engine -> recognizeBoxMangaOCROnline(engine.adapter(), img);
+      case OCREngine.OCRSpace engine       -> recognizeBoxOCRSpace(engine.adapter(), img);
+      case OCREngine.None ignored          -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
     };
   }
 
@@ -162,6 +165,24 @@ public class Recognizer {
     return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
   }
 
+  private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxMangaOCROnline(
+    MangaOCRGGAdapter adapter,
+    BufferedImage img
+  ) {
+    var res = adapter.ocr(img);
+    if (res.isErr()) {
+      LOG.error("“Manga OCR” Online error: {}", res.err());
+      return Result.Err(RecognitionOpError.OCR_ERROR);
+    }
+
+    var text = res.get();
+    if (text.isBlank()) {
+      return Result.Err(RecognitionOpError.ZERO_VARIANTS);
+    }
+
+    return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
+  }
+
   private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxOCRSpace(
     OCRSpaceAdapter adapter,
     BufferedImage img
@@ -179,7 +200,6 @@ public class Recognizer {
 
     return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
   }
-
 
   private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxTesseract(
     BufferedImage img, TextOrientation textOrientation

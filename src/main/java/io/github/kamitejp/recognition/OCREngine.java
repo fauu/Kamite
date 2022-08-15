@@ -12,6 +12,7 @@ import io.github.kamitejp.util.Result;
 public sealed interface OCREngine
   permits OCREngine.Tesseract,
           OCREngine.MangaOCR,
+          OCREngine.MangaOCROnline,
           OCREngine.OCRSpace,
           OCREngine.None {
   public record Tesseract(String binPath) implements OCREngine {}
@@ -28,6 +29,21 @@ public sealed interface OCREngine
         throw new IllegalStateException("This OCREngine.MangaOCR instance is already initialized");
       }
       return new MangaOCR(new MangaOCRController(platform, eventCb));
+    }
+  }
+
+  public record MangaOCROnline(MangaOCRGGAdapter adapter) implements OCREngine {
+    public static MangaOCROnline uninitialized() {
+      return new MangaOCROnline(null);
+    }
+
+    public MangaOCROnline initialized() {
+      if (adapter != null) {
+        throw new IllegalStateException(
+          "This OCREngine.MangaOCROnline instance is already initialized"
+        );
+      }
+      return new MangaOCROnline(new MangaOCRGGAdapter());
     }
   }
 
@@ -55,10 +71,11 @@ public sealed interface OCREngine
 
   default String displayName() {
     return switch (this) {
-      case OCREngine.Tesseract ignored -> "Tesseract OCR";
-      case OCREngine.MangaOCR ignored  -> "“Manga OCR”";
-      case OCREngine.OCRSpace ignored  -> "OCR.space";
-      case OCREngine.None ignored      -> "None";
+      case OCREngine.Tesseract ignored      -> "Tesseract OCR";
+      case OCREngine.MangaOCR ignored       -> "“Manga OCR”";
+      case OCREngine.MangaOCROnline ignored -> "“Manga OCR” Online (HF Space by Gryan Galario)";
+      case OCREngine.OCRSpace ignored       -> "OCR.space";
+      case OCREngine.None ignored           -> "None";
     };
   }
 
@@ -71,6 +88,8 @@ public sealed interface OCREngine
         new OCREngine.Tesseract(config.ocr().tesseract().path());
       case MANGAOCR  ->
         OCREngine.MangaOCR.uninitialized();
+      case MANGAOCR_ONLINE  ->
+        OCREngine.MangaOCROnline.uninitialized();
       case OCRSPACE  -> {
         var apiKey = config.secrets().ocrspace();
         if (apiKey == null) {
