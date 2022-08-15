@@ -522,9 +522,6 @@ export const App: VoidComponent = () => {
     if (chunks.editing()) {
       return;
     }
-    // if (chunks.textHighlight()) {
-    //   return;
-    // }
     const text = event.clipboardData?.getData("text");
     if (!text || text.trim() === "") {
       return;
