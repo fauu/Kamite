@@ -16,7 +16,7 @@ public final class UnixMPVController extends BaseMPVController {
 
   private static final UnixDomainSocketAddress SOCKET_ADDR =
     UnixDomainSocketAddress.of("/tmp/%s".formatted(IPC_MEDIUM_FILENAME));
-  private static final int READ_BUFFER_CAPACITY = 2048;
+  private static final int READ_BUFFER_CAPACITY = 8192;
 
   private SocketChannel socketChannel;
 
