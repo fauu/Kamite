@@ -7,11 +7,9 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import io.github.kamitejp.util.HTTP;
 import io.github.kamitejp.util.JSON;
 import io.github.kamitejp.util.Result;
 
@@ -33,7 +32,6 @@ public class OCRSpaceAdapter {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
   private static final int REQUEST_TIMEOUT_S = 8;
   private static final String MULTIPART_BOUNDARY = "apUaO5xP8REdGOEJnoAy";
 
@@ -45,14 +43,9 @@ public class OCRSpaceAdapter {
   private static final String PARAM_IMAGE_MIMETYPE = "image/png";
 
   private final String apiKey;
-  private final HttpClient httpClient;
 
   OCRSpaceAdapter(String apiKey) {
     this.apiKey = apiKey;
-    httpClient = HttpClient.newBuilder()
-      .connectTimeout(CONNECT_TIMEOUT)
-      .version(HttpClient.Version.HTTP_2)
-      .build();
   }
 
   private record ImageUpload(String filename, String mimeType, byte[] bytes) {}
@@ -81,7 +74,7 @@ public class OCRSpaceAdapter {
 
     HttpResponse<String> res;
     try {
-      var resFuture = httpClient.sendAsync(req, HttpResponse.BodyHandlers.ofString());
+      var resFuture = HTTP.client().sendAsync(req, HttpResponse.BodyHandlers.ofString());
       res = resFuture.get(REQUEST_TIMEOUT_S, TimeUnit.SECONDS);
     } catch (TimeoutException e) {
       return Result.Err("OCR.space HTTP request timed out");
