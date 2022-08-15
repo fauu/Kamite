@@ -9,7 +9,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class WindowsMPVController extends AbstractMPVController {
+public final class WindowsMPVController extends BaseMPVController {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String PIPE_ADDR = "\\\\.\\pipe\\%s".formatted(IPC_MEDIUM_FILENAME);
@@ -47,7 +47,7 @@ public final class WindowsMPVController extends AbstractMPVController {
     }
   }
 
-  private class Worker extends AbstractMPVController.Worker {
+  private class Worker extends BaseMPVController.Worker {
     Worker(Function<String, Boolean> messagesCb) {
       super(messagesCb);
     }

@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.status.PlayerStatus;
 
-public abstract class AbstractMPVController implements MPVController {
+public abstract class BaseMPVController implements MPVController {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   protected static final String IPC_MEDIUM_FILENAME = "kamite-mpvsocket";
@@ -26,7 +26,7 @@ public abstract class AbstractMPVController implements MPVController {
 
   private int kamitePort;
 
-  public AbstractMPVController() {
+  public BaseMPVController() {
     state = State.NOT_CONNECTED;
   }
 
