@@ -760,14 +760,14 @@ CUSTOM_COMMANDS {
 }
 ```
 
-This configuration will add a button labeled “SS” to the command palette
+This configuration will add a button labeled “ASS” to the command palette
 that will execute the Anki Screenshot script, supplying it with Kamite’s
 `effectiveText` (see
 [Custom commands](#custom-commands-launching-external-executables)) as the
 positional argument.
 
-See near the top of the script file for a list of required dependencies and for
-the configuration options.
+See near the top of the script file for the list of required dependencies and
+for the configuration options.
 
 #### Tip: quickly trigger OCR with mouse hot corners
 
