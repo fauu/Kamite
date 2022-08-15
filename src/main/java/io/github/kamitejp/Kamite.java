@@ -36,6 +36,7 @@ import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.linux.LinuxPlatform;
 import io.github.kamitejp.platform.mpv.MPVCommand;
 import io.github.kamitejp.platform.mpv.MPVController;
+import io.github.kamitejp.platform.mpv.Subtitle;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.recognition.AutoBlockHeuristic;
 import io.github.kamitejp.recognition.ChunkVariants;
@@ -161,7 +162,7 @@ public class Kamite {
 
     chunkCheckpoint = new ChunkCheckpoint(
       config.chunk().throttleMS(),
-      /* onAllowedThrough */ this::handleShowChunkPostCheckpoint
+      /* onAllowedThrough */ this::showChunkPostCheckpoint
     );
 
     textProcessor = new TextProcessor();
@@ -216,12 +217,21 @@ public class Kamite {
   }
 
   private void initMPVController() {
-    mpvController = MPVController.create(platform, config, this::handlePlayerStatusUpdate);
+    mpvController = MPVController.create(
+      platform, this::handlePlayerStatusUpdate, this::handlePlayerSubtitle
+    );
   }
 
   private void handlePlayerStatusUpdate(PlayerStatus newStatus) {
     status.setPlayerStatus(newStatus);
     sendStatus(ProgramStatusOutMessage.PlayerStatus.class);
+  }
+
+  private void handlePlayerSubtitle(Subtitle subtitle) {
+    switch (subtitle.kind()) {
+      case PRIMARY   -> showChunkPostCheckpoint(subtitle.text(), subtitle.startTimeS());
+      case SECONDARY -> showChunkTranslation(subtitle.text(), subtitle.startTimeS());
+    }
   }
 
   private void initRecognizer() {
@@ -515,15 +525,26 @@ public class Kamite {
     }
   }
 
-  private void handleShowChunkPostCheckpoint(IncomingChunkText chunk) {
-    if (ChunkFilter.shouldReject(chunk.text())) {
+  private void showChunkPostCheckpoint(IncomingChunkText chunk) {
+    showChunkPostCheckpoint(chunk.text(), chunk.playbackTimeS());
+  }
+
+  private void showChunkPostCheckpoint(String text, Double playbackTimeS) {
+    if (ChunkFilter.shouldReject(text)) {
       LOG.info("Rejected a chunk because it matched a filter pattern");
-      LOG.debug("Rejected chunk: {}", chunk.text()); // NOPMD
+      LOG.debug("Rejected chunk: {}", text);
       return;
     }
-    var post = ChunkVariants.singleFromString(chunk.text())
+    var post = ChunkVariants.singleFromString(text)
       .getPostprocessedChunks(config.chunk().correct());
-    server.send(new ChunkVariantsOutMessage(post, chunk.playbackTimeS()));
+    server.send(new ChunkVariantsOutMessage(post, playbackTimeS));
+  }
+
+  private void showChunkTranslation(String translation, Double playbackTimeS) {
+    server.send(new ChunkTranslationOutMessage(
+      TextProcessor.correctForm(translation),
+      playbackTimeS
+    ));
   }
 
   private void handleInMessage(InMessage message) {
@@ -631,10 +652,7 @@ public class Kamite {
       case Command.Chunk.Show cmd ->
         chunkCheckpoint.register(cmd.chunk());
       case Command.Chunk.ShowTranslation cmd ->
-        server.send(new ChunkTranslationOutMessage(
-          TextProcessor.correctForm(cmd.translation().translation()),
-          cmd.translation().playbackTimeS()
-        ));
+        showChunkTranslation(cmd.translation().translation(), cmd.translation().playbackTimeS());
 
       case Command.Other.Custom cmd -> {
         if (source == CommandSource.API) {
