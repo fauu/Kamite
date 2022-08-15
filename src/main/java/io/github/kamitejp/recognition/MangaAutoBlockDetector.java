@@ -401,7 +401,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     // Treat this much of a change in height as a discongruity
     var discongruityThreshold = exemplar.height() * 1.75;
     // Ignore discongruities below this width
-    var relevantDiscongruityWidth = (int) (exemplar.width() * 2);
+    var relevantDiscongruityWidth = (int) (exemplar.width() * 2.5);
 
     var centerXRel = center.x() - box.getLeft();
 
