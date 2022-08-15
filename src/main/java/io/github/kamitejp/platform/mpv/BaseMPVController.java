@@ -99,12 +99,16 @@ public abstract class BaseMPVController implements MPVController {
   }
 
   private void handleSubtitleText(Subtitle.Kind kind, String text) {
-    if (text == null || "".equalsIgnoreCase(text)) {
+    if (text == null) {
       return;
     }
-    var processedText = text.substring(1, text.length() - 1);
-    processedText = subtitleTextMidTransform(processedText);
-    processedText = processedText.replaceAll("\\\\n", "\n").replaceAll("\\\\\"", "\"");
+    var processedText = text.substring(1, text.length() - 1); // Remove quotemarks
+    if (processedText.isEmpty()) {
+      return;
+    }
+    processedText = subtitleTextMidTransform(processedText)
+      .replaceAll("\\\\n", "\n")
+      .replaceAll("\\\\\"", "\"");
     pendingSubtitleTexts[kind.ordinal()] = processedText;
   }
 

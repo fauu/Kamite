@@ -50,9 +50,6 @@ public final class WindowsMPVController extends BaseMPVController {
 
   @Override
   protected String subtitleTextMidTransform(String text) {
-    if (text.isEmpty()) {
-      return text;
-    }
     // NOTE: ???
     var bytes = text.getBytes(StandardCharsets.UTF_16);
     var transformedBytes = new byte[(bytes.length - 2) / 2];
