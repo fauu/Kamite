@@ -500,6 +500,11 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       switch (state) { // NOPMD - misidentifies as non-exhaustive
         case NORMAL -> {
           var earlierX = x - (xStep * compareDist);
+          if (earlierX < 0) {
+            earlierX = 0;
+          } else if (earlierX >= topEdge.length) {
+            earlierX = topEdge.length - 1;
+          }
           var earlierY = topEdge[earlierX];
           var yDiffFromEarlier = Math.abs(topEdge[x] - earlierY);
           if (yDiffFromEarlier >= discongruityThreshold) {
