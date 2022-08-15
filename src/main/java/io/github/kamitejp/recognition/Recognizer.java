@@ -508,8 +508,6 @@ public class Recognizer {
   private List<String> getAvailableCommands() {
     if (platform.getUnsupportedFeatures().contains(PlatformDependentFeature.GLOBAL_OCR)) {
       return List.of();
-    } else if (engine instanceof OCREngine.MangaOCR || engine instanceof OCREngine.OCRSpace) {
-      return List.of("ocr_manual-block", "ocr_auto-block", "ocr_region");
     } else if (engine instanceof OCREngine.Tesseract) {
       return List.of(
         "ocr_manual-block-vertical",
@@ -517,6 +515,8 @@ public class Recognizer {
         "ocr_auto-block",
         "ocr_region"
       );
+    } else if (!(engine instanceof OCREngine.None)) {
+      return List.of("ocr_manual-block", "ocr_auto-block", "ocr_region");
     } else {
       return List.of();
     }
