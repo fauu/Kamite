@@ -21,6 +21,7 @@ import javax.swing.JFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.github.kamitejp.Kamite;
 import io.github.kamitejp.controlgui.ControlGUI;
 import io.github.kamitejp.geometry.Rectangle;
 
@@ -43,6 +44,7 @@ public class AreaSelector extends JFrame {
   private CompletableFuture<Optional<Rectangle>> futureArea;
 
   public AreaSelector() {
+    setTitle("%s OCR area selector".formatted(Kamite.APP_NAME_DISPLAY));
     setAlwaysOnTop(true);
     setUndecorated(true);
     setBackground(FRAME_BG_COLOR);
@@ -67,6 +69,17 @@ public class AreaSelector extends JFrame {
 
     var keyListener = new KeyListener();
     addKeyListener(keyListener);
+  }
+
+  public void activate() {
+    setVisible(true);
+    setExtendedState(JFrame.NORMAL);
+    toFront();
+    requestFocus();
+  }
+
+  public void deactivate() {
+    setVisible(false);
   }
 
   @Override
