@@ -89,10 +89,12 @@ public class Recognizer {
           yield engine.initialized(platform, this::handleMangaOCREvent);
         } catch (MangaOCRInitializationException e) {
           throw new RecognizerInitializationException( // NOPMD
-            "Could not initialize “Manga OCR”: %s".formatted(e.getMessage())
+            "Could not initialize \"Manga OCR\": %s".formatted(e.getMessage())
           );
         }
       }
+      case OCREngine.MangaOCROnline engine ->
+        engine.initialized();
       case OCREngine.OCRSpace engine ->
         engine.initialized();
       case OCREngine.None engine ->
@@ -125,10 +127,11 @@ public class Recognizer {
     }
     LOG.debug("Starting box recognition");
     return switch (engine) {
-      case OCREngine.Tesseract ignored -> recognizeBoxTesseract(img, textOrientation);
-      case OCREngine.MangaOCR engine   -> recognizeBoxMangaOCR(engine.controller(), img);
-      case OCREngine.OCRSpace engine   -> recognizeBoxOCRSpace(engine.adapter(), img);
-      case OCREngine.None ignored      -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+      case OCREngine.Tesseract ignored     -> recognizeBoxTesseract(img, textOrientation);
+      case OCREngine.MangaOCR engine       -> recognizeBoxMangaOCR(engine.controller(), img);
+      case OCREngine.MangaOCROnline engine -> recognizeBoxMangaOCROnline(engine.adapter(), img);
+      case OCREngine.OCRSpace engine       -> recognizeBoxOCRSpace(engine.adapter(), img);
+      case OCREngine.None ignored          -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
     };
   }
 
@@ -162,6 +165,24 @@ public class Recognizer {
     return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
   }
 
+  private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxMangaOCROnline(
+    MangaOCRGGAdapter adapter,
+    BufferedImage img
+  ) {
+    var res = adapter.ocr(img);
+    if (res.isErr()) {
+      LOG.error("\"Manga OCR\" Online error: {}", res.err());
+      return Result.Err(RecognitionOpError.OCR_ERROR);
+    }
+
+    var text = res.get();
+    if (text.isBlank()) {
+      return Result.Err(RecognitionOpError.ZERO_VARIANTS);
+    }
+
+    return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
+  }
+
   private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxOCRSpace(
     OCRSpaceAdapter adapter,
     BufferedImage img
@@ -179,7 +200,6 @@ public class Recognizer {
 
     return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
   }
-
 
   private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxTesseract(
     BufferedImage img, TextOrientation textOrientation
@@ -294,6 +314,7 @@ public class Recognizer {
     CompletableFuture.allOf(tesseractResultFutures.toArray(new CompletableFuture[0])).join();
 
     // Transform the results
+    var numExecutions = tesseractResultFutures.size();
     var numExecutionFails = 0;
     var numTimeouts = 0;
     ArrayList<String> errorMsgs = null;
@@ -322,10 +343,16 @@ public class Recognizer {
 
     // Handle failures
     if (numExecutionFails > 0) {
-      LOG.error("Some of the Tesseract calls have failed to execute ({})", numExecutionFails);
+      LOG.error(
+        "Some of the Tesseract calls have failed to execute ({}/{})",
+        numExecutionFails, numExecutions
+      );
     }
     if (numTimeouts > 0) {
-      LOG.error("Some of the Tesseract calls have timed out ({})", numTimeouts);
+      LOG.error(
+        "Some of the Tesseract calls have timed out ({}/{})",
+        numTimeouts, numExecutions
+      );
     }
     if (errorMsgs != null) {
       LOG.error(
@@ -481,8 +508,6 @@ public class Recognizer {
   private List<String> getAvailableCommands() {
     if (platform.getUnsupportedFeatures().contains(PlatformDependentFeature.GLOBAL_OCR)) {
       return List.of();
-    } else if (engine instanceof OCREngine.MangaOCR || engine instanceof OCREngine.OCRSpace) {
-      return List.of("ocr_manual-block", "ocr_auto-block", "ocr_region");
     } else if (engine instanceof OCREngine.Tesseract) {
       return List.of(
         "ocr_manual-block-vertical",
@@ -490,6 +515,8 @@ public class Recognizer {
         "ocr_auto-block",
         "ocr_region"
       );
+    } else if (!(engine instanceof OCREngine.None)) {
+      return List.of("ocr_manual-block", "ocr_auto-block", "ocr_region");
     } else {
       return List.of();
     }

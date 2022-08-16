@@ -11,9 +11,13 @@ public interface MPVController {
 
   void destroy();
 
-  static MPVController forPlatform(Platform platform, Consumer<PlayerStatus> statusUpdateCb) {
-      return platform.getOS() == OS.WINDOWS
-        ? new WindowsMPVController(statusUpdateCb)
-        : new UnixMPVController(statusUpdateCb);
+  static MPVController create(
+    Platform platform, Consumer<PlayerStatus> statusUpdateCb, Consumer<Subtitle> subtitleCb
+  ) {
+    var controller = platform.getOS() == OS.WINDOWS
+      ? new WindowsMPVController()
+      : new UnixMPVController();
+    controller.init(statusUpdateCb, subtitleCb);
+    return controller;
   }
 }

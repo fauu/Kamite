@@ -6,26 +6,22 @@ import java.net.UnixDomainSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.kamitejp.status.PlayerStatus;
-
-public final class UnixMPVController extends AbstractMPVController {
+public final class UnixMPVController extends BaseMPVController {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final UnixDomainSocketAddress SOCKET_ADDR =
-    UnixDomainSocketAddress.of("/tmp/%s".formatted(PIPE_FILENAME));
-  private static final int READ_BUFFER_CAPACITY = 512;
+    UnixDomainSocketAddress.of("/tmp/%s".formatted(IPC_MEDIUM_FILENAME));
+  private static final int READ_BUFFER_CAPACITY = 8192;
 
   private SocketChannel socketChannel;
 
-  protected UnixMPVController(Consumer<PlayerStatus> statusUpdateCb) {
-    super(statusUpdateCb);
-
-    var workerThread = new Thread(new Worker(this::handleMessage));
+  protected UnixMPVController() {
+    var workerThread = new Thread(new Worker(this::handleMessages));
     LOG.debug("Starting mpv controller worker thread");
     workerThread.start();
   }
@@ -46,52 +42,27 @@ public final class UnixMPVController extends AbstractMPVController {
     }
   }
 
-  private class Worker implements Runnable {
-    private final Consumer<String> messageCb;
+  private class Worker extends BaseMPVController.Worker {
     private final ByteBuffer readBuffer;
 
-    Worker(Consumer<String> messageCb) {
-      this.messageCb = messageCb;
+    Worker(Function<String, Boolean> messagesCb) {
+      super(messagesCb);
       this.readBuffer = ByteBuffer.allocate(READ_BUFFER_CAPACITY);
     }
 
     @Override
-    public void run() {
-      LOG.debug("Waiting for mpv connection");
-      // This will block until we connect to the socket
+    protected boolean connect() {
+      // This will block until we connect
       socketChannel = waitForConnection();
       if (socketChannel == null) {
         LOG.error("Received a null UNIX socket channel. Aborting");
-        return;
+        return false;
       }
-      state = State.CONNECTED;
       LOG.info("Connected to mpv UNIX socket at {}", SOCKET_ADDR);
-
-      // The external world will be notified of the established connection as we handle the incoming
-      // pause status update
-      sendCommand(MPVCommand.OBSERVE_PAUSE);
-
-      // This will block until the connection closes
-      runReader();
-
-      statusUpdateCb.accept(PlayerStatus.DISCONNECTED);
-      state = State.NOT_CONNECTED;
-      LOG.info("mpv disconnected");
-
-      // Give a moment for the socket to close. Without this we would immediately connect to the
-      // expired socket and cause an exception by trying to write to it
-      try {
-        Thread.sleep(CONNECTION_RETRY_INTERVAL_MS);
-      } catch (InterruptedException e) {
-        LOG.error("Interrupted while waiting for mpv connection to close. Aborting");
-        return;
-      }
-
-      // Wait for a new connection
-      run();
+      return true;
     }
 
-    public SocketChannel waitForConnection() {
+    private SocketChannel waitForConnection() {
       try {
         while (true) {
           var channel = tryConnect();
@@ -118,13 +89,13 @@ public final class UnixMPVController extends AbstractMPVController {
       }
     }
 
-    private void runReader() {
+    protected void runReader() {
       try {
         while (true) {
           // This blocks if the connection is alive, otherwise it returns null
-          var msg = read();
-          if (msg != null) {
-            messageCb.accept(msg);
+          var msgs = read();
+          if (msgs != null) {
+            messagesCb.apply(msgs);
           } else {
             LOG.debug("Read `null` from mpv socket");
             // Connection closed

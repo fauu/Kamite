@@ -22,6 +22,7 @@ public record Config(
   public enum OCREngine {
     TESSERACT,
     MANGAOCR,
+    MANGAOCR_ONLINE,
     OCRSPACE,
     NONE;
   }
@@ -195,9 +196,22 @@ public record Config(
   
   public static record Ocr2(
     OCREngine engine,
+    Ocr2.Mangaocr mangaocr,
     java.util.List<Ocr2.Region> regions,
+    Ocr2.Tesseract tesseract,
     java.lang.String watchDir
   ) {
+    public static record Mangaocr(
+      java.lang.String pythonPath
+    ) {
+      
+      public Mangaocr(com.typesafe.config.Config c, java.lang.String parentPath, $TsCfgValidator $tsCfgValidator) {
+        this(
+          c.hasPathOrNull("pythonPath") ? c.getString("pythonPath") : null
+        );
+      }
+    }
+    
     public static record Region(
       boolean autoNarrow,
       java.lang.String description,
@@ -243,10 +257,23 @@ public record Config(
     
     }
     
+    public static record Tesseract(
+      java.lang.String path
+    ) {
+      
+      public Tesseract(com.typesafe.config.Config c, java.lang.String parentPath, $TsCfgValidator $tsCfgValidator) {
+        this(
+          c.hasPathOrNull("path") ? c.getString("path") : "tesseract"
+        );
+      }
+    }
+    
     public Ocr2(com.typesafe.config.Config c, java.lang.String parentPath, $TsCfgValidator $tsCfgValidator) {
       this(
         c.hasPath("engine") ? OCREngine.valueOf(c.getString("engine").toUpperCase()) : OCREngine.NONE,
+        c.hasPathOrNull("mangaocr") ? new Ocr2.Mangaocr(c.getConfig("mangaocr"), parentPath + "mangaocr.", $tsCfgValidator) : new Ocr2.Mangaocr(com.typesafe.config.ConfigFactory.parseString("mangaocr{}"), parentPath + "mangaocr.", $tsCfgValidator),
         c.hasPathOrNull("regions") ? $_LOcr2_Region(c.getList("regions"), parentPath, $tsCfgValidator) : null,
+        c.hasPathOrNull("tesseract") ? new Ocr2.Tesseract(c.getConfig("tesseract"), parentPath + "tesseract.", $tsCfgValidator) : new Ocr2.Tesseract(com.typesafe.config.ConfigFactory.parseString("tesseract{}"), parentPath + "tesseract.", $tsCfgValidator),
         c.hasPathOrNull("watchDir") ? c.getString("watchDir") : null
       );
     }

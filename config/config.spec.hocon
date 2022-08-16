@@ -2,7 +2,7 @@
 UILayout = [STANDARD, STANDARD_FLIPPED]
 
 #@define enum
-OCREngine = [TESSERACT, MANGAOCR, OCRSPACE, NONE]
+OCREngine = [TESSERACT, MANGAOCR, MANGAOCR_ONLINE, OCRSPACE, NONE]
 
 controlWindow = "boolean | true"
 launchBrowser = "boolean | true"
@@ -53,6 +53,14 @@ lookup {
 ocr {
   engine = OCREngine
   watchDir = "string?"
+
+  tesseract {
+    path = "string | tesseract"
+  }
+
+  mangaocr {
+    pythonPath = "string?"
+  }
 
   #@optional
   regions = [{

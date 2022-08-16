@@ -177,7 +177,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     // Add a margin
     var margin = exemplarCC.averageDimension() / 3;
     var finalBox = remadeBox
-      .expanded(margin)
+      .expandedNonNegative(margin)
       .clamped(img.getWidth() - 1, img.getHeight() - 1);
 
     if (debug) {
@@ -401,7 +401,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     // Treat this much of a change in height as a discongruity
     var discongruityThreshold = exemplar.height() * 1.75;
     // Ignore discongruities below this width
-    var relevantDiscongruityWidth = (int) (exemplar.width() * 2);
+    var relevantDiscongruityWidth = (int) (exemplar.width() * 2.5);
 
     var centerXRel = center.x() - box.getLeft();
 
@@ -500,6 +500,11 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
       switch (state) { // NOPMD - misidentifies as non-exhaustive
         case NORMAL -> {
           var earlierX = x - (xStep * compareDist);
+          if (earlierX < 0) {
+            earlierX = 0;
+          } else if (earlierX >= topEdge.length) {
+            earlierX = topEdge.length - 1;
+          }
           var earlierY = topEdge[earlierX];
           var yDiffFromEarlier = Math.abs(topEdge[x] - earlierY);
           if (yDiffFromEarlier >= discongruityThreshold) {

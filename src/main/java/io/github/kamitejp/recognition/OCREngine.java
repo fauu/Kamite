@@ -12,13 +12,16 @@ import io.github.kamitejp.util.Result;
 public sealed interface OCREngine
   permits OCREngine.Tesseract,
           OCREngine.MangaOCR,
+          OCREngine.MangaOCROnline,
           OCREngine.OCRSpace,
           OCREngine.None {
-  public record Tesseract() implements OCREngine {}
+  public record Tesseract(String binPath) implements OCREngine {}
 
-  public record MangaOCR(MangaOCRController controller) implements OCREngine {
-    public static MangaOCR uninitialized() {
-      return new MangaOCR(null);
+  public record MangaOCR(
+    String customPythonPath, MangaOCRController controller
+  ) implements OCREngine {
+    public static MangaOCR uninitialized(String customPythonPath) {
+      return new MangaOCR(customPythonPath, null);
     }
 
     public MangaOCR initialized(
@@ -27,7 +30,25 @@ public sealed interface OCREngine
       if (controller != null) {
         throw new IllegalStateException("This OCREngine.MangaOCR instance is already initialized");
       }
-      return new MangaOCR(new MangaOCRController(platform, eventCb));
+      return new MangaOCR(
+        customPythonPath,
+        new MangaOCRController(platform, customPythonPath, eventCb)
+      );
+    }
+  }
+
+  public record MangaOCROnline(MangaOCRGGAdapter adapter) implements OCREngine {
+    public static MangaOCROnline uninitialized() {
+      return new MangaOCROnline(null);
+    }
+
+    public MangaOCROnline initialized() {
+      if (adapter != null) {
+        throw new IllegalStateException(
+          "This OCREngine.MangaOCROnline instance is already initialized"
+        );
+      }
+      return new MangaOCROnline(new MangaOCRGGAdapter());
     }
   }
 
@@ -55,10 +76,11 @@ public sealed interface OCREngine
 
   default String displayName() {
     return switch (this) {
-      case OCREngine.Tesseract ignored -> "Tesseract OCR";
-      case OCREngine.MangaOCR ignored  -> "“Manga OCR”";
-      case OCREngine.OCRSpace ignored  -> "OCR.space";
-      case OCREngine.None ignored      -> "None";
+      case OCREngine.Tesseract ignored      -> "Tesseract OCR";
+      case OCREngine.MangaOCR ignored       -> "\"Manga OCR\"";
+      case OCREngine.MangaOCROnline ignored -> "\"Manga OCR\" Online (HF Space by Gryan Galario)";
+      case OCREngine.OCRSpace ignored       -> "OCR.space";
+      case OCREngine.None ignored           -> "None";
     };
   }
 
@@ -67,8 +89,12 @@ public sealed interface OCREngine
     String errorMessage = null;
 
     engine = switch (config.ocr().engine()) {
-      case TESSERACT -> new OCREngine.Tesseract();
-      case MANGAOCR  -> OCREngine.MangaOCR.uninitialized();
+      case TESSERACT ->
+        new OCREngine.Tesseract(config.ocr().tesseract().path());
+      case MANGAOCR  ->
+        OCREngine.MangaOCR.uninitialized(config.ocr().mangaocr().pythonPath());
+      case MANGAOCR_ONLINE  ->
+        OCREngine.MangaOCROnline.uninitialized();
       case OCRSPACE  -> {
         var apiKey = config.secrets().ocrspace();
         if (apiKey == null) {
@@ -77,7 +103,8 @@ public sealed interface OCREngine
         }
         yield OCREngine.OCRSpace.uninitialized(config.secrets().ocrspace());
       }
-      case NONE -> new OCREngine.None();
+      case NONE ->
+        new OCREngine.None();
     };
 
     return engine == null ? Result.Err(errorMessage) : Result.Ok(engine);

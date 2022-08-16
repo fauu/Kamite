@@ -1,21 +1,27 @@
 package io.github.kamitejp.platform.mpv;
 
-public enum MPVCommand {
-  OBSERVE_PAUSE,
-  PLAYPAUSE,
-  SEEK_BACK,
-  SEEK_FORWARD,
-  SEEK_START_SUB;
+public sealed interface MPVCommand
+  permits MPVCommand.ObserveProperty,
+          MPVCommand.PlayPause,
+          MPVCommand.Seek,
+          MPVCommand.SeekStartSub {
+  record ObserveProperty(String name) implements MPVCommand {}
+  record PlayPause() implements MPVCommand {}
+  record Seek(int seconds) implements MPVCommand {}
+  record SeekStartSub() implements MPVCommand {}
 
-  public String toJSON() {
+  default String toJSON() {
     return "{\"command\": ["
       + switch (this) {
-        case OBSERVE_PAUSE  -> "\"observe_property\", 1, \"pause\"]";
-        case PLAYPAUSE      -> "\"cycle\", \"pause\"]";
-        case SEEK_BACK      -> "\"seek\", -1, \"exact\"]";
-        case SEEK_FORWARD   -> "\"seek\", 1, \"exact\"]";
-        case SEEK_START_SUB -> "\"sub-seek\", 0]";
+        case ObserveProperty cmd ->
+          "\"observe_property\", 0, \"%s\"".formatted(cmd.name());
+        case PlayPause ignored ->
+          "\"cycle\", \"pause\"";
+        case Seek cmd ->
+          "\"seek\", %s, \"exact\"".formatted(cmd.seconds);
+        case SeekStartSub ignored ->
+          "\"sub-seek\", 0";
       }
-      + "}\n";
+      + "]}\n";
   }
 }

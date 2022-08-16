@@ -197,7 +197,7 @@ public class GameTextboxAutoBlockDetector implements AutoBlockDetector {
     Rectangle result = null;
     if (largestContourBBoxContainingCenter != null) {
       result = largestContourBBoxContainingCenter
-        .expanded(2)
+        .expandedNonNegative(2)
         .clamped(img.getWidth() - 1, img.getHeight() - 1);
 
       if (debug) {

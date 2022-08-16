@@ -26,10 +26,11 @@ import io.github.kamitejp.util.TriFunction;
 public final class ImageOps {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final double GAMMA = 2.2;
-  private static final String DEFAULT_IMAGE_FORMAT = "png";
-  private static final Color DEFAULT_BG_COLOR = Color.WHITE;
+  public static final String DEFAULT_IMAGE_FORMAT = "png";
+  public static final String DEFAULT_IMAGE_FORMAT_MIMETYPE = "image/png";
 
+  private static final double GAMMA = 2.2;
+  private static final Color DEFAULT_BG_COLOR = Color.WHITE;
 
   private ImageOps() {}
 

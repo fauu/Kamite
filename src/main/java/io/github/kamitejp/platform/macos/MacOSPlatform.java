@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -23,14 +22,14 @@ import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.RobotScreenshoter;
 import io.github.kamitejp.platform.RobotScreenshoterUnavailableException;
-import io.github.kamitejp.platform.windows.AreaSelectorFrame; // XXX (DEV)
+import io.github.kamitejp.platform.windows.AreaSelector; // XXX (DEV)
 import io.github.kamitejp.util.Result;
 
 @SuppressWarnings("PMD") // DEV
 public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKeybindingProvider {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private AreaSelectorFrame selector;
+  private AreaSelector selector;
   private final RobotScreenshoter robotScreenshoter;
   private Provider keymasterProvider;
 
@@ -49,9 +48,8 @@ public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKe
   }
 
   @Override
-  public Path getMangaOCRWrapperPath() {
-    // DEV: Incomplete
-    return null;
+  public Optional<Path> getDefaultPipxVenvPythonPath(String venvName) {
+    throw new UnsupportedOperationException("Not implemented");
   }
 
   @Override
@@ -61,14 +59,16 @@ public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKe
 
   @Override
   public Result<Rectangle, RecognitionOpError> getUserSelectedArea() {
-    this.selector = new AreaSelectorFrame();
-    selector.setVisible(true);
+    if (selector == null) {
+      selector = new AreaSelector();
+    }
+    selector.activate();
+    var maybeArea = selector.getFutureArea().join();
+    selector.deactivate();
 
-    var futureArea = selector.getRegion();
-    var area = futureArea.join();
-    selector.setVisible(false);
-
-    return Result.Ok(area);
+    return maybeArea
+      .<Result<Rectangle, RecognitionOpError>>map(a -> Result.Ok(a))
+      .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
   }
 
   @Override
@@ -100,10 +100,8 @@ public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKe
 
   @Override
   public Optional<Path> getConfigDirPath() {
-    return Optional.of(
-      Paths.get(System.getProperty("user.home"))
-        .resolve("Library/Application Support")
-        .resolve(CONFIG_DIR_PATH_RELATIVE)
+    return getUserHomeDirPath().map(home ->
+      home.resolve("Library/Application Support").resolve(CONFIG_DIR_PATH_RELATIVE)
     );
   }
 

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -27,12 +28,11 @@ import io.github.kamitejp.util.Result;
 public abstract class GenericPlatform {
   protected static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static final String MANGAOCR_USER_LAUNCHER_SCRIPT_FILENAME = "mangaocr.sh";
-
   protected static final String LIB_DIR_PATH_RELATIVE = "lib/";
   protected static final String BIN_DIR_PATH_RELATIVE = "bin/";
   protected static final String GENERIC_PLATFORM_DIR_NAME = "generic";
   protected static final String CONFIG_DIR_PATH_RELATIVE = "kamite/";
+  protected static final String MANGAOCR_ADAPTER_FILENAME = "mangaocr_adapter.py";
 
   // Where the Kamite jar could be found relative to the root directory both in development and in
   // release
@@ -120,8 +120,8 @@ public abstract class GenericPlatform {
   }
 
   public void initOCR(OCREngine engine) throws PlatformOCRInitializationException {
-    if (engine instanceof OCREngine.Tesseract) {
-      tesseract = new Tesseract();
+    if (engine instanceof OCREngine.Tesseract tesseractEngine) {
+      tesseract = new Tesseract(tesseractEngine.binPath());
       if (!tesseract.checkIsAvailable()) {
         throw new PlatformOCRInitializationException.MissingDependencies(tesseract.NAME);
       }
@@ -130,6 +130,23 @@ public abstract class GenericPlatform {
 
   public TesseractResult tesseractOCR(BufferedImage img, TesseractModel model) {
     return tesseract.ocr(img, model);
+  }
+
+  public Path getGenericLibDirPath() {
+    return getProgramPath()
+      .resolve(LIB_DIR_PATH_RELATIVE)
+      .resolve(GENERIC_PLATFORM_DIR_NAME);
+  }
+
+  public Optional<Path> getUserHomeDirPath() {
+    var propHome = System.getProperty("user.home");
+    return propHome == null || propHome.isBlank()
+      ? Optional.empty()
+      : Optional.of(Paths.get(propHome));
+  }
+
+  public Path getMangaOCRAdapterPath() {
+    return getGenericLibDirPath().resolve(MANGAOCR_ADAPTER_FILENAME);
   }
 
   protected Path getProgramPath() {
@@ -141,12 +158,12 @@ public abstract class GenericPlatform {
         throw new RuntimeException("Exception while determining program path", e);
       } catch (IllegalArgumentException e) {
         throw new RuntimeException(
-          "Exception while determining program path. If you are launching the program from a " +
-          "network drive, try moving it to your local drive first.", e
+          "Exception while determining program path. If you are launching the program from a"
+          + " network drive, try moving it to a local drive first.", e
         );
       }
     }
-    return this.programPath;
+    return programPath;
   }
 
   protected Result<Void, List<String>> checkIfDependenciesAvailable(

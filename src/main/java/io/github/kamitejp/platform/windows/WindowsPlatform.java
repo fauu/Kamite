@@ -8,10 +8,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import com.tulskiy.keymaster.common.Provider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.tulskiy.keymaster.common.Provider;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
@@ -29,7 +29,7 @@ import io.github.kamitejp.util.Result;
 public class WindowsPlatform extends GenericPlatform implements Platform, GlobalKeybindingProvider {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private AreaSelectorFrame selector;
+  private AreaSelector selector;
   private final RobotScreenshoter robotScreenshoter;
   private Provider keymasterProvider;
 
@@ -48,9 +48,10 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
   }
 
   @Override
-  public Path getMangaOCRWrapperPath() {
-    // DEV: Incomplete
-    return null;
+  public Optional<Path> getDefaultPipxVenvPythonPath(String venvName) {
+    return getUserHomeDirPath().map(home ->
+      home.resolve(".local/pipx/venvs").resolve(venvName).resolve("Scripts/python.exe")
+    );
   }
 
   @Override
@@ -60,14 +61,16 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   @Override
   public Result<Rectangle, RecognitionOpError> getUserSelectedArea() {
-    selector = new AreaSelectorFrame();
-    selector.setVisible(true);
+    if (selector == null) {
+      selector = new AreaSelector();
+    }
+    selector.activate();
+    var maybeArea = selector.getFutureArea().join();
+    selector.deactivate();
 
-    var futureArea = selector.getRegion();
-    var area = futureArea.join();
-    selector.setVisible(false);
-
-    return Result.Ok(area);
+    return maybeArea
+      .<Result<Rectangle, RecognitionOpError>>map(a -> Result.Ok(a))
+      .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
   }
 
   @Override
@@ -77,7 +80,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
       return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
     }
 
-    // DEV
+    // XXX: (DEV)
     // GenericPlatform.writeImage(maybeScreenshot.get(), "C:/dev/kamite-test.png");
 
     return Result.Ok(maybeScreenshot.get());
@@ -94,7 +97,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   @Override
   public Optional<Path> getConfigDirPath() {
-    var envLocalAppData = getEnvVarAsNonNullableString("LOCALAPPDATA");
+    var envLocalAppData = getEnvVarAsNonNullableString("APPDATA");
     if (!envLocalAppData.isBlank()) {
       return Optional.of(Paths.get(envLocalAppData).resolve(CONFIG_DIR_PATH_RELATIVE));
     }

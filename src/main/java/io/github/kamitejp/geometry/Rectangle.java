@@ -9,7 +9,6 @@ public final class Rectangle {
   private int right;
   private int bottom;
 
-  // ASSUMPTION: Coordinates are non-negative
   private Rectangle(int left, int top, int right, int bottom) {
     this.left = left;
     this.top = top;
@@ -57,7 +56,7 @@ public final class Rectangle {
       : this;
   }
 
-  public Rectangle expanded(int amount) {
+  public Rectangle expandedNonNegative(int amount) {
     var nleft = left - amount;
     if (nleft < 0) {
       nleft = 0;
@@ -137,9 +136,6 @@ public final class Rectangle {
   }
 
   public static Rectangle ofStartAndDimensions(int x, int y, int width, int height) {
-    if (x < 0 || y < 0) {
-      throw new IllegalArgumentException("Incorrect start point provided for a rectangle");
-    }
     if (width < 1 || height < 1) {
       throw new IllegalArgumentException("Incorrect dimensions provided for a rectangle");
     }
