@@ -4,16 +4,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class WindowsMPVController extends AbstractMPVController {
+public final class WindowsMPVController extends BaseMPVController {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String PIPE_ADDR = "\\\\.\\pipe\\%s".formatted(IPC_MEDIUM_FILENAME);
-  private static final int READ_POLL_INTERVAL_MS = 333;
+  private static final int READ_POLL_INTERVAL_MS = 125;
   private static final int MAX_EXPECTED_RESPONSE_TIME_MS = 33;
 
   private RandomAccessFile pipeFile;
@@ -47,7 +48,22 @@ public final class WindowsMPVController extends AbstractMPVController {
     }
   }
 
-  private class Worker extends AbstractMPVController.Worker {
+  @Override
+  protected String subtitleTextMidTransform(String text) {
+    // NOTE: ???
+    var bytes = text.getBytes(StandardCharsets.UTF_16);
+    var transformedBytes = new byte[(bytes.length - 2) / 2];
+    for (int i = 2, j = 0; i < bytes.length; i++) {
+      if (i % 2 == 0) {
+        continue;
+      }
+      transformedBytes[j] = bytes[i];
+      j++;
+    }
+    return new String(transformedBytes, StandardCharsets.UTF_8);
+  }
+
+  private class Worker extends BaseMPVController.Worker {
     Worker(Function<String, Boolean> messagesCb) {
       super(messagesCb);
     }

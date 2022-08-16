@@ -11,12 +11,12 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class UnixMPVController extends AbstractMPVController {
+public final class UnixMPVController extends BaseMPVController {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final UnixDomainSocketAddress SOCKET_ADDR =
     UnixDomainSocketAddress.of("/tmp/%s".formatted(IPC_MEDIUM_FILENAME));
-  private static final int READ_BUFFER_CAPACITY = 512;
+  private static final int READ_BUFFER_CAPACITY = 8192;
 
   private SocketChannel socketChannel;
 
@@ -42,7 +42,7 @@ public final class UnixMPVController extends AbstractMPVController {
     }
   }
 
-  private class Worker extends AbstractMPVController.Worker {
+  private class Worker extends BaseMPVController.Worker {
     private final ByteBuffer readBuffer;
 
     Worker(Function<String, Boolean> messagesCb) {

@@ -9,31 +9,28 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.status.PlayerStatus;
 
-public abstract class AbstractMPVController implements MPVController {
+public abstract class BaseMPVController implements MPVController {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   protected static final String IPC_MEDIUM_FILENAME = "kamite-mpvsocket";
   protected static final int CONNECTION_RETRY_INTERVAL_MS = 2000;
 
-  private static final String SCRIPT_FILENAME = "kamite_mpv.lua";
-
-  protected Platform platform;
   protected Consumer<PlayerStatus> statusUpdateCb;
+  protected Consumer<Subtitle> subtitleCb;
   protected State state;
 
-  private int kamitePort;
+  private String[] pendingSubtitleTexts;
 
-  public AbstractMPVController() {
+  public BaseMPVController() {
     state = State.NOT_CONNECTED;
+    pendingSubtitleTexts = new String[Subtitle.Kind.values().length];
   }
 
-  public void init(Platform platform, int kamitePort, Consumer<PlayerStatus> statusUpdateCb) {
-    this.platform = platform;
-    this.kamitePort = kamitePort;
+  public void init(Consumer<PlayerStatus> statusUpdateCb, Consumer<Subtitle> subtitleCb) {
     this.statusUpdateCb = statusUpdateCb;
+    this.subtitleCb = subtitleCb;
   }
 
   public State getState() {
@@ -67,13 +64,30 @@ public abstract class AbstractMPVController implements MPVController {
     boolean gotQuitMessage = false;
     PlayerStatus statusUpdate = null;
 
-    for (var msg : MPVMessage.manyFromJSON(messagesJSON)) {
-      switch (msg) {
-        case END_FILE             -> gotQuitMessage = true;
-        case PAUSED               -> statusUpdate = PlayerStatus.PAUSED;
-        case UNPAUSED             -> statusUpdate = PlayerStatus.PLAYING;
-        case KAMITE_SCRIPT_LOADED -> sendCommand(new MPVCommand.InitKamiteScript(kamitePort));
-        case UNRECOGNIZED         -> LOG.trace("Did not handle an unrecognized mpv message");
+    for (var message : MPVMessage.parseMulti(messagesJSON)) {
+      switch (message) {
+        case MPVMessage.PropertyChange msg -> {
+          switch (msg.name()) {
+            case "pause" ->
+              statusUpdate ="true".equalsIgnoreCase(msg.value())
+                ? PlayerStatus.PAUSED
+                : PlayerStatus.PLAYING;
+            case "sub-text" ->
+              handleSubtitleText(Subtitle.Kind.PRIMARY, msg.value());
+            case "secondary-sub-text" ->
+              handleSubtitleText(Subtitle.Kind.SECONDARY, msg.value());
+            case "sub-start" ->
+              handleSubtitleStartTime(Subtitle.Kind.PRIMARY, msg.value());
+            case "secondary-sub-start" ->
+              handleSubtitleStartTime(Subtitle.Kind.SECONDARY, msg.value());
+            default ->
+              LOG.debug("Did not handle mpv property change: {}", msg.name());
+          }
+        }
+        case MPVMessage.EndFile ignored ->
+          gotQuitMessage = true;
+        case MPVMessage.Unrecognized ignored ->
+          LOG.trace("Did not handle an unrecognized mpv message");
       }
     }
 
@@ -82,6 +96,38 @@ public abstract class AbstractMPVController implements MPVController {
     }
 
     return gotQuitMessage;
+  }
+
+  private void handleSubtitleText(Subtitle.Kind kind, String text) {
+    if (text == null) {
+      return;
+    }
+    var processedText = text.substring(1, text.length() - 1); // Remove quotemarks
+    if (processedText.isEmpty()) {
+      return;
+    }
+    processedText = subtitleTextMidTransform(processedText)
+      .replaceAll("\\\\n", "\n")
+      .replaceAll("\\\\\"", "\"");
+    pendingSubtitleTexts[kind.ordinal()] = processedText;
+  }
+
+  private void handleSubtitleStartTime(Subtitle.Kind kind, String timeStr) {
+    if (timeStr == null) {
+      return;
+    }
+    var pending = pendingSubtitleTexts[kind.ordinal()];
+    if (pending != null) {
+      var time = Double.parseDouble(timeStr);
+      subtitleCb.accept(new Subtitle(kind, pending, time));
+      pendingSubtitleTexts[kind.ordinal()] = null;
+    } else {
+      LOG.warn("Received subtitle time but there was no pending text");
+    }
+  }
+
+  protected String subtitleTextMidTransform(String text) {
+    return text; // Pass through
   }
 
   private String ipcJSONToPrintable(String json) {
@@ -102,11 +148,12 @@ public abstract class AbstractMPVController implements MPVController {
 
       // The external world will be notified of the established connection when we handle the
       // incoming pause status update
-      sendCommand(new MPVCommand.ObservePause());
+      sendCommand(new MPVCommand.ObserveProperty("pause"));
 
-      sendCommand(new MPVCommand.LoadKamiteScript(
-        platform.getGenericLibDirPath().resolve(SCRIPT_FILENAME).toString())
-      );
+      sendCommand(new MPVCommand.ObserveProperty("sub-text"));
+      sendCommand(new MPVCommand.ObserveProperty("sub-start"));
+      sendCommand(new MPVCommand.ObserveProperty("secondary-sub-text"));
+      sendCommand(new MPVCommand.ObserveProperty("secondary-sub-start"));
 
       // This will block until requested or until the connection closes, depending on implementation
       runReader();
