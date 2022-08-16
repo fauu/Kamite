@@ -177,7 +177,7 @@ public class MangaAutoBlockDetector implements AutoBlockDetector {
     // Add a margin
     var margin = exemplarCC.averageDimension() / 3;
     var finalBox = remadeBox
-      .expanded(margin)
+      .expandedNonNegative(margin)
       .clamped(img.getWidth() - 1, img.getHeight() - 1);
 
     if (debug) {
