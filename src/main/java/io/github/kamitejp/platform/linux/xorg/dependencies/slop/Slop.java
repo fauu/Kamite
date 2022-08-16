@@ -19,7 +19,9 @@ public final class Slop extends BaseSimpleDependency {
   }
 
   public SlopResult getAreaSelectionFromUser() {
-    var res = ProcessHelper.run(ProcessRunParams.ofCmd("slop", "-t", "0", "-f", "%x %y %w %h"));
+    var res = ProcessHelper.run(
+      ProcessRunParams.ofCmd("slop", "-t", "0", "-b", "2", "-f", "%x %y %w %h")
+    );
     if (!res.didComplete()) {
       return new SlopResult.ExecutionFailed();
     } else if (res.didCompleteWithError()) {
