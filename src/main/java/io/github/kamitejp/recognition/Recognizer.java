@@ -89,7 +89,7 @@ public class Recognizer {
           yield engine.initialized(platform, this::handleMangaOCREvent);
         } catch (MangaOCRInitializationException e) {
           throw new RecognizerInitializationException( // NOPMD
-            "Could not initialize “Manga OCR”: %s".formatted(e.getMessage())
+            "Could not initialize \"Manga OCR\": %s".formatted(e.getMessage())
           );
         }
       }
@@ -171,7 +171,7 @@ public class Recognizer {
   ) {
     var res = adapter.ocr(img);
     if (res.isErr()) {
-      LOG.error("“Manga OCR” Online error: {}", res.err());
+      LOG.error("\"Manga OCR\" Online error: {}", res.err());
       return Result.Err(RecognitionOpError.OCR_ERROR);
     }
 

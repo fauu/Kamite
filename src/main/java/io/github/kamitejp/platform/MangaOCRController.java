@@ -36,21 +36,17 @@ public class MangaOCRController {
   public MangaOCRController(
     Platform platform, String customPythonPath, Consumer<MangaOCREvent> eventCb
   ) throws MangaOCRInitializationException {
-    if (platform.getOS().getFamily() != OSFamily.UNIX) {
-      throw new MangaOCRInitializationException("not supported on the current platform");
-    }
-
     this.eventCb = eventCb;
 
     var pythonPath = effectivePythonPath(platform, customPythonPath);
     if (pythonPath == null) {
       throw new MangaOCRInitializationException(
-        "pipx “Manga OCR” installation absent at default location."
+        "pipx \"Manga OCR\" installation absent at default location."
         + " Please specify `ocr.mangaocr.pythonPath` in the config"
       );
     }
 
-    cmd = new String[] { pythonPath, platform.getMangaOCRWrapperPath().toString() };
+    cmd = new String[] { pythonPath, platform.getMangaOCRAdapterPath().toString() };
 
     start();
   }
@@ -71,7 +67,7 @@ public class MangaOCRController {
 
   private void start() throws MangaOCRInitializationException {
     state = State.STARTING;
-    LOG.info("Starting “Manga OCR” using `{}`", cmd[0]);
+    LOG.info("Starting \"Manga OCR\" using `{}`", cmd[0]);
     var pb = new ProcessBuilder(cmd);
     pb.redirectErrorStream(true); // Needed to catch the "Downloading" messages
     try {
@@ -83,9 +79,9 @@ public class MangaOCRController {
       var ready = false;
       var sentDownloadingEvent = false;
       for (var line = outputReader.readLine(); line != null; line = outputReader.readLine()) {
-        LOG.debug("Received output line from “Manga OCR”: {}", line);
+        LOG.debug("Received output line from \"Manga OCR\": {}", line);
         if (!sentDownloadingEvent && line.startsWith("Downloading")) {
-          LOG.info("“Manga OCR” is downloading OCR model. This might take a while");
+          LOG.info("\"Manga OCR\" is downloading OCR model. This might take a while");
           //noinspection ObjectAllocationInLoop
           eventCb.accept(new MangaOCREvent.StartedDownloadingModel());
           sentDownloadingEvent = true;
@@ -111,7 +107,7 @@ public class MangaOCRController {
     try {
       return outputReader.readLine();
     } catch (IOException e) {
-      handleCrash("Error while reading “Manga OCR” output. See stderr for stack trace");
+      handleCrash("Error while reading \"Manga OCR\" output. See stderr for stack trace");
       e.printStackTrace();
     }
     return null;
@@ -119,7 +115,7 @@ public class MangaOCRController {
 
   public Optional<String> recognize(BufferedImage img) {
     if (state != State.STARTED) {
-      throw new IllegalStateException("Attempted to use “Manga OCR” while it was not ready");
+      throw new IllegalStateException("Attempted to use \"Manga OCR\" while it was not ready");
     }
     try {
       // Send image
@@ -132,20 +128,35 @@ public class MangaOCRController {
       out.flush();
 
       // Read reply
-      var readFuture = CompletableFuture.supplyAsync(outputLineSupplier);
-      return Optional.ofNullable(readFuture.get(RECOGNITION_TIMEOUT_S, TimeUnit.SECONDS));
+      var futureLine = CompletableFuture.supplyAsync(outputLineSupplier);
+      var line = futureLine.get(RECOGNITION_TIMEOUT_S, TimeUnit.SECONDS);
+      if (line == null) {
+        return Optional.empty();
+      }
+
+      if (line.startsWith("Traceback (most")) {
+        var errBuilder = new StringBuilder();
+        String errLine = null;
+        while ((errLine = outputReader.readLine()) != null) {
+          errBuilder.append(errLine);
+        }
+        handleCrash("\"Manga OCR\" responded with an error: %s".formatted(errBuilder.toString()));
+        return Optional.empty();
+      }
+
+      return Optional.of(line);
     } catch (IOException | InterruptedException | ExecutionException e) {
-      handleCrash("Error while using “Manga OCR”. See stderr for stack trace");
+      handleCrash("Error while communicating with \"Manga OCR\". See stderr for stack trace");
       e.printStackTrace();
     } catch (TimeoutException e) {
       state = State.FAILED;
       eventCb.accept(new MangaOCREvent.TimedOutAndRestarting());
-      LOG.info("“Manga OCR” is taking too long to answer. Restarting");
+      LOG.info("\"Manga OCR\" is taking too long to answer. Restarting");
       process.destroy();
       try {
         start();
       } catch (MangaOCRInitializationException e1) {
-        handleCrash("Error while restarting “Manga OCR”: %s".formatted(e.getMessage()));
+        handleCrash("Error while restarting \"Manga OCR\": %s".formatted(e.getMessage()));
       }
     }
     return Optional.empty();

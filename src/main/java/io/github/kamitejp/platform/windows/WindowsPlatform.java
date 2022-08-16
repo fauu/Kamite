@@ -55,11 +55,6 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
   }
 
   @Override
-  public Path getMangaOCRWrapperPath() {
-    throw new UnsupportedOperationException("Not implemented");
-  }
-
-  @Override
   public Result<Point, RecognitionOpError> getUserSelectedPoint() {
     return Result.Ok(Point.from(MouseInfo.getPointerInfo().getLocation()));
   }

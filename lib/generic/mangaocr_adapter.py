@@ -10,6 +10,8 @@ loguru.logger.disable("manga_ocr")
 
 mocr = MangaOcr()
 
+sys.stdout.reconfigure(encoding="utf-8") # Needed on Windows
+
 print("READY", flush=True)
 
 with open(sys.stdin.fileno(), "rb", closefd=False) as f:

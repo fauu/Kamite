@@ -67,7 +67,7 @@ public interface Platform {
 
   Optional<Path> getDefaultPipxVenvPythonPath(String venvName);
 
-  Path getMangaOCRWrapperPath();
+  Path getMangaOCRAdapterPath();
 
   Result<Point, RecognitionOpError> getUserSelectedPoint();
 

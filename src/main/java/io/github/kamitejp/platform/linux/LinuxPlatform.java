@@ -56,11 +56,6 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
   }
 
   @Override
-  public Path getMangaOCRWrapperPath() {
-    return getGenericLibDirPath().resolve(MANGAOCR_WRAPPER_FILENAME);
-  }
-
-  @Override
   public void openURL(String url) {
     try {
       Runtime.getRuntime().exec(new String[] { "sh", "-c", "MOZ_DBUS_REMOTE=1 xdg-open " + url });
