@@ -188,18 +188,13 @@ source material:
 
 ### Anime (and other video) text extraction
 
-Extracting chunks from video is by default supported through integration with
-the **[mpv]** video player.
+Extracting text chunks from video is by default supported through integration
+with the **[mpv]** video player. *Primary* video subtitles from mpv are treated
+by Kamite as incoming chunks. If *secondary* subtitles are present, they are
+treated as **chunk translations**.
 
-On connecting to mpv, Kamite instructs it to load a script that sends the
-*primary* video subtitles as chunks to Kamite. If *secondary* subtitles are
-present, it sends those as **chunk translations**.
-
-> **Note:** The script requires either *D-Bus* (the `dbus-send` command must be
-globally available) or *curl* for sending subtitles.
-
-To make Kamite automatically connect to a running instance of mpv, the latter
-must be run with the following exact value for the `input-ipc-server` parameter:
+To enable the connection between Kamite and mpv, the latter must be launched
+with the following exact value for the `input-ipc-server` parameter:
 
 ```sh
 mpv file.mkv --input-ipc-server="/tmp/kamite-mpvsocket"
@@ -213,18 +208,21 @@ input-ipc-server=/tmp/kamite-mpvsocket
 
 can be put into the [mpv config file][mpv-ref-config].
 
-In the former case, mpv will be only open for communication with Kamite when
+In the former case, mpv will only be open for communication with Kamite when
 launched with the specified parameter. In the latter—it will be open always.
 
 > For more on the communication mechanism used, see the
 [mpv reference for JSON IPC][mpv-ref-json-ipc].
 
 To run mpv with an external subtitle file, use the `--sub-file` launch
-parameter. It can be repeated for multiple files. To assign subtitles as
-*primary* (assumed by Kamite to be in Japanese) and *secondary* (assumed to be a
-translation), respectively, use the `--sid` and `--secondary-sid` mpv launch
-parameters. Which subtitle ids to specify can be glanced by pressing
-<kbd>F9</kbd> in mpv while the video file is open.
+parameter (it can be repeated for multiple subtitle files). To assign a given
+subtitle track as *primary* (assumed by Kamite to be the Japanese subtitles) and
+*secondary* (assumed to be the translations), respectively, use the `--sid` and
+`--secondary-sid` mpv launch parameters. Which subtitle IDs to specify can be
+glanced by pressing <kbd>F9</kbd> in mpv while the video file is opened and the
+subtitles loaded.
+
+Note that subtitles hidden within mpv will still be recognized by Kamite.
 
 > See also: [mpv reference: Subtitle options][mpv-ref-sub-options].
 
@@ -233,14 +231,14 @@ episode in mpv in such a way that it is immediately set up to work with Kamite.
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 ```sh
-mpv /path/to/video/*<part-of-anime-name>*$1*.mkv \ # Episode no. passed as an argument to the script
+mpv "/path/to/video/"*"<part-of-anime-name>"*"$1"*".mkv" \ # Episode no. passed as an argument to the script
   --input-ipc-server="/tmp/kamite-mpvsocket" \
-  --profile=jpsub \ # Custom profile that sets subtitle font and size, etc. See https://mpv.io/manual/stable/#profiles
   --sub-file="/path/to/external/subtitles/$1.srt" \
   --sid=2 \ # ID of the Japanese subtitles provided externally
   --secondary-sid=1 \ # ID of the English subtitles embedded in the video file (to be used as translations)
   --secondary-sub-visibility=no \
-  --save-position-on-quit
+  --save-position-on-quit \ 
+  --profile=jpsub \ # An optional custom profile that can set a special subtitle font and size, etc. It must be defined separately in the mpv config file: see https://mpv.io/manual/stable/#profiles
 ```
 <!-- markdownlint-restore -->
 
