@@ -154,8 +154,8 @@ public abstract class GenericPlatform {
         throw new RuntimeException("Exception while determining program path", e);
       } catch (IllegalArgumentException e) {
         throw new RuntimeException(
-          "Exception while determining program path. If you are launching the program from a " +
-          "network drive, try moving it to a local drive first.", e
+          "Exception while determining program path. If you are launching the program from a"
+          + " network drive, try moving it to a local drive first.", e
         );
       }
     }
