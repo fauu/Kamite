@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import io.github.kamitejp.controlgui.ControlGUI;
 import io.github.kamitejp.geometry.Rectangle;
 
-public class AreaSelectorFrame extends JFrame {
+public class AreaSelector extends JFrame {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final List<Integer> CANCEL_KEYS = List.of(KeyEvent.VK_ESCAPE, KeyEvent.VK_Q);
@@ -42,7 +42,7 @@ public class AreaSelectorFrame extends JFrame {
   private java.awt.Rectangle screenBounds;
   private CompletableFuture<Optional<Rectangle>> futureArea;
 
-  public AreaSelectorFrame() {
+  public AreaSelector() {
     setAlwaysOnTop(true);
     setUndecorated(true);
     setBackground(FRAME_BG_COLOR);

@@ -29,7 +29,7 @@ import io.github.kamitejp.util.Result;
 public class WindowsPlatform extends GenericPlatform implements Platform, GlobalKeybindingProvider {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private AreaSelectorFrame selector;
+  private AreaSelector selector;
   private final RobotScreenshoter robotScreenshoter;
   private Provider keymasterProvider;
 
@@ -61,8 +61,10 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   @Override
   public Result<Rectangle, RecognitionOpError> getUserSelectedArea() {
-    selector = new AreaSelectorFrame();
+    selector = new AreaSelector();
     selector.setVisible(true);
+    selector.toFront();
+    selector.requestFocus();
 
     var maybeArea = selector.getFutureArea().join();
     selector.setVisible(false);

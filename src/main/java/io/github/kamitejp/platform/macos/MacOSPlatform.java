@@ -22,14 +22,14 @@ import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.RobotScreenshoter;
 import io.github.kamitejp.platform.RobotScreenshoterUnavailableException;
-import io.github.kamitejp.platform.windows.AreaSelectorFrame; // XXX (DEV)
+import io.github.kamitejp.platform.windows.AreaSelector; // XXX (DEV)
 import io.github.kamitejp.util.Result;
 
 @SuppressWarnings("PMD") // DEV
 public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKeybindingProvider {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private AreaSelectorFrame selector;
+  private AreaSelector selector;
   private final RobotScreenshoter robotScreenshoter;
   private Provider keymasterProvider;
 
@@ -59,7 +59,7 @@ public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKe
 
   @Override
   public Result<Rectangle, RecognitionOpError> getUserSelectedArea() {
-    this.selector = new AreaSelectorFrame();
+    this.selector = new AreaSelector();
     selector.setVisible(true);
 
     var maybeArea = selector.getFutureArea().join();
