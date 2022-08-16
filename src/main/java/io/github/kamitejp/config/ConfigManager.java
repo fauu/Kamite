@@ -164,12 +164,14 @@ public final class ConfigManager {
       validateStringContains(t.url(), LOOKUP_TARGET_URL_PLACEHOLDER, urlKey);
     });
 
+    validateStringNonEmptyOrNull(config.ocr().watchDir(), "ocr.watchDir");
+    validateStringNonEmptyOrNull(config.ocr().mangaocr().pythonPath(), "ocr.mangaocr.pythonPath");
+
     validateExtraList(config.ocr().regions(), "ocr.regions[%d]", (r, key) -> {
       validateSymbolLength(r.symbol(), key.apply("symbol"));
       validateStringNonEmptyOrNull(r.description(), key.apply("description"));
     });
 
-    validateStringNonEmptyOrNull(config.ocr().watchDir(), "ocr.watchDir");
     validateStringNonEmptyOrNull(config.secrets().ocrspace(), "secrets.ocrspace");
   }
 

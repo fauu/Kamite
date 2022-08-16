@@ -8,10 +8,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import com.tulskiy.keymaster.common.Provider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.tulskiy.keymaster.common.Provider;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
@@ -48,9 +48,15 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
   }
 
   @Override
+  public Optional<Path> getDefaultPipxVenvPythonPath(String venvName) {
+    return getUserHomeDirPath().map(home ->
+      home.resolve(".local/pipx/venvs").resolve(venvName).resolve("Scripts/python.exe")
+    );
+  }
+
+  @Override
   public Path getMangaOCRWrapperPath() {
-    // DEV: Incomplete
-    return null;
+    throw new UnsupportedOperationException("Not implemented");
   }
 
   @Override

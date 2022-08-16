@@ -49,6 +49,13 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
   }
 
   @Override
+  public Optional<Path> getDefaultPipxVenvPythonPath(String venvName) {
+    return getUserHomeDirPath().map(home ->
+      home.resolve(".local/pipx/venvs").resolve(venvName).resolve("bin/python")
+    );
+  }
+
+  @Override
   public Path getMangaOCRWrapperPath() {
     return getGenericLibDirPath().resolve(MANGAOCR_WRAPPER_FILENAME);
   }
@@ -68,11 +75,8 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
     if (!envConfigHome.isBlank()) {
       return Optional.of(Paths.get(envConfigHome).resolve(CONFIG_DIR_PATH_RELATIVE));
     }
-    var envHome = getEnvVarAsNonNullableString("HOME");
-    if (!envHome.isBlank()) {
-      return Optional.of(Paths.get(envHome).resolve(".config").resolve(CONFIG_DIR_PATH_RELATIVE));
-    }
-    return Optional.empty();
+    var maybeHome = getUserHomeDirPath();
+    return maybeHome.map(home -> home.resolve(".config").resolve(CONFIG_DIR_PATH_RELATIVE));
   }
 
   @Override

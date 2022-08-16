@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -26,8 +27,6 @@ import io.github.kamitejp.util.Result;
 
 public abstract class GenericPlatform {
   protected static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  public static final String MANGAOCR_USER_LAUNCHER_SCRIPT_FILENAME = "mangaocr.sh";
 
   protected static final String LIB_DIR_PATH_RELATIVE = "lib/";
   protected static final String BIN_DIR_PATH_RELATIVE = "bin/";
@@ -137,6 +136,13 @@ public abstract class GenericPlatform {
     return getProgramPath()
       .resolve(LIB_DIR_PATH_RELATIVE)
       .resolve(GENERIC_PLATFORM_DIR_NAME);
+  }
+
+  public Optional<Path> getUserHomeDirPath() {
+    var propHome = System.getProperty("user.home");
+    return propHome == null || propHome.isBlank()
+      ? Optional.empty()
+      : Optional.of(Paths.get(propHome));
   }
 
   protected Path getProgramPath() {

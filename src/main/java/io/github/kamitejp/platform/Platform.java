@@ -65,6 +65,8 @@ public interface Platform {
 
   Path getGenericLibDirPath();
 
+  Optional<Path> getDefaultPipxVenvPythonPath(String venvName);
+
   Path getMangaOCRWrapperPath();
 
   Result<Point, RecognitionOpError> getUserSelectedPoint();
@@ -74,6 +76,8 @@ public interface Platform {
   Result<BufferedImage, RecognitionOpError> takeAreaScreenshot(Rectangle area);
 
   void openURL(String url);
+
+  Optional<Path> getUserHomeDirPath();
 
   Optional<Path> getConfigDirPath();
 

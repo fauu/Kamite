@@ -5,7 +5,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -49,9 +48,13 @@ public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKe
   }
 
   @Override
+  public Optional<Path> getDefaultPipxVenvPythonPath(String venvName) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  @Override
   public Path getMangaOCRWrapperPath() {
-    // DEV: Incomplete
-    return null;
+    throw new UnsupportedOperationException("Not implemented");
   }
 
   @Override
@@ -101,10 +104,8 @@ public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKe
 
   @Override
   public Optional<Path> getConfigDirPath() {
-    return Optional.of(
-      Paths.get(System.getProperty("user.home"))
-        .resolve("Library/Application Support")
-        .resolve(CONFIG_DIR_PATH_RELATIVE)
+    return getUserHomeDirPath().map(home ->
+      home.resolve("Library/Application Support").resolve(CONFIG_DIR_PATH_RELATIVE)
     );
   }
 

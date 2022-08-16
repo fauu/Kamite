@@ -17,9 +17,11 @@ public sealed interface OCREngine
           OCREngine.None {
   public record Tesseract(String binPath) implements OCREngine {}
 
-  public record MangaOCR(MangaOCRController controller) implements OCREngine {
-    public static MangaOCR uninitialized() {
-      return new MangaOCR(null);
+  public record MangaOCR(
+    String customPythonPath, MangaOCRController controller
+  ) implements OCREngine {
+    public static MangaOCR uninitialized(String customPythonPath) {
+      return new MangaOCR(customPythonPath, null);
     }
 
     public MangaOCR initialized(
@@ -28,7 +30,10 @@ public sealed interface OCREngine
       if (controller != null) {
         throw new IllegalStateException("This OCREngine.MangaOCR instance is already initialized");
       }
-      return new MangaOCR(new MangaOCRController(platform, eventCb));
+      return new MangaOCR(
+        customPythonPath,
+        new MangaOCRController(platform, customPythonPath, eventCb)
+      );
     }
   }
 
@@ -87,7 +92,7 @@ public sealed interface OCREngine
       case TESSERACT ->
         new OCREngine.Tesseract(config.ocr().tesseract().path());
       case MANGAOCR  ->
-        OCREngine.MangaOCR.uninitialized();
+        OCREngine.MangaOCR.uninitialized(config.ocr().mangaocr().pythonPath());
       case MANGAOCR_ONLINE  ->
         OCREngine.MangaOCROnline.uninitialized();
       case OCRSPACE  -> {

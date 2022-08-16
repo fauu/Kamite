@@ -24,17 +24,17 @@ import io.github.kamitejp.image.ImageOps;
 public class MangaOCRController {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private static final String PIPX_DEFAULT_VENV_NAME = "manga-ocr";
   private static final int RECOGNITION_TIMEOUT_S = 8;
 
   private State state;
   private final Consumer<MangaOCREvent> eventCb;
   private final String[] cmd;
-  private final String launchMsgMethod;
   private Process process;
   private BufferedReader outputReader;
 
   public MangaOCRController(
-    Platform platform, Consumer<MangaOCREvent> eventCb
+    Platform platform, String customPythonPath, Consumer<MangaOCREvent> eventCb
   ) throws MangaOCRInitializationException {
     if (platform.getOS().getFamily() != OSFamily.UNIX) {
       throw new MangaOCRInitializationException("not supported on the current platform");
@@ -42,23 +42,36 @@ public class MangaOCRController {
 
     this.eventCb = eventCb;
 
-    cmd = new String[] { "python", platform.getMangaOCRWrapperPath().toString() };
-    var launchMsgMethod = "`python` executable in $PATH";
-    var userLauncherPath = platform.getConfigDirPath()
-      .map(p -> p.resolve(GenericPlatform.MANGAOCR_USER_LAUNCHER_SCRIPT_FILENAME))
-      .orElse(null);
-    if (userLauncherPath != null && Files.isExecutable(userLauncherPath)) {
-      cmd[0] = userLauncherPath.toString();
-      launchMsgMethod = "user-provided launcher script";
+    var pythonPath = effectivePythonPath(platform, customPythonPath);
+    if (pythonPath == null) {
+      throw new MangaOCRInitializationException(
+        "pipx “Manga OCR” installation absent at default location."
+        + " Please specify `ocr.mangaocr.pythonPath` in the config"
+      );
     }
-    this.launchMsgMethod = launchMsgMethod;
+
+    cmd = new String[] { pythonPath, platform.getMangaOCRWrapperPath().toString() };
 
     start();
   }
 
+  private String effectivePythonPath(Platform platform, String customPath) {
+    if (customPath != null) {
+      return customPath;
+    }
+    var maybeDefaultPath = platform.getDefaultPipxVenvPythonPath(PIPX_DEFAULT_VENV_NAME);
+    if (maybeDefaultPath.isPresent()) {
+      var defaultPath = maybeDefaultPath.get();
+      if (Files.isExecutable(defaultPath)) {
+        return defaultPath.toString();
+      }
+    }
+    return null;
+  }
+
   private void start() throws MangaOCRInitializationException {
     state = State.STARTING;
-    LOG.info("Starting “Manga OCR” using {}", launchMsgMethod);
+    LOG.info("Starting “Manga OCR” using `{}`", cmd[0]);
     var pb = new ProcessBuilder(cmd);
     pb.redirectErrorStream(true); // Needed to catch the "Downloading" messages
     try {

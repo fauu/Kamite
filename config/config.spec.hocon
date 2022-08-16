@@ -58,6 +58,10 @@ ocr {
     path = "string | tesseract"
   }
 
+  mangaocr {
+    pythonPath = "string?"
+  }
+
   #@optional
   regions = [{
     symbol = string
