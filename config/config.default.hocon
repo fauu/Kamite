@@ -2,8 +2,8 @@ keybindings {
   global {
     ocr {
       # The lines below are commented out. Remove the leading '#' characters to make them operative.
-      # manualBlock = meta shift S
-      # autoBlock = meta shift D
+      # manualBlock = meta shift Q
+      # autoBlock = meta shift A
     }
   }
 }
