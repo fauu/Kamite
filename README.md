@@ -61,7 +61,7 @@ script; [waycorner][waycorner-icxes].
         * [Alternatives for anime](#alternatives-for-anime)
     * [Manga text extraction](#manga-text-extraction)
         * [Setting up “Manga OCR” Online](#setting-up-manga-ocr-online)
-        * [Setting up “Manga OCR”](#setting-up-manga-ocr)
+        * [Setting up “Manga OCR” (Local)](#setting-up-manga-ocr-local)
         * [Setting up OCR.space](#setting-up-ocrspace)
         * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
         * [Setting up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
@@ -328,7 +328,7 @@ Additional tips:
 
 ### Manga text extraction
 
-Kamite integrates with three alternative OCR (Optical Character Recognition)
+Kamite integrates with four alternative OCR (Optical Character Recognition)
 providers to enable the extraction of text from manga pages displayed on screen.
 The available OCR engines are:
 
@@ -339,9 +339,10 @@ The available OCR engines are:
 * [Tesseract OCR][tesseract] (Local)
 
 **“Manga OCR” in either variant is the recommended choice** as it gives superior
-results for manga. The online version is extremely simple to set up, but it
+results for manga. The online version is extremely simple to set up, but
 requires sending screenshots of portions of your screen to a third party. The
-local version requires a more involved setup and extra system resources.
+local version, on the other hand, requires a more involved setup and extra
+system resources.
 
 [manga-ocr]: https://github.com/kha-white/manga-ocr
 [tesseract]: https://github.com/tesseract-ocr/tesseract
@@ -369,7 +370,7 @@ service ([a Hugging Face Space by Gryan Galario][manga-ocr-hf-gg]), so using it
 involves sending screenshots of portions of your screen to a third-party.
 Here is [the stated privacy policy of Hugging Face][huggingface-privacy-policy].
 
-The “Manga OCR” Online engine uses a freely accessible online API and
+The online API used by the “Manga OCR” Online engine is freely accessible and
 consequently *does not* require any setup.
 
 Remember to [set up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
@@ -377,9 +378,7 @@ and to launch Kamite with the config key `ocr.engine` set to `mangaocr_online`.
 
 [huggingface-privacy-policy]: https://huggingface.co/privacy
 
-#### Setting up “Manga OCR”
-
-> Requires Python; version 3.10 (the latest) *is* supported.
+#### Setting up “Manga OCR” (Local)
 
 **Note:** “Manga OCR” will use up to 2.5 GB of disk space. During launch, it
 will use up to 1 GB of additional memory.
@@ -394,7 +393,7 @@ will use up to 1 GB of additional memory.
     pipx install manga-ocr
     ```
 
-Kamite will now be able to use “Manga OCR”. On first launch of Kamite with
+Kamite will now be able to use “Manga OCR”. On the first launch of Kamite with
 `ocr.engine` set to `mangaocr`, “Manga OCR” will take some time to download its
 model (around 450 MB). If there are issues, try running the `manga_ocr`
 executable installed by pipx and examining its output.
@@ -413,7 +412,7 @@ executable installed by pipx and examining its output.
 ###### Troubleshooting “pipx "Manga OCR" installation absent…”
 
 If pipx did not install to the default path expected by Kamite, you will have to
-specify the path manually in the [config file](#config) file:
+specify the path manually in the [config file](#config):
 
 ```sh
 ocr {
@@ -430,6 +429,7 @@ output you get from running
 pipx list
 ```
 
+[installing-python]: https://realpython.com/installing-python/
 [pip]: https://pip.pypa.io/en/stable/installation/
 [pipx]: https://pypa.github.io/pipx/
 
@@ -438,7 +438,7 @@ pipx list
 If you install “Manga OCR” not through pipx, you will need to manually specify a
 path to a python executable (or a wrapper) that runs within an environment where
 the `manga_ocr` module is available. For example, if installed globally and the
-system Python executable is on PATH under the name `python`, then the
+system Python executable is on `PATH` under the name `python`, then the
 appropriate configuration will be simply:
 
 ```sh
