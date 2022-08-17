@@ -52,6 +52,8 @@ script; [waycorner][waycorner-icxes].
 ## Table of contents
 
 1. [Installing Kamite](#installing-kamite)
+    * [Linux—Arch User Repository](#linux--arch-user-repository)
+    * [Linux—Generic](#linux--generic)
 2. [Launching Kamite](#launching-kamite)
 3. [User interface overview](#user-interface-overview)
 4. [Text extraction](#text-extraction)
@@ -104,23 +106,42 @@ script; [waycorner][waycorner-icxes].
         * [`chunk_` commands](#chunk_-commands)
 12. [Privacy](#privacy)
 13. [Development](#development)
+    * [Technology](#technology)
+    * [Running for development](#running-for-development)
+    * [Development-specific config](#development-specific-config)
+    * [Config handling](#config-handling)
+    * [Code linting](#code-linting)
+    * [Docs](#docs)
+    * [Textractor extension](#textractor-extension)
 14. [License](#license)
     * [Third-party components](#third-party-components)
 
 ## Installing Kamite
 
-1. Download the latest release package from the [Releases] page and extract it
-   to the location where you want to keep the program files (e.g.,
-   `/opt/kamite`).
+### Linux—Arch User Repository
 
-2. Navigate to that directory and execute the installation script:
-   `./install.sh`.
+An AUR package is available under the name [kamite-bin] (installs to
+`/opt/kamite`).
 
-    The script will prompt your permission to install program icons, a desktop
-    integration file, and to symlink the program’s executable to the `/usr/bin`
-    directory.
+[kamite-bin]: https://aur.archlinux.org/packages/kamite-bin
 
-Kamite does *not* have an automatic update mechanism at this time.
+### Linux—Generic
+
+Download the latest release package from the [Releases] page and extract it
+to the location where you want to keep the program files. You can now launch
+Kamite with the `bin/kamite` executable inside the extracted directory.
+
+An optional `install.sh` script is provided in the release package that can
+create a link to `bin/kamite` in the `/usr/bin/` directory, as well as install a
+Desktop entry and program icons for application launchers. The files created by
+the installation script can be removed by running:
+
+```sh
+install.sh --uninstall
+```
+
+To update, remove the old `kamite` directory and extract the new release package
+in its place.
 
 [Releases]: https://github.com/fauu/Kamite/releases
 
