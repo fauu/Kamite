@@ -1323,7 +1323,7 @@ lookup {
 }
 
 ocr {
-  # Which OCR engine to use: none, tesseract, mangaocr
+  # The OCR engine to use: none, tesseract, mangaocr, mangaocr_online, ocrspace
   engine = none
   # (Directory path) Watch the specified directory for new/modified images and
   # OCR them automatically
@@ -1332,6 +1332,13 @@ ocr {
   tesseract {
     # (File path) The path to Tesseract’s executable
     path = "tesseract"
+  }
+  
+  mangaocr {
+    # (File path) A path to a python executable that provides access to the
+    # `manga_ocr` module. If absent, a system-dependent default is used which
+    # assumes that manga-ocr was installed through pipx into the default locaton
+    pythonPath = …
   }
 
   # A *list* of OCR regions, for each of which a region recognition command
