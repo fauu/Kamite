@@ -845,8 +845,8 @@ screen corners but also edges)
   direct lookup with pop-up dictionaries.</dd>
   <dt><a href="https://wonderwize.github.io/mangareader/">Mangareader</a></dt>
   <dd>An in-browser manga reader with built-in support for OCR-ing selected
-  regions using an online API backed by “Manga OCR”.</dd>
-  <!-- Can be used in tandem with Kamite with the help of the Clipboard Inserter browser extension. -->
+  regions using an online API backed by “Manga OCR”. Can be used in tandem with
+  Kamite with the help of the Clipboard Inserter browser extension.</dd>
   <dt><a href="https://github.com/bluaxees/Cloe">Cloe</a></dt>
   <dd>OCRs a screen selection to clipboard using “Manga OCR”.</dd>
   <dt><a href="https://github.com/bluaxees/Poricom">Poricom</a></dt>
@@ -921,10 +921,9 @@ Textractor for games. Some other alternatives are:
 Text can be pasted from clipboard by pressing <kbd>Ctrl</kbd> + <kbd>V</kbd> in
 Kamite’s browser tab.
 
-<!-- The Kamite browser client can automatically pick up the clipboard text
-with the Clipboard Inserter browser extension ([Firefox][clipboard-inserter-ff],
-[Chrome][clipboard-inserter-chrome]) extension (assumes default extension
-settings) -->
+The Kamite browser client can automatically pick up clipboard text with the
+Clipboard Inserter browser extension ([Firefox][clipboard-inserter-ff],
+[Chrome][clipboard-inserter-chrome]) (assumes default extension settings).
 
 [clipboard-inserter-ff]: https://addons.mozilla.org/en-US/firefox/addon/clipboard-inserter/
 [clipboard-inserter-chrome]: https://chrome.google.com/webstore/detail/clipboard-inserter/deahejllghicakhplliloeheabddjajm
