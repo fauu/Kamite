@@ -1337,7 +1337,8 @@ ocr {
   mangaocr {
     # (File path) A path to a python executable that provides access to the
     # `manga_ocr` module. If absent, a system-dependent default is used which
-    # assumes that manga-ocr was installed through pipx into the default locaton
+    # assumes that manga-ocr was installed through pipx into the default
+    # location
     pythonPath = …
   }
 
