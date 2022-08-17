@@ -146,7 +146,7 @@ const TabBar = styled.div`
   border-top: 1px solid var(--color-bg2);
   border-bottom: 1px solid var(--color-bg2);
   z-index: 5;
-  box-shadow: 0px -10px 20px rgba(0, 0, 0, 0.2), 0px 0px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px ${p => !themeLayoutFlipped(p.theme) ? "-" : ""}10px 20px rgba(0, 0, 0, 0.2), 0px 0px 6px rgba(0, 0, 0, 0.15);
 `;
 
 const TabBarGroup = styled.div`
