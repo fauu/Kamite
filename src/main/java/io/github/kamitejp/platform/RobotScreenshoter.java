@@ -7,6 +7,7 @@ import java.awt.Robot;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
 
+// NOTE: Pixels outside screen bounds will be black
 public class RobotScreenshoter {
   private final Robot robot;
 
