@@ -7,6 +7,7 @@ export type SettingBase = {
   label: string,
   configKey: (c: Config) => Setting["value"],
   warning?: SettingWarning,
+  help?: string,
 };
 
 export type SettingMain = ToggleSettingMain | SelectSettingMain;

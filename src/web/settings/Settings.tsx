@@ -33,6 +33,7 @@ export const DEFAULT_SETTINGS: Setting[] = [
     configKey: (c) => c.chunk.translationOnlyMode,
     kind: "toggle",
     value: false,
+    help: "Test help message", // XXX: (DEV)
   }
 ];
 
