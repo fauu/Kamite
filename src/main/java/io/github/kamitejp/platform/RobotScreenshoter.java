@@ -12,14 +12,14 @@ public class RobotScreenshoter {
 
   public RobotScreenshoter() throws RobotScreenshoterUnavailableException {
     try {
-      this.robot = new Robot();
+      robot = new Robot();
     } catch (AWTException e) {
       throw new RobotScreenshoterUnavailableException(e);
     }
   }
 
   public Optional<BufferedImage> takeScreenshotOfArea(Rectangle area) {
-    return Optional.of(this.robot.createScreenCapture(area));
+    return Optional.of(robot.createScreenCapture(area));
   }
 
   public Optional<BufferedImage> takeScreenshotAround(Point point, int areaWidth) {
