@@ -82,7 +82,7 @@ function description(command: Command): string | undefined {
     case "ocr_manual-block-horizontal":
       return "OCR manually selected area assuming horizontal text";
     case "ocr_auto-block":
-      return "OCR autodetected block";
+      return "OCR autodetected text block";
     case "player_seek-start-sub":
       return "Seek to start of current subtitle";
     default:
