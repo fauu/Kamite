@@ -52,8 +52,8 @@ script; [waycorner][waycorner-icxes].
 ## Table of contents
 
 1. [Installing Kamite](#installing-kamite)
-    * [Linux—Arch User Repository](#linux--arch-user-repository)
-    * [Linux—Generic](#linux--generic)
+    * [Linux - Arch User Repository](#linux---arch-user-repository)
+    * [Linux - Generic](#linux---generic)
 2. [Launching Kamite](#launching-kamite)
 3. [User interface overview](#user-interface-overview)
 4. [Text extraction](#text-extraction)
@@ -118,14 +118,14 @@ script; [waycorner][waycorner-icxes].
 
 ## Installing Kamite
 
-### Linux—Arch User Repository
+### Linux - Arch User Repository
 
 An AUR package is available under the name [kamite-bin] (installs to
 `/opt/kamite`).
 
 [kamite-bin]: https://aur.archlinux.org/packages/kamite-bin
 
-### Linux—Generic
+### Linux - Generic
 
 Download the latest release package from the [Releases] page and extract it
 to the location where you want to keep the program files. You can now launch
