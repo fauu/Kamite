@@ -60,6 +60,7 @@ script; [waycorner][waycorner-icxes].
         * [Tip: auto-pausing at the end of subtitle](#tip-auto-pausing-at-the-end-of-subtitle)
         * [Alternatives for anime](#alternatives-for-anime)
     * [Manga text extraction](#manga-text-extraction)
+        * [Setting up “Manga OCR” Online](#setting-up-manga-ocr-online)
         * [Setting up “Manga OCR”](#setting-up-manga-ocr)
         * [Setting up OCR.space](#setting-up-ocrspace)
         * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
@@ -331,154 +332,125 @@ Kamite integrates with three alternative OCR (Optical Character Recognition)
 providers to enable the extraction of text from manga pages displayed on screen.
 The available OCR engines are:
 
-* [“Manga OCR”][manga-ocr]
-* [OCR.space]
-* [Tesseract OCR][tesseract]
+* [“Manga OCR”][manga-ocr] Online ([a Hugging Face Space by Gryan
+  Galario][manga-ocr-hf-gg])
+* [“Manga OCR”][manga-ocr] (Local)
+* [OCR.space] (Online)
+* [Tesseract OCR][tesseract] (Local)
 
-**“Manga OCR” is the recommended choice** as it gives superior results for manga
-and does not require sending data to a third party. However, compared with the
-other options, it is also storage- and resource-intensive as well as less simple
-to set up.
+**“Manga OCR” in either variant is the recommended choice** as it gives superior
+results for manga. The online version is extremely simple to set up, but it
+requires sending screenshots of portions of your screen to a third party. The
+local version requires a more involved setup and extra system resources.
 
 [manga-ocr]: https://github.com/kha-white/manga-ocr
 [tesseract]: https://github.com/tesseract-ocr/tesseract
 
-**By default, OCR is disabled.** To enable it, set the [config](#config) key
-`ocr.engine` to one of: `mangaocr`, `ocrspace`, or `tesseract` and go through:
-1\) the corresponding engine setup procedure, and 2\) the setup procedure for
-extra platform dependencies, both described below.
+**By default, OCR is disabled.** The necessary setup steps are:
 
-* [Setting up “Manga OCR”](#setting-up-manga-ocr)
-* [Setting up OCR.space](#setting-up-ocrspace)
-* [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
-<br><br>
-* [Setting up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
+1. Set the [config](#config) key
+`ocr.engine` to one of: `mangaocr_online`, `mangaocr`, `ocrspace`, or
+`tesseract`.
+
+1. Set up the selected engine:
+
+    * [Setting up “Manga OCR” Online](#setting-up-manga-ocr-online)
+    * [Setting up “Manga OCR”](#setting-up-manga-ocr)
+    * [Setting up OCR.space](#setting-up-ocrspace)
+    * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
+
+1. (Linux/Xorg and wlroots platforms only)
+[Set up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
+
+#### Setting up “Manga OCR” Online
+
+> **Note:** The “Manga OCR” Online engine depends on a third-party online
+service ([a Hugging Face Space by Gryan Galario][manga-ocr-hf-gg]), so using it
+involves sending screenshots of portions of your screen to a third-party.
+Here is [the stated privacy policy of Hugging Face][huggingface-privacy-policy].
+
+The “Manga OCR” Online engine uses a freely accessible online API and
+consequently *does not* require any setup.
+
+Remember to [set up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
+and to launch Kamite with the config key `ocr.engine` set to `mangaocr_online`.
+
+[huggingface-privacy-policy]: https://huggingface.co/privacy
 
 #### Setting up “Manga OCR”
 
 > Requires Python; version 3.10 (the latest) *is* supported.
 
-**Note:** “Manga OCR” will use up to 2.5 GB of storage space. While initializing,
-it will use up to 1 GB of additional memory over what Kamite normally uses.
+**Note:** “Manga OCR” will use up to 2.5 GB of disk space. During launch, it
+will use up to 1 GB of additional memory.
 
-##### Basic option: Global installation
+##### Recommended option: installation using pipx
 
-> Note that this method will make it harder to reclaim *all* the disk space
-when uninstalling “Manga OCR”, although more than 90% of it could be reclaimed by
-simply running `pip3 uninstall manga-ocr torch` and cleaning the
-`~/.cache/huggingface/transformers/` directory.\
-> If you want to install “Manga OCR” with all its dependencies into a separate
-environment for an easy complete removal, see the *Advanced option* just below.
+1. Install [python][installing-python] and [pip]
 
-1. Get the [pip] package installer and then run:
+1. Install [pipx] and run
 
     ```sh
-    pip3 install manga-ocr
+    pipx install manga-ocr
     ```
 
-1. Run the program manually to verify that it works
+Kamite will now be able to use “Manga OCR”. On first launch of Kamite with
+`ocr.engine` set to `mangaocr`, “Manga OCR” will take some time to download its
+model (around 450 MB). If there are issues, try running the `manga_ocr`
+executable installed by pipx and examining its output.
+
+###### Deinstallation
+
+1. Run
 
     ```sh
-    manga_ocr
+    pipx uninstall manga-ocr
     ```
 
-    “Manga OCR” will now download its model. Wait for an output line such as
-    `manga_ocr.ocr:__init__:29 - OCR ready`. Once it is displayed, “Manga OCR”
-    is ready for use with Kamite. Ignore the error `NotImplementedError: Reading
-    images from clipboard…`, as it is irrelevant for Kamite’s use of “Manga
-    OCR”.
+1. Delete the ~450 MB leftover model file in
+`~/.cache/huggingface/transformers/`.
+
+###### Troubleshooting “pipx "Manga OCR" installation absent…”
+
+If pipx did not install to the default path expected by Kamite, you will have to
+specify the path manually in the [config file](#config) file:
+
+```sh
+ocr {
+  mangaocr {
+    pythonPath = "/home/<user>/.local/pipx/venvs/manga-ocr/bin/python"
+  }
+}
+```
+
+The above path is the default, which you will need to modify according to the
+output you get from running
+
+```sh
+pipx list
+```
 
 [pip]: https://pip.pypa.io/en/stable/installation/
+[pipx]: https://pypa.github.io/pipx/
 
-##### Advanced option: Custom installation (Poetry)
+##### Custom installation
 
-Here is an example of how to manually install “Manga OCR” into its own [python
-virtual environment][python-venv]. This particular example will use the [Poetry
-dependency manager][python-poetry], but this is not the only way of achieving
-this result.
+If you install “Manga OCR” not through pipx, you will need to manually specify a
+path to a python executable (or a wrapper) that runs within an environment where
+the `manga_ocr` module is available. For example, if installed globally and the
+system Python executable is on PATH under the name `python`, then the
+appropriate configuration will be simply:
 
-[python-venv]: https://docs.python.org/3/tutorial/venv.html
-[python-poetry]: https://python-poetry.org/docs/
+```sh
+ocr {
+  mangaocr {
+    pythonPath = python
+  }
+}
+```
 
-1. Clone the “Manga OCR” repository
-
-    ```sh
-    git clone "https://github.com/kha-white/manga-ocr.git"
-    ```
-
-1. Create a Poetry project
-
-    ```sh
-    cd manga-ocr
-    poetry init -n
-    ```
-
-1. Register “Manga OCR”’s dependencies with the Poetry project
-
-    ```sh
-    cat requirements.txt | xargs poetry add -vvv
-    ```
-
-    The dependencies will be downloaded now. This could take some time.
-
-1. Verify the installation
-
-    While in the project directory, run:
-
-    ```sh
-    poetry run python -m manga_ocr
-    ```
-
-    “Manga OCR” will now download its model. Wait for an output line such as
-    `manga_ocr.ocr:__init__:29 - OCR ready`. Once it is displayed, “Manga OCR”
-    is ready for use with Kamite. Ignore the error `NotImplementedError: Reading
-    images from clipboard…`, as it is irrelevant for Kamite’s use of “Manga
-    OCR”.
-
-1. Tell Kamite how to launch “Manga OCR”
-
-    A launcher script must be created that: 1) prepares the Python environment
-    containing the “Manga OCR” installation, and 2) inside that environment
-    launches a “Manga OCR” wrapper script provided by Kamite. The launcher script
-    must be named `mangaocr.sh` and placed directly in Kamite’s config directory
-    (next to the `config.hocon` file). The following is an example of such
-    script for a Poetry project:
-
-    ```sh
-    #!/usr/bin/env bash
-    PROJECT_PATH="/path/to/cloned/manga-ocr/"
-    cd $PROJECT_PATH || exit
-    PYTHONPATH=$PYTHONPATH:$PROJECT_PATH poetry run python "$1"
-    ```
-
-Remember to launch Kamite with the config key `ocr.engine` set to `mangaocr`.
-
-***
-
-To completely reclaim your disk space from “Manga OCR” in this scenario:
-
-1. Delete the Poetry project’s virtual environment
-
-    While in the project directory, run:
-
-    ```sh
-    poetry env remove python
-    ```
-
-1. Delete the project itself
-
-    ```sh
-    cd ..
-    rm -rf manga-ocr
-    ```
-
-1. Clear Poetry package cache
-
-    ```sh
-    poetry cache clear pypi --all
-    ```
-
-1. Find the ~450 MB file in `~/.cache/huggingface/transformers/` and delete it
+**Deinstallation note**: There will be a ~450 MB leftover model file in
+`~/.cache/huggingface/transformers/`.
 
 #### Setting up OCR.space
 
@@ -1615,8 +1587,12 @@ Kamite never saves your data to disk.
 
 Kamite never sends your data through the network, with the following exceptions:
 
-* When `ocr.engine` is set to `ocrspace`, screenshots of portions of the user’s
-  screen are sent to [OCR.space] for text recognition.
+* When `ocr.engine` is set to `mangaocr_online`, screenshots of portions of your
+  screen are sent to a [Hugging Face Space][manga-ocr-hf-gg] for text
+  recognition.
+
+* When `ocr.engine` is set to `ocrspace`, screenshots of portions of your screen
+  are sent to [OCR.space] for text recognition.
 
 ## Development
 
@@ -1772,4 +1748,5 @@ the original license notices.
 [Yomichan]: https://foosoft.net/projects/yomichan/
 [Gomics-v]: https://github.com/fauu/gomicsv
 [Sway]: https://swaywm.org/
+[manga-ocr-hf-gg]: https://huggingface.co/spaces/gryan-galario/manga-ocr-demo
 [OCR.space]: https://ocr.space/
