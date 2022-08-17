@@ -126,7 +126,8 @@ const WarningIcon = styled.span`
   display: inline-block;
   width: 16px;
   height: 16px;
-  background: url('icons/warning.png');
+  background: url('icons/warning.svg');
+  background-size: 16px;
   vertical-align: -2px;
   margin-right: 3px;
 `;

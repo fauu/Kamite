@@ -31,7 +31,7 @@ export const NotebookTab: VoidComponent<NotebookTabProps> = (props) => {
         [RemoteLookupClass]: props.tab.lookup && props.tab.lookup.newTab,
         "notebook-tab": true,
       }}
-      style={{ "--icon-url": `url("icons/${props.tab.id}.png")` }}
+      style={{ "--icon-url": `url("icons/${props.tab.id}.svg")` }}
       use:tooltipAnchor={{ tooltip: props.tooltip, header: props.tab.title }}
       onClick={props.onClick}
     >
@@ -84,10 +84,13 @@ const HighlightedClass = css`
 
 const WithIconClass = css`
   --icon-bg: var(--icon-url) no-repeat center center;
+  --icon-bg-size: 34px;
   background: var(--color-bg2) var(--icon-bg);
+  background-size: var(--icon-bg-size);
 
   &.${ActiveClass} {
     background: var(--icon-bg), var(--active-bg);
+    background-size: var(--icon-bg-size), cover;
   }
 `;
 
