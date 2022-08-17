@@ -33,6 +33,7 @@
   reinstall “Manga OCR” using pipx (`pipx install manga-ocr`)**.
 * Tesseract error reporting has been improved.
 * Linux launcher bash script has been replaced with a launcher program.
+* The client UI now uses scalable icons.
 
 ### Fixed
 
