@@ -1,4 +1,4 @@
-.PHONY: clean client dist gen-config jar lint lint-docs lint-java lint-ts runtime textractor
+.PHONY: clean client dist gen-config jar launcher-linux lint lint-docs lint-java lint-ts runtime textractor
 
 clean:
 	rm -rf target/; \
@@ -6,7 +6,7 @@ clean:
 client:
 	yarn build; \
 
-dist: jar runtime textractor
+dist: jar runtime launcher-linux launcher-win textractor
 	rm -rf target/dist; \
 	rm -rf target/*.zip; \
 	mkdir -p target/dist; \
@@ -17,7 +17,8 @@ dist: jar runtime textractor
 	mkdir target/dist/extra; \
 	cp -r target/textractor target/dist/extra/textractor; \
 	cp -r target/dist target/kamite; \
-	cp -r bin target/kamite; \
+	mkdir target/kamite/bin; \
+	cp target/launcher/release/kamite-launcher target/kamite/bin/kamite; \
 	cp -r res target/kamite; \
 	cp scripts/install.sh target/kamite; \
 	cp README.md target/kamite; \
@@ -32,6 +33,14 @@ gen-config:
 
 jar: gen-config client
 	mvn package; \
+
+launcher-linux:
+	pushd launcher; \
+	cargo build --release; \
+
+launcher-win:
+	pushd launcher; \
+	cargo build --target x86_64-pc-windows-gnu --release; \
 
 lint: lint-docs lint-java lint-js
 
