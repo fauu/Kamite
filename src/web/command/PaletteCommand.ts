@@ -49,7 +49,7 @@ export function availableCommandPaletteCommands(
 
   if (config?.commands.custom) {
     res.push(
-      ...config.commands.custom.map(c => 
+      ...config.commands.custom.map(c =>
         paletteCommand({
           command: commandFromConfigCustomCommand(c),
           symbol: c.symbol,
