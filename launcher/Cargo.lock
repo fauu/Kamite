@@ -26,6 +26,7 @@ name = "kamite-launcher"
 version = "0.0.0"
 dependencies = [
  "embed-resource",
+ "winapi",
 ]
 
 [[package]]

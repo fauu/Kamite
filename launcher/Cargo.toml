@@ -2,8 +2,10 @@
 name = "kamite-launcher"
 version = "0.0.0"
 edition = "2021"
-
 build = "build.rs"
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3.9", features = ["winbase"] }
 
 [build-dependencies]
 embed-resource = "1.7"
