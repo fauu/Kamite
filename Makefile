@@ -39,6 +39,8 @@ launcher-linux:
 	cargo build --release; \
 
 launcher-win:
+	mkdir -p target/launcher/res; \
+	convert res/icon/icon-16.png res/icon/icon-32.png res/icon/icon-48.png res/icon/icon-256.png target/launcher/res/icon.ico; \
 	pushd launcher; \
 	cargo build --target x86_64-pc-windows-gnu --release; \
 

@@ -3,6 +3,11 @@ name = "kamite-launcher"
 version = "0.0.0"
 edition = "2021"
 
+build = "build.rs"
+
+[build-dependencies]
+embed-resource = "1.7"
+
 [profile.release]
 strip = true
 lto = true
