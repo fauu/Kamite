@@ -19,8 +19,6 @@ interface SettingsFieldProps {
 
 export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
   const tooltip = useGlobalTooltip()!;
-  console.log(tooltip);
-  console.log(tooltipAnchor);
 
   // POLISH: There's a better way of doing this
   const admitToggle = (setting: Setting): (SettingBase & ToggleSettingMain) | false =>
@@ -45,7 +43,7 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
               use:tooltipAnchor={{
                 tooltip,
                 body: props.setting.help,
-                delayMS: 0,
+                delayMS: 300,
               }}
             />
           </Show>
