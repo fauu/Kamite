@@ -595,7 +595,7 @@ block.
 Select a point within a block of text; Kamite will try to infer the extent of
 the block and then OCR the resulting area.
 
-*This should be good enough for 90% of typical manga text blocks, but the
+*This should be good enough for > 90% of typical manga text blocks, but the
 block detection algorithm has a lot of room for improvement.*
 
 **Note for Linux/Xorg users:** On Xorg, the point selection mechanism cannot be
@@ -1182,7 +1182,7 @@ Seek +1 seconds.
 
 #### Linux/Xorg
 
-> Note: The following does not work in Linux/wlroots.
+> Note: The following does not work on Linux/wlroots.
 
 Below is an excerpt from a [config file](#config) illustrating how to set up
 global keyboard shortcuts and what actions are available for binding.
@@ -1192,7 +1192,8 @@ keybindings {
   global {
     ocr {
       manualBlock = …
-      autoBlock = …
+      autoBlock = … # Instant detection under mouse cursor
+      autoBlockSelect = … # Must click to select a point
     }
   }
 }
@@ -1332,7 +1333,8 @@ keybindings {
       # A key combination to assign to the command. See the "Keyboard shortcuts"
       # section of the Readme for the format specification.
       manualBlock = …
-      autoBlock = …
+      autoBlock = … # Instant detection under mouse cursor
+      autoBlockSelect = … # Must click to select a point
     }
   }
 }
@@ -1529,7 +1531,7 @@ Available commands are distinguished by *command kind*, which is made up of two
 segments: *command group* and *command name*. For example, kind `ocr_region`
 corresponds to the group `ocr` and the name `region`.
 
-Commands have zero or more required parameters.
+The command parameters are required unless a default value is specified.
 
 ### Sending commands
 
@@ -1565,16 +1567,20 @@ block, Kamite OCRs the area as is. For Tesseract, the *vertical* text model is
 used by default.
 
 **`manual-block-vertical`**\
-(Tesseract only) Like `manual-block`, but explicitly uses the vertical text model.
+(Tesseract only) Like `manual-block`, but explicitly uses the vertical text
+model.
 
 **`manual-block-horizontal`**\
-(Tesseract only) Like `manual-block`, but explicitly uses the horizontal text model.
+(Tesseract only) Like `manual-block`, but explicitly uses the horizontal text
+model.
 
-**`auto-block`**\
-User is prompted to select a screen point within a source text block, Kamite
-attempts to infer the extent of the block and OCRs the resulting area.
+**`auto-block`** `(mode: ["select" | "instant"] = "instant")`\
+Kamite assumes the mouse cursor is inside a source text block, attempts to infer
+the extent of the block, and OCRs the resulting area. The `mode` parameter
+specifies whether to prompt the user to click a point or to instantly take the
+current cursor position.
 
-**`region`** `(x, y, width, height: number, autoNarrow: boolean)`\
+**`region`** `(x, y, width, height: number; autoNarrow: bool)`\
 Kamite OCRs the provided screen area either as is (if `autoNarrow` is `false`), or
 after applying an algorithm designed to narrow the area to just text (if `autoNarrow`
 is `true`). **Note:** This is an experimental future, it might function poorly
