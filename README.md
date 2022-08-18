@@ -232,7 +232,7 @@ episode in mpv in such a way that it is immediately set up to work with Kamite.
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 ```sh
-mpv "/path/to/video/"*"<part-of-anime-name>"*"$1"*".mkv" \ # Episode no. passed as an argument to the script
+mpv "/path/to/video/"*"<part-of-anime-name>"*"E$1"*".mkv" \ # Episode no. passed as an argument to the script
   --input-ipc-server="/tmp/kamite-mpvsocket" \
   --sub-file="/path/to/external/subtitles/$1.srt" \
   --sid=2 \ # ID of the Japanese subtitles provided externally
@@ -242,6 +242,14 @@ mpv "/path/to/video/"*"<part-of-anime-name>"*"$1"*".mkv" \ # Episode no. passed 
   --profile=jpsub \ # An optional custom profile that can set a special subtitle font and size, etc. It must be defined separately in the mpv config file: see https://mpv.io/manual/stable/#profiles
 ```
 <!-- markdownlint-restore -->
+
+Kamite can be useful even when viewing media without Japanese subtitles, for
+example as an area where heard words and phrases can be typed in and looked up.
+
+When viewing media with translated subtitles only, Kamite can be instructed to
+treat them as translations for unknown chunks and display them as such, by
+enabling “Translation-only mode” in the Settings tab or by launching with the
+config key `chunk.translationOnlyMode` set to `true`.
 
 [mpv-ref-config]: https://mpv.io/manual/stable/#configuration-files
 [mpv-ref-json-ipc]: https://mpv.io/manual/stable/#json-ipc
@@ -1258,6 +1266,11 @@ chunk {
   # Whether to flash backgrounds of chunk texts in the client's interface on
   # certain occasions
   flash = true
+
+  # Whether to treat incoming chunks as translations and create a new chunk for
+  # each translation. Useful when watching media with just the translation
+  # subtitles
+  translationOnlyMode = false
 }
 
 commands {
