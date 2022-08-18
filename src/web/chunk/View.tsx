@@ -40,13 +40,15 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
         when={props.chunksState.editing()}
         fallback={
           <div ref={props.labelAndTranslationRef}>
-            <ChunkLabel
-              text={props.chunksState.current().text}
-              flashState={props.chunksState.currentFlashState()}
-              selection={props.chunksState.textSelection.get()}
-              highlight={props.chunksState.textHighlight()}
-              ref={props.labelRef}
-            />
+            <Show when={!props.chunksState.current().text.isEmpty}>
+              <ChunkLabel
+                text={props.chunksState.current().text}
+                flashState={props.chunksState.currentFlashState()}
+                selection={props.chunksState.textSelection.get()}
+                highlight={props.chunksState.textHighlight()}
+                ref={props.labelRef}
+              />
+            </Show>
             <Show when={props.chunksState.translationWithContext()}>{translations =>
               <CurrentTranslation translations={translations}/>
             }</Show>
