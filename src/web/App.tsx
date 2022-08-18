@@ -29,7 +29,9 @@ import {
 import {
   availableChunkHistoryActions as getAvailableChunkHistoryActions, type ChunkHistoryAction
 } from "~/notebook/chunk-history";
-import { DEFAULT_SETTINGS, Settings, type Setting, type SettingChangeRequest } from "~/settings";
+import {
+  DEFAULT_SETTINGS, getSetting, Settings, type Setting, type SettingChangeRequest
+} from "~/settings";
 import {
   CharacterCounter, createSessionTimerState, createStatusPanelFader, SessionTimer, StatusPanel
 } from "~/status-panel";
@@ -291,8 +293,15 @@ export const App: VoidComponent = () => {
 
       case "chunk-variants": {
         const defaultVariant = msg.variants[0];
+        const defaultVariantContent = defaultVariant.content.replaceAll("@", "");
+
+        if (getSetting(settings, "translation-only-mode")) {
+          chunks.handleIncomingTranslation(defaultVariantContent, msg.playbackTimeS);
+          break;
+        }
+
         void chunks.insert(
-          defaultVariant.content.replaceAll("@", ""),
+          defaultVariantContent,
           {
             op: "replace-selected",
             original: defaultVariant.originalContent ?? undefined,

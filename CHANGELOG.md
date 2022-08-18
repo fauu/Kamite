@@ -6,10 +6,9 @@
 
 * New OCR engine: “Manga OCR” Online (via [a Hugging Face Space by Gryan
   Galario][manga-ocr-hf-gg]) (`ocr.engine = mangaocr_online`).
-* Translation-only mode {STUB}
-* Tesseract executable path can now be customized (`ocr.tesseract.path`;
-  default is `tesseract`).
-* Additional visually similar character pairs under the text transform action.
+* Translation-only mode: Option that treats incoming chunks as translations and
+  creates a new chunk for each translation. Useful when watching media with
+  just the translation subtitles (`chunk.translationOnlyMode = true`).
 * Clipboard Inserter ([Firefox][clipboard-inserter-ff],
   [Chrome][clipboard-inserter-chrome]) browser extension integration—when
   active, clipboard text will be automatically grabbed as a new Kamite chunk.
@@ -20,17 +19,20 @@
 
 ### Changed
 
-* mpv integration rework: the mpv script has been removed, the IPC connection
+* mpv integration rework: The mpv script has been removed, the IPC connection
   with mpv is now used for extracting subtitles. **BREAKING CHANGE: please
   remove the old mpv script (`~/.config/mpv/scripts/kamite.lua`) and make sure
   that mpv is launched with the parameter
   `--input-ipc-server="/tmp/kamite-mpvsocket"`**.
-* “Manga OCR” integration rework: the `mangaocr.sh` wrapper script is no longer
+* “Manga OCR” integration rework: The `mangaocr.sh` wrapper script is no longer
   used and in its absence the Python executable used is no longer the `PATH`
   `python`, but the default pipx manga-ocr installation path. **BREAKING
   CHANGE: please either provide a path to a Python launcher that can access the
   `manga_ocr` module under the config key `ocr.mangaocr.pythonPath` or simply
   reinstall “Manga OCR” using pipx (`pipx install manga-ocr`)**.
+* Text transform action has gained additional visually similar character pairs.
+* Tesseract executable can now be customized (`ocr.tesseract.path`; default is
+  `tesseract`).
 * Tesseract error reporting has been improved.
 * Linux launcher bash script has been replaced with a launcher program.
 * The client UI now uses scalable icons.

@@ -33,6 +33,8 @@ export const DEFAULT_SETTINGS: Setting[] = [
     configKey: (c) => c.chunk.translationOnlyMode,
     kind: "toggle",
     value: false,
+    help: `Treat incoming chunks as translations and create a new empty chunk for each translation.
+Useful when watching media with just the translation subtitles.`,
   },
 ];
 
