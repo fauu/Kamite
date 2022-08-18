@@ -1,5 +1,5 @@
 export function integrateClipboardInserter(onText: (text: string) => void) {
-  const bodyEl = document.getElementsByTagName("body")[0]
+  const bodyEl = document.getElementsByTagName("body")[0];
   const observer = new MutationObserver(mutations => {
     mutations.forEach(m => {
       m.addedNodes.forEach(n => {

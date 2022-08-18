@@ -15,8 +15,8 @@ export type OCRAutoBlockCommand = {
   kind: "ocr_auto-block",
   params: {
     mode: "select" | "instant",
-  }
-}
+  },
+};
 
 export type OCRRegionCommand = {
   kind: "ocr_region",
