@@ -58,9 +58,7 @@ public class ScreenSelector extends JFrame {
 
     var fullBounds = new java.awt.Rectangle();
     for (var device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
-      for (var conf : device.getConfigurations()) {
-        fullBounds = fullBounds.union(conf.getBounds());
-      }
+      fullBounds = fullBounds.union(device.getDefaultConfiguration().getBounds());
     }
     setBounds(fullBounds);
     screenBounds = fullBounds;
