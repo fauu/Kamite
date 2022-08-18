@@ -23,13 +23,17 @@ public final class Slurp extends BaseSimpleDependency {
     return res.didComplete() && res.getStdout().startsWith("Usage: slurp");
   }
 
-  public SlurpResult getSelectionFromUser(SlurpMode mode) {
+  public SlurpResult getSelectionFromUser(SlurpMode mode, SlurpFade fade) {
     var cmd = new ArrayList<String>();
     cmd.add(BIN);
     if (mode == SlurpMode.POINT) {
       cmd.add("-p");
       cmd.add("-f");
       cmd.add("%x %y");
+    }
+    if (fade == SlurpFade.NO_FADE) {
+      cmd.add("-b");
+      cmd.add("#ffffff00");
     }
 
     var res = ProcessHelper.run(cmd);

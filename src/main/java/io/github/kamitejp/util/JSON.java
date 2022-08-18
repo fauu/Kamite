@@ -1,5 +1,6 @@
 package io.github.kamitejp.util;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -16,6 +17,7 @@ public final class JSON {
 
   private static JsonMapper createDefaultMapper() {
     return JsonMapper.builder()
+      .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true)
       .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
       .addModule(new JavaTimeModule())
       .addModule(new Jdk8Module())

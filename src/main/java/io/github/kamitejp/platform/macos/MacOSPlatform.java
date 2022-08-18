@@ -1,5 +1,6 @@
 package io.github.kamitejp.platform.macos;
 
+import java.awt.MouseInfo;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -13,6 +14,7 @@ import com.tulskiy.keymaster.common.Provider;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
+import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.OS;
@@ -52,13 +54,18 @@ public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKe
   }
 
   @Override
-  public Result<Point, RecognitionOpError> getUserSelectedPoint() {
-    if (selector == null) {
-      selector = new ScreenSelector();
-    }
-    return selector.getFuturePoint().join()
-      .<Result<Point, RecognitionOpError>>map(p -> Result.Ok(p))
-      .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
+  public Result<Point, RecognitionOpError> getUserSelectedPoint(PointSelectionMode mode) {
+    return switch (mode) {
+      case INSTANT -> Result.Ok(Point.from(MouseInfo.getPointerInfo().getLocation()));
+      case SELECT -> {
+        if (selector == null) {
+          selector = new ScreenSelector();
+        }
+        yield selector.getFuturePoint().join()
+          .<Result<Point, RecognitionOpError>>map(p -> Result.Ok(p))
+          .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
+      }
+    };
   }
 
   @Override

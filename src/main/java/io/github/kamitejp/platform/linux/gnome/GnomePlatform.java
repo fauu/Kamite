@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
+import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformDependentFeature;
@@ -69,7 +70,7 @@ public class GnomePlatform extends WaylandPlatform {
   }
 
   @Override
-  public Result<Point, RecognitionOpError> getUserSelectedPoint() {
+  public Result<Point, RecognitionOpError> getUserSelectedPoint(PointSelectionMode _mode) {
     var areaRes = getUserSelectedArea();
     if (areaRes.isErr()) {
       return Result.Err(areaRes.err());
