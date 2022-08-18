@@ -31,7 +31,7 @@ export const TooltipView: ParentComponent<TooltipViewProps> = (props) =>
       </Header>
       <Body
         classList={{
-          [SecondaryClass]: props.header !== undefined || props.state.header() !== undefined 
+          [SecondaryClass]: props.header !== undefined || props.state.header() !== undefined
         }}
       >
         <Show when={props.children} fallback={props.state.body()}>
@@ -53,6 +53,7 @@ const Root = styled.div`
   box-shadow: var(--shadow-panel);
   pointer-events: none;
   z-index: 100;
+  max-width: 25rem;
 `;
 
 const Header = styled.div`
