@@ -321,7 +321,7 @@ public class Recognizer {
     ArrayList<LabelledTesseractHOCROutput> variants = null;
     for (var labelledResultFuture : tesseractResultFutures) {
       var labelledResult = labelledResultFuture.join();
-      switch (labelledResult.result) {
+      switch (labelledResult.result) { // NOPMD - misidentifies as non-exhaustive
         case TesseractResult.ExecutionFailed ignored ->
           numExecutionFails++;
         case TesseractResult.TimedOut ignored ->
@@ -355,7 +355,7 @@ public class Recognizer {
       );
     }
     if (errorMsgs != null) {
-      LOG.error(
+      LOG.error( // NOPMD
         "Some of the Tesseract calls have returned errors:\n{}",
         errorMsgs.stream().distinct().collect(joining("\n"))
       );

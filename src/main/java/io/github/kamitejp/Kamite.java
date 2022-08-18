@@ -229,7 +229,7 @@ public class Kamite {
   }
 
   private void handlePlayerSubtitle(Subtitle subtitle) {
-    switch (subtitle.kind()) {
+    switch (subtitle.kind()) { // NOPMD - misidentifies as non-exhaustive
       case PRIMARY   -> showChunkPostCheckpoint(subtitle.text(), subtitle.startTimeS());
       case SECONDARY -> showChunkTranslation(subtitle.text(), subtitle.startTimeS());
     }

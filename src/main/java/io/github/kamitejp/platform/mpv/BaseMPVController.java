@@ -65,7 +65,7 @@ public abstract class BaseMPVController implements MPVController {
     PlayerStatus statusUpdate = null;
 
     for (var message : MPVMessage.parseMulti(messagesJSON)) {
-      switch (message) {
+      switch (message) { // NOPMD - misidentifies as non-exhaustive
         case MPVMessage.PropertyChange msg -> {
           switch (msg.name()) {
             case "pause" ->

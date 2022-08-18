@@ -7,12 +7,15 @@ public final class HTTP {
   private static final Duration DEFAULT_CONNECT_TIMEOUT = Duration.ofSeconds(5);
 
   private static HttpClient defaultClient;
+  private static final Object lock = new Object();
 
   private HTTP() {}
 
   public static HttpClient client() {
-    if (defaultClient == null) {
-      defaultClient = createDefaultClient();
+    synchronized (lock) {
+      if (defaultClient == null) {
+        defaultClient = createDefaultClient();
+      }
     }
     return defaultClient;
   }

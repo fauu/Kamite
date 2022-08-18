@@ -183,7 +183,7 @@ public class WlrootsPlatform extends WaylandPlatform {
     } catch (InterruptedException | ExecutionException e) {
       LOG.error("Could not run wlrctl. See stderr for the stack trace");
       e.printStackTrace();
-    };
+    }
   }
 
   private Result<BufferedImage, RecognitionOpError> runGrimWithArea(Rectangle a) {

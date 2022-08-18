@@ -11,14 +11,13 @@ public sealed interface MPVMessage
           MPVMessage.EndFile,
           MPVMessage.Unrecognized {
   // NOTE: '[\\s\\S]' is needed for data instead of '.' because of some Windows encoding weirdiness
-  static final Pattern PROPERTY_CHANGE_RE =
-    Pattern.compile("name\":\"(.+?)\"(?:,\"data\":([\\s\\S]+?))?\\}$");
+  Pattern PROPERTY_CHANGE_RE = Pattern.compile("name\":\"(.+?)\"(?:,\"data\":([\\s\\S]+?))?\\}$");
 
   record PropertyChange(String name, String value) implements MPVMessage {}
   record EndFile() implements MPVMessage {}
   record Unrecognized() implements MPVMessage {}
 
-  public static MPVMessage parse(String msgJSON) {
+  static MPVMessage parse(String msgJSON) {
     if (msgJSON.contains("event\":\"property-change\"")) {
       var m = PROPERTY_CHANGE_RE.matcher(msgJSON);
       m.find();
@@ -31,7 +30,7 @@ public sealed interface MPVMessage
     return new Unrecognized();
   }
 
-  public static List<MPVMessage> parseMulti(String msgsJSON) {
+  static List<MPVMessage> parseMulti(String msgsJSON) {
     return Arrays.stream(msgsJSON.split("\n")).map(MPVMessage::parse).collect(toList());
   }
 }
