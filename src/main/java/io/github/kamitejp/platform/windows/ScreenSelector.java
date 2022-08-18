@@ -174,7 +174,10 @@ public class ScreenSelector extends JFrame {
   private class MouseListener extends MouseAdapter {
     public void mousePressed(MouseEvent e) {
       if (futurePoint != null) {
-        futurePoint.complete(Optional.of(new Point(e.getX(), e.getY())));
+        futurePoint.complete(Optional.of(new Point(
+          e.getX() + (int) screenBounds.getX(),
+          e.getY() + (int) screenBounds.getY()
+        )));
         deactivate();
         reset();
         return;
