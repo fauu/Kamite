@@ -6,17 +6,6 @@ import type { SelectValue, Setting } from "./Setting";
 
 export const DEFAULT_SETTINGS: Setting[] = [
   {
-    id: "show-furigana",
-    label: "Show furigana",
-    configKey: (c) => c.chunk.showFurigana,
-    kind: "toggle",
-    value: false,
-    warning: {
-      text: "The furigana is auto-generated and frequently incorrect. Use cautiously",
-      show: (value: boolean) => value,
-    },
-  },
-  {
     id: "layout",
     label: "Interface layout",
     configKey: (c) => c.ui.layout,
@@ -28,12 +17,25 @@ export const DEFAULT_SETTINGS: Setting[] = [
     value: "STANDARD",
   },
   {
+    id: "show-furigana",
+    label: "Show furigana",
+    configKey: (c) => c.chunk.showFurigana,
+    kind: "toggle",
+    value: false,
+    warning: {
+      text: "The furigana is auto-generated and frequently incorrect. Use cautiously",
+      show: (value: boolean) => value,
+    },
+  },
+  {
     id: "translation-only-mode",
     label: "Translation-only mode",
     configKey: (c) => c.chunk.translationOnlyMode,
     kind: "toggle",
     value: false,
-  }
+    help: `Treat incoming chunks as translations and create a new empty chunk for each translation.
+Useful when watching media with just the translation subtitles.`,
+  },
 ];
 
 interface SettingsProps {

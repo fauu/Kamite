@@ -1,8 +1,12 @@
 import { Match, Show, Switch, type JSX, type VoidComponent } from "solid-js";
-import { styled } from "solid-styled-components";
+import { css, styled } from "solid-styled-components";
+
+import { tooltipAnchor } from "~/directives";
+const [_] = [tooltipAnchor];
 
 import { ConfigKey } from "~/common";
 import { LAYOUT_BREAKPOINT_SMALL } from "~/globalStyles";
+import { useGlobalTooltip } from "~/GlobalTooltip";
 
 import { SettingsSelect } from "./Select";
 import type { SelectSettingMain, Setting, SettingBase, ToggleSettingMain } from "./Setting";
@@ -14,6 +18,8 @@ interface SettingsFieldProps {
 }
 
 export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
+  const tooltip = useGlobalTooltip()!;
+
   // POLISH: There's a better way of doing this
   const admitToggle = (setting: Setting): (SettingBase & ToggleSettingMain) | false =>
       setting.kind === "toggle" ? setting : false;
@@ -28,12 +34,22 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
       class="issue-9"
       classList={{ [SettingsToggleClass]: props.setting.kind === "toggle" }}
     >
-      <LabelText>
-        <LabelTextMain>
+      <Info>
+        <InfoMain>
           {props.setting.label}
-        </LabelTextMain>
+          <Show when={props.setting.help}>
+            <span
+              class={HelpIndicatorClass}
+              use:tooltipAnchor={{
+                tooltip,
+                body: props.setting.help,
+                delayMS: 300,
+              }}
+            />
+          </Show>
+        </InfoMain>
         <ConfigKey value={humanizeConfigKey(props.setting)} />
-      </LabelText>
+      </Info>
       <Switch>
         <Match when={admitToggle(props.setting)}>{s =>
           <SettingsToggleMain setting={s} onChange={handleChange} />
@@ -74,14 +90,30 @@ const Label = styled.label`
   align-items: center;
 `;
 
-const LabelText = styled.div`
+const Info = styled.div`
   width: 400px;
   display: flex;
   flex-direction: column;
 `;
 
-const LabelTextMain = styled.span`
+const InfoMain = styled.div`
   margin-right: 0.45rem;
+  display: flex;
+  align-items: center;
+`;
+
+const HelpIndicatorClass = css`
+  padding: 0.01rem 0.2rem;
+  margin-left: 0.28rem;
+  color: var(--color-fg3);
+  background: var(--color-bg3);
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: var(--border-radius-default);
+
+  &:after {
+    content: "?";
+  }
 `;
 
 const Warning = styled.div`
@@ -92,7 +124,8 @@ const WarningIcon = styled.span`
   display: inline-block;
   width: 16px;
   height: 16px;
-  background: url('icons/warning.png');
+  background: url('icons/warning.svg');
+  background-size: 16px;
   vertical-align: -2px;
   margin-right: 3px;
 `;

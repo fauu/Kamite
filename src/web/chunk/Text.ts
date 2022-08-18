@@ -45,6 +45,10 @@ export class ChunkText {
     return this.base.length;
   }
 
+  get isEmpty(): boolean {
+    return this.base.length < 1;
+  }
+
   get hasFurigana(): boolean {
     return this.#maybeRubies !== undefined;
   }

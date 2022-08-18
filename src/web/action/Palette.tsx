@@ -32,7 +32,7 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
           [PaletteButtonDisabledClass]: a.disabled,
           [ActionButtonClass]: true,
         }}
-        style={{ "background-image": hasIcon && `url('icons/${a.kind}.png')` }}
+        style={{ "background-image": hasIcon && `url('icons/${a.kind}.svg')` }}
         innerHTML={!hasIcon ? textLabel(a, props.targetText) : undefined}
         onClick={[handleButtonClick, a]}
       />;

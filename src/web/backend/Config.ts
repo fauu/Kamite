@@ -39,7 +39,6 @@ interface Server {
 }
 
 interface Chunk {
-  breakLines: boolean,
   flash: boolean,
   showFurigana: boolean,
   translationOnlyMode: boolean,

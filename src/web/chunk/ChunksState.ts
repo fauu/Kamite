@@ -337,7 +337,10 @@ export function createChunksState(
       }
     }
 
-    const initialInsert = chunks.length === 1 && current().text.base === "";
+    const initialInsert =
+      chunks.length === 1
+      && current().text.base === ""
+      && !current().translation;
     const inPlace = params.inPlace || initialInsert;
     batch(() => {
       if (

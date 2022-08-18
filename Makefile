@@ -1,4 +1,4 @@
-.PHONY: clean client dist gen-config jar lint lint-docs lint-java lint-ts runtime textractor
+.PHONY: clean client dist gen-config jar launcher-linux lint lint-docs lint-java lint-ts runtime-linux textractor
 
 clean:
 	rm -rf target/; \
@@ -6,7 +6,7 @@ clean:
 client:
 	yarn build; \
 
-dist: jar runtime textractor
+dist: jar runtime-linux launcher-linux launcher-win textractor
 	rm -rf target/dist; \
 	rm -rf target/*.zip; \
 	mkdir -p target/dist; \
@@ -17,7 +17,8 @@ dist: jar runtime textractor
 	mkdir target/dist/extra; \
 	cp -r target/textractor target/dist/extra/textractor; \
 	cp -r target/dist target/kamite; \
-	cp -r bin target/kamite; \
+	mkdir target/kamite/bin; \
+	cp target/launcher/release/kamite-launcher target/kamite/bin/kamite; \
 	cp -r res target/kamite; \
 	cp scripts/install.sh target/kamite; \
 	cp README.md target/kamite; \
@@ -32,6 +33,16 @@ gen-config:
 
 jar: gen-config client
 	mvn package; \
+
+launcher-linux:
+	pushd launcher; \
+	cargo build --release; \
+
+launcher-win:
+	mkdir -p target/launcher/res; \
+	convert res/icon/icon-16.png res/icon/icon-32.png res/icon/icon-48.png res/icon/icon-256.png target/launcher/res/icon.ico; \
+	pushd launcher; \
+	cargo build --target x86_64-pc-windows-gnu --release; \
 
 lint: lint-docs lint-java lint-js
 
@@ -48,11 +59,13 @@ lint-ts:
 	yarn typecheck; \
 	yarn lint; \
 
-runtime:
+runtime-linux:
 	rm -rf target/java-runtime; \
 	jlink --no-header-files --no-man-pages --compress=2 --strip-debug \
 		--add-modules "java.datatransfer,java.desktop,java.logging,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.sql,java.transaction.xa,java.xml,jdk.jsobject,jdk.security.auth,jdk.unsupported,jdk.unsupported.desktop,jdk.xml.dom" \
 		--output target/java-runtime; \
+	pushd target/java-runtime/bin; \
+	rm jrunscript keytool rmiregistry \
 
 textractor:
 	rm -rf target/textractor; \

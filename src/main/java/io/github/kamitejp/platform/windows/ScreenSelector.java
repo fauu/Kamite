@@ -23,9 +23,10 @@ import org.slf4j.LoggerFactory;
 
 import io.github.kamitejp.Kamite;
 import io.github.kamitejp.controlgui.ControlGUI;
+import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 
-public class AreaSelector extends JFrame {
+public class ScreenSelector extends JFrame {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final List<Integer> CANCEL_KEYS = List.of(KeyEvent.VK_ESCAPE, KeyEvent.VK_Q);
@@ -41,9 +42,10 @@ public class AreaSelector extends JFrame {
   private int yEnd;
 
   private java.awt.Rectangle screenBounds;
+  private CompletableFuture<Optional<Point>> futurePoint;
   private CompletableFuture<Optional<Rectangle>> futureArea;
 
-  public AreaSelector() {
+  public ScreenSelector() {
     setTitle("%s OCR area selector".formatted(Kamite.APP_NAME_DISPLAY));
     setAlwaysOnTop(true);
     setUndecorated(true);
@@ -71,17 +73,6 @@ public class AreaSelector extends JFrame {
     addKeyListener(keyListener);
   }
 
-  public void activate() {
-    setVisible(true);
-    setExtendedState(JFrame.NORMAL);
-    toFront();
-    requestFocus();
-  }
-
-  public void deactivate() {
-    setVisible(false);
-  }
-
   @Override
   public void paint(Graphics gfx) {
     super.paint(gfx);
@@ -89,6 +80,14 @@ public class AreaSelector extends JFrame {
     var oldStroke = gfx2d.getStroke();
 
     gfx2d.setColor(BG_FADE_COLOR);
+
+    if (futurePoint != null) {
+      // Selecting a point. No selection rectangle to draw, fade the entire frame
+      gfx2d.fillRect(0, 0, getWidth(), getHeight());
+      return;
+    }
+
+    // Selecting an area
 
     // Selecton area rectangle dimensions
     var w = Math.abs(xStart - xEnd);
@@ -122,13 +121,37 @@ public class AreaSelector extends JFrame {
     gfx2d.setStroke(oldStroke);
   }
 
+  public CompletableFuture<Optional<Point>> getFuturePoint() {
+    futurePoint = new CompletableFuture<>();
+    activate();
+    return futurePoint;
+  }
+
   public CompletableFuture<Optional<Rectangle>> getFutureArea() {
     futureArea = new CompletableFuture<>();
+    activate();
     return futureArea;
   }
 
   private void cancel() {
-    futureArea.complete(Optional.empty());
+    if (futurePoint != null) {
+      futurePoint.complete(Optional.empty());
+    } else if (futureArea != null) {
+      futureArea.complete(Optional.empty());
+    }
+    deactivate();
+    reset();
+  }
+
+  private void activate() {
+    setVisible(true);
+    setExtendedState(JFrame.NORMAL);
+    toFront();
+    requestFocus();
+  }
+
+  private void deactivate() {
+    setVisible(false);
   }
 
   private void reset() {
@@ -136,6 +159,8 @@ public class AreaSelector extends JFrame {
     yStart = 0;
     xEnd = 0;
     yEnd = 0;
+    futureArea = null;
+    futurePoint = null;
   }
 
   private void setStartPoint(int x, int y) {
@@ -150,6 +175,12 @@ public class AreaSelector extends JFrame {
 
   private class MouseListener extends MouseAdapter {
     public void mousePressed(MouseEvent e) {
+      if (futurePoint != null) {
+        futurePoint.complete(Optional.of(new Point(e.getX(), e.getY())));
+        deactivate();
+        reset();
+        return;
+      }
       setStartPoint(e.getX(), e.getY());
     }
 
@@ -174,6 +205,7 @@ public class AreaSelector extends JFrame {
         return;
       }
       futureArea.complete(Optional.of(Rectangle.ofStartAndDimensions(x, y, w, h)));
+      deactivate();
       reset();
     }
   }

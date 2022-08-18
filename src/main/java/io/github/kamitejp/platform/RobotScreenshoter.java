@@ -7,19 +7,20 @@ import java.awt.Robot;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
 
+// NOTE: Pixels outside screen bounds will be black
 public class RobotScreenshoter {
   private final Robot robot;
 
   public RobotScreenshoter() throws RobotScreenshoterUnavailableException {
     try {
-      this.robot = new Robot();
+      robot = new Robot();
     } catch (AWTException e) {
       throw new RobotScreenshoterUnavailableException(e);
     }
   }
 
   public Optional<BufferedImage> takeScreenshotOfArea(Rectangle area) {
-    return Optional.of(this.robot.createScreenCapture(area));
+    return Optional.of(robot.createScreenCapture(area));
   }
 
   public Optional<BufferedImage> takeScreenshotAround(Point point, int areaWidth) {

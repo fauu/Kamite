@@ -1,0 +1,17 @@
+[package]
+name = "kamite-launcher"
+version = "0.0.0"
+edition = "2021"
+build = "build.rs"
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3.9", features = ["winbase"] }
+
+[build-dependencies]
+embed-resource = "1.7"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+panic = "abort"

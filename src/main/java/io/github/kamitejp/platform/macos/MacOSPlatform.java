@@ -1,6 +1,5 @@
 package io.github.kamitejp.platform.macos;
 
-import java.awt.MouseInfo;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -22,14 +21,14 @@ import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.RobotScreenshoter;
 import io.github.kamitejp.platform.RobotScreenshoterUnavailableException;
-import io.github.kamitejp.platform.windows.AreaSelector; // XXX (DEV)
+import io.github.kamitejp.platform.windows.ScreenSelector; // XXX (DEV): Move to another package
 import io.github.kamitejp.util.Result;
 
 @SuppressWarnings("PMD") // DEV
 public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKeybindingProvider {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private AreaSelector selector;
+  private ScreenSelector selector;
   private final RobotScreenshoter robotScreenshoter;
   private Provider keymasterProvider;
 
@@ -54,19 +53,20 @@ public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKe
 
   @Override
   public Result<Point, RecognitionOpError> getUserSelectedPoint() {
-    return Result.Ok(Point.from(MouseInfo.getPointerInfo().getLocation()));
+    if (selector == null) {
+      selector = new ScreenSelector();
+    }
+    return selector.getFuturePoint().join()
+      .<Result<Point, RecognitionOpError>>map(p -> Result.Ok(p))
+      .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
   }
 
   @Override
   public Result<Rectangle, RecognitionOpError> getUserSelectedArea() {
     if (selector == null) {
-      selector = new AreaSelector();
+      selector = new ScreenSelector();
     }
-    selector.activate();
-    var maybeArea = selector.getFutureArea().join();
-    selector.deactivate();
-
-    return maybeArea
+    return selector.getFutureArea().join()
       .<Result<Rectangle, RecognitionOpError>>map(a -> Result.Ok(a))
       .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
   }

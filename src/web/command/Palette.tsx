@@ -23,7 +23,7 @@ export const CommandPalette: VoidComponent<CommandPaletteProps> = (props) => {
   const buttonBackgroundImage = (c: Command) =>
     c.kind === "other_custom"
     ? "none"
-    : `url('icons/${iconBasename(c)}.png')`;
+    : `url('icons/${iconBasename(c)}.svg')`;
 
   const iconBasename = (c: Command) =>
     c.kind === "player_playpause"

@@ -7,7 +7,7 @@ export const DEFAULT_TOOLTIP_SCALE = 1;
 
 const OFFSET = 5;
 const PADDING = 5;
-const DEFAULT_REVEAL_DELAY_MS = 1000;
+const DEFAULT_REVEAL_DELAY_MS = 800;
 
 export type Tooltip = ReturnType<typeof useTooltip>;
 

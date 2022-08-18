@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-BIN_DIR=$(dirname -- "$(readlink -f -- "$0")")
-"$BIN_DIR"/../runtime/bin/java \
-  --enable-preview \
-  --add-opens java.desktop/sun.awt.X11=ALL-UNNAMED \
-  -jar "$BIN_DIR"/../lib/generic/kamite.jar "$@"
