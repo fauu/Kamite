@@ -44,7 +44,7 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
               class={HelpIndicatorClass}
               use:tooltipAnchor={{
                 tooltip,
-                body: props.setting.label,
+                body: props.setting.help,
                 delayMS: 0,
               }}
             />
