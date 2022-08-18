@@ -45,6 +45,8 @@ public class ScreenSelector extends JFrame {
   private CompletableFuture<Optional<Point>> futurePoint;
   private CompletableFuture<Optional<Rectangle>> futureArea;
 
+  // NOTE: Works on Xorg if the secondary display is below the first. However, if it's above,
+  //       the frame only covers the primary one.
   public ScreenSelector() {
     setTitle("%s OCR area selector".formatted(Kamite.APP_NAME_DISPLAY));
     setAlwaysOnTop(true);
