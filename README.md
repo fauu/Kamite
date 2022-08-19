@@ -892,10 +892,12 @@ extracted by it from other programs to Kamite.
 
 To install the *Kamite Send* Textractor extension:
 
-1. Copy the `Kamite Send.xdll` file from either the `extra/textractor/x86`
-   (32-bit Textractor) or `extra/textractor/x64` (64-bit Textractor) within the
-   release package to the main Textractor directory (the one that contains
+1. Copy `Kamite Send.xdll` from either the `extra/textractor/x86` (32-bit
+   Textractor) or `extra/textractor/x64` (64-bit Textractor) within the release
+   package to the main Textractor directory (the one containing
    `Textractor.exe`).
+
+   > Note: If you installed Kamite from AUR, the files will be in `/opt/kamite`.
 
 2. In Textractor, press the `Extensions` button, right-click in the extension
    list, choose `Add extension` and select the `Kamite Send.xdll` file copied
