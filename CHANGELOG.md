@@ -1,6 +1,6 @@
 # Changelog — Kamite
 
-## [Unreleased]
+## [0.4] – 2022-08-19
 
 ### Added
 
@@ -47,6 +47,8 @@
 * Successfully loading a profile config file is no longer falsely reported when
   the file is not readable.
 * A rare failure in manga text block detector.
+* Command palette button tooltip is now correctly hidden when the browser loses
+  focus to a point/area selection program.
 
 ## [0.3] – 2022-07-21
 
@@ -94,7 +96,8 @@
 
 Initial release.
 
-[Unreleased]: https://github.com/fauu/Kamite/compare/v0.3...HEAD
+[Unreleased]: https://github.com/fauu/Kamite/compare/v0.4...HEAD
+[0.4]: https://github.com/fauu/Kamite/releases/tag/v0.4
 [0.3]: https://github.com/fauu/Kamite/releases/tag/v0.3
 [0.2]: https://github.com/fauu/Kamite/releases/tag/v0.2
 [0.1]: https://github.com/fauu/Kamite/releases/tag/v0.1
