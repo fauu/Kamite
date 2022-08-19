@@ -553,6 +553,9 @@ tasks. You need to install them on your own.
   <dd>Used for selecting a screen region or point.</dd>
   <dt><a href="https://sr.ht/~emersion/grim/">grim</a></dt>
   <dd>Used for taking screenshots for OCR.</dd>
+  <dt><a href="https://git.sr.ht/%7Ebrocellous/wlrctl">wlrctl</a></dt>
+  <dd>(Optional) Used to trigger a mouse click for OCR Auto Block Instant
+  mode.</dd>
 </dl>
 
 #### OCR usage
