@@ -2,12 +2,14 @@
 ROOT_DIR=$(dirname -- "$(readlink -f -- "$0")")
 
 run_install() {
-  read -r -n 1 -p "Create symlink from ./bin/kamite to /usr/bin/kamite? [Yn]" answer
+  printf "Press ENTER to accept. To refuse, type 'n' and press ENTER.\n\n"
+
+  read -r -p "Create symlink from ./bin/kamite to /usr/bin/kamite? [Yn] " answer
   if [ "$answer" == "${answer#[Nn]}" ] ; then
     sudo ln -sf "$ROOT_DIR"/bin/kamite /usr/bin/kamite
   fi
 
-  read -r -n 1 -p "Install icons to /usr/share/icons/hicolor? [Yn]" answer
+  read -r -p "Install icons to /usr/share/icons/hicolor? [Yn] " answer
   if [ "$answer" == "${answer#[Nn]}" ] ; then
     for res in 16 32 48 128 256; do
       sudo install -Dm 644 "$ROOT_DIR"/res/icon/icon-"${res}".png \
@@ -15,7 +17,7 @@ run_install() {
     done
   fi
 
-  read -r -n 1 -p "Install .desktop file to /usr/share/applications? [Yn]" answer
+  read -r -p "Install .desktop file to /usr/share/applications? [Yn] " answer
   if [ "$answer" == "${answer#[Nn]}" ] ; then
     sudo install -Dm 644 "$ROOT_DIR"/res/kamite.desktop /usr/share/applications/kamite.desktop
   fi
