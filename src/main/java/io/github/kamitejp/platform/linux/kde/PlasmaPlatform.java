@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
+import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.RecognitionOpError;
@@ -34,7 +35,7 @@ public class PlasmaPlatform extends WaylandPlatform {
   }
 
   @Override
-  public Result<Point, RecognitionOpError> getUserSelectedPoint() {
+  public Result<Point, RecognitionOpError> getUserSelectedPoint(PointSelectionMode mode) {
     throw new UnsupportedOperationException("Not implemented");
   }
 

@@ -27,6 +27,7 @@ import io.github.kamitejp.dbus.DBusEvent;
 import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
+import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
@@ -228,7 +229,7 @@ public class Kamite {
   }
 
   private void handlePlayerSubtitle(Subtitle subtitle) {
-    switch (subtitle.kind()) {
+    switch (subtitle.kind()) { // NOPMD - misidentifies as non-exhaustive
       case PRIMARY   -> showChunkPostCheckpoint(subtitle.text(), subtitle.startTimeS());
       case SECONDARY -> showChunkTranslation(subtitle.text(), subtitle.startTimeS());
     }
@@ -366,12 +367,12 @@ public class Kamite {
     updateAndSendRecognizerStatus(RecognizerStatus.Kind.IDLE);
   }
 
-  private void recognizeAutoBlockDefault() {
-    recognizeAutoBlock(TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_FULL);
+  private void recognizeAutoBlockDefault(PointSelectionMode mode) {
+    recognizeAutoBlock(mode, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_FULL);
   }
 
-  private void recognizeAutoBlockColumnDefault() {
-    recognizeAutoBlock(TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_SINGLE_COLUMN);
+  private void recognizeAutoBlockColumnDefault(PointSelectionMode mode) {
+    recognizeAutoBlock(mode, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_SINGLE_COLUMN);
   }
 
   private void recognizeImageProvided(BufferedImage img) {
@@ -382,11 +383,15 @@ public class Kamite {
   }
 
   @SuppressWarnings("SameParameterValue")
-  private void recognizeAutoBlock(TextOrientation textOrientation, AutoBlockHeuristic mode) {
-    LOG.debug("Handling auto block recognition request (mode = {})", mode);
+  private void recognizeAutoBlock(
+    PointSelectionMode mode, TextOrientation textOrientation, AutoBlockHeuristic heuristic
+  ) {
+    LOG.debug(
+      "Handling auto block recognition request (mode = {}, heuristic = {})", mode, heuristic
+    );
     updateAndSendRecognizerStatus(RecognizerStatus.Kind.AWAITING_USER_INPUT);
 
-    var selectionRes = platform.getUserSelectedPoint();
+    var selectionRes = platform.getUserSelectedPoint(mode);
     if (selectionRes.isErr()) {
       var errorNotification = switch (selectionRes.err()) {
         case SELECTION_CANCELLED -> null;
@@ -411,7 +416,7 @@ public class Kamite {
       return;
     }
 
-    doRecognizeAutoBlockImageProvided(screenshotRes.get(), textOrientation, mode);
+    doRecognizeAutoBlockImageProvided(screenshotRes.get(), textOrientation, heuristic);
     updateAndSendRecognizerStatus(RecognizerStatus.Kind.IDLE);
   }
 
@@ -602,10 +607,10 @@ public class Kamite {
             recognizeManualBlock(TextOrientation.VERTICAL);
           case Command.OCR.ManualBlockHorizontal ignored ->
             recognizeManualBlock(TextOrientation.HORIZONTAL);
-          case Command.OCR.AutoBlock ignored ->
-            recognizeAutoBlockDefault();
-          case Command.OCR.AutoColumn ignored ->
-            recognizeAutoBlockColumnDefault();
+          case Command.OCR.AutoBlock cm ->
+            recognizeAutoBlockDefault(cm.mode());
+          case Command.OCR.AutoColumn cm ->
+            recognizeAutoBlockColumnDefault(cm.mode());
           case Command.OCR.Region cm ->
             recognizeRegion(cm.region(), cm.autoNarrow());
           case Command.OCR.Image cm ->
@@ -749,7 +754,17 @@ public class Kamite {
     }
     if (keybindings.ocr().autoBlock() != null) {
       registerGlobalKeybinding(
-        provider, keybindings.ocr().autoBlock(), this::recognizeAutoBlockDefault
+        provider,
+        keybindings.ocr().autoBlock(),
+        () -> recognizeAutoBlockDefault(PointSelectionMode.INSTANT)
+      );
+      count++;
+    }
+    if (keybindings.ocr().autoBlockSelect() != null) {
+      registerGlobalKeybinding(
+        provider,
+        keybindings.ocr().autoBlockSelect(),
+        () -> recognizeAutoBlockDefault(PointSelectionMode.SELECT)
       );
       count++;
     }

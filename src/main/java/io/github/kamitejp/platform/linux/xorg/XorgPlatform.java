@@ -1,5 +1,6 @@
 package io.github.kamitejp.platform.linux.xorg;
 
+import java.awt.MouseInfo;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
@@ -11,6 +12,7 @@ import com.tulskiy.keymaster.common.Provider;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
+import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
@@ -52,17 +54,22 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
   }
 
   @Override
-  public Result<Point, RecognitionOpError> getUserSelectedPoint() {
-    if (slop == null) {
-      return Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
-    }
+  public Result<Point, RecognitionOpError> getUserSelectedPoint(PointSelectionMode mode) {
+    return switch (mode) {
+      case INSTANT -> Result.Ok(Point.from(MouseInfo.getPointerInfo().getLocation()));
+      case SELECT -> {
+        if (slop == null) {
+          yield Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+        }
 
-    var slopRunRes = runSlop();
-    if (slopRunRes.isErr()) {
-      return Result.Err(slopRunRes.err());
-    }
+        var slopRunRes = runSlop();
+        if (slopRunRes.isErr()) {
+          yield Result.Err(slopRunRes.err());
+        }
 
-    return Result.Ok(slopRunRes.get().getCenter());
+        yield Result.Ok(slopRunRes.get().getCenter());
+      }
+    };
   }
 
   @Override

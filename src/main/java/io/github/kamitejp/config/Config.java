@@ -124,12 +124,14 @@ public record Config(
     ) {
       public static record Ocr(
         java.lang.String autoBlock,
+        java.lang.String autoBlockSelect,
         java.lang.String manualBlock
       ) {
         
         public Ocr(com.typesafe.config.Config c, java.lang.String parentPath, $TsCfgValidator $tsCfgValidator) {
           this(
             c.hasPathOrNull("autoBlock") ? c.getString("autoBlock") : null,
+            c.hasPathOrNull("autoBlockSelect") ? c.getString("autoBlockSelect") : null,
             c.hasPathOrNull("manualBlock") ? c.getString("manualBlock") : null
           );
         }

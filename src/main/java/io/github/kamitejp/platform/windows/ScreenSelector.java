@@ -45,6 +45,8 @@ public class ScreenSelector extends JFrame {
   private CompletableFuture<Optional<Point>> futurePoint;
   private CompletableFuture<Optional<Rectangle>> futureArea;
 
+  // NOTE: Works on Xorg if the secondary display is below the first. However, if it's above,
+  //       the frame only covers the primary one.
   public ScreenSelector() {
     setTitle("%s OCR area selector".formatted(Kamite.APP_NAME_DISPLAY));
     setAlwaysOnTop(true);
@@ -58,9 +60,7 @@ public class ScreenSelector extends JFrame {
 
     var fullBounds = new java.awt.Rectangle();
     for (var device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
-      for (var conf : device.getConfigurations()) {
-        fullBounds = fullBounds.union(conf.getBounds());
-      }
+      fullBounds = fullBounds.union(device.getDefaultConfiguration().getBounds());
     }
     setBounds(fullBounds);
     screenBounds = fullBounds;
@@ -176,7 +176,10 @@ public class ScreenSelector extends JFrame {
   private class MouseListener extends MouseAdapter {
     public void mousePressed(MouseEvent e) {
       if (futurePoint != null) {
-        futurePoint.complete(Optional.of(new Point(e.getX(), e.getY())));
+        futurePoint.complete(Optional.of(new Point(
+          e.getX() + (int) screenBounds.getX(),
+          e.getY() + (int) screenBounds.getY()
+        )));
         deactivate();
         reset();
         return;

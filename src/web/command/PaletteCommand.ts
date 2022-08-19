@@ -12,6 +12,8 @@ export type CommandPaletteCommand = {
   description?: string,
 };
 
+const DEFAULT_OCR_AUTO_BLOCK_COMMAND = { kind: "ocr_auto-block", params: { mode: "select" } };
+
 export function availableCommandPaletteCommands(
   chunks: ChunksState,
   recognizerStatus: RecognizerStatus,
@@ -26,6 +28,8 @@ export function availableCommandPaletteCommands(
     recognizerStatus.availableCommands?.forEach(kind => {
       if (PARAMLESS_OCR_COMMANDS.some(c => c.kind === kind)) {
         res.push(paletteCommand({ command: { kind }, enabled }));
+      } else if (kind === "ocr_auto-block") {
+        res.push(paletteCommand({ command: DEFAULT_OCR_AUTO_BLOCK_COMMAND, enabled }));
       } else if (kind === "ocr_region") {
         if (config?.ocr.regions) {
           res.push(

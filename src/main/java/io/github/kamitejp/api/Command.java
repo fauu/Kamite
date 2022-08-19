@@ -7,6 +7,7 @@ import io.github.kamitejp.chunk.IncomingChunkText;
 import io.github.kamitejp.chunk.IncomingChunkTranslation;
 import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Rectangle;
+import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.util.JSON;
 import io.github.kamitejp.util.Result;
 
@@ -29,8 +30,8 @@ public sealed interface Command
     record ManualBlock() implements OCR {}
     record ManualBlockVertical() implements OCR {}
     record ManualBlockHorizontal() implements OCR {}
-    record AutoBlock() implements OCR {}
-    record AutoColumn() implements OCR {}
+    record AutoBlock(PointSelectionMode mode) implements OCR {}
+    record AutoColumn(PointSelectionMode mode) implements OCR {}
     record Region(Rectangle region, boolean autoNarrow) implements OCR {}
     record Image(String bytesB64, Dimension size) implements OCR {}
 
@@ -138,6 +139,7 @@ public sealed interface Command
 
   static Result<Command, String> of(String group, String name, JsonNode paramsNode) {
     Command parsedCommand = null;
+    var paramsMissing = false;
 
     try {
       parsedCommand = switch (group) {
@@ -145,21 +147,49 @@ public sealed interface Command
           case "manual-block"            -> new OCR.ManualBlock();
           case "manual-block-vertical"   -> new OCR.ManualBlockVertical();
           case "manual-block-horizontal" -> new OCR.ManualBlockHorizontal();
-          case "auto-block"              -> new OCR.AutoBlock();
-          case "auto-column"             -> new OCR.AutoColumn();
+
+          case "auto-block"              -> {
+            var p = JSON.mapper().treeToValue(paramsNode, CommandParams.OCR.AutoBlock.class);
+            yield new OCR.AutoBlock(
+              p == null || p.mode() == null
+              ? PointSelectionMode.INSTANT
+              : p.mode()
+            );
+          }
+
+          case "auto-column"              -> {
+            var p = JSON.mapper().treeToValue(paramsNode, CommandParams.OCR.AutoColumn.class);
+            yield new OCR.AutoColumn(
+              p == null || p.mode() == null
+              ? PointSelectionMode.INSTANT
+              : p.mode()
+            );
+          }
+
           case "region" -> {
             var p = JSON.mapper().treeToValue(paramsNode, CommandParams.OCR.Region.class);
+            if (p == null) {
+              paramsMissing = true;
+              yield null;
+            }
             yield new OCR.Region(
               Rectangle.ofStartAndDimensions(p.x(), p.y(), p.width(), p.height()),
               p.autoNarrow()
             );
           }
+
           case "image" -> {
             var p = JSON.mapper().treeToValue(paramsNode, CommandParams.OCR.Image.class);
+            if (p == null) {
+              paramsMissing = true;
+              yield null;
+            }
             yield new OCR.Image(p.bytesB64(), new Dimension(p.width(), p.height()));
           }
+
           default -> null;
         };
+
         case "player" -> switch (name) {
           case "playpause"      -> new Player.PlayPause();
           case "seek-back"      -> new Player.SeekBack();
@@ -167,45 +197,61 @@ public sealed interface Command
           case "seek-start-sub" -> new Player.SeekStartSub();
           default -> null;
         };
+
         case "character-counter" -> switch (name) {
           case "toggle-freeze" -> new CharacterCounter.ToggleFreeze();
           case "reset"         -> new CharacterCounter.Reset();
           default -> null;
         };
+
         case "session-timer" -> switch (name) {
           case "toggle-pause" -> new SessionTimer.TogglePause();
           case "reset"        -> new SessionTimer.Reset();
           default -> null;
         };
+
         case "chunk" -> switch (name) {
           case "show" -> {
-            var p = JSON.mapper()
-              .treeToValue(paramsNode, CommandParams.Chunk.Show.class);
-            yield new Chunk.Show(
-              new IncomingChunkText(p.chunk(), p.playbackTimeS())
-            );
+            var p = JSON.mapper().treeToValue(paramsNode, CommandParams.Chunk.Show.class);
+            if (p == null) {
+              paramsMissing = true;
+              yield null;
+            }
+            yield new Chunk.Show(new IncomingChunkText(p.chunk(), p.playbackTimeS()));
           }
+
           case "show-translation" -> {
             var p = JSON.mapper()
               .treeToValue(paramsNode, CommandParams.Chunk.ShowTranslation.class);
+            if (p == null) {
+              paramsMissing = true;
+              yield null;
+            }
             yield new Chunk.ShowTranslation(
               new IncomingChunkTranslation(p.translation(), p.playbackTimeS())
             );
           }
+
           default -> null;
         };
+
         case "other" -> {
           if ("custom".equalsIgnoreCase(name)) {
             var p = JSON.mapper().treeToValue(paramsNode, CommandParams.Other.Custom.class);
+            if (p == null) {
+              paramsMissing = true;
+              yield null;
+            }
             yield new Other.Custom(p.command());
           }
           yield null;
         }
+
         default -> null;
       };
     } catch (JsonProcessingException e) {
       return Result.Err(
-        "parsing command params for input '%s': %s"
+        "parsing command parameters of `%s`: %s"
           .formatted(debugString(group, name, paramsNode), e)
       );
     }
@@ -213,9 +259,11 @@ public sealed interface Command
     if (parsedCommand != null) {
       return Result.Ok(parsedCommand);
     } else {
-      return Result.Err(
-        "unrecognized command type: %s".formatted(debugString(group, name, paramsNode))
-      );
+      var cmdStr = debugString(group, name, paramsNode);
+      var errMsgTpl = paramsMissing
+        ? "missing parameters for command: %s"
+        : "unrecognized command: %s";
+      return Result.Err(errMsgTpl.formatted(cmdStr));
     }
   }
 

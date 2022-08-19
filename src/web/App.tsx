@@ -572,7 +572,7 @@ export const App: VoidComponent = () => {
     chunks.setSelectingInTranslation(selectingInChunkTranslation ?? false);
   });
 
-  document.addEventListener("blur", globalTooltip.hide);
+  window.addEventListener("blur", globalTooltip.hide);
 
   // ==============================================================================================
 

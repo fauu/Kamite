@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import io.github.kamitejp.Env;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
+import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
 import io.github.kamitejp.platform.linux.gnome.GnomePlatform;
@@ -69,7 +70,7 @@ public interface Platform {
 
   Path getMangaOCRAdapterPath();
 
-  Result<Point, RecognitionOpError> getUserSelectedPoint();
+  Result<Point, RecognitionOpError> getUserSelectedPoint(PointSelectionMode mode);
 
   Result<Rectangle, RecognitionOpError> getUserSelectedArea();
 

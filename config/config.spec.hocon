@@ -37,6 +37,7 @@ keybindings {
     ocr {
       manualBlock = "string?"
       autoBlock = "string?"
+      autoBlockSelect = "string?"
     }
   }
 }

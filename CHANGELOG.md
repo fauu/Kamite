@@ -6,6 +6,11 @@
 
 * New OCR engine: “Manga OCR” Online (via [a Hugging Face Space by Gryan
   Galario][manga-ocr-hf-gg]) (`ocr.engine = mangaocr_online`).
+* Auto Block OCR Instant mode: the Auto Block OCR command now takes a parameter
+  that determines whether to ask the user to click a point or to immediately
+  take the current mouse position. `keybindings.global.ocr.autoBlock` now binds
+  to the instant variant, while `.autoBlockSelect` binds to the variant
+  mediated by a mouse click.
 * Translation-only mode: Option that treats incoming chunks as translations and
   creates a new chunk for each translation. Useful when watching media with
   just the translation subtitles (`chunk.translationOnlyMode = true`).
