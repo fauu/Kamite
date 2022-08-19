@@ -2,7 +2,7 @@
 ROOT_DIR=$(dirname -- "$(readlink -f -- "$0")")
 
 run_install() {
-  printf "Press ENTER to accept. To refuse, type 'n' and press ENTER.\n\n"
+  printf "Press ENTER to accept. To refuse, type 'n' and press ENTER\n\n"
 
   read -r -p "Create symlink from ./bin/kamite to /usr/bin/kamite? [Yn] " answer
   if [ "$answer" == "${answer#[Nn]}" ] ; then
