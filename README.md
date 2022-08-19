@@ -62,7 +62,8 @@ script; [waycorner][waycorner-icxes].
         * [Tip: auto-pausing at the end of subtitle](#tip-auto-pausing-at-the-end-of-subtitle)
         * [Alternatives for anime](#alternatives-for-anime)
     * [Manga text extraction](#manga-text-extraction)
-        * [Setting up “Manga OCR”](#setting-up-manga-ocr)
+        * [Setting up “Manga OCR” Online](#setting-up-manga-ocr-online)
+        * [Setting up “Manga OCR” (Local)](#setting-up-manga-ocr-local)
         * [Setting up OCR.space](#setting-up-ocrspace)
         * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
         * [Setting up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
@@ -209,64 +210,69 @@ source material:
 
 ### Anime (and other video) text extraction
 
-Extracting chunks from video is supported through a provided script for the
-**[mpv]** video player.
+Extracting text chunks from video is by default supported through integration
+with the **[mpv]** video player. *Primary* video subtitles from mpv are treated
+by Kamite as incoming chunks. If *secondary* subtitles are present, they are
+treated as **chunk translations**.
 
-The Kamite mpv script can be found in the `extra/mpv` directory within the
-release package.
-
-> **Note:** The script requires either *D-Bus* (the `dbus-send` command must be
-globally available) or *curl* for communication with Kamite.
-
-To load the script into mpv, either: 1) copy it to the `scripts`
-subdirectory of the mpv configuration directory (on Linux usually
-`~/.config/mpv/scripts`) and launch mpv as usual, or 2) pass the script’s path
-as the value of the `--script` parameter when launching mpv.
-
-> See also: [mpv reference: Script location][mpv-ref-script-location].
-
-The Kamite mpv script sends the *primary* video subtitles as chunks to Kamite.
-If *secondary* subtitles are present, it sends those as **chunk translations**.
-
-To run mpv with an external subtitle file, use the `--sub-file` launch
-parameter. It can be repeated for multiple files. To assign subtitles as
-*primary* (assumed by Kamite to be in Japanese) and *secondary* (assumed to be a
-translation), respectively, use the `--sid` and `--secondary-sid` mpv launch
-parameters. Which subtitle ids to specify can be glanced by pressing
-<kbd>F9</kbd> in mpv while the video file is open.
-
-> See also: [mpv reference: Subtitle options][mpv-ref-sub-options].
-
-Beyond the above, Kamite offers further integration with mpv, currently
-amounting to displaying and controlling the play/pause status, as well as basic
-seeking. For this, the mpv JSON IPC communication mechanism is used.
-
-To make Kamite automatically connect to a running instance of mpv, the latter
-must be run with the exact following parameter:
+To enable the connection between Kamite and mpv, the latter must be launched
+with the following exact value for the `input-ipc-server` parameter:
 
 ```sh
 mpv file.mkv --input-ipc-server="/tmp/kamite-mpvsocket"
 ```
 
-> See also: [mpv reference: JSON IPC][mpv-ref-json-ipc]
+Alternatively, the line
+
+```sh
+input-ipc-server=/tmp/kamite-mpvsocket
+```
+
+can be put into the [mpv config file][mpv-ref-config].
+
+In the former case, mpv will only be open for communication with Kamite when
+launched with the specified parameter. In the latter—it will be open always.
+
+> For more on the communication mechanism used, see the
+[mpv reference for JSON IPC][mpv-ref-json-ipc].
+
+To run mpv with an external subtitle file, use the `--sub-file` launch
+parameter (it can be repeated for multiple subtitle files). To assign a given
+subtitle track as *primary* (assumed by Kamite to be the Japanese subtitles) and
+*secondary* (assumed to be the translations), respectively, use the `--sid` and
+`--secondary-sid` mpv launch parameters. Which subtitle IDs to specify can be
+glanced by pressing <kbd>F9</kbd> in mpv while the video file is opened and the
+subtitles loaded.
+
+Note that subtitles hidden within mpv will still be recognized by Kamite.
+
+> See also: [mpv reference: Subtitle options][mpv-ref-sub-options].
 
 Below is an excerpt from an example bash script used to quickly launch an anime
 episode in mpv in such a way that it is immediately set up to work with Kamite.
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 ```sh
-mpv /path/to/video/*<part-of-anime-name>*$1*.mkv \ # Episode no. passed as an argument to the script
+mpv "/path/to/video/"*"<part-of-anime-name>"*"E$1"*".mkv" \ # Episode no. passed as an argument to the script
   --input-ipc-server="/tmp/kamite-mpvsocket" \
-  --profile=jpsub \ # Custom profile that sets subtitle font and size, etc. See https://mpv.io/manual/stable/#profiles
   --sub-file="/path/to/external/subtitles/$1.srt" \
   --sid=2 \ # ID of the Japanese subtitles provided externally
   --secondary-sid=1 \ # ID of the English subtitles embedded in the video file (to be used as translations)
   --secondary-sub-visibility=no \
-  --save-position-on-quit
+  --save-position-on-quit \ 
+  --profile=jpsub \ # An optional custom profile that can set a special subtitle font and size, etc. It must be defined separately in the mpv config file: see https://mpv.io/manual/stable/#profiles
 ```
 <!-- markdownlint-restore -->
 
-[mpv-ref-script-location]: https://mpv.io/manual/stable/#script-location
+Kamite can be useful even when viewing media without Japanese subtitles, for
+example as an area where heard words and phrases can be typed in and looked up.
+
+When viewing media with translated subtitles only, Kamite can be instructed to
+treat them as translations for unknown chunks and display them as such, by
+enabling “Translation-only mode” in the Settings tab or by launching with the
+config key `chunk.translationOnlyMode` set to `true`.
+
+[mpv-ref-config]: https://mpv.io/manual/stable/#configuration-files
 [mpv-ref-json-ipc]: https://mpv.io/manual/stable/#json-ipc
 [mpv-ref-sub-options]: https://mpv.io/manual/stable/#subtitles
 
@@ -351,158 +357,129 @@ Additional tips:
 
 ### Manga text extraction
 
-Kamite integrates with three alternative OCR (Optical Character Recognition)
+Kamite integrates with four alternative OCR (Optical Character Recognition)
 providers to enable the extraction of text from manga pages displayed on screen.
 The available OCR engines are:
 
-* [“Manga OCR”][manga-ocr]
-* [OCR.space]
-* [Tesseract OCR][tesseract]
+* [“Manga OCR”][manga-ocr] Online ([a Hugging Face Space by Gryan
+  Galario][manga-ocr-hf-gg])
+* [“Manga OCR”][manga-ocr] (Local)
+* [OCR.space] (Online)
+* [Tesseract OCR][tesseract] (Local)
 
-**“Manga OCR” is the recommended choice** as it gives superior results for manga
-and does not require sending data to a third party. However, compared with the
-other options, it is also storage- and resource-intensive as well as less simple
-to set up.
+**“Manga OCR” in either variant is the recommended choice** as it gives superior
+results for manga. The online version is extremely simple to set up, but
+requires sending screenshots of portions of your screen to a third party. The
+local version, on the other hand, requires a more involved setup and extra
+system resources.
 
 [manga-ocr]: https://github.com/kha-white/manga-ocr
 [tesseract]: https://github.com/tesseract-ocr/tesseract
 
-**By default, OCR is disabled.** To enable it, set the [config](#config) key
-`ocr.engine` to one of: `mangaocr`, `ocrspace`, or `tesseract` and go through:
-1\) the corresponding engine setup procedure, and 2\) the setup procedure for
-extra platform dependencies, both described below.
+**By default, OCR is disabled.** The necessary setup steps are:
 
-* [Setting up “Manga OCR”](#setting-up-manga-ocr)
-* [Setting up OCR.space](#setting-up-ocrspace)
-* [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
-<br><br>
-* [Setting up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
+1. Set the [config](#config) key
+`ocr.engine` to one of: `mangaocr_online`, `mangaocr`, `ocrspace`, or
+`tesseract`.
 
-#### Setting up “Manga OCR”
+1. Set up the selected engine:
 
-> Requires Python; version 3.10 (the latest) *is* supported.
+    * [Setting up “Manga OCR” Online](#setting-up-manga-ocr-online)
+    * [Setting up “Manga OCR”](#setting-up-manga-ocr)
+    * [Setting up OCR.space](#setting-up-ocrspace)
+    * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
 
-**Note:** “Manga OCR” will use up to 2.5 GB of storage space. While initializing,
-it will use up to 1 GB of additional memory over what Kamite normally uses.
+1. (Linux/Xorg and wlroots platforms only)
+[Set up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
 
-##### Basic option: Global installation
+#### Setting up “Manga OCR” Online
 
-> Note that this method will make it harder to reclaim *all* the disk space
-when uninstalling “Manga OCR”, although more than 90% of it could be reclaimed by
-simply running `pip3 uninstall manga-ocr torch` and cleaning the
-`~/.cache/huggingface/transformers/` directory.\
-> If you want to install “Manga OCR” with all its dependencies into a separate
-environment for an easy complete removal, see the *Advanced option* just below.
+> **Note:** The “Manga OCR” Online engine depends on a third-party online
+service ([a Hugging Face Space by Gryan Galario][manga-ocr-hf-gg]), so using it
+involves sending screenshots of portions of your screen to a third-party.
+Here is [the stated privacy policy of Hugging Face][huggingface-privacy-policy].
 
-1. Get the [pip] package installer and then run:
+The online API used by the “Manga OCR” Online engine is freely accessible and
+consequently *does not* require any setup.
+
+Remember to [set up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
+and to launch Kamite with the config key `ocr.engine` set to `mangaocr_online`.
+
+[huggingface-privacy-policy]: https://huggingface.co/privacy
+
+#### Setting up “Manga OCR” (Local)
+
+**Note:** “Manga OCR” will use up to 2.5 GB of disk space. During launch, it
+will use up to 1 GB of additional memory.
+
+##### Recommended option: installation using pipx
+
+1. Install [python][installing-python] and [pip]
+
+1. Install [pipx] and run
 
     ```sh
-    pip3 install manga-ocr
+    pipx install manga-ocr
     ```
 
-1. Run the program manually to verify that it works
+Kamite will now be able to use “Manga OCR”. On the first launch of Kamite with
+`ocr.engine` set to `mangaocr`, “Manga OCR” will take some time to download its
+model (around 450 MB). If there are issues, try running the `manga_ocr`
+executable installed by pipx and examining its output.
+
+###### Deinstallation
+
+1. Run
 
     ```sh
-    manga_ocr
+    pipx uninstall manga-ocr
     ```
 
-    “Manga OCR” will now download its model. Wait for an output line such as
-    `manga_ocr.ocr:__init__:29 - OCR ready`. Once it is displayed, “Manga OCR”
-    is ready for use with Kamite. Ignore the error `NotImplementedError: Reading
-    images from clipboard…`, as it is irrelevant for Kamite’s use of “Manga
-    OCR”.
+1. Delete the ~450 MB leftover model file in
+`~/.cache/huggingface/transformers/`.
 
+###### Troubleshooting “pipx "Manga OCR" installation absent…”
+
+If pipx did not install to the default path expected by Kamite, you will have to
+specify the path manually in the [config file](#config):
+
+```sh
+ocr {
+  mangaocr {
+    pythonPath = "/home/<user>/.local/pipx/venvs/manga-ocr/bin/python"
+  }
+}
+```
+
+The above path is the default, which you will need to modify according to the
+output you get from running
+
+```sh
+pipx list
+```
+
+[installing-python]: https://realpython.com/installing-python/
 [pip]: https://pip.pypa.io/en/stable/installation/
+[pipx]: https://pypa.github.io/pipx/
 
-##### Advanced option: Custom installation (Poetry)
+##### Custom installation
 
-Here is an example of how to manually install “Manga OCR” into its own [python
-virtual environment][python-venv]. This particular example will use the [Poetry
-dependency manager][python-poetry], but this is not the only way of achieving
-this result.
+If you install “Manga OCR” not through pipx, you will need to manually specify a
+path to a python executable (or a wrapper) that runs within an environment where
+the `manga_ocr` module is available. For example, if installed globally and the
+system Python executable is on `PATH` under the name `python`, then the
+appropriate configuration will be simply:
 
-[python-venv]: https://docs.python.org/3/tutorial/venv.html
-[python-poetry]: https://python-poetry.org/docs/
+```sh
+ocr {
+  mangaocr {
+    pythonPath = python
+  }
+}
+```
 
-1. Clone the “Manga OCR” repository
-
-    ```sh
-    git clone "https://github.com/kha-white/manga-ocr.git"
-    ```
-
-1. Create a Poetry project
-
-    ```sh
-    cd manga-ocr
-    poetry init -n
-    ```
-
-1. Register “Manga OCR”’s dependencies with the Poetry project
-
-    ```sh
-    cat requirements.txt | xargs poetry add -vvv
-    ```
-
-    The dependencies will be downloaded now. This could take some time.
-
-1. Verify the installation
-
-    While in the project directory, run:
-
-    ```sh
-    poetry run python -m manga_ocr
-    ```
-
-    “Manga OCR” will now download its model. Wait for an output line such as
-    `manga_ocr.ocr:__init__:29 - OCR ready`. Once it is displayed, “Manga OCR”
-    is ready for use with Kamite. Ignore the error `NotImplementedError: Reading
-    images from clipboard…`, as it is irrelevant for Kamite’s use of “Manga
-    OCR”.
-
-1. Tell Kamite how to launch “Manga OCR”
-
-    A launcher script must be created that: 1) prepares the Python environment
-    containing the “Manga OCR” installation, and 2) inside that environment
-    launches a “Manga OCR” wrapper script provided by Kamite. The launcher script
-    must be named `mangaocr.sh` and placed directly in Kamite’s config directory
-    (next to the `config.hocon` file). The following is an example of such
-    script for a Poetry project:
-
-    ```sh
-    #!/usr/bin/env bash
-    PROJECT_PATH="/path/to/cloned/manga-ocr/"
-    cd $PROJECT_PATH || exit
-    PYTHONPATH=$PYTHONPATH:$PROJECT_PATH poetry run python "$1"
-    ```
-
-Remember to launch Kamite with the config key `ocr.engine` set to `mangaocr`.
-
-***
-
-To completely reclaim your disk space from “Manga OCR” in this scenario:
-
-1. Delete the Poetry project’s virtual environment
-
-    While in the project directory, run:
-
-    ```sh
-    poetry env remove python
-    ```
-
-1. Delete the project itself
-
-    ```sh
-    cd ..
-    rm -rf manga-ocr
-    ```
-
-1. Clear Poetry package cache
-
-    ```sh
-    poetry cache clear pypi --all
-    ```
-
-1. Find the ~450 MB file in `~/.cache/huggingface/transformers/` and delete it
+**Deinstallation note**: There will be a ~450 MB leftover model file in
+`~/.cache/huggingface/transformers/`.
 
 #### Setting up OCR.space
 
@@ -550,7 +527,12 @@ Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
     `tessdata` directory (usually `/usr/[local/]share/tessdata/` or
     `/usr/share/tesseract-ocr/<VERSION>/tessdata`).
 
-Remember to launch Kamite with the config key `ocr.engine` set to `tesseract`.
+By default, Tesseract is expected to be available on `PATH` under the executable
+name `tesseract`. If this is not the case, the [config](#config) key
+`ocr.tesseract.path` needs to be set to the executable’s path.
+
+Once the setup is completed, you can launch Kamite with the config key
+`ocr.engine` set to `tesseract`.
 
 #### Setting up extra OCR dependencies
 
@@ -571,6 +553,9 @@ tasks. You need to install them on your own.
   <dd>Used for selecting a screen region or point.</dd>
   <dt><a href="https://sr.ht/~emersion/grim/">grim</a></dt>
   <dd>Used for taking screenshots for OCR.</dd>
+  <dt><a href="https://git.sr.ht/%7Ebrocellous/wlrctl">wlrctl</a></dt>
+  <dd>(Optional) Used to trigger a mouse click for OCR Auto Block Instant
+  mode.</dd>
 </dl>
 
 #### OCR usage
@@ -613,7 +598,7 @@ block.
 Select a point within a block of text; Kamite will try to infer the extent of
 the block and then OCR the resulting area.
 
-*This should be good enough for 90% of typical manga text blocks, but the
+*This should be good enough for > 90% of typical manga text blocks, but the
 block detection algorithm has a lot of room for improvement.*
 
 **Note for Linux/Xorg users:** On Xorg, the point selection mechanism cannot be
@@ -864,8 +849,8 @@ screen corners but also edges)
   direct lookup with pop-up dictionaries.</dd>
   <dt><a href="https://wonderwize.github.io/mangareader/">Mangareader</a></dt>
   <dd>An in-browser manga reader with built-in support for OCR-ing selected
-  regions using an online API backed by “Manga OCR”.</dd>
-  <!-- Can be used in tandem with Kamite with the help of the Clipboard Inserter browser extension. -->
+  regions using an online API backed by “Manga OCR”. Can be used in tandem with
+  Kamite with the help of the Clipboard Inserter browser extension.</dd>
   <dt><a href="https://github.com/bluaxees/Cloe">Cloe</a></dt>
   <dd>OCRs a screen selection to clipboard using “Manga OCR”.</dd>
   <dt><a href="https://github.com/bluaxees/Poricom">Poricom</a></dt>
@@ -942,10 +927,9 @@ Textractor for games. Some other alternatives are:
 Text can be pasted from clipboard by pressing <kbd>Ctrl</kbd> + <kbd>V</kbd> in
 Kamite’s browser tab.
 
-<!-- The Kamite browser client can automatically pick up the clipboard text
-with the Clipboard Inserter browser extension ([Firefox][clipboard-inserter-ff],
-[Chrome][clipboard-inserter-chrome]) extension (assumes default extension
-settings) -->
+The Kamite browser client can automatically pick up clipboard text with the
+Clipboard Inserter browser extension ([Firefox][clipboard-inserter-ff],
+[Chrome][clipboard-inserter-chrome]) (assumes default extension settings).
 
 [clipboard-inserter-ff]: https://addons.mozilla.org/en-US/firefox/addon/clipboard-inserter/
 [clipboard-inserter-chrome]: https://chrome.google.com/webstore/detail/clipboard-inserter/deahejllghicakhplliloeheabddjajm
@@ -1203,7 +1187,7 @@ Seek +1 seconds.
 
 #### Linux/Xorg
 
-> Note: The following does not work in Linux/wlroots.
+> Note: The following does not work on Linux/wlroots.
 
 Below is an excerpt from a [config file](#config) illustrating how to set up
 global keyboard shortcuts and what actions are available for binding.
@@ -1213,7 +1197,8 @@ keybindings {
   global {
     ocr {
       manualBlock = …
-      autoBlock = …
+      autoBlock = … # Instant detection under mouse cursor
+      autoBlockSelect = … # Must click to select a point
     }
   }
 }
@@ -1308,6 +1293,11 @@ chunk {
   # Whether to flash backgrounds of chunk texts in the client's interface on
   # certain occasions
   flash = true
+
+  # Whether to treat incoming chunks as translations and create a new chunk for
+  # each translation. Useful when watching media with just the translation
+  # subtitles
+  translationOnlyMode = false
 }
 
 commands {
@@ -1348,7 +1338,8 @@ keybindings {
       # A key combination to assign to the command. See the "Keyboard shortcuts"
       # section of the Readme for the format specification.
       manualBlock = …
-      autoBlock = …
+      autoBlock = … # Instant detection under mouse cursor
+      autoBlockSelect = … # Must click to select a point
     }
   }
 }
@@ -1373,11 +1364,24 @@ lookup {
 }
 
 ocr {
-  # Which OCR engine to use: none, tesseract, mangaocr
+  # The OCR engine to use: none, tesseract, mangaocr, mangaocr_online, ocrspace
   engine = none
   # (Directory path) Watch the specified directory for new/modified images and
   # OCR them automatically
   watchDir = …
+
+  tesseract {
+    # (File path) The path to Tesseract’s executable
+    path = "tesseract"
+  }
+  
+  mangaocr {
+    # (File path) A path to a python executable that provides access to the
+    # `manga_ocr` module. If absent, a system-dependent default is used which
+    # assumes that manga-ocr was installed through pipx into the default
+    # location
+    pythonPath = …
+  }
 
   # A *list* of OCR regions, for each of which a region recognition command
   # button will be displayed in the command palette. See the "OCR region"
@@ -1532,7 +1536,7 @@ Available commands are distinguished by *command kind*, which is made up of two
 segments: *command group* and *command name*. For example, kind `ocr_region`
 corresponds to the group `ocr` and the name `region`.
 
-Commands have zero or more required parameters.
+The command parameters are required unless a default value is specified.
 
 ### Sending commands
 
@@ -1568,16 +1572,20 @@ block, Kamite OCRs the area as is. For Tesseract, the *vertical* text model is
 used by default.
 
 **`manual-block-vertical`**\
-(Tesseract only) Like `manual-block`, but explicitly uses the vertical text model.
+(Tesseract only) Like `manual-block`, but explicitly uses the vertical text
+model.
 
 **`manual-block-horizontal`**\
-(Tesseract only) Like `manual-block`, but explicitly uses the horizontal text model.
+(Tesseract only) Like `manual-block`, but explicitly uses the horizontal text
+model.
 
-**`auto-block`**\
-User is prompted to select a screen point within a source text block, Kamite
-attempts to infer the extent of the block and OCRs the resulting area.
+**`auto-block`** `(mode: ["select" | "instant"] = "instant")`\
+Kamite assumes the mouse cursor is inside a source text block, attempts to infer
+the extent of the block, and OCRs the resulting area. The `mode` parameter
+specifies whether to prompt the user to click a point or to instantly take the
+current cursor position.
 
-**`region`** `(x, y, width, height: number, autoNarrow: boolean)`\
+**`region`** `(x, y, width, height: number; autoNarrow: bool)`\
 Kamite OCRs the provided screen area either as is (if `autoNarrow` is `false`), or
 after applying an algorithm designed to narrow the area to just text (if `autoNarrow`
 is `true`). **Note:** This is an experimental future, it might function poorly
@@ -1632,8 +1640,12 @@ Kamite never saves your data to disk.
 
 Kamite never sends your data through the network, with the following exceptions:
 
-* When `ocr.engine` is set to `ocrspace`, screenshots of portions of the user’s
-  screen are sent to [OCR.space] for text recognition.
+* When `ocr.engine` is set to `mangaocr_online`, screenshots of portions of your
+  screen are sent to a [Hugging Face Space][manga-ocr-hf-gg] for text
+  recognition.
+
+* When `ocr.engine` is set to `ocrspace`, screenshots of portions of your screen
+  are sent to [OCR.space] for text recognition.
 
 ## Development
 
@@ -1789,4 +1801,5 @@ the original license notices.
 [Yomichan]: https://foosoft.net/projects/yomichan/
 [Gomics-v]: https://github.com/fauu/gomicsv
 [Sway]: https://swaywm.org/
+[manga-ocr-hf-gg]: https://huggingface.co/spaces/gryan-galario/manga-ocr-demo
 [OCR.space]: https://ocr.space/
