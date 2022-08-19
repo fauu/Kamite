@@ -107,13 +107,6 @@ script; [waycorner][waycorner-icxes].
         * [`chunk_` commands](#chunk_-commands)
 12. [Privacy](#privacy)
 13. [Development](#development)
-    * [Technology](#technology)
-    * [Running for development](#running-for-development)
-    * [Development-specific config](#development-specific-config)
-    * [Config handling](#config-handling)
-    * [Code linting](#code-linting)
-    * [Docs](#docs)
-    * [Textractor extension](#textractor-extension)
 14. [License](#license)
     * [Third-party components](#third-party-components)
 
