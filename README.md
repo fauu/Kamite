@@ -235,6 +235,8 @@ mpv file.mkv --input-ipc-server=/tmp/kamite-mpvsocket
 C:\Program` Files\mpv\mpv file.mkv --input-ipc-server=\\.\pipe\kamite-mpvsocket
 ```
 
+<br>
+
 Alternatively, the line
 
 ```sh
