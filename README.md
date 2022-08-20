@@ -288,7 +288,7 @@ mpv "/path/to/video/"*"<part_of_anime_name>"*"E$1"*".mkv" \ # Episode no. passed
 # See the Linux example above for more information
 param ([String] $ep) # $ep will be replaced with the first parameter to the
                      # script (here assumed to be the episode number)
-C:\Program` Files\mpv\mpv "\path\to\video\*<part-of-anime-name>*E$ep.mkv" `
+C:\Program` Files\mpv\mpv "\path\to\video\*<part_of_anime_name>*E$ep.mkv" `
   --input-ipc-server=\\.\pipe\kamite-mpvsocket `
   --sub-file="\path\to\external\subtitles\$ep.jp.srt" `
   --sid=2 `
