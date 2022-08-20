@@ -42,8 +42,8 @@ dist-only-win-post-linux:
 	rm -rf target/kamite/runtime; \
 	cp -r "$(WIN_RUNTIME)" target/kamite; \
 	pushd target; \
-	pushd runtime/bin; \
-	rm jrunscript.exe keytool.exe rmiregistry.exe kinit.exe klist.exe ktab.exe \
+	pushd kamite/runtime/bin; \
+	rm jrunscript.exe keytool.exe rmiregistry.exe kinit.exe klist.exe ktab.exe; \
 	popd; \
 	cp launcher/x86_64-pc-windows-gnu/release/kamite-launcher.exe kamite/Kamite.exe; \
 	rm kamite/install.sh; \
