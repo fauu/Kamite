@@ -109,7 +109,10 @@
     <resource>
       <directory>res/icon</directory>
       <includes>
+        <include>icon-16.png</include>
+        <include>icon-32.png</include>
         <include>icon-48.png</include>
+        <include>icon-128.png</include>
       </includes>
       <targetPath>${basedir}/target/java/classes</targetPath>
     </resource>

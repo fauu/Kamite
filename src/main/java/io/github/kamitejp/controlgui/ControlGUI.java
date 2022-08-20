@@ -2,8 +2,11 @@ package io.github.kamitejp.controlgui;
 
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.lang.invoke.MethodHandles;
+import java.util.List;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -30,7 +33,12 @@ import io.github.kamitejp.platform.linux.xorg.XorgPlatform;
 public class ControlGUI extends JFrame {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static final String ICON_RESOURCE_PATH = "/icon-48.png";
+  public static final List<Image> ICON_IMAGES =
+    Stream.of(16, 32, 48, 128).map(size ->
+      Toolkit.getDefaultToolkit().getImage(
+        ControlGUI.class.getResource("/icon-%d.png".formatted(size))
+      )
+    ).toList();
 
   private static final String LINUX_LAF_CLASSNAME = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
   private static final String DEFAULT_LAF_CLASSNAME = UIManager.getSystemLookAndFeelClassName();
@@ -57,7 +65,7 @@ public class ControlGUI extends JFrame {
     setTitle(Kamite.APP_NAME_DISPLAY);
     setSize(DEFAULT_WINDOW_SIZE);
     setMinimumSize(DEFAULT_WINDOW_SIZE);
-    setIconImage(toolkit.getImage(getClass().getResource(ICON_RESOURCE_PATH)));
+    setIconImages(ICON_IMAGES);
     setLocationRelativeTo(null);
     setDefaultCloseOperation(EXIT_ON_CLOSE);
 

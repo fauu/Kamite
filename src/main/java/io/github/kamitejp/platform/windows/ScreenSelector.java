@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Stroke;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -58,9 +57,7 @@ public class ScreenSelector extends JFrame {
     setBackground(FRAME_BG_COLOR);
     setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     // POLISH: Should have its own modified icon
-    setIconImage(
-      Toolkit.getDefaultToolkit().getImage(getClass().getResource(ControlGUI.ICON_RESOURCE_PATH))
-    );
+    setIconImages(ControlGUI.ICON_IMAGES);
 
     var mouseListener = new MouseListener();
     addMouseListener(mouseListener);
