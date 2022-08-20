@@ -19,4 +19,7 @@ export default defineConfig({
       "~": path.resolve(__dirname, "src/web"),
     }
   },
+  server: {
+    port: 3000
+  }
 });
