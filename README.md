@@ -270,7 +270,7 @@ in mpv in such a way that it is immediately set up to work with Kamite.
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 ```sh
-mpv "/path/to/video/"*"<part_of_anime_name>"*"E$1"*".mkv" \ # Episode no. passed as an argument to the script
+mpv "/path/to/video/"*"Some Anime Name"*"E$1"*".mkv" \ # Episode no. passed as an argument to the script
   --input-ipc-server=/tmp/kamite-mpvsocket \
   --sub-file="/path/to/external/subtitles/$1.jp.srt" \
   --sid=2 \ # ID of the Japanese subtitles provided externally
@@ -288,7 +288,7 @@ mpv "/path/to/video/"*"<part_of_anime_name>"*"E$1"*".mkv" \ # Episode no. passed
 # See the Linux example above for more information
 param ([String] $ep) # $ep will be replaced with the first parameter to the
                      # script (here assumed to be the episode number)
-C:\Program` Files\mpv\mpv "\path\to\video\*<part_of_anime_name>*E$ep.mkv" `
+C:\Program` Files\mpv\mpv "\path\to\video\*Some Anime Name*E$ep.mkv" `
   --input-ipc-server=\\.\pipe\kamite-mpvsocket `
   --sub-file="\path\to\external\subtitles\$ep.jp.srt" `
   --sid=2 `
