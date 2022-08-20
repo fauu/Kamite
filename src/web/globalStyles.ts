@@ -143,9 +143,10 @@ glob`
   }
 `;
 
+export const ChromeClassName = "chrome";
+
 export const PaletteButtonClass = css`
   background-color: var(--color-bg2);
-  box-shadow: inset 0px 0px 1px var(--color-bg3-hl);
   min-width: var(--palette-button-min-size);
   height: var(--palette-button-min-size);
   line-height: var(--palette-button-min-size);
@@ -155,6 +156,13 @@ export const PaletteButtonClass = css`
   background-position: center;
   padding: 0 0.8rem;
   cursor: pointer;
+
+  /* TODO: (DRY) notebook/Tab.tsx, notebook/chunk-history/ActionPalette.tsx. Some others share
+   *             the same pattern */
+  box-shadow: inset 0px 0px 1px var(--color-bg3-hl);
+  .${ChromeClassName} & {
+    box-shadow: inset 0px 0px 2px var(--color-bg3-hl);
+  }
 
   &:first-child {
     border-radius: var(--border-radius-default) 0 0 var(--border-radius-default);

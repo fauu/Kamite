@@ -5,8 +5,8 @@ import { scrollToBottomOnChildListChange, tooltipAnchor } from "~/directives";
 const [_, __] = [scrollToBottomOnChildListChange, tooltipAnchor];
 
 import type { ChunksState } from "~/chunk";
-import { StringWithNewlines, Newline } from "~/common";
-import { BgFlashingClass } from "~/globalStyles";
+import { Newline, StringWithNewlines } from "~/common";
+import { BgFlashingClass, ChromeClassName } from "~/globalStyles";
 import { useGlobalTooltip } from "~/GlobalTooltip";
 
 import type { ChunkHistoryAction } from "./Action";
@@ -118,7 +118,11 @@ const Empty = styled.span`
 
 const PointedToClass = css`
   outline: 1px solid var(--color-bg4);
+
   box-shadow: inset 0px 0px 1px var(--color-bgm1);
+  .${ChromeClassName} & {
+    box-shadow: inset 0px 0px 2px var(--color-bgm1);
+  }
 `;
 
 const Future = css`

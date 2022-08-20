@@ -37,6 +37,7 @@ import {
 } from "~/status-panel";
 
 import { integrateClipboardInserter } from "./clipboardInserter";
+import { ChromeClassName } from "./globalStyles";
 import { useGlobalTooltip } from "./GlobalTooltip";
 import { createTheme, themeLayoutFlipped } from "./theme";
 
@@ -158,6 +159,8 @@ export const App: VoidComponent = () => {
   linkEl.rel = "stylesheet";
   linkEl.href = Backend.customCSSUrl();
   document.head.appendChild(linkEl);
+
+  const assumeChrome = !navigator.userAgent.includes("Firefox");
 
   // === EVENT HANDLERS ===========================================================================
 
@@ -526,7 +529,6 @@ export const App: VoidComponent = () => {
   });
 
   document.addEventListener("paste", (event: ClipboardEvent) => {
-    console.log(event);
     if (middleMouseButtonLikelyDown()) {
       // Prevent Chrome's middle-click paste.
       // Reset the button state to not break pasting forever in cases when the button is once
@@ -582,6 +584,8 @@ export const App: VoidComponent = () => {
       onMouseUp={handleRootMouseUp}
       onMouseMove={handleRootMouseMove}
       onMouseLeave={handleRootMouseLeave}
+      class="issue-9"
+      classList={{ [ChromeClassName]: assumeChrome }}
       id="root"
       ref={el => rootEl = el}
     >

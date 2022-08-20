@@ -1,6 +1,8 @@
 import { createEffect, createSignal, onCleanup, Show, type VoidComponent } from "solid-js";
 import { styled } from "solid-styled-components";
 
+import { ChromeClassName } from "~/globalStyles";
+
 import type { BackendConnectionState } from "./Backend";
 
 const MAX_DOT_COUNT = 3;
@@ -86,16 +88,20 @@ const Dots = styled.span`
   max-width: 0;
 `;
 
-// TODO: (DRY) Deduplicate with PaletteButton
+// TODO: (DRY) PaletteButton
 const ReconnectButton = styled.div`
   background-color: var(--color-bg2);
-  box-shadow: inset 0px 0px 1px var(--color-bg3-hl);
   min-width: var(--palette-button-min-size);
   height: var(--palette-button-min-size);
   line-height: var(--palette-button-min-size);
   border-radius: var(--border-radius-default);
   padding: 0 0.8rem;
   cursor: pointer;
+
+  box-shadow: inset 0px 0px 1px var(--color-bg3-hl);
+  .${ChromeClassName} & {
+    box-shadow: inset 0px 0px 2px var(--color-bg3-hl);
+  }
 
   &:hover {
     background-color: var(--color-bg3);

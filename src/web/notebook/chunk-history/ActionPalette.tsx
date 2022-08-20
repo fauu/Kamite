@@ -4,7 +4,7 @@ import { css, styled } from "solid-styled-components";
 import { horizontalWheelScroll } from "~/directives";
 const [_] = [horizontalWheelScroll];
 
-import { PaletteButtonClass } from "~/globalStyles";
+import { ChromeClassName, PaletteButtonClass } from "~/globalStyles";
 import { themeLayoutFlipped } from "~/theme";
 
 import type { ChunkHistoryAction } from "./Action";
@@ -52,7 +52,11 @@ const Root = styled.div`
 
 const SelectionActionPaletteButtonClass = css`
   background-color: var(--color-bg4);
+
   box-shadow: inset 0px 0px 1px var(--color-med2);
+  .${ChromeClassName} & {
+    box-shadow: inset 0px 0px 2px var(--color-med2);
+  }
 
   &:hover {
     background-color: var(--color-med);

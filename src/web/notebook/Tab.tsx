@@ -1,6 +1,7 @@
 import { type VoidComponent } from "solid-js";
 import { css } from "solid-styled-components";
 
+import { ChromeClassName } from "~/globalStyles";
 import type { useGlobalTooltip } from "~/GlobalTooltip";
 
 import { tooltipAnchor } from "~/directives";
@@ -49,7 +50,11 @@ export const NotebookTabDisplayClass = css`
   justify-content: center;
   font-weight: 700;
   letter-spacing: -0.02rem;
-  box-shadow: inset 0px 0px 1px var(--color-bg3);
+
+  box-shadow: inset 0px 0px 1px var(--color-bg3-hl);
+  .${ChromeClassName} & {
+    box-shadow: inset 0px 0px 2px var(--color-bg3-hl);
+  }
 
   &:hover {
     cursor: pointer;
