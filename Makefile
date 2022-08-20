@@ -1,14 +1,22 @@
-.PHONY: clean client dist gen-config jar launcher-linux lint lint-docs lint-java lint-ts runtime-linux textractor
+.PHONY: clean client dist dist-only-linux dist-only-win-post-linux gen-config jar launcher-linux lint lint-docs lint-java lint-ts runtime-linux textractor
+
+ifneq (,$(wildcard make-env))
+  include make-env
+endif
 
 clean:
+	echo $(TESTVAR); \
 	rm -rf target/; \
 
 client:
 	yarn build; \
 
-dist: jar runtime-linux launcher-linux launcher-win textractor
+dist: jar runtime-linux launcher-linux launcher-win textractor dist-only-linux dist-only-win-post-linux
+
+dist-only-linux:
 	rm -rf target/dist; \
 	rm -rf target/*.zip; \
+	rm -rf target/kamite; \
 	mkdir -p target/dist; \
 	cp -r target/java-runtime target/dist/runtime; \
 	mkdir -p target/dist/lib; \
@@ -26,7 +34,23 @@ dist: jar runtime-linux launcher-linux launcher-win textractor
 	cp CHANGELOG.md target/kamite; \
 	pushd target; \
 	zip -r Kamite_$(shell target/java-runtime/bin/java --enable-preview -jar target/java/kamite-0.0.0.jar --version | tr " " "\n" | tail -1)_Linux.zip kamite/; \
-	rm -rf kamite; \
+
+# Assumes the Windows runtime is already built in a location specified by WIN_RUNTIME (can be put in
+# the make-env file)
+dist-only-win-post-linux:
+	cp launcher/scripts/Kamite.ps1 target/kamite; \
+	rm -rf target/kamite/runtime; \
+	cp -r "$(WIN_RUNTIME)" target/kamite; \
+	pushd target; \
+	pushd runtime/bin; \
+	rm jrunscript.exe keytool.exe rmiregistry.exe kinit.exe klist.exe ktab.exe \
+	popd; \
+	cp launcher/x86_64-pc-windows-gnu/release/kamite-launcher.exe kamite/Kamite.exe; \
+	rm kamite/install.sh; \
+	rm -rf kamite/res; \
+	rm -rf kamite/scripts; \
+	rm -rf kamite/bin; \
+	zip -r Kamite_$(shell target/java-runtime/bin/java --enable-preview -jar target/java/kamite-0.0.0.jar --version | tr " " "\n" | tail -1)_Windows.zip kamite/; \
 
 gen-config:
 	support/scripts/generate-config-classes.sh; \

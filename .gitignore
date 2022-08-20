@@ -9,6 +9,8 @@ hs_err_*
 yarn-error.log
 \#*#
 
+make-env
+
 # JetBrains
 .idea/**/workspace.xml
 .idea/**/tasks.xml
