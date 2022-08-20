@@ -151,10 +151,10 @@ Kamite using `Kamite.exe` inside the extracted directory.
 
 Kamite can be launched:
 
-* <u>Linux</u>: either using the `bin/kamite` executable directly or a using desktop
+* <ins>Linux</ins>: either using the `bin/kamite` executable directly or a using desktop
   launcher.
 
-* <u>Windows</u>: either using the `Kamite.exe` executable or using the `Kamite.ps1`
+* <ins>Windows</ins>: either using the `Kamite.exe` executable or using the `Kamite.ps1`
   PowerShell script (the latter provides console output).
 
 Besides the [config file](#config), Kamite supports configuration through
@@ -223,13 +223,13 @@ treated as **chunk translations**.
 To enable the connection between Kamite and mpv, the latter must be launched
 with the following exact value for the `input-ipc-server` parameter:
 
-<u>Linux</u>
+<ins>Linux</ins>
 
 ```sh
 mpv file.mkv --input-ipc-server=/tmp/kamite-mpvsocket
 ```
 
-<u>Windows</u> (PowerShell)
+<ins>Windows</ins> (PowerShell)
 
 ```ps
 C:\Program` Files\mpv\mpv file.mkv --input-ipc-server=\\.\pipe\kamite-mpvsocket
@@ -264,7 +264,7 @@ Note that subtitles hidden within mpv will still be recognized by Kamite.
 Below are excerpt from example scripts used to quickly launch an anime episode
 in mpv in such a way that it is immediately set up to work with Kamite.
 
-<u>Linux</u>
+<ins>Linux</ins>
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 ```sh
@@ -279,7 +279,7 @@ mpv "/path/to/video/"*"<part-of-anime-name>"*"E$1"*".mkv" \ # Episode no. passed
 ```
 <!-- markdownlint-restore -->
 
-<u>Windows</u> (PowerShell)
+<ins>Windows</ins> (PowerShell)
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 ```ps
