@@ -23,9 +23,9 @@ Kamite is cost-free and licensed under the GNU AGPL v3 or later (see
 [License](#license)).
 
 **Currently supported platforms: Linux (Xorg, wlroots, GNOME Wayland\*, Plasma
-Wayland\*).**\
-(Planned for the beta release: Windows, macOS).\
-\* OCR-ing arbitrary screen areas not supported on GNOME and Plasma on Wayland
+Wayland\*), Windows.**\
+(Planned for the beta release: macOS).\
+\* OCR-ing arbitrary screen areas not supported on GNOME and Plasma on Wayland.
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 https://user-images.githubusercontent.com/4130634/178029301-075cb207-a154-42d2-adb5-ce8fdbcd722f.mp4
@@ -112,14 +112,16 @@ script; [waycorner][waycorner-icxes].
 
 ## Installing Kamite
 
-### Linux - Arch User Repository
+### Linux
+
+#### Arch User Repository
 
 An AUR package is available under the name [kamite-bin] (installs to
 `/opt/kamite`).
 
 [kamite-bin]: https://aur.archlinux.org/packages/kamite-bin
 
-### Linux - Generic
+#### Generic
 
 Download the latest release package from the [Releases] page and extract it
 to the location where you want to keep the program files. You can now launch
@@ -137,12 +139,23 @@ install.sh --uninstall
 To update, remove the old `kamite` directory and extract the new release package
 in its place.
 
+### Windows
+
+Download the latest release package from the [Releases] page and extract it
+to the location where you want to keep the program files. You can now launch
+Kamite using `Kamite.exe` inside the extracted directory.
+
 [Releases]: https://github.com/fauu/Kamite/releases
 
 ## Launching Kamite
 
-Kamite is launched like any regular program: either using the provided `kamite`
-executable directly or using a desktop launcher.
+Kamite can be launched:
+
+* <u>Linux</u>: either using the `bin/kamite` executable directly or a using desktop
+  launcher.
+
+* <u>Windows</u>: either using the `Kamite.exe` executable or using the `Kamite.ps1`
+  PowerShell script (the latter provides console output).
 
 Besides the [config file](#config), Kamite supports configuration through
 command-line parameters. See [Command-line
@@ -151,16 +164,15 @@ parameters](#command-line-parameters).
 Kamite’s main user interface is a webpage served by a local server that should
 be opened in your web browser. The default address is <http://localhost:4110>.
 
-**The web client is only guaranteed to work on the most recent versions of
-Firefox and Chrome**.
+**The web client is only guaranteed to work without issues on the most recent
+versions of Firefox and Chrome**.
 
 Upon launch, Kamite will, by default: 1) navigate to the above address in the
 default web browser, 2) open an auxiliary “Control” window, which lets you
 monitor the program’s status as well as exit it. Both those behaviours can be
 disabled by setting the [config keys](#config) `launchBrowser` and
-`controlWindow`, respectively,  to `false`. Disabling the latter is especially
-useful when Kamite is run from the command line, making the control window
-redundant.
+`controlWindow`, respectively,  to `false`. Disabling the latter is useful when
+Kamite is run from the command line, making the control window redundant.
 
 Multiple config profiles can be prepared for Kamite and chosen between at the
 time of its launch. See [Config profiles](#config-profiles).
@@ -211,8 +223,16 @@ treated as **chunk translations**.
 To enable the connection between Kamite and mpv, the latter must be launched
 with the following exact value for the `input-ipc-server` parameter:
 
+<u>Linux</u>
+
 ```sh
-mpv file.mkv --input-ipc-server="/tmp/kamite-mpvsocket"
+mpv file.mkv --input-ipc-server=/tmp/kamite-mpvsocket
+```
+
+<u>Windows</u> (PowerShell)
+
+```ps
+C:\Program` Files\mpv\mpv file.mkv --input-ipc-server=\\.\pipe\kamite-mpvsocket
 ```
 
 Alternatively, the line
@@ -241,19 +261,39 @@ Note that subtitles hidden within mpv will still be recognized by Kamite.
 
 > See also: [mpv reference: Subtitle options][mpv-ref-sub-options].
 
-Below is an excerpt from an example bash script used to quickly launch an anime
-episode in mpv in such a way that it is immediately set up to work with Kamite.
+Below are excerpt from example scripts used to quickly launch an anime episode
+in mpv in such a way that it is immediately set up to work with Kamite.
+
+<u>Linux</u>
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 ```sh
 mpv "/path/to/video/"*"<part-of-anime-name>"*"E$1"*".mkv" \ # Episode no. passed as an argument to the script
-  --input-ipc-server="/tmp/kamite-mpvsocket" \
-  --sub-file="/path/to/external/subtitles/$1.srt" \
+  --input-ipc-server=/tmp/kamite-mpvsocket \
+  --sub-file="/path/to/external/subtitles/$1.jp.srt" \
   --sid=2 \ # ID of the Japanese subtitles provided externally
   --secondary-sid=1 \ # ID of the English subtitles embedded in the video file (to be used as translations)
   --secondary-sub-visibility=no \
-  --save-position-on-quit \ 
-  --profile=jpsub \ # An optional custom profile that can set a special subtitle font and size, etc. It must be defined separately in the mpv config file: see https://mpv.io/manual/stable/#profiles
+  --save-position-on-quit \
+  --profile=jpsub # An optional custom profile that can set a special subtitle font and size, etc. It must be defined separately in the mpv config file: see https://mpv.io/manual/stable/#profiles
+```
+<!-- markdownlint-restore -->
+
+<u>Windows</u> (PowerShell)
+
+<!-- markdownlint-capture --><!-- markdownlint-disable -->
+```ps
+# See the Linux example above for more information
+param ([String] $ep) # $ep will be replaced with the first parameter to the
+                     # script (here assumed to be the episode number)
+C:\Program` Files\mpv\mpv "\path\to\video\*<part-of-anime-name>*E$ep.mkv" `
+  --input-ipc-server=\\.\pipe\kamite-mpvsocket `
+  --sub-file="\path\to\external\subtitles\$ep.jp.srt" `
+  --sid=2 `
+  --secondary-sid=1 `
+  --secondary-sub-visibility=no `
+  --save-position-on-quit `
+  --profile=jpsub
 ```
 <!-- markdownlint-restore -->
 
