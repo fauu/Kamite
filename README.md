@@ -270,7 +270,7 @@ in mpv in such a way that it is immediately set up to work with Kamite.
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 ```sh
-mpv "/path/to/video/"*"<part-of-anime-name>"*"E$1"*".mkv" \ # Episode no. passed as an argument to the script
+mpv "/path/to/video/"*"<part_of_anime_name>"*"E$1"*".mkv" \ # Episode no. passed as an argument to the script
   --input-ipc-server=/tmp/kamite-mpvsocket \
   --sub-file="/path/to/external/subtitles/$1.jp.srt" \
   --sid=2 \ # ID of the Japanese subtitles provided externally
