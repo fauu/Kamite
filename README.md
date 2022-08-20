@@ -151,8 +151,8 @@ Kamite using `Kamite.exe` inside the extracted directory.
 
 Kamite can be launched:
 
-* <ins>Linux</ins>: either using the `bin/kamite` executable directly or a using desktop
-  launcher.
+* <ins>Linux</ins>: either using the `bin/kamite` executable directly or a using
+  desktop launcher.
 
 * <ins>Windows</ins>: either using the `Kamite.exe` executable or using the `Kamite.ps1`
   PowerShell script (the latter provides console output).
@@ -231,7 +231,7 @@ mpv file.mkv --input-ipc-server=/tmp/kamite-mpvsocket
 
 <ins>Windows</ins> (PowerShell)
 
-```PowerShell
+```powershell
 C:\Program` Files\mpv\mpv file.mkv --input-ipc-server=\\.\pipe\kamite-mpvsocket
 ```
 
@@ -283,7 +283,7 @@ mpv "/path/to/video/"*"Some Anime Name"*"E$1"*".mkv" \ # Episode no. passed as a
 
 <ins>Windows</ins> (PowerShell)
 
-```PowerShell
+```powershell
 # See the Linux example above for more information
 param ([String] $ep) # $ep will be replaced with the first parameter to the
                      # script (here assumed to be the episode number)
@@ -1795,22 +1795,23 @@ with this program. If not, see <https://www.gnu.org/licenses/>.
 The Kamite repository and the Kamite release package include the following
 third-party components:
 
-| Component                    | License    |
-|------------------------------|------------|
-| [Apache Log4j][log4j]        | Apache-2.0 |
-| [hypfvieh/dbus-java]         | MIT        |
-| [Jackson]                    | Apache-2.0 |
-| [Javalin]                    | Apache-2.0 |
-| [jkeymaster]                 | LGPL-3.0   |
-| [jsoup]                      | MIT        |
-| [Kuromoji IPADIC]            | Apache-2.0 |
-| [Noto Sans Japanese]         | OFL        |
-| [Roboto]                     | Apache-2.0 |
-| [SLF4J]                      | MIT        |
-| [Solid]                      | MIT        |
-| [Solid Styled Components]    | MIT        |
-| [tscfg]                      | Apache-2.0 |
-| [Typesafe Config][ts-config] | Apache-2.0 |
+| Component                       | License    |
+|---------------------------------|------------|
+| [Apache Log4j][log4j]           | Apache-2.0 |
+| [hypfvieh/dbus-java]            | MIT        |
+| [Jackson]                       | Apache-2.0 |
+| [Javalin]                       | Apache-2.0 |
+| [jkeymaster]                    | LGPL-3.0   |
+| [Java Native Access (JNA)][JNA] | Apache-2.0 |
+| [jsoup]                         | MIT        |
+| [Kuromoji IPADIC]               | Apache-2.0 |
+| [Noto Sans Japanese]            | OFL        |
+| [Roboto]                        | Apache-2.0 |
+| [SLF4J]                         | MIT        |
+| [Solid]                         | MIT        |
+| [Solid Styled Components]       | MIT        |
+| [tscfg]                         | Apache-2.0 |
+| [Typesafe Config][ts-config]    | Apache-2.0 |
 
 Kamite also includes components adapted from third-party code. See
 <https://github.com/fauu/Kamite/search?q=adapted> for the listing, including
@@ -1818,9 +1819,10 @@ the original license notices.
 
 [tscfg]: https://github.com/carueda/tscfg
 [hypfvieh/dbus-java]: https://github.com/hypfvieh/dbus-java
-[jkeymaster]: https://github.com/tulskiy/jkeymaster
 [Javalin]: https://github.com/javalin/javalin
 [Jackson]: https://github.com/FasterXML/jackson-core
+[jkeymaster]: https://github.com/tulskiy/jkeymaster
+[JNA]: https://github.com/java-native-access/jna
 [SLF4J]: https://www.slf4j.org/
 [log4j]: https://github.com/apache/logging-log4j2
 [ts-config]: https://github.com/lightbend/config
