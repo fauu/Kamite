@@ -231,7 +231,7 @@ mpv file.mkv --input-ipc-server=/tmp/kamite-mpvsocket
 
 <ins>Windows</ins> (PowerShell)
 
-```ps
+```PowerShell
 C:\Program` Files\mpv\mpv file.mkv --input-ipc-server=\\.\pipe\kamite-mpvsocket
 ```
 
@@ -283,8 +283,7 @@ mpv "/path/to/video/"*"Some Anime Name"*"E$1"*".mkv" \ # Episode no. passed as a
 
 <ins>Windows</ins> (PowerShell)
 
-<!-- markdownlint-capture --><!-- markdownlint-disable -->
-```ps
+```PowerShell
 # See the Linux example above for more information
 param ([String] $ep) # $ep will be replaced with the first parameter to the
                      # script (here assumed to be the episode number)
@@ -297,7 +296,6 @@ C:\Program` Files\mpv\mpv "\path\to\video\*Some Anime Name*E$ep.mkv" `
   --save-position-on-quit `
   --profile=jpsub
 ```
-<!-- markdownlint-restore -->
 
 Kamite can be useful even when viewing media without Japanese subtitles, for
 example as an area where heard words and phrases can be typed in and looked up.
