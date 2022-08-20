@@ -2,6 +2,9 @@ package io.github.kamitejp.platform.windows;
 
 import java.awt.MouseInfo;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DirectColorModel;
+import java.awt.image.Raster;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
@@ -11,6 +14,10 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.jna.Memory;
+import com.sun.jna.platform.win32.GDI32;
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinGDI;
 import com.tulskiy.keymaster.common.Provider;
 
 import io.github.kamitejp.geometry.Point;
@@ -22,29 +29,27 @@ import io.github.kamitejp.platform.OS;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.RecognitionOpError;
-import io.github.kamitejp.platform.RobotScreenshoter;
-import io.github.kamitejp.platform.RobotScreenshoterUnavailableException;
 import io.github.kamitejp.util.Result;
 
 @SuppressWarnings("PMD") // DEV
 public class WindowsPlatform extends GenericPlatform implements Platform, GlobalKeybindingProvider {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private static final DirectColorModel SCREENSHOT_COLOR_MODEL =
+    new DirectColorModel(24, 0x00FF0000, 0xFF00, 0xFF);
+  private static final int[] SCREENSHOT_BAND_MASKS = {
+    SCREENSHOT_COLOR_MODEL.getRedMask(),
+    SCREENSHOT_COLOR_MODEL.getGreenMask(),
+    SCREENSHOT_COLOR_MODEL.getBlueMask()
+  };
+
   private ScreenSelector selector;
-  private final RobotScreenshoter robotScreenshoter;
   private Provider keymasterProvider;
 
   public WindowsPlatform() throws PlatformCreationException {
     super("win");
-
     if (getOS() != OS.WINDOWS) {
       throw new PlatformCreationException("Detected OS is not Windows");
-    }
-
-    try {
-      robotScreenshoter = new RobotScreenshoter();
-    } catch (RobotScreenshoterUnavailableException e) {
-      throw new PlatformCreationException("Could not initialize Robot Screenshoter", e);
     }
   }
 
@@ -82,12 +87,61 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   @Override
   public Result<BufferedImage, RecognitionOpError> takeAreaScreenshot(Rectangle area) {
-    var maybeScreenshot = robotScreenshoter.takeScreenshotOfArea(area.toAWT());
-    if (maybeScreenshot.isEmpty()) {
+    final var USER = User32.INSTANCE;
+    final var GDI = GDI32.INSTANCE;
+
+    var srcDC = USER.GetDC(null);
+    if (srcDC == null) {
+      return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
+    }
+    var tgtBitmap = GDI.CreateCompatibleBitmap(srcDC, area.getWidth(), area.getHeight());
+    if (tgtBitmap == null) {
+      return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
+    }
+    var tgtDC = GDI.CreateCompatibleDC(srcDC);
+    if (tgtDC == null) {
+      return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
+    }
+    GDI.SelectObject(tgtDC, tgtBitmap);
+    var success = GDI.BitBlt(
+      tgtDC,
+      0, 0,
+      area.getWidth(), area.getHeight(),
+      srcDC,
+      area.getLeft(), area.getTop(),
+      GDI32.SRCCOPY
+    );
+    if (!success) {
       return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
     }
 
-    return Result.Ok(maybeScreenshot.get());
+    var bmi = new WinGDI.BITMAPINFO();
+    bmi.bmiHeader.biWidth = area.getWidth();
+    bmi.bmiHeader.biHeight = -area.getHeight();
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = WinGDI.BI_RGB;
+
+    var numPixels = area.getWidth() * area.getHeight();
+
+    var buffer = new Memory(numPixels * 4);
+    var res = GDI.GetDIBits(
+      srcDC, tgtBitmap, 0, area.getHeight(), buffer, bmi, WinGDI.DIB_RGB_COLORS
+    );
+    if (res == 0) {
+      return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
+    }
+
+    var dataBuffer = new DataBufferInt(buffer.getIntArray(0, numPixels), numPixels);
+    var raster = Raster.createPackedRaster(
+      dataBuffer, area.getWidth(), area.getHeight(), area.getWidth(), SCREENSHOT_BAND_MASKS, null
+    );
+    var img = new BufferedImage(SCREENSHOT_COLOR_MODEL, raster, false, null);
+
+    GDI.DeleteObject(tgtDC);
+    GDI.DeleteObject(tgtBitmap);
+
+    return Result.Ok(img);
   }
 
   @Override

@@ -21,6 +21,9 @@ import javax.swing.JFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef;
+
 import io.github.kamitejp.Kamite;
 import io.github.kamitejp.controlgui.ControlGUI;
 import io.github.kamitejp.geometry.Point;
@@ -35,13 +38,14 @@ public class ScreenSelector extends JFrame {
   private static final Stroke SELECTION_BORDER_STROKE = new BasicStroke(2);
   private static final Color SELECTION_BORDER_COLOR = Color.BLACK;
 
-  // Selection start and end point coordinates. Cleared to 0
-  private int xStart;
-  private int yStart;
-  private int xEnd;
-  private int yEnd;
+  // Selection start and end point in frame coordinates (for drawing area rectangle)
+  private Point frameStart;
+  private Point frameEnd;
 
-  private java.awt.Rectangle screenBounds;
+  // Selection start and end point in actual Windows virtual screen coordinates (for returning)
+  private Point screenStart;
+  private Point screenEnd;
+
   private CompletableFuture<Optional<Point>> futurePoint;
   private CompletableFuture<Optional<Rectangle>> futureArea;
 
@@ -57,13 +61,6 @@ public class ScreenSelector extends JFrame {
     setIconImage(
       Toolkit.getDefaultToolkit().getImage(getClass().getResource(ControlGUI.ICON_RESOURCE_PATH))
     );
-
-    var fullBounds = new java.awt.Rectangle();
-    for (var device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
-      fullBounds = fullBounds.union(device.getDefaultConfiguration().getBounds());
-    }
-    setBounds(fullBounds);
-    screenBounds = fullBounds;
 
     var mouseListener = new MouseListener();
     addMouseListener(mouseListener);
@@ -90,8 +87,13 @@ public class ScreenSelector extends JFrame {
     // Selecting an area
 
     // Selecton area rectangle dimensions
-    var w = Math.abs(xStart - xEnd);
-    var h = Math.abs(yStart - yEnd);
+    int w = 0;
+    int h = 0;
+    if (frameStart != null && frameEnd != null) {
+      w = Math.abs(frameStart.x() - frameEnd.x());
+      h = Math.abs(frameStart.y() - frameEnd.y());
+    }
+
     if (w == 0 || h == 0) {
       // No selection rectangle to draw, fade the entire frame
       gfx2d.fillRect(0, 0, getWidth(), getHeight());
@@ -99,10 +101,10 @@ public class ScreenSelector extends JFrame {
     }
 
     // Selecton area rectangle edges
-    var top = Math.min(yStart, yEnd);
-    var bottom = Math.max(yStart, yEnd);
-    var left = Math.min(xStart, xEnd);
-    var right = Math.max(xStart, xEnd);
+    var top = Math.min(frameStart.y(), frameEnd.y());
+    var bottom = Math.max(frameStart.y(), frameEnd.y());
+    var left = Math.min(frameStart.x(), frameEnd.x());
+    var right = Math.max(frameStart.x(), frameEnd.x());
 
     // Draw background fades around the rectangle
     // Top
@@ -144,6 +146,14 @@ public class ScreenSelector extends JFrame {
   }
 
   private void activate() {
+    var fullBounds = new java.awt.Rectangle();
+    for (var device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+      for (var conf : device.getConfigurations()) {
+        fullBounds = fullBounds.union(conf.getBounds());
+      }
+    }
+    setBounds(fullBounds);
+
     setVisible(true);
     setExtendedState(JFrame.NORMAL);
     toFront();
@@ -155,61 +165,64 @@ public class ScreenSelector extends JFrame {
   }
 
   private void reset() {
-    xStart = 0;
-    yStart = 0;
-    xEnd = 0;
-    yEnd = 0;
+    frameStart = null;
+    frameEnd = null;
+    screenStart = null;
+    screenEnd = null;
     futureArea = null;
     futurePoint = null;
   }
 
-  private void setStartPoint(int x, int y) {
-    xStart = x;
-    yStart = y;
+  private void setStartPoint(java.awt.Point frame, Point screen) {
+    frameStart = Point.from(frame);
+    screenStart = screen;
   }
 
-  private void setEndPoint(int x, int y) {
-    xEnd = x;
-    yEnd = y;
+  private void setEndPoint(java.awt.Point frame, Point screen) {
+    frameEnd = Point.from(frame);
+    screenEnd = screen;
   }
 
   private class MouseListener extends MouseAdapter {
     public void mousePressed(MouseEvent e) {
       if (futurePoint != null) {
-        futurePoint.complete(Optional.of(new Point(
-          e.getX() + (int) screenBounds.getX(),
-          e.getY() + (int) screenBounds.getY()
-        )));
+        futurePoint.complete(Optional.of(Point.from(getWindowsVirtualScreenCursorPosition())));
         deactivate();
         reset();
         return;
       }
-      setStartPoint(e.getX(), e.getY());
+      setStartPoint(e.getPoint(), getWindowsVirtualScreenCursorPosition());
     }
 
     public void mouseDragged(MouseEvent e) {
-      setEndPoint(e.getX(), e.getY());
+      setEndPoint(e.getPoint(), getWindowsVirtualScreenCursorPosition());
       repaint();
     }
 
     public void mouseReleased(MouseEvent e) {
-      setEndPoint(e.getX(), e.getY());
+      setEndPoint(e.getPoint(), getWindowsVirtualScreenCursorPosition());
       repaint();
 
       if (futureArea == null) {
         return;
       }
 
-      var x = Math.min(xStart, xEnd) + (int) screenBounds.getX();
-      var y = Math.min(yStart, yEnd) + (int) screenBounds.getY();
-      var w = Math.abs(xStart - xEnd);
-      var h = Math.abs(yStart - yEnd);
+      var x = Math.min(screenStart.x(), screenEnd.x());
+      var y = Math.min(screenStart.y(), screenEnd.y());
+      var w = Math.abs(screenStart.x() - screenEnd.x());
+      var h = Math.abs(screenStart.y() - screenEnd.y());
       if (w <= 0 || h <= 0) {
         return;
       }
       futureArea.complete(Optional.of(Rectangle.ofStartAndDimensions(x, y, w, h)));
       deactivate();
       reset();
+    }
+
+    private Point getWindowsVirtualScreenCursorPosition() {
+      var cursorPos = new WinDef.POINT();
+      User32.INSTANCE.GetCursorPos(cursorPos);
+      return new Point(cursorPos.x, cursorPos.y);
     }
   }
 
