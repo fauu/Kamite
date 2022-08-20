@@ -38,13 +38,7 @@ public interface Platform {
       XorgPlatform.class
     );
 
-  List<Class<? extends Platform>> SUPPORTED_PLATFORMS =
-    List.of(
-      GnomePlatform.class,
-      PlasmaPlatform.class,
-      WlrootsPlatform.class,
-      XorgPlatform.class
-    );
+  List<Class<? extends Platform>> UNSUPPORTED_PLATFORMS = List.of(MacOSPlatform.class);
 
   void init() throws PlatformInitializationException;
 
@@ -111,7 +105,7 @@ public interface Platform {
       return null;
     }
 
-    if (!SUPPORTED_PLATFORMS.contains(platform.getClass())) {
+    if (UNSUPPORTED_PLATFORMS.contains(platform.getClass())) {
       if (Env.isDevMode()) {
         LOG.info(
           "Allowing unsupported platform {} because developer mode is enabled",
