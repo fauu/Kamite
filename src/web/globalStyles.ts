@@ -135,6 +135,15 @@ glob`
 `;
 glob`
   @font-face {
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 400;
+    src: local(''),
+          url('fonts/roboto-mono-v22-latin-regular.woff2') format('woff2');
+  }
+`;
+glob`
+  @font-face {
     font-family: 'Noto Sans JP';
     font-style: normal;
     font-weight: 400;
