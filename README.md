@@ -23,9 +23,9 @@ Kamite is cost-free and licensed under the GNU AGPL v3 or later (see
 [License](#license)).
 
 **Currently supported platforms: Linux (Xorg, wlroots, GNOME Wayland\*, Plasma
-Wayland\*).**\
-(Planned for the beta release: Windows, macOS).\
-\* OCR-ing arbitrary screen areas not supported on GNOME and Plasma on Wayland
+Wayland\*), Windows.**\
+(Planned for the beta release: macOS).\
+\* OCR-ing arbitrary screen areas not supported on GNOME and Plasma on Wayland.
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 https://user-images.githubusercontent.com/4130634/178029301-075cb207-a154-42d2-adb5-ce8fdbcd722f.mp4
@@ -112,14 +112,16 @@ script; [waycorner][waycorner-icxes].
 
 ## Installing Kamite
 
-### Linux - Arch User Repository
+### Linux
+
+#### Arch User Repository
 
 An AUR package is available under the name [kamite-bin] (installs to
 `/opt/kamite`).
 
 [kamite-bin]: https://aur.archlinux.org/packages/kamite-bin
 
-### Linux - Generic
+#### Generic
 
 Download the latest release package from the [Releases] page and extract it
 to the location where you want to keep the program files. You can now launch
@@ -137,30 +139,44 @@ install.sh --uninstall
 To update, remove the old `kamite` directory and extract the new release package
 in its place.
 
+### Windows
+
+Download the latest release package from the [Releases] page and extract it
+to the location where you want to keep the program files. You can now launch
+Kamite using `Kamite.exe` inside the extracted directory.
+
 [Releases]: https://github.com/fauu/Kamite/releases
 
 ## Launching Kamite
 
-Kamite is launched like any regular program: either using the provided `kamite`
-executable directly or using a desktop launcher.
+Kamite can be launched:
+
+* <ins>Linux</ins>: either using the `bin/kamite` executable directly or a using
+  desktop launcher;
+
+* <ins>Windows</ins>: either using the `Kamite.exe` executable or using the
+  `Kamite.ps1` PowerShell script (the latter provides console output).
+
+> Note (Windows): The execution of PowerShell scripts is disabled by default. To
+> enable it, start PowerShell with the Run as Administrator option and execute
+> the command `Set-ExecutionPolicy RemoteSigned`. Be aware that this lowers
+> system security.
 
 Besides the [config file](#config), Kamite supports configuration through
-command-line parameters. See [Command-line
-parameters](#command-line-parameters).
+launch options. See [Launch options](#launch-options).
 
 Kamite’s main user interface is a webpage served by a local server that should
 be opened in your web browser. The default address is <http://localhost:4110>.
 
-**The web client is only guaranteed to work on the most recent versions of
-Firefox and Chrome**.
+**The web client is only guaranteed to work without issues on the most recent
+versions of Firefox and Chrome**.
 
 Upon launch, Kamite will, by default: 1) navigate to the above address in the
 default web browser, 2) open an auxiliary “Control” window, which lets you
 monitor the program’s status as well as exit it. Both those behaviours can be
 disabled by setting the [config keys](#config) `launchBrowser` and
-`controlWindow`, respectively,  to `false`. Disabling the latter is especially
-useful when Kamite is run from the command line, making the control window
-redundant.
+`controlWindow`, respectively,  to `false`. Disabling the latter is useful when
+Kamite is run from the command line, making the control window redundant.
 
 Multiple config profiles can be prepared for Kamite and chosen between at the
 time of its launch. See [Config profiles](#config-profiles).
@@ -186,7 +202,7 @@ Below are some non-obvious tips regarding the interface that might come useful.
 * You can have incoming text chunk inserted into the current chunk instead of
   entirely replacing it. To do that, enter the chunk edit mode as described
   above and either: 1) place the caret where you want the incoming chunk to be
-  inserted, or 2) select the part of the current chunk that you wish replaced
+  inserted or 2) select the part of the current chunk that you wish replaced
   with it.
 
 * The *character counter* and the *session timer* can be frozen/paused and
@@ -211,14 +227,24 @@ treated as **chunk translations**.
 To enable the connection between Kamite and mpv, the latter must be launched
 with the following exact value for the `input-ipc-server` parameter:
 
+<ins>Linux</ins>:
+
 ```sh
-mpv file.mkv --input-ipc-server="/tmp/kamite-mpvsocket"
+mpv file.mkv --input-ipc-server=/tmp/kamite-mpvsocket
 ```
+
+<ins>Windows</ins> (PowerShell):
+
+```powershell
+C:\Program` Files\mpv\mpv file.mkv --input-ipc-server=\\.\pipe\kamite-mpvsocket
+```
+
+<br>
 
 Alternatively, the line
 
 ```sh
-input-ipc-server=/tmp/kamite-mpvsocket
+input-ipc-server=<above_path>
 ```
 
 can be put into the [mpv config file][mpv-ref-config].
@@ -237,25 +263,46 @@ subtitle track as *primary* (assumed by Kamite to be the Japanese subtitles) and
 glanced by pressing <kbd>F9</kbd> in mpv while the video file is opened and the
 subtitles loaded.
 
-Note that subtitles hidden within mpv will still be recognized by Kamite.
+Note: Subtitles hidden within mpv will still be recognized by Kamite.
+
+**Note: The subtitle extraction functionality will not work with subtitles that
+are stored as images, not as text.**
 
 > See also: [mpv reference: Subtitle options][mpv-ref-sub-options].
 
-Below is an excerpt from an example bash script used to quickly launch an anime
-episode in mpv in such a way that it is immediately set up to work with Kamite.
+Below are excerpts from example scripts used to quickly launch an anime episode
+in mpv in such a way that it is immediately set up to work with Kamite.
+
+<ins>Linux</ins>:
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 ```sh
-mpv "/path/to/video/"*"<part-of-anime-name>"*"E$1"*".mkv" \ # Episode no. passed as an argument to the script
-  --input-ipc-server="/tmp/kamite-mpvsocket" \
-  --sub-file="/path/to/external/subtitles/$1.srt" \
+mpv "/path/to/video/"*"Some Anime Name"*"E$1"*".mkv" \ # Episode no. passed as an argument to the script
+  --input-ipc-server=/tmp/kamite-mpvsocket \
+  --sub-file="/path/to/external/subtitles/$1.jp.srt" \
   --sid=2 \ # ID of the Japanese subtitles provided externally
   --secondary-sid=1 \ # ID of the English subtitles embedded in the video file (to be used as translations)
   --secondary-sub-visibility=no \
-  --save-position-on-quit \ 
-  --profile=jpsub \ # An optional custom profile that can set a special subtitle font and size, etc. It must be defined separately in the mpv config file: see https://mpv.io/manual/stable/#profiles
+  --save-position-on-quit \
+  --profile=jpsub # An optional custom profile that can set a special subtitle font and size, etc. It must be defined separately in the mpv config file: see https://mpv.io/manual/stable/#profiles
 ```
 <!-- markdownlint-restore -->
+
+<ins>Windows</ins> (PowerShell):
+
+```powershell
+# See the Linux example above for more information
+param ([String] $ep) # $ep will be replaced with the first parameter to the
+                     # script (here assumed to be the episode number)
+C:\Program` Files\mpv\mpv "\path\to\video\*Some Anime Name*E$ep.mkv" `
+  --input-ipc-server=\\.\pipe\kamite-mpvsocket `
+  --sub-file="\path\to\external\subtitles\$ep.jp.srt" `
+  --sid=2 `
+  --secondary-sid=1 `
+  --secondary-sub-visibility=no `
+  --save-position-on-quit `
+  --profile=jpsub
+```
 
 Kamite can be useful even when viewing media without Japanese subtitles, for
 example as an area where heard words and phrases can be typed in and looked up.
@@ -407,29 +454,63 @@ will use up to 1 GB of additional memory.
 
 ##### Recommended option: installation using pipx
 
-1. Install [python][installing-python] and [pip]
+1. Install [Python][installing-python] and [pip] (the Windows Python installer
+   already includes pip)
 
-1. Install [pipx] and run
+1. Install [pipx]
+
+    <ins>Windows</ins>:
+
+    ```powershell
+    C:\Users\<user>\AppData\Local\Programs\Python\Python310\python.exe -m pip
+    install --user pipx
+    ```
+
+    The `python.exe` location will vary depending on the installer and the
+    installation options.
+
+1. Install [manga-ocr]
+
+    <ins>Linux</ins>:
 
     ```sh
     pipx install manga-ocr
     ```
 
+    <ins>Windows</ins>:
+
+    ```powershell
+    C:\Users\<user>\AppData\Local\Programs\Python\Python310\python.exe -m pipx
+    install manga-ocr
+    ```
+
 Kamite will now be able to use “Manga OCR”. On the first launch of Kamite with
 `ocr.engine` set to `mangaocr`, “Manga OCR” will take some time to download its
-model (around 450 MB). If there are issues, try running the `manga_ocr`
-executable installed by pipx and examining its output.
+model (around 450 MB). If there are issues, try running the (<ins>Linux</ins>)
+`manga_ocr`, (<ins>Windows</ins>)
+`C:\Users\<user>\.local\pipx\venvs\manga-ocr\Scripts\manga_ocr.exe` executable
+installed by pipx and examining its output.
 
 ###### Deinstallation
 
-1. Run
+1. Run `pipx uninstall`
+
+    <ins>Linux</ins>:
 
     ```sh
     pipx uninstall manga-ocr
     ```
 
+    <ins>Windows</ins>:
+
+    ```powershell
+    C:\Users\<user>\AppData\Local\Programs\Python\Python310\python.exe -m pipx
+    uninstall manga-ocr
+    ```
+
 1. Delete the ~450 MB leftover model file in
-`~/.cache/huggingface/transformers/`.
+(<ins>Linux</ins>) `~/.cache/huggingface/transformers/`, (<ins>Windows</ins>)
+`C:\Users\<user>\.cache\huggingface\transformers`.
 
 ###### Troubleshooting “pipx "Manga OCR" installation absent…”
 
@@ -439,16 +520,28 @@ specify the path manually in the [config file](#config):
 ```sh
 ocr {
   mangaocr {
+    # Linux default
     pythonPath = "/home/<user>/.local/pipx/venvs/manga-ocr/bin/python"
+    # Windows default
+    pythonPath = "C:\Users\<user>\.local\pipx\venvs\manga-ocr\Scripts\python.exe"
   }
 }
 ```
 
-The above path is the default, which you will need to modify according to the
-output you get from running
+**The above paths are the defaults, which you will need to modify** according to
+the output you get from running
+
+<ins>Linux</ins>:
 
 ```sh
 pipx list
+```
+
+<ins>Windows</ins>:
+
+```powershell
+C:\Users\<user>\AppData\Local\Programs\Python\Python310\python.exe -m pipx
+list
 ```
 
 [installing-python]: https://realpython.com/installing-python/
@@ -458,10 +551,10 @@ pipx list
 ##### Custom installation
 
 If you install “Manga OCR” not through pipx, you will need to manually specify a
-path to a python executable (or a wrapper) that runs within an environment where
-the `manga_ocr` module is available. For example, if installed globally and the
-system Python executable is on `PATH` under the name `python`, then the
-appropriate configuration will be simply:
+path to a Python main executable (or a wrapper for it) that runs within an
+environment where the `manga_ocr` module is available. For example, if installed
+globally and the system Python executable is on `PATH` under the name `python`,
+then the appropriate configuration will be simply:
 
 ```sh
 ocr {
@@ -472,7 +565,8 @@ ocr {
 ```
 
 **Deinstallation note**: There will be a ~450 MB leftover model file in
-`~/.cache/huggingface/transformers/`.
+(<ins>Linux</ins>) `~/.cache/huggingface/transformers/`, (<ins>Windows</ins>)
+`C:\Users\<user>\.cache\huggingface\transformers`.
 
 #### Setting up OCR.space
 
@@ -509,23 +603,44 @@ Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
 
 1. Install Tesseract
 
-    Tesseract is available in the default repositories of most distributions.
-    For example, under `tesseract-ocr` in Ubuntu or under `tesseract` in Arch
-    Linux.
+    <ins>Linux</ins>: Tesseract is available in the default repositories of most
+    distributions. For example, under `tesseract-ocr` on Ubuntu or under
+    `tesseract` on Arch Linux.
+
+    <ins>Windows</ins>: It is recommended to use [the installer provided by
+    UB Mannheim][tesseract-ub-mannheim].
 
 1. Install Tesseract models prepared and verified for use with Kamite
 
-    Download [`tesseract_traineddata_jpn_Kamite.zip`](https://mega.nz/file/9SsQBYTT#SDUSPerJ3iDsgSf08FlOWlVgbu7UICC_Oc7vg4D_YdQ)
-    and extract the `.traineddata` files from the archive into Tesseract’s
-    `tessdata` directory (usually `/usr/[local/]share/tessdata/` or
-    `/usr/share/tesseract-ocr/<VERSION>/tessdata`).
+    Download
+    [`tesseract_traineddata_jpn_Kamite.zip`](https://mega.nz/file/9SsQBYTT#SDUSPerJ3iDsgSf08FlOWlVgbu7UICC_Oc7vg4D_YdQ)
+    and extract the `.traineddata` files from the archive *directly* into
+    Tesseract’s `tessdata` directory:
 
-By default, Tesseract is expected to be available on `PATH` under the executable
-name `tesseract`. If this is not the case, the [config](#config) key
-`ocr.tesseract.path` needs to be set to the executable’s path.
+    * <ins>Linux</ins>: usually `/usr/[local/]share/tessdata` or
+    `/usr/share/tesseract-ocr/<VERSION>/tessdata`;
 
-Once the setup is completed, you can launch Kamite with the config key
+    * <ins>Windows</ins>: the default for the UB Mannheim installer is
+      `C:\Program Files\Tesseract-OCR\tessdata`.
+
+1. If Tesseract is not available on `PATH` under the executable name
+   `tesseract` (which it will not on Windows), set the [config](#config) key
+   `ocr.tesseract.path` to its executable’s path:
+
+   <ins>Windows</ins> (UB Mannheim installer default):
+
+   ```sh
+   ocr {
+     tesseract {
+       path = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" # Note the double backslashes
+     }
+   }
+   ```
+
+Once the setup has been completed, you can launch Kamite with the config key
 `ocr.engine` set to `tesseract`.
+
+[tesseract-ub-mannheim]: https://github.com/UB-Mannheim/tesseract/wiki
 
 #### Setting up extra OCR dependencies
 
@@ -594,7 +709,7 @@ the block and then OCR the resulting area.
 *This should be good enough for > 90% of typical manga text blocks, but the
 block detection algorithm has a lot of room for improvement.*
 
-**Note for Linux/Xorg users:** On Xorg, the point selection mechanism cannot be
+**Note (Linux/Xorg):** On Xorg, the point selection mechanism cannot be
 restricted to just a point, meaning that when the mouse is pressed and dragged,
 a rectangle area will be selected instead of a point. If this happens, Kamite
 will consider the center of this area as the selected point.
@@ -614,18 +729,14 @@ use cases.
 Below is an illustration of setting up a region in the [config file](#config).
 
 ```sh
-...
 ocr {
-  ...
   regions = [
     ${REGIONS.exampleGameTextbox}
     ${REGIONS.anotherRegion}
   ]
-  ...
 }
-...
+
 REGIONS = [
-  ...
   exampleGameTextbox {
     # (1 character) This symbol will appear on the region’s button
     symbol = "E"
@@ -647,10 +758,20 @@ REGIONS = [
     #       prove unreliable in most cases.
     autoNarrow = false
   }
-  ...
 ]
-...
 ```
+
+###### Obtaining region parameters
+
+To obtain the desired region coordinates and dimensions, use Kamite’s Region
+Helper mode: Launch Kamite from console with the launch option `--regionHelper`,
+select the desired areas, and copy the resulting region specifications from the
+console output.
+
+> Note (Windows): To get console output on Windows, you must launch Kamite using
+> the `Kamite.ps1` PowerShell script.
+
+###### Region OCR quality
 
 “Manga OCR” and OCR.space engines should be viable here in at least some cases.
 However, they both work best when the screenshot they are provided with is
@@ -697,11 +818,9 @@ To enable the directory watcher, specify the directory path in the [config
 file](#config):
 
 ```sh
-...
 ocr {
   watchDir = /full/path/to/the/directory
 }
-...
 ```
 
 This can be used in conjunction with a platform-specific screenshot tool, for
@@ -714,15 +833,14 @@ text block to be recognized—not the entire screen or application window.
 [GNOME Screenshot]: https://en.wikipedia.org/wiki/GNOME_Screenshot
 [Spectacle]: https://apps.kde.org/spectacle/
 
-#### Recommended manga viewer
+#### Recommended Linux manga viewer
 
-[Gomics-v] is the recommended manga viewer as it includes simple Kamite
-integration:
+[Gomics-v] is the recommended manga viewer for Linux, as it includes simple
+Kamite integration:
 
 * *Right-click* on a text block to automatically recognize it.
 
-* *Right-hold-click* on the image area to initiate a manual block recognition
-selection.
+* *Right-hold-click* on the image area to initiate a manual block recognition.
 
 The integration must be enabled in Gomics-v under `Preferences › Kamite`.
 
@@ -741,23 +859,17 @@ illustrating how to achieve this.
 
 ```sh
 commands {
-  ...
   custom = [
-    ...
     ${CUSTOM_COMMANDS.ankiScreenshot}
-    ...
   ]
-  ...
 }
-...
+
 CUSTOM_COMMANDS {
-  ...
   ankiScreenshot {
     symbol = ASS
     name = Anki screenshot
     command = "/path/to/anki-screenshot.sh {effectiveText}"
   }
-  ...
 }
 ```
 
@@ -774,11 +886,11 @@ for the configuration options.
 
 When not using a manga viewer with Kamite integration, a good alternative to
 clicking buttons in Kamite or using keyboard shortcuts for issuing OCR commands
-are hot corners, i.e. areas on the sides of the desktop that, when entered with
-the mouse cursor, launch a supplied executable. This executable can be a script
-that sends a specified OCR command to Kamite.
+are hot corners, i.e. screen areas that, when entered with the mouse cursor,
+launch a supplied executable. This executable can be a script that sends a
+specified OCR command to Kamite.
 
-Below is an example of such setup for Wayland users.
+Below is an example of such setup for Linux/wlroots users.
 
 > Xorg users who do not have the hot corners feature as a part of their desktop
 environment might use [cornora] instead.
@@ -1039,7 +1151,6 @@ main config file:
 
     ```sh
     LOOKUP_TARGETS {
-      ...
       # This key can be anything
       immersionKit {
         # (1-3 characters) The symbol will appear on the lookup button
@@ -1062,9 +1173,7 @@ main config file:
     ```sh
     lookup {
       targets = [
-        ...
         ${LOOKUP_TARGETS.immersionKit} # Has to match the key defined above
-        ...
       ]
     }
     ```
@@ -1085,20 +1194,14 @@ Below is an excerpt from a config file illustrating how to define a custom
 command.
 
 ```sh
-...
 commands {
-  ...
   custom = [
-    ...
     ${CUSTOM_COMMANDS.exampleCustomCommand}
     ${CUSTOM_COMMANDS.anotherExampleCustomCommand}
-    ...
   ]
-  ...
 }
-...
+
 CUSTOM_COMMANDS {
-  ...
   exampleCustomCommand {
     # (1-3 characters) The symbol that will appear on the command's button
     symbol = CMD
@@ -1110,11 +1213,17 @@ CUSTOM_COMMANDS {
     # Kamite
     command = "/path/to/the/system/executable.sh {effectiveText}"
   }
-  ...
 }
 ```
 
-Supported placeholder arguments are:
+> **Note (Windows)**: To execute a PowerShell script, set `command` to
+> `powershell.exe C:\\path\\to\\the\\script.ps1` (note the double backslashes).
+> The execution of PowerShell scripts is disabled by default in the system. To
+> enable it, start PowerShell with the Run as Administrator option and execute
+> the command `Set-ExecutionPolicy RemoteSigned`. Be aware that this lowers
+> system security.
+
+Supported placeholder arguments for custom commands are:
 
 `{effectiveText}`\
 Equivalent to the text used for lookups at the given moment. If there is a
@@ -1178,9 +1287,7 @@ Seek +1 seconds.
 
 ### Global keyboard shortcuts
 
-#### Linux/Xorg
-
-> Note: The following does not work on Linux/wlroots.
+#### Linux/Xorg and Windows
 
 Below is an excerpt from a [config file](#config) illustrating how to set up
 global keyboard shortcuts and what actions are available for binding.
@@ -1221,10 +1328,16 @@ bindsym $mod+s exec "dbus-send --type=method_call --dest=io.github.kamitejp /Rec
 bindsym $mod+d exec "dbus-send --type=method_call --dest=io.github.kamitejp /Receiver io.github.kamitejp.Receiver.command string:'ocr_auto-block'"
 ```
 
-## Command-line parameters
+## Launch options
 
-First, there are four basic command-line parameters that are read before the
-config file:
+> <b><ins>Windows</ins></b>: To launch Kamite with extra options, either: 1)
+> create a shortcut to `Kamite.exe`, open its Properties, and append the options
+> to the Target string after `…\Kamite.exe`, e.g.,
+> `…\Kamite.exe[space]--profile=myprofile` or 2) append them when invoking
+> either `Kamite.exe` or `Kamite.ps1` from a PowerShell window. Console output
+> will only be available when using `Kamite.ps1`.
+
+First, there are the basic launch options that are read before the config file:
 
 `--help`\
 Prints the usage message and exits.
@@ -1244,21 +1357,39 @@ messages from the third-party dependencies.\
 The mere presence of the flag or any value different from `all`, `false` or `0`
 is interpreted as `true`.
 
+`--regionHelper`\
+Launches Kamite in Region Helper mode used to obtain coordinates of screen
+regions. Useful for [Region OCR](#region-ocr).
+
 Beyond that, **all simple config settings can be overridden through
-correspondingly-named command-line parameters**. For example, launching Kamite
-with the argument `--ocr.engine=none` will give that value precedence over
-whatever the value of the key `ocr.engine` in the effective config is.
+correspondingly-named launch options**. For example, launching Kamite with the
+option `--ocr.engine=none` will give that value precedence over whatever the
+value of the key `ocr.engine` in the effective config is.
 
 ## Config
 
-Kamite is configured through a config file placed either in the
-`$XDG_CONFIG_HOME/kamite` or, if that is not set, in the `$HOME/.config/kamite`
-directory. The main config file must have the name `config.hocon`.
+Kamite is configured through a config file placed in the directory:
+
+* <ins>Linux</ins>: either `$XDG_CONFIG_HOME/kamite` or, if that is not set,
+    `$HOME/.config/kamite`;
+
+* <ins>Windows</ins>: `C:\Users\<user>\AppData\Roaming\kamite`.
+
+The main config file must have the name `config.hocon`.
 
 The config file’s format is [HOCON], which is a superset of JSON.
 
 A default config file is automatically placed by Kamite in the expected
 directory if absent on launch.
+
+> Note (Windows): On unupdated Windows 10 installations as well as earlier
+> Windows versions, the system Notepad will not be able to properly display the
+> config file. In that case, please use another text editor.
+
+**Note: When providing values containing backslashes (`\`), for example Windows
+paths, you must enclose them within quotation marks (`"`) and replace each
+backslash with two backslashes.** For example: `ocr.tesseract.path =
+"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"`.
 
 Below is an example config file illustrating all the possible options with their
 **default** values:
@@ -1432,10 +1563,10 @@ secrets {
 Kamite supports having a set of different config files for different use-cases.
 
 Creating, in the config directory, a file named `config.example-profile.hocon`
-and then launching Kamite with the command-line parameter
-`--profile=example-profile` will instruct Kamite to take into account both the main
-`config.hocon` file and the `config.example-profile.hocon` file, with values
-from the latter taking precedence.
+and then launching Kamite with the [launch option](#launch-options)
+`--profile=example-profile` will instruct Kamite to take into account both the
+main `config.hocon` file and the `config.example-profile.hocon` file, with
+values from the latter taking precedence.
 
 The values from all config files are resolved within a common context, which
 means that the files share the objects defined in them. For example, this works
@@ -1444,7 +1575,6 @@ as expected:
 `config.hocon`
 
 ```sh
-...
 lookup {
   targets = [
     ${LOOKUP_TARGETS.deepl}
@@ -1452,7 +1582,7 @@ lookup {
     ${LOOKUP_TARGETS.googleImages}
   ]
 }
-...
+
 LOOKUP_TARGETS {
   deepl {
     symbol = DEP
@@ -1471,19 +1601,16 @@ LOOKUP_TARGETS {
     newTab = true
   }
 }
-...
 ```
 
 `config.no-translations.hocon`
 
 ```sh
-...
 lookup {
   targets = [
     ${LOOKUP_TARGETS.googleImages}
   ]
 }
-...
 ```
 
 Given the above configuration, launching normally shows `deepl`, `jpdb`, and
@@ -1547,10 +1674,23 @@ dbus-send --type=method_call \
 
 #### HTTP
 
+<ins>Linux</ins>:
+
 ```sh
 curl -i -X POST \
   -d 'params={"chunk": "This is the chunk text"}' \
   localhost:4110/cmd/chunk/show # {kamite_host}/cmd/{command_group}/{command_name}
+```
+
+<ins>Windows</ins> (PowerShell):
+
+```powershell
+$body = @{
+  "chunk" = "This is the chunk test"
+}
+Invoke-RestMethod -Method 'Post' `
+  -Uri 'http://localhost:4110/cmd/chunk/show' `
+  -Body "params=$($body | ConvertTo-Json)"
 ```
 
 ### Command listing
@@ -1755,22 +1895,23 @@ with this program. If not, see <https://www.gnu.org/licenses/>.
 The Kamite repository and the Kamite release package include the following
 third-party components:
 
-| Component                    | License    |
-|------------------------------|------------|
-| [Apache Log4j][log4j]        | Apache-2.0 |
-| [hypfvieh/dbus-java]         | MIT        |
-| [Jackson]                    | Apache-2.0 |
-| [Javalin]                    | Apache-2.0 |
-| [jkeymaster]                 | LGPL-3.0   |
-| [jsoup]                      | MIT        |
-| [Kuromoji IPADIC]            | Apache-2.0 |
-| [Noto Sans Japanese]         | OFL        |
-| [Roboto]                     | Apache-2.0 |
-| [SLF4J]                      | MIT        |
-| [Solid]                      | MIT        |
-| [Solid Styled Components]    | MIT        |
-| [tscfg]                      | Apache-2.0 |
-| [Typesafe Config][ts-config] | Apache-2.0 |
+| Component                       | License    |
+|---------------------------------|------------|
+| [Apache Log4j][log4j]           | Apache-2.0 |
+| [hypfvieh/dbus-java]            | MIT        |
+| [Jackson]                       | Apache-2.0 |
+| [Javalin]                       | Apache-2.0 |
+| [jkeymaster]                    | LGPL-3.0   |
+| [Java Native Access (JNA)][JNA] | Apache-2.0 |
+| [jsoup]                         | MIT        |
+| [Kuromoji IPADIC]               | Apache-2.0 |
+| [Noto Sans Japanese]            | OFL        |
+| [Roboto]                        | Apache-2.0 |
+| [SLF4J]                         | MIT        |
+| [Solid]                         | MIT        |
+| [Solid Styled Components]       | MIT        |
+| [tscfg]                         | Apache-2.0 |
+| [Typesafe Config][ts-config]    | Apache-2.0 |
 
 Kamite also includes components adapted from third-party code. See
 <https://github.com/fauu/Kamite/search?q=adapted> for the listing, including
@@ -1778,9 +1919,10 @@ the original license notices.
 
 [tscfg]: https://github.com/carueda/tscfg
 [hypfvieh/dbus-java]: https://github.com/hypfvieh/dbus-java
-[jkeymaster]: https://github.com/tulskiy/jkeymaster
 [Javalin]: https://github.com/javalin/javalin
 [Jackson]: https://github.com/FasterXML/jackson-core
+[jkeymaster]: https://github.com/tulskiy/jkeymaster
+[JNA]: https://github.com/java-native-access/jna
 [SLF4J]: https://www.slf4j.org/
 [log4j]: https://github.com/apache/logging-log4j2
 [ts-config]: https://github.com/lightbend/config
