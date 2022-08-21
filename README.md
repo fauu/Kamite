@@ -154,8 +154,13 @@ Kamite can be launched:
 * <ins>Linux</ins>: either using the `bin/kamite` executable directly or a using
   desktop launcher;
 
-* <ins>Windows</ins>: either using the `Kamite.exe` executable or using the `Kamite.ps1`
-  PowerShell script (the latter provides console output).
+* <ins>Windows</ins>: either using the `Kamite.exe` executable or using the
+  `Kamite.ps1` PowerShell script (the latter provides console output).
+
+> Note (Windows): The execution of PowerShell scripts is disabled by default. To
+> enable it, start PowerShell with the Run as Administrator option and execute
+> the command `Set-ExecutionPolicy RemoteSigned`. Be aware that this lowers
+> system security.
 
 Besides the [config file](#config), Kamite supports configuration through
 launch options. See [Launch options](#launch-options).
@@ -222,13 +227,13 @@ treated as **chunk translations**.
 To enable the connection between Kamite and mpv, the latter must be launched
 with the following exact value for the `input-ipc-server` parameter:
 
-<ins>Linux</ins>
+<ins>Linux</ins>:
 
 ```sh
 mpv file.mkv --input-ipc-server=/tmp/kamite-mpvsocket
 ```
 
-<ins>Windows</ins> (PowerShell)
+<ins>Windows</ins> (PowerShell):
 
 ```powershell
 C:\Program` Files\mpv\mpv file.mkv --input-ipc-server=\\.\pipe\kamite-mpvsocket
@@ -239,7 +244,7 @@ C:\Program` Files\mpv\mpv file.mkv --input-ipc-server=\\.\pipe\kamite-mpvsocket
 Alternatively, the line
 
 ```sh
-input-ipc-server=/tmp/kamite-mpvsocket
+input-ipc-server=<above_path>
 ```
 
 can be put into the [mpv config file][mpv-ref-config].
@@ -258,14 +263,17 @@ subtitle track as *primary* (assumed by Kamite to be the Japanese subtitles) and
 glanced by pressing <kbd>F9</kbd> in mpv while the video file is opened and the
 subtitles loaded.
 
-Note that subtitles hidden within mpv will still be recognized by Kamite.
+Note: Subtitles hidden within mpv will still be recognized by Kamite.
+
+**Note: The subtitle extraction functionality will not work with subtitles that
+are stored as images, not as text.**
 
 > See also: [mpv reference: Subtitle options][mpv-ref-sub-options].
 
-Below are excerpt from example scripts used to quickly launch an anime episode
+Below are excerpts from example scripts used to quickly launch an anime episode
 in mpv in such a way that it is immediately set up to work with Kamite.
 
-<ins>Linux</ins>
+<ins>Linux</ins>:
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 ```sh
@@ -280,7 +288,7 @@ mpv "/path/to/video/"*"Some Anime Name"*"E$1"*".mkv" \ # Episode no. passed as a
 ```
 <!-- markdownlint-restore -->
 
-<ins>Windows</ins> (PowerShell)
+<ins>Windows</ins> (PowerShell):
 
 ```powershell
 # See the Linux example above for more information
@@ -451,7 +459,7 @@ will use up to 1 GB of additional memory.
 
 1. Install [pipx]
 
-    <ins>Windows</ins> (PowerShell):
+    <ins>Windows</ins>:
 
     ```powershell
     C:\Users\<user>\AppData\Local\Programs\Python\Python310\python.exe -m pip
@@ -469,7 +477,7 @@ will use up to 1 GB of additional memory.
     pipx install manga-ocr
     ```
 
-    <ins>Windows</ins> (PowerShell):
+    <ins>Windows</ins>:
 
     ```powershell
     C:\Users\<user>\AppData\Local\Programs\Python\Python310\python.exe -m pipx
@@ -485,7 +493,7 @@ installed by pipx and examining its output.
 
 ###### Deinstallation
 
-1. Run
+1. Run `pipx uninstall`
 
     <ins>Linux</ins>:
 
@@ -493,7 +501,7 @@ installed by pipx and examining its output.
     pipx uninstall manga-ocr
     ```
 
-    <ins>Windows</ins> (PowerShell):
+    <ins>Windows</ins>:
 
     ```powershell
     C:\Users\<user>\AppData\Local\Programs\Python\Python310\python.exe -m pipx
@@ -529,7 +537,7 @@ the output you get from running
 pipx list
 ```
 
-<ins>Windows</ins> (PowerShell):
+<ins>Windows</ins>:
 
 ```powershell
 C:\Users\<user>\AppData\Local\Programs\Python\Python310\python.exe -m pipx
@@ -543,10 +551,10 @@ list
 ##### Custom installation
 
 If you install “Manga OCR” not through pipx, you will need to manually specify a
-path to a python executable (or a wrapper) that runs within an environment where
-the `manga_ocr` module is available. For example, if installed globally and the
-system Python executable is on `PATH` under the name `python`, then the
-appropriate configuration will be simply:
+path to a Python main executable (or a wrapper for it) that runs within an
+environment where the `manga_ocr` module is available. For example, if installed
+globally and the system Python executable is on `PATH` under the name `python`,
+then the appropriate configuration will be simply:
 
 ```sh
 ocr {
@@ -613,7 +621,7 @@ Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
     `/usr/share/tesseract-ocr/<VERSION>/tessdata`;
 
     * <ins>Windows</ins>: the default for the UB Mannheim installer is
-      `C:\Program Files\Tesseract-OCR\tessdata`).
+      `C:\Program Files\Tesseract-OCR\tessdata`.
 
 1. If Tesseract is not available on `PATH` under the executable name
    `tesseract` (which it will not on Windows), set the [config](#config) key
@@ -624,7 +632,7 @@ Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
    ```sh
    ocr {
      tesseract {
-       path = "C:\Program Files\Tesseract-OCR\tesseract.exe"
+       path = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" # Note the double backslashes
      }
    }
    ```
@@ -721,18 +729,14 @@ use cases.
 Below is an illustration of setting up a region in the [config file](#config).
 
 ```sh
-...
 ocr {
-  ...
   regions = [
     ${REGIONS.exampleGameTextbox}
     ${REGIONS.anotherRegion}
   ]
-  ...
 }
-...
+
 REGIONS = [
-  ...
   exampleGameTextbox {
     # (1 character) This symbol will appear on the region’s button
     symbol = "E"
@@ -754,9 +758,7 @@ REGIONS = [
     #       prove unreliable in most cases.
     autoNarrow = false
   }
-  ...
 ]
-...
 ```
 
 ###### Obtaining region parameters
@@ -816,11 +818,9 @@ To enable the directory watcher, specify the directory path in the [config
 file](#config):
 
 ```sh
-...
 ocr {
   watchDir = /full/path/to/the/directory
 }
-...
 ```
 
 This can be used in conjunction with a platform-specific screenshot tool, for
@@ -840,8 +840,7 @@ Kamite integration:
 
 * *Right-click* on a text block to automatically recognize it.
 
-* *Right-hold-click* on the image area to initiate a manual block recognition
-selection.
+* *Right-hold-click* on the image area to initiate a manual block recognition.
 
 The integration must be enabled in Gomics-v under `Preferences › Kamite`.
 
@@ -860,23 +859,17 @@ illustrating how to achieve this.
 
 ```sh
 commands {
-  ...
   custom = [
-    ...
     ${CUSTOM_COMMANDS.ankiScreenshot}
-    ...
   ]
-  ...
 }
-...
+
 CUSTOM_COMMANDS {
-  ...
   ankiScreenshot {
     symbol = ASS
     name = Anki screenshot
     command = "/path/to/anki-screenshot.sh {effectiveText}"
   }
-  ...
 }
 ```
 
@@ -1158,7 +1151,6 @@ main config file:
 
     ```sh
     LOOKUP_TARGETS {
-      ...
       # This key can be anything
       immersionKit {
         # (1-3 characters) The symbol will appear on the lookup button
@@ -1181,9 +1173,7 @@ main config file:
     ```sh
     lookup {
       targets = [
-        ...
         ${LOOKUP_TARGETS.immersionKit} # Has to match the key defined above
-        ...
       ]
     }
     ```
@@ -1204,20 +1194,14 @@ Below is an excerpt from a config file illustrating how to define a custom
 command.
 
 ```sh
-...
 commands {
-  ...
   custom = [
-    ...
     ${CUSTOM_COMMANDS.exampleCustomCommand}
     ${CUSTOM_COMMANDS.anotherExampleCustomCommand}
-    ...
   ]
-  ...
 }
-...
+
 CUSTOM_COMMANDS {
-  ...
   exampleCustomCommand {
     # (1-3 characters) The symbol that will appear on the command's button
     symbol = CMD
@@ -1229,11 +1213,17 @@ CUSTOM_COMMANDS {
     # Kamite
     command = "/path/to/the/system/executable.sh {effectiveText}"
   }
-  ...
 }
 ```
 
-Supported placeholder arguments are:
+> **Note (Windows)**: To execute a PowerShell script, set `command` to
+> `powershell.exe C:\\path\\to\\the\\script.ps1` (note the double backslashes).
+> The execution of PowerShell scripts is disabled by default in the system. To
+> enable it, start PowerShell with the Run as Administrator option and execute
+> the command `Set-ExecutionPolicy RemoteSigned`. Be aware that this lowers
+> system security.
+
+Supported placeholder arguments for custom commands are:
 
 `{effectiveText}`\
 Equivalent to the text used for lookups at the given moment. If there is a
@@ -1340,14 +1330,14 @@ bindsym $mod+d exec "dbus-send --type=method_call --dest=io.github.kamitejp /Rec
 
 ## Launch options
 
-> <b><ins>Windows</ins></b>: To launch Kamite with extra options either: 1)
-> create a shortcut to `Kamite.exe`, open its Properties and append the options
+> <b><ins>Windows</ins></b>: To launch Kamite with extra options, either: 1)
+> create a shortcut to `Kamite.exe`, open its Properties, and append the options
 > to the Target string after `…\Kamite.exe`, e.g.,
 > `…\Kamite.exe[space]--profile=myprofile` or 2) append them when invoking
 > either `Kamite.exe` or `Kamite.ps1` from a PowerShell window. Console output
 > will only be available when using `Kamite.ps1`.
 
-First, there are four basic launch options that are read before the config file:
+First, there are the basic launch options that are read before the config file:
 
 `--help`\
 Prints the usage message and exits.
@@ -1395,6 +1385,11 @@ directory if absent on launch.
 > Note (Windows): On unupdated Windows 10 installations as well as earlier
 > Windows versions, the system Notepad will not be able to properly display the
 > config file. In that case, please use another text editor.
+
+**Note: When providing values containing backslashes (`\`), for example Windows
+paths, you must enclose them within quotation marks (`"`) and replace each
+backslash with two backslashes.** For example: `ocr.tesseract.path =
+"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"`.
 
 Below is an example config file illustrating all the possible options with their
 **default** values:
@@ -1580,7 +1575,6 @@ as expected:
 `config.hocon`
 
 ```sh
-...
 lookup {
   targets = [
     ${LOOKUP_TARGETS.deepl}
@@ -1588,7 +1582,7 @@ lookup {
     ${LOOKUP_TARGETS.googleImages}
   ]
 }
-...
+
 LOOKUP_TARGETS {
   deepl {
     symbol = DEP
@@ -1607,19 +1601,16 @@ LOOKUP_TARGETS {
     newTab = true
   }
 }
-...
 ```
 
 `config.no-translations.hocon`
 
 ```sh
-...
 lookup {
   targets = [
     ${LOOKUP_TARGETS.googleImages}
   ]
 }
-...
 ```
 
 Given the above configuration, launching normally shows `deepl`, `jpdb`, and
