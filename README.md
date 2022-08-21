@@ -759,6 +759,18 @@ REGIONS = [
 ...
 ```
 
+###### Obtaining region parameters
+
+To obtain the desired region coordinates and dimensions, use Kamite’s Region
+Helper mode: Launch Kamite from console with the launch option `--regionHelper`,
+select the desired areas, and copy the resulting region specifications from the
+console output.
+
+> Note (Windows): To get console output on Windows, you must launch Kamite using
+> the `Kamite.ps1` PowerShell script.
+
+###### Region OCR quality
+
 “Manga OCR” and OCR.space engines should be viable here in at least some cases.
 However, they both work best when the screenshot they are provided with is
 narrowed to just the text. And since the current auto-narrowing algorithm is not
@@ -1355,6 +1367,10 @@ messages from the third-party dependencies.\
 The mere presence of the flag or any value different from `all`, `false` or `0`
 is interpreted as `true`.
 
+`--regionHelper`\
+Launches Kamite in Region Helper mode used to obtain coordinates of screen
+regions. Useful for [Region OCR](#region-ocr).
+
 Beyond that, **all simple config settings can be overridden through
 correspondingly-named launch options**. For example, launching Kamite with the
 option `--ocr.engine=none` will give that value precedence over whatever the
@@ -1375,6 +1391,10 @@ The config file’s format is [HOCON], which is a superset of JSON.
 
 A default config file is automatically placed by Kamite in the expected
 directory if absent on launch.
+
+> Note (Windows): On unupdated Windows 10 installations as well as earlier
+> Windows versions, the system Notepad will not be able to properly display the
+> config file. In that case, please use another text editor.
 
 Below is an example config file illustrating all the possible options with their
 **default** values:
