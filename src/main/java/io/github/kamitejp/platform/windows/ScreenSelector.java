@@ -51,6 +51,9 @@ public class ScreenSelector extends JFrame {
   // NOTE: Works on Xorg if the secondary display is below the first. However, if it's above,
   //       the frame only covers the primary one.
   public ScreenSelector() {
+    // First selection can break without this warmup
+    MouseListener.getWindowsVirtualScreenCursorPosition();
+
     setTitle("%s OCR area selector".formatted(Kamite.APP_NAME_DISPLAY));
     setAlwaysOnTop(true);
     setUndecorated(true);
@@ -224,7 +227,7 @@ public class ScreenSelector extends JFrame {
       futureArea.complete(Optional.of(Rectangle.ofStartAndDimensions(x, y, w, h)));
     }
 
-    private Point getWindowsVirtualScreenCursorPosition() {
+    private static Point getWindowsVirtualScreenCursorPosition() {
       var cursorPos = new WinDef.POINT();
       User32.INSTANCE.GetCursorPos(cursorPos);
       return new Point(cursorPos.x, cursorPos.y);
