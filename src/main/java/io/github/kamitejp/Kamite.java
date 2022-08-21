@@ -104,6 +104,13 @@ public class Kamite {
     }
     LOG.info("Initialized support for platform {}", platform.getClass().getSimpleName()); // NOPMD
 
+    if (preconfigArgs.regionHelper()) {
+      runRegionHelperMode();
+      Runtime.getRuntime().addShutdownHook(new Thread(platform::destroy));
+      System.exit(0);
+      return;
+    }
+
     // Load config
     var maybeConfigDirPath = platform.getConfigDirPath();
     if (maybeConfigDirPath.isEmpty()) {
@@ -197,6 +204,42 @@ public class Kamite {
         mpvController.destroy();
       })
     );
+  }
+
+  private void runRegionHelperMode() {
+    if (platform.getUnsupportedFeatures().contains(PlatformDependentFeature.GLOBAL_OCR)) {
+      LOG.error(
+        "The current platform does not support Global OCR."
+        + "The Region Helper mode is not available"
+      );
+      return;
+    }
+    try {
+      platform.initOCR(new OCREngine.None());
+    } catch (PlatformOCRInitializationException e) {
+      LOG.error("Could not init platform OCR for Region Helper Mode: {}", e);
+    }
+
+    System.out.println(
+      "\nStarted in Region Helper mode. Select to print coordinates, cancel selection to exit\n"
+    );
+
+    while (true) {
+      var areaRes = platform.getUserSelectedArea();
+      if (areaRes.isErr()) {
+        var exitMsg = switch (areaRes.err()) {
+          case SELECTION_CANCELLED -> "Selection has been cancelled";
+          default -> "There has been an error getting area selection (%s)".formatted(areaRes.err());
+        };
+        System.out.println("%s. Exiting".formatted(exitMsg));
+        return;
+      }
+      var area = areaRes.get();
+      System.out.println(
+        "    x = %s\n    y = %s\n    width = %s\n    height = %s\n"
+          .formatted(area.getLeft(), area.getTop(), area.getWidth(), area.getHeight())
+      );
+    }
   }
 
   private void createControlGUI() {
@@ -780,19 +823,22 @@ public class Kamite {
     LOG.debug("Registered global keybinding: {}", binding);
   }
 
-  private record PreconfigArgs(boolean debug, String profileName) {}
+  private record PreconfigArgs(boolean debug, String profileName, boolean regionHelper) {}
 
   private static PreconfigArgs processPreconfigArgs(Map<String, String> args) {
-    var debug = args.get("debug");
-    var statusDebug = !isArgValueFalsey(debug);
-    if (statusDebug) {
+    var rawDebug = args.get("debug");
+    var debug = !isArgValueFalsey(rawDebug);
+    if (debug) {
       var loggingExtent =
-        "all".equalsIgnoreCase(debug)
+        "all".equalsIgnoreCase(rawDebug)
         ? DebugLoggingExtent.EVERYTHING
         : DebugLoggingExtent.APP;
       enableDebugLogging(loggingExtent);
     }
-    return new PreconfigArgs(statusDebug, args.get("profile"));
+
+    var regionHelper = !isArgValueFalsey(args.get("regionHelper"));
+
+    return new PreconfigArgs(debug, args.get("profile"), regionHelper);
   }
 
   private static boolean isArgValueFalsey(String value) {
