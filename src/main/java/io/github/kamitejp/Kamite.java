@@ -105,8 +105,8 @@ public class Kamite {
     LOG.info("Initialized support for platform {}", platform.getClass().getSimpleName()); // NOPMD
 
     if (preconfigArgs.regionHelper()) {
-      runRegionHelperMode();
       Runtime.getRuntime().addShutdownHook(new Thread(platform::destroy));
+      runRegionHelperMode();
       System.exit(0);
       return;
     }
@@ -221,7 +221,7 @@ public class Kamite {
     }
 
     System.out.println(
-      "\nStarted in Region Helper mode. Select to print coordinates, cancel selection to exit\n"
+      "\nStarted in Region Helper mode. Select to print region, cancel selection to exit\n"
     );
 
     while (true) {
