@@ -821,7 +821,8 @@ file](#config):
 
 ```sh
 ocr {
-  watchDir = /full/path/to/the/directory
+  watchDir = "/full/path/to/the/directory" # Linux variant
+  watchDir = "C:\\path\\to\\the\\directory" # Windows variant (note the double slashes)
 }
 ```
 
