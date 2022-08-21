@@ -1,5 +1,23 @@
 # Changelog — Kamite
 
+## [Unreleased]
+
+### Added
+
+* Windows support.
+* Region Helper mode: Launch Kamite with `--regionHelper` to obtain desired
+  region parameters for OCR Region setup.
+
+### Changed
+
+* Monospace UI elements are now rendered using embedded Roboto Mono font.
+
+### Fixed
+
+* Client now initializes properly when superseding a previously connected
+  client.
+* Some minor UI details on Chrome now look like they are supposed to.
+
 ## [0.4] – 2022-08-19
 
 ### Added
