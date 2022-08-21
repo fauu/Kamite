@@ -143,6 +143,7 @@ public class Server {
       if (wsPendingClientContext != null) {
         wsClientContext = wsPendingClientContext;
         wsPendingClientContext = null;
+        eventCb.accept(new ServerEvent.ClientConnected());
       } else {
         wsClientContext = null;
       }
@@ -154,11 +155,12 @@ public class Server {
     if (wsClientContext != null) {
       LOG.info("Dropping previous client websocket connection");
       wsPendingClientContext = ctx;
+      // The remaining new connection setup will be handled in onClose() of the disconnected client
       wsClientContext.closeSession(WS_CLOSE_CODE_SUPERSEDED_BY_ANOTHER_CLIENT, null);
     } else {
       wsClientContext = ctx;
+      eventCb.accept(new ServerEvent.ClientConnected());
     }
-    eventCb.accept(new ServerEvent.ClientConnected());
   }
 
   private void handleClientMessage(WsMessageContext ctx) {
