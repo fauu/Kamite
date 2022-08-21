@@ -121,12 +121,20 @@ public class ScreenSelector extends JFrame {
   }
 
   public CompletableFuture<Optional<Point>> getFuturePoint() {
+    if (futureArea != null) {
+      cancel();
+      futureArea = null;
+    }
     futurePoint = new CompletableFuture<>();
     activate();
     return futurePoint;
   }
 
   public CompletableFuture<Optional<Rectangle>> getFutureArea() {
+    if (futurePoint != null) {
+      cancel();
+      futurePoint = null;
+    }
     futureArea = new CompletableFuture<>();
     activate();
     return futureArea;
@@ -135,8 +143,10 @@ public class ScreenSelector extends JFrame {
   private void cancel() {
     if (futurePoint != null) {
       futurePoint.complete(Optional.empty());
+      futurePoint = null;
     } else if (futureArea != null) {
       futureArea.complete(Optional.empty());
+      futureArea = null;
     }
     deactivate();
     reset();
@@ -166,8 +176,6 @@ public class ScreenSelector extends JFrame {
     frameEnd = null;
     screenStart = null;
     screenEnd = null;
-    futureArea = null;
-    futurePoint = null;
   }
 
   private void setStartPoint(java.awt.Point frame, Point screen) {
@@ -183,9 +191,9 @@ public class ScreenSelector extends JFrame {
   private class MouseListener extends MouseAdapter {
     public void mousePressed(MouseEvent e) {
       if (futurePoint != null) {
-        futurePoint.complete(Optional.of(Point.from(getWindowsVirtualScreenCursorPosition())));
         deactivate();
         reset();
+        futurePoint.complete(Optional.of(Point.from(getWindowsVirtualScreenCursorPosition())));
         return;
       }
       setStartPoint(e.getPoint(), getWindowsVirtualScreenCursorPosition());
@@ -211,9 +219,9 @@ public class ScreenSelector extends JFrame {
       if (w <= 0 || h <= 0) {
         return;
       }
-      futureArea.complete(Optional.of(Rectangle.ofStartAndDimensions(x, y, w, h)));
       deactivate();
       reset();
+      futureArea.complete(Optional.of(Rectangle.ofStartAndDimensions(x, y, w, h)));
     }
 
     private Point getWindowsVirtualScreenCursorPosition() {
