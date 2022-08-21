@@ -29,11 +29,14 @@ Options:
   --profile=<profile-id>
       Load the config file 'config.<profile-id>.hocon' on top of the main config
       file
+  --regionHelper
+      Launch in Region Helper mode: prints the coordinates of user-selected
+      screen areas, exists once a selection is cancelled.
 
   Additional options are available, corresponding to the available config keys.
   Please consult the sections 'Command-line parameters' and 'Config' in the
   included README.md file.""");
-  System.exit(0);
+      System.exit(0);
     }
 
     (new Kamite()).run(argMap, BuildInfo.read());
