@@ -1,6 +1,6 @@
 # Changelog — Kamite
 
-## [Unreleased]
+## [0.5] – 2022-08-21
 
 ### Added
 
@@ -10,7 +10,7 @@
 
 ### Changed
 
-* Monospace UI elements are now rendered using embedded Roboto Mono font.
+* Monospace UI text elements are now rendered using embedded Roboto Mono font.
 
 ### Fixed
 
@@ -114,7 +114,8 @@
 
 Initial release.
 
-[Unreleased]: https://github.com/fauu/Kamite/compare/v0.4...HEAD
+[Unreleased]: https://github.com/fauu/Kamite/compare/v0.5...HEAD
+[0.5]: https://github.com/fauu/Kamite/releases/tag/v0.5
 [0.4]: https://github.com/fauu/Kamite/releases/tag/v0.4
 [0.3]: https://github.com/fauu/Kamite/releases/tag/v0.3
 [0.2]: https://github.com/fauu/Kamite/releases/tag/v0.2
