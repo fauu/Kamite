@@ -221,7 +221,7 @@ public class Kamite {
     }
 
     System.out.println(
-      "\nStarted in Region Helper mode. Select to print region, cancel selection to exit\n"
+      "\nStarted in Region Helper mode. Select to print region, cancel selection (Escape) to exit\n"
     );
 
     while (true) {
