@@ -94,22 +94,22 @@ public class Server {
     try {
       messageJson = JSON.mapper().writeValueAsString(message);
     } catch(JsonProcessingException e) {
-      LOG.debug("Error while serializing message: {}", e.toString()); // NOPMD
+      LOG.debug("Error while serializing message: {}", () -> e.toString());
     }
     if (messageJson == null) {
-      LOG.debug("Tried to send an empty message of kind: {}", message.getKind()); // NOPMD
+      LOG.debug("Tried to send an empty message of kind: {}", () -> message.getKind());
       return;
     }
     eventCb.accept(new ServerEvent.AboutToSendMessage(message));
     if (wsClientContext == null) {
-      LOG.debug( // NOPMD
+      LOG.debug(
         "Tried to send a message of kind '{}', but the client was not connected",
-        message.getKind()
+        () -> message.getKind()
       );
       return;
     }
     wsClientContext.send(messageJson);
-    LOG.debug("Sent a '{}' message", message.getKind()); // NOPMD
+    LOG.debug("Sent a '{}' message", () -> message.getKind());
   }
 
   public void destroy() {
@@ -127,7 +127,7 @@ public class Server {
       var cssPath = configDirPath.resolve(CUSTOM_CSS_FILE_PATH_RELATIVE).toString();
       ctx.contentType("text/css").result(new FileInputStream(cssPath));
     } catch (FileNotFoundException e) {
-      LOG.debug("Custom CSS file not found", e.toString()); // NOPMD
+      LOG.debug("Custom CSS file not found", () -> e.toString());
       throw new NotFoundResponse(); // NOPMD
     }
   }
@@ -136,7 +136,7 @@ public class Server {
     ws.onConnect(this::handleClientConnect);
     ws.onMessage(this::handleClientMessage);
     ws.onClose(ctx -> {
-      LOG.info("Client websocket connection closed: code {}", ctx.status()); // NOPMD
+      LOG.info("Client websocket connection closed: code {}", () -> ctx.status());
       // We juggle the contexts like this because we want to set `wsClientContext` to null here, but
       // only if this close event isn't the result of a new client connection replacing the old one.
       // And the status code doesn't let us distinguish that case from, e.g., a browser crash
@@ -166,7 +166,7 @@ public class Server {
   private void handleClientMessage(WsMessageContext ctx) {
     var messageParseRes = InMessage.fromJSON(ctx.message());
     if (messageParseRes.isErr()) {
-      LOG.warn("Error parsing client message: {}", messageParseRes.err()); // NOPMD
+      LOG.warn("Error parsing client message: {}", () -> messageParseRes.err());
     }
     eventCb.accept(new ServerEvent.MessageReceived(messageParseRes.get()));
   }

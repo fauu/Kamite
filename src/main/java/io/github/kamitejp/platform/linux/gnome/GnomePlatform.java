@@ -91,7 +91,7 @@ public class GnomePlatform extends WaylandPlatform {
     try {
       area = futureArea.join();
     } catch (CompletionException e) {
-      LOG.debug("GNOME screenshot API call failed", e.getCause()); // NOPMD
+      LOG.debug("GNOME screenshot API call failed", () -> e.getCause());
       return Result.Err(RecognitionOpError.SELECTION_FAILED);
     }
 
@@ -123,7 +123,7 @@ public class GnomePlatform extends WaylandPlatform {
         return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
       }
     } catch (CompletionException e) {
-      LOG.debug("GNOME screenshot API call failed", e); // NOPMD
+      LOG.debug("GNOME screenshot API call failed", e);
       return Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
     }
 
@@ -135,7 +135,7 @@ public class GnomePlatform extends WaylandPlatform {
     try {
       Files.delete(Paths.get(res.filenameUsed()));
     } catch (IOException e) {
-      LOG.debug("Failed to delete temporary screenshot '{}': {}", res.filenameUsed(), e); // NOPMD
+      LOG.debug("Failed to delete temporary screenshot '{}': {}", () -> res.filenameUsed(), e);
     }
 
     return Result.Ok(img.get());

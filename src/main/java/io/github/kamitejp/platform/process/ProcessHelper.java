@@ -22,7 +22,7 @@ public final class ProcessHelper {
   }
 
   public static ProcessResult<String> run(ProcessRunParams params) {
-    LOG.debug("Running: `{}`", params.getCmdString()); // NOPMD
+    LOG.debug("Running: `{}`", () -> params.getCmdString());
     var pb = initProcessBuilder(params);
     try {
       var process = pb.start();
@@ -50,7 +50,7 @@ public final class ProcessHelper {
   }
 
   public static ProcessResult<byte[]> runWithBinaryOutput(ProcessRunParams params) {
-    LOG.debug("Running with binary output: `{}`", params.getCmdString()); // NOPMD
+    LOG.debug("Running with binary output: `{}`", () -> params.getCmdString());
     var pb = initProcessBuilder(params);
     try {
       var process = pb.start();

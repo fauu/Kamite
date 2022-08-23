@@ -99,10 +99,10 @@ public class OCRDirectoryWatcher {
             return;
           }
           for (var ev : watchKey.pollEvents()) {
-            LOG.debug( // NOPMD
+            LOG.debug(
               "Received watch service event: kind='{}' context='{}'",
-              ev.kind(),
-              ev.context()
+              () -> ev.kind(),
+              () -> ev.context()
             );
             if (ev.context() != null) {
               fileModifiedOrCreatedCb.accept((Path) ev.context());

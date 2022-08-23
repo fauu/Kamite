@@ -138,7 +138,7 @@ public class ControlGUI extends JFrame {
         awtAppClassNameField.set(toolkit, Kamite.APP_NAME_DISPLAY);
         LOG.debug("Applied GNOME control GUI window name fix");
       } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
-        LOG.warn("Error while setting 'awtAppClassName'", e.toString()); // NOPMD
+        LOG.warn("Error while setting 'awtAppClassName'", () -> e.toString());
       }
     }
   }

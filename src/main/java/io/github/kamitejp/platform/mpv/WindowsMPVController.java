@@ -100,9 +100,7 @@ public final class WindowsMPVController extends BaseMPVController {
       try {
         return new RandomAccessFile(PIPE_ADDR, "rw");
       } catch (FileNotFoundException e) {
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("Could not connect to mpv named pipe at {}: {}", PIPE_ADDR, e.getMessage());
-        }
+        LOG.trace("Could not connect to mpv named pipe at {}: {}", PIPE_ADDR, () -> e.getMessage());
         return null;
       }
     }

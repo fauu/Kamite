@@ -40,9 +40,9 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
     try {
       dbusClient.init();
     } catch (DBusClientInitializationException e) {
-      LOG.warn( // NOPMD
+      LOG.warn(
         "Failed to initialize DBus client. The DBus API will be unavailable for this session. {}",
-        e.toString()
+        () -> e.toString()
       );
       dbusClient = null;
     }

@@ -102,7 +102,7 @@ public class Recognizer {
     };
 
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
-    LOG.info("Initialized recognizer (engine: {})", uninitializedEngine.displayName()); // NOPMD
+    LOG.info("Initialized recognizer (engine: {})", () -> uninitializedEngine.displayName());
   }
 
   public void destroy() {

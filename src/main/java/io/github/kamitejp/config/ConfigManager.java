@@ -88,7 +88,7 @@ public final class ConfigManager {
       return Result.Ok(null);
     }
 
-    LOG.info( // NOPMD
+    LOG.info(
       "Main config file is not accessible: {}. Creating a default config file",
       filePath
     );

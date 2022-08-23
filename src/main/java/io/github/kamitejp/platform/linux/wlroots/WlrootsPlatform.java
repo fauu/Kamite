@@ -149,16 +149,16 @@ public class WlrootsPlatform extends WaylandPlatform {
       }
 
       case SlurpResult.Error error -> {
-        LOG.error("slurp returned an error: {}", error.error()); // NOPMD
+        LOG.error("slurp returned an error: {}", () -> error.error());
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
 
       case SlurpResult.Cancelled __ -> Result.Err(RecognitionOpError.SELECTION_CANCELLED);
 
       case SlurpResult.FormatDifferentFromExpected expected -> {
-        LOG.error( // NOPMD
+        LOG.error(
           "slurp returned malformatted result instead of expected {}",
-          expected.expected()
+          () -> expected.expected()
         );
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
@@ -176,7 +176,7 @@ public class WlrootsPlatform extends WaylandPlatform {
           LOG.error("wlrctl did not execute properly");
         }
         case WlrctlResult.Error error -> {
-          LOG.error("wlrctl returned an error: {}", error.error()); // NOPMD
+          LOG.error("wlrctl returned an error: {}", () -> error.error());
         }
         default -> {}
       }
@@ -197,7 +197,7 @@ public class WlrootsPlatform extends WaylandPlatform {
         yield Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
       }
       case GrimResult.Error error -> {
-        LOG.error("grim returned an error: {}", error.error()); // NOPMD
+        LOG.error("grim returned an error: {}", () -> error.error());
         yield Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
       }
       case GrimResult.Screenshot screenshot -> Result.Ok(screenshot.screenshot());

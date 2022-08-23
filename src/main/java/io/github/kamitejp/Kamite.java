@@ -85,7 +85,7 @@ public class Kamite {
   private ProgramStatus status;
 
   public void run(Map<String,String> args, BuildInfo buildInfo) {
-    LOG.info("Starting Kamite (version {})", buildInfo.getVersion()); // NOPMD
+    LOG.info("Starting Kamite (version {})", () -> buildInfo.getVersion());
 
     var preconfigArgs = processPreconfigArgs(args);
 
@@ -101,7 +101,7 @@ public class Kamite {
       createControlGUIAndShowFatalError("Failed to initialize platform support", e.toString());
       return;
     }
-    LOG.info("Initialized support for platform {}", platform.getClass().getSimpleName()); // NOPMD
+    LOG.info("Initialized support for platform {}", () -> platform.getClass().getSimpleName());
 
     if (preconfigArgs.regionHelper()) {
       Runtime.getRuntime().addShutdownHook(new Thread(platform::destroy));
@@ -128,15 +128,15 @@ public class Kamite {
 
     if (config.controlWindow()) {
       createControlGUI();
-      LOG.info("Created control window (Kamite version {})", buildInfo.getVersion()); // NOPMD
+      LOG.info("Created control window (Kamite version {})", () -> buildInfo.getVersion());
     }
 
     // Unsupported platform features message deferred until control GUI potentially present
     var unsupportedFeatures = platform.getUnsupportedFeatures();
     if (!unsupportedFeatures.isEmpty()) {
-      LOG.warn( // NOPMD
+      LOG.warn(
         "The current platform does not support the following features:\n{}",
-        unsupportedFeatures.stream()
+        () -> unsupportedFeatures.stream()
           .map(f -> "– %s (%s)".formatted(f.getDisplayName(), f.getDescription()))
           .collect(joining("\n"))
       );
@@ -144,9 +144,9 @@ public class Kamite {
 
     // Config load message deferred until control GUI potentially present
     if (configReadSuccess.loadedProfileNames() != null) {
-      LOG.info( // NOPMD
+      LOG.info(
         "Loaded config profiles: {}",
-        String.join(", ", configReadSuccess.loadedProfileNames())
+        () -> String.join(", ", configReadSuccess.loadedProfileNames())
       );
     }
 
@@ -155,7 +155,7 @@ public class Kamite {
       try {
         ocrDirectoryWatcher = new OCRDirectoryWatcher(ocrWatchDir, this::recognizeImageProvided);
       } catch (OCRDirectoryWatcherCreationException e) {
-        LOG.error("Failed to create OCR directory watcher: {}", e.toString()); // NOPMD
+        LOG.error("Failed to create OCR directory watcher: {}", () -> e.toString());
       }
     }
 
@@ -297,15 +297,15 @@ public class Kamite {
         }
       }
     } catch (PlatformOCRInitializationException.MissingDependencies e) {
-      LOG.error( // NOPMD
+      LOG.error(
         "Text recognition will not be available due to missing dependencies: {}",
-        String.join(", ", e.getDependencies())
+        () -> String.join(", ", e.getDependencies())
       );
     } catch (PlatformOCRInitializationException e) {
       throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
     } catch (RecognizerInitializationException e) {
       if (e.getMessage() != null) {
-        LOG.error(e.getMessage()); // NOPMD
+        LOG.error(() -> e.getMessage());
       } else {
         LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
         e.printStackTrace();
@@ -613,13 +613,11 @@ public class Kamite {
   private void doHandleCommand(IncomingCommand incoming, CommandSource source) {
     var cmdParseRes = Command.fromIncoming(incoming);
     if (cmdParseRes.isErr()) {
-      LOG.warn("Error parsing command: {}", cmdParseRes.err()); // NOPMD
+      LOG.warn("Error parsing command: {}", () -> cmdParseRes.err());
       return;
     }
     var command = cmdParseRes.get();
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Handling command: {}", command.getClass());
-    }
+    LOG.debug("Handling command: {}", () -> command.getClass());
     switch (command) {
       case Command.OCR cmd -> {
         var refuseMsg = switch (status.getRecognizerStatus().getKind()) {
@@ -713,9 +711,7 @@ public class Kamite {
         throw new IllegalStateException("Unhandled command type");
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Finished handling command: {}", command.getClass());
-    }
+    LOG.debug("Finished handling command: {}", () -> command.getClass());
   }
 
   private void handleOCRImageCommand(String bytesB64, Dimension size) {
@@ -741,9 +737,7 @@ public class Kamite {
         );
       default -> throw new IllegalStateException("Unhandled request type");
     }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Handled request: {}", request.body().getClass());
-    }
+    LOG.debug("Handled request: {}", () -> request.body().getClass());
   }
 
   private void sendStatus(Class<? extends ProgramStatusOutMessage> clazz) {

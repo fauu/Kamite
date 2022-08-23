@@ -46,9 +46,7 @@ public abstract class BaseMPVController implements MPVController {
     var cmdJSON = cmd.toJSON();
     try {
       sendBytes(cmdJSON.getBytes(StandardCharsets.UTF_8));
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Sent mpv IPC command: {}", ipcJSONToPrintable(cmdJSON));
-      }
+      LOG.debug("Sent mpv IPC command: {}", () -> ipcJSONToPrintable(cmdJSON));
     } catch (IOException e) {
       LOG.error("Failed to write to mpv UNIX socket: ", e);
     }
@@ -57,9 +55,7 @@ public abstract class BaseMPVController implements MPVController {
   protected abstract void sendBytes(byte[] bytes) throws IOException;
 
   protected boolean handleMessages(String messagesJSON) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Received mpv messages: {}", ipcJSONToPrintable(messagesJSON));
-    }
+    LOG.debug("Received mpv messages: {}", () -> ipcJSONToPrintable(messagesJSON));
 
     boolean gotQuitMessage = false;
     PlayerStatus statusUpdate = null;

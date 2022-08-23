@@ -99,16 +99,16 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
       }
 
       case SlopResult.Error error -> {
-        LOG.error("slop returned an error: {}", error.error()); // NOPMD
+        LOG.error("slop returned an error: {}", () -> error.error());
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
 
       case SlopResult.Cancelled ignored -> Result.Err(RecognitionOpError.SELECTION_CANCELLED);
 
       case SlopResult.FormatDifferentFromExpected expected -> {
-        LOG.error( // NOPMD
+        LOG.error(
           "slop returned malformatted result instead of expected {}",
-          expected.expected()
+          () -> expected.expected()
         );
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
