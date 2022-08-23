@@ -6,7 +6,7 @@
 #   Xorg limitation: does not send the new text if it is equal to the previous
 # clipboard text.
 
-HOST=localhost:4110
+HOST="localhost:4110"
 
 SHOW_CHUNK_ENDPOINT="$HOST/cmd/chunk/show"
 
