@@ -107,6 +107,7 @@ script; [waycorner][waycorner-icxes].
         * [`character-counter_` commands](#character-counter_-commands)
         * [`session-timer_` commands](#session-timer_-commands)
         * [`chunk_` commands](#chunk_-commands)
+        * [`misc_` commands](#misc_-commands)
 12. [Privacy](#privacy)
 13. [Development](#development)
 14. [License](#license)
@@ -1670,7 +1671,8 @@ Available commands are distinguished by *command kind*, which is made up of two
 segments: *command group* and *command name*. For example, kind `ocr_region`
 corresponds to the group `ocr` and the name `region`.
 
-The command parameters are required unless a default value is specified.
+The command parameters are required unless they are marked as optional or a
+default value is specified.
 
 ### Sending commands
 
@@ -1780,6 +1782,14 @@ Seeks to the start of the current subtitle.
 **`show`** `(chunk: string)`
 
 **`show-translation`** `(translation: string)`
+
+#### `misc_` commands
+
+**`lookup`** `(targetSymbol: string, customText: optional[string])`\
+Initiates a lookup in the client. The `targetSymbol` must match one of the
+lookup target symbols defined in the config. If `customText` is not provided,
+that lookup text is used which would be used if the user clicked a lookup button
+instead.
 
 ## Privacy
 
