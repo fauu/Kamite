@@ -1,5 +1,5 @@
 # Watches the clipboard and sends new text to Kamite.
-# Based on https://github.com/samjones3/powershell-utilities/blob/main/PowerShell-Clipboard-Watcher.ps1.
+# Based on https://github.com/samjones3/powershell-utilities/blob/main/PowerShell-Clipboard-Watcher.ps1
 # The watcher will be active for as long as the console window it was started in stays open.
 # Note: Some programs in some situations will trigger clipboard change multiple times, resulting in duplicate chunks.
 
