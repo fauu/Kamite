@@ -1,5 +1,6 @@
 package io.github.kamitejp.util;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -17,6 +18,7 @@ public final class JSON {
 
   private static JsonMapper createDefaultMapper() {
     return JsonMapper.builder()
+      .configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS, true)
       .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true)
       .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
       .addModule(new JavaTimeModule())
