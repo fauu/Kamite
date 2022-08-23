@@ -699,9 +699,11 @@ public class Kamite {
       case Command.Chunk.ShowTranslation cmd ->
         showChunkTranslation(cmd.translation().translation(), cmd.translation().playbackTimeS());
 
-      case Command.Other.Custom cmd -> {
+      case Command.Misc.Custom cmd -> {
         if (source == CommandSource.API) {
-          LOG.warn("Command 'other_custom' is inaccessible through the API");
+          LOG.warn(
+            "Tried accessing command `misc_custom` through the API, but this is not allowed"
+          );
         } else {
           runCustomCommand(cmd.command());
         }

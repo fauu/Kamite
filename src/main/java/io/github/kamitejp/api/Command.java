@@ -17,7 +17,7 @@ public sealed interface Command
           Command.CharacterCounter,
           Command.SessionTimer,
           Command.Chunk,
-          Command.Other {
+          Command.Misc {
 
   sealed interface OCR extends Command
     permits OCR.ManualBlock,
@@ -72,9 +72,9 @@ public sealed interface Command
     record ShowTranslation(IncomingChunkTranslation translation) implements Chunk {}
   }
 
-  sealed interface Other extends Command
-    permits Other.Custom {
-    record Custom(String[] command) implements Other {}
+  sealed interface Misc extends Command
+    permits Misc.Custom {
+    record Custom(String[] command) implements Misc {}
   }
 
   static Result<Command, String> fromIncoming(IncomingCommand incoming) {
@@ -235,14 +235,14 @@ public sealed interface Command
           default -> null;
         };
 
-        case "other" -> {
+        case "misc" -> {
           if ("custom".equalsIgnoreCase(name)) {
             var p = JSON.mapper().treeToValue(paramsNode, CommandParams.Other.Custom.class);
             if (p == null) {
               paramsMissing = true;
               yield null;
             }
-            yield new Other.Custom(p.command());
+            yield new Misc.Custom(p.command());
           }
           yield null;
         }

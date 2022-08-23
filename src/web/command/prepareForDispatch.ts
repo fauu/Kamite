@@ -2,7 +2,7 @@ import type { Command, CustomCommand } from "~/backend";
 import type { ChunksState } from "~/chunk";
 
 export function commandPrepareForDispatch(command: Command, chunks: ChunksState): Command {
-  if (command.kind === "other_custom") {
+  if (command.kind === "misc_custom") {
     customCommandFillPlaceholders(command as CustomCommand, chunks);
   }
   return command;

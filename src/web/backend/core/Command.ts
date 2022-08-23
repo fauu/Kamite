@@ -55,7 +55,7 @@ type ChunkCommand =
 type OtherCommand = CustomCommand;
 
 export type CustomCommand =
-  { kind: "other_custom", params: { command: string[] } };
+  { kind: "misc_custom", params: { command: string[] } };
 
 export type Command =
   OCRCommand
@@ -80,7 +80,7 @@ export function commandFromOCRRegion(r: OCRRegion): OCRRegionCommand {
 
 export function commandFromConfigCustomCommand(c: ConfigCustomCommand): CustomCommand {
   return {
-    kind: "other_custom" as const,
+    kind: "misc_custom" as const,
     params: { command: c.command.split(" ") }
   };
 }

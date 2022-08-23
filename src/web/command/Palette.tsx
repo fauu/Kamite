@@ -21,7 +21,7 @@ export const CommandPalette: VoidComponent<CommandPaletteProps> = (props) => {
   const tooltip = useGlobalTooltip()!;
 
   const buttonBackgroundImage = (c: Command) =>
-    c.kind === "other_custom"
+    c.kind === "misc_custom"
     ? "none"
     : `url('icons/${iconBasename(c)}.svg')`;
 
@@ -77,7 +77,7 @@ const ButtonClass = css`
     bottom: 4px;
   }
 
-  &[data-kind="other_custom"]:before {
+  &[data-kind="misc_custom"]:before {
     font-size: 0.88rem;
   }
 `;
