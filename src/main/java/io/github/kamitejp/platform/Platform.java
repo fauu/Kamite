@@ -6,8 +6,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.Env;
 import io.github.kamitejp.geometry.Point;
@@ -25,7 +25,7 @@ import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.util.Result;
 
 public interface Platform {
-  Logger LOG = LoggerFactory.getLogger(Platform.class);
+  Logger LOG = LogManager.getLogger(Platform.class);
 
   // This determines the order in which the platforms are checked
   List<Class<? extends Platform>> KNOWN_PLATFORMS =

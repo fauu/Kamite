@@ -6,8 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.dbus.DBusClient;
 import io.github.kamitejp.dbus.DBusClientInitializationException;
@@ -20,7 +20,7 @@ import io.github.kamitejp.platform.PlatformInitializationException;
 import io.github.kamitejp.platform.process.ProcessHelper;
 
 public abstract class LinuxPlatform extends GenericPlatform implements Platform {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private CPUArchitecture cpuArchitecture;
   protected DBusClient dbusClient;

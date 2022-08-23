@@ -16,13 +16,13 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.image.ImageOps;
 
 public class MangaOCRController {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String PIPX_DEFAULT_VENV_NAME = "manga-ocr";
   private static final int RECOGNITION_TIMEOUT_S = 8;

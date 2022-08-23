@@ -12,8 +12,8 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.UnaryOperator;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
@@ -23,7 +23,7 @@ import com.typesafe.config.impl.ConfigImpl;
 import io.github.kamitejp.util.Result;
 
 public final class ConfigManager {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String MAIN_CONFIG_FILE_PATH_RELATIVE = "config.hocon";
   private static final String PROFILE_CONFIG_FILE_PATH_RELATIVE_TPL = "config.%s.hocon";

@@ -7,8 +7,8 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.tulskiy.keymaster.common.Provider;
 
@@ -28,7 +28,7 @@ import io.github.kamitejp.util.Result;
 
 @SuppressWarnings("PMD") // DEV
 public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKeybindingProvider {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private ScreenSelector selector;
   private final RobotScreenshoter robotScreenshoter;

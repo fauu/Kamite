@@ -6,8 +6,8 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -27,7 +27,7 @@ import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
 public class Server {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   private static final String CUSTOM_CSS_FILE_PATH_RELATIVE = "custom.css";
   private static final long WS_IDLE_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 hours
   private static final int WS_CLOSE_CODE_SUPERSEDED_BY_ANOTHER_CLIENT = 4000;

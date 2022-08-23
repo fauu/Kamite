@@ -10,19 +10,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
-import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
-import io.github.kamitejp.recognition.imagefeature.Contour;
-import io.github.kamitejp.recognition.imagefeature.ContourFinder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
+import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
+import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
+import io.github.kamitejp.recognition.imagefeature.Contour;
+import io.github.kamitejp.recognition.imagefeature.ContourFinder;
 
 public class MangaAutoBlockDetector implements AutoBlockDetector {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int NEAR_CC_MAX_DISTANCE = 75;
 

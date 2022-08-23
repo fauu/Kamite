@@ -22,8 +22,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Point;
@@ -42,7 +42,7 @@ import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
 import io.github.kamitejp.util.Result;
 
 public class Recognizer {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   // Width and height of the area around the user's cursor used for auto block recognition
   // ROBUSTNESS: Should probably depend on the screen resolution

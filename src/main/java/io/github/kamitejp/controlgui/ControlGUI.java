@@ -19,8 +19,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.Kamite;
 import io.github.kamitejp.platform.GenericPlatform;
@@ -31,7 +31,7 @@ import io.github.kamitejp.platform.linux.xorg.XorgDesktop;
 import io.github.kamitejp.platform.linux.xorg.XorgPlatform;
 
 public class ControlGUI extends JFrame {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public static final List<Image> ICON_IMAGES =
     Stream.of(16, 32, 48, 128).map(size ->

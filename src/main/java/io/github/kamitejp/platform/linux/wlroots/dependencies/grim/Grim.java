@@ -3,8 +3,8 @@ package io.github.kamitejp.platform.linux.wlroots.dependencies.grim;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.platform.BaseSimpleDependency;
 import io.github.kamitejp.platform.process.ProcessHelper;
@@ -12,7 +12,7 @@ import io.github.kamitejp.platform.process.ProcessRunParams;
 import io.github.kamitejp.image.ImageOps;
 
 public final class Grim extends BaseSimpleDependency {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public Grim() {
     super("grim");

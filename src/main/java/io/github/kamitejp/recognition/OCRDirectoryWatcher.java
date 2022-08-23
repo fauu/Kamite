@@ -12,13 +12,13 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.function.Consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.platform.GenericPlatform;
 
 public class OCRDirectoryWatcher {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private final Path dirPath;
   private final WatchService watchService;

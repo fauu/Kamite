@@ -10,9 +10,8 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.github.kamitejp.api.Command;
 import io.github.kamitejp.api.IncomingCommand;
@@ -69,7 +68,7 @@ import io.github.kamitejp.status.SessionTimer;
 import io.github.kamitejp.textprocessing.TextProcessor;
 
 public class Kamite {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
   public static final String APP_NAME_DISPLAY = "Kamite";

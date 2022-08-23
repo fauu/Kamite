@@ -15,8 +15,8 @@ import java.util.Queue;
 
 import javax.imageio.ImageIO;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
@@ -24,7 +24,7 @@ import io.github.kamitejp.util.PentaFunction;
 import io.github.kamitejp.util.TriFunction;
 
 public final class ImageOps {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public static final String DEFAULT_IMAGE_FORMAT = "png";
   public static final String DEFAULT_IMAGE_FORMAT_MIMETYPE = "image/png";

@@ -9,19 +9,19 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
-import io.github.kamitejp.recognition.imagefeature.Contour;
-import io.github.kamitejp.recognition.imagefeature.ContourFinder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
+import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
+import io.github.kamitejp.recognition.imagefeature.Contour;
+import io.github.kamitejp.recognition.imagefeature.ContourFinder;
 
 public class GameTextboxAutoBlockDetector implements AutoBlockDetector {
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   // NOTE: This is a temporary stand-in algorithm copy-pasted with few modifications from
   //       an older version of the manga block detector. It doesn't need to be

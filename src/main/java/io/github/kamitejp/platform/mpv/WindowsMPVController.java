@@ -7,11 +7,11 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class WindowsMPVController extends BaseMPVController {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String PIPE_ADDR = "\\\\.\\pipe\\%s".formatted(IPC_MEDIUM_FILENAME);
   private static final int READ_POLL_INTERVAL_MS = 125;

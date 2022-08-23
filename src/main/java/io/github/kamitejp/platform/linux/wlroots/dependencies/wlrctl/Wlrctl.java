@@ -3,15 +3,15 @@ package io.github.kamitejp.platform.linux.wlroots.dependencies.wlrctl;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.platform.BaseSimpleDependency;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.platform.process.ProcessRunParams;
 
 public final class Wlrctl extends BaseSimpleDependency {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public Wlrctl() {
     super("wlrctl");

@@ -11,8 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.sun.jna.Memory;
 import com.sun.jna.platform.win32.GDI32;
@@ -33,7 +33,7 @@ import io.github.kamitejp.util.Result;
 
 @SuppressWarnings("PMD") // DEV
 public class WindowsPlatform extends GenericPlatform implements Platform, GlobalKeybindingProvider {
-  private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final DirectColorModel SCREENSHOT_COLOR_MODEL =
     new DirectColorModel(24, 0x00FF0000, 0xFF00, 0xFF);
