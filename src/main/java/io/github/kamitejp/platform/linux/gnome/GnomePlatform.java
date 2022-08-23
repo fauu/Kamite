@@ -135,7 +135,7 @@ public class GnomePlatform extends WaylandPlatform {
     try {
       Files.delete(Paths.get(res.filenameUsed()));
     } catch (IOException e) {
-      LOG.debug("Failed to delete temporary screenshot '{}': {}", () -> res.filenameUsed(), e);
+      LOG.debug("Failed to delete temporary screenshot '{}': {}", res.filenameUsed(), e); // NOPMD
     }
 
     return Result.Ok(img.get());
