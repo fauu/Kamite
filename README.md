@@ -31,7 +31,7 @@ Wayland\*), Windows.**\
 https://user-images.githubusercontent.com/4130634/178029301-075cb207-a154-42d2-adb5-ce8fdbcd722f.mp4
 <!-- markdownlint-restore -->
 
-Featured in the demo:
+Featured in the above demo video:
 
 * (All shots) Firefox, [Sway].
 
@@ -78,7 +78,7 @@ script; [waycorner][waycorner-icxes].
     * [Visual novel / game text extraction](#visual-novel--game-text-extraction)
         * [Changing the default Textractor extension endpoint](#changing-the-default-textractor-extension-endpoint)
         * [Alternatives for games](#alternatives-for-games)
-    * [Clipboard paste](#clipboard-paste)
+    * [Clipboard](#clipboard)
     * [Custom source / alternative method text extraction](#custom-source--alternative-method-text-extraction)
 5. [Text use](#text-use)
     * [Editing and transforming the text](#editing-and-transforming-the-text)
@@ -1030,7 +1030,7 @@ Textractor for games. Some other alternatives are:
   <dd>A pop-up dictionary program that can track known words.</dd>
 </dl>
 
-### Clipboard paste
+### Clipboard
 
 Text can be pasted from clipboard by pressing <kbd>Ctrl</kbd> + <kbd>V</kbd> in
 Kamite’s browser tab.
@@ -1038,6 +1038,17 @@ Kamite’s browser tab.
 The Kamite browser client can automatically pick up clipboard text with the
 Clipboard Inserter browser extension ([Firefox][clipboard-inserter-ff],
 [Chrome][clipboard-inserter-chrome]) (assumes default extension settings).
+
+Clipboard can also be watched automatically without the Clipboard Inserter
+extension, but with a clipboard watcher script that sends changed clipboard
+content to Kamite:
+
+* <ins>Linux</ins> (except GNOME Wayland):
+[`contrib/kamite-watch-clipboard.sh`](contrib/kamite-watch-clipboard.sh).
+
+* <ins>Windows</ins>:
+[`contrib/Kamite-Watch-Clipboard.ps1`](contrib/Kamite-Watch-Clipboard.ps1) (run
+with `Right click › Run with PowerShell`).
 
 [clipboard-inserter-ff]: https://addons.mozilla.org/en-US/firefox/addon/clipboard-inserter/
 [clipboard-inserter-chrome]: https://chrome.google.com/webstore/detail/clipboard-inserter/deahejllghicakhplliloeheabddjajm
