@@ -37,6 +37,11 @@ export type InMessage =
 | {
   kind: "config",
   config: Config,
+}
+| {
+  kind: "lookup-request",
+  targetSymbol: string,
+  customText: string | null,
 };
 
 export type ChunkWithFuriganaMessage = {
@@ -53,7 +58,7 @@ export interface ChunkVariant {
   score: number,
 }
 
-export interface ProgramStatus { 
+export interface ProgramStatus {
   debug: boolean,
   profileName: string | null,
   lookupTargets: LookupTarget[],

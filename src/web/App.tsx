@@ -359,6 +359,12 @@ export const App: VoidComponent = () => {
       case "config":
         setConfig(msg.config);
         break;
+
+      case "lookup-request":
+        // QUAL: Feels hacky
+        notebook.setLookupOverride({ text: msg.customText ?? undefined, symbol: msg.targetSymbol });
+        notebook.setLookupOverride(undefined);
+        break;
     }
   }
 

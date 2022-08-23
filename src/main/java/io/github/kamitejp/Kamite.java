@@ -58,6 +58,7 @@ import io.github.kamitejp.server.outmessage.ChunkVariantsOutMessage;
 import io.github.kamitejp.server.outmessage.ChunkWithFuriganaOutMessage;
 import io.github.kamitejp.server.outmessage.ConfigOutMessage;
 import io.github.kamitejp.server.outmessage.DebugImageOutMessage;
+import io.github.kamitejp.server.outmessage.LookupRequestOutMessage;
 import io.github.kamitejp.server.outmessage.NotificationOutMessage;
 import io.github.kamitejp.server.outmessage.ProgramStatusOutMessage;
 import io.github.kamitejp.server.outmessage.ResponseOutMessage;
@@ -708,6 +709,8 @@ public class Kamite {
           runCustomCommand(cmd.command());
         }
       }
+      case Command.Misc.Lookup cmd ->
+        server.send(new LookupRequestOutMessage(cmd.targetSymbol(), cmd.customText()));
 
       default ->
         throw new IllegalStateException("Unhandled command type");

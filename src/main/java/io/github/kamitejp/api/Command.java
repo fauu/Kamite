@@ -73,8 +73,10 @@ public sealed interface Command
   }
 
   sealed interface Misc extends Command
-    permits Misc.Custom {
+    permits Misc.Custom,
+            Misc.Lookup {
     record Custom(String[] command) implements Misc {}
+    record Lookup(String targetSymbol, String customText) implements Misc {}
   }
 
   static Result<Command, String> fromIncoming(IncomingCommand incoming) {
@@ -235,17 +237,30 @@ public sealed interface Command
           default -> null;
         };
 
-        case "misc" -> {
-          if ("custom".equalsIgnoreCase(name)) {
-            var p = JSON.mapper().treeToValue(paramsNode, CommandParams.Other.Custom.class);
+        case "misc" -> switch (name) {
+          case "custom" -> {
+            var p = JSON.mapper().treeToValue(paramsNode, CommandParams.Misc.Custom.class);
             if (p == null) {
               paramsMissing = true;
               yield null;
             }
             yield new Misc.Custom(p.command());
           }
-          yield null;
-        }
+
+          case "lookup" -> {
+            var p = JSON.mapper().treeToValue(paramsNode, CommandParams.Misc.Lookup.class);
+            if (p == null || p.targetSymbol() == null) {
+              paramsMissing = true;
+              yield null;
+            }
+            yield new Misc.Lookup(
+              p.targetSymbol(),
+              p.customText() == null ? null : p.customText()
+            );
+          }
+
+          default -> null;
+        };
 
         default -> null;
       };

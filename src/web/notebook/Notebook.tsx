@@ -25,16 +25,27 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
   let pageViewEl!: HTMLDivElement;
   const pageEls: { [page: string]: HTMLDivElement } = {};
 
+  const effectiveLookupText = () => props.state.lookupOverride()?.text || props.lookupText;
+
   createEffect(() => props.state.activeTab() && switchPage(props.state.activeTab()));
 
   createEffect(() => {
     pageViewEl.style.maxHeight = `${props.state.height().px - tabBarEl.offsetHeight}px`;
   });
 
+  createEffect(() => {
+    const lookupOverride = props.state.lookupOverride();
+    if (lookupOverride) {
+      const tab = props.state.getLookupTabs().find(t => t.lookup?.symbol === lookupOverride.symbol);
+      tab && handleTabClick(tab);
+    }
+  });
+
   const tooltip = useGlobalTooltip()!;
 
   const lookupIframeSyncSrc = (tab: NotebookTab) => {
-    const url = lookupTargetFillURL(tab.lookup!, props.lookupText);
+    const text = effectiveLookupText();
+    const url = lookupTargetFillURL(tab.lookup!, text);
     (pageEls[tab.id]!.children[0] as HTMLIFrameElement).src = url;
   };
 
@@ -53,7 +64,7 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
 
   const handleTabClick = (tab: NotebookTab) => {
     if (tab.lookup?.newTab) {
-      window.open(lookupTargetFillURL(tab.lookup, props.lookupText));
+      window.open(lookupTargetFillURL(tab.lookup, effectiveLookupText()));
     } else {
       if (notebookTabIsEmbeddedLookup(tab)) {
         lookupIframeSyncSrc(tab);

@@ -15,7 +15,8 @@ public interface CommandParams {
     record ShowTranslation(String translation, Double playbackTimeS) {};
   }
 
-  interface Other {
+  interface Misc {
     record Custom(String[] command) {};
+    record Lookup(String targetSymbol, String customText) {};
   }
 }

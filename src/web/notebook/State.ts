@@ -12,6 +12,11 @@ export const MIN_HEIGHT_PERCENT = 0.25;
 export const MAX_HEIGHT_PERCENT = 0.75;
 export const INITIAL_HEIGHT = notebookHeightFromPercent(0.5);
 
+type LookupOverride = {
+  text?: string,
+  symbol: string,
+}
+
 export type NotebookState = ReturnType<typeof createNotebookState>;
 
 interface CreateNotebookStateParams {
@@ -27,6 +32,8 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     createSignal(INITIAL_HEIGHT);
   const [resizing, setResizing] =
     createSignal(false);
+  const [lookupOverride, setLookupOverride] =
+    createSignal<LookupOverride | undefined>(undefined);
 
   const groupedTabs = (): NotebookTab[][] =>
     tabs.reduce((acc, tab) => {
@@ -40,6 +47,8 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
   const activeTab = (): NotebookTab => tabs[activeTabIdx()];
   const activeTabId = (): NotebookTab["id"] => activeTab().id;
   const isTabActive = createSelector(activeTabId);
+
+  let lookupTabs: NotebookTab[];
 
   createEffect(() => {
     setTabs(
@@ -104,7 +113,7 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
   }
 
   function updateLookupTabs(lookupTargets: LookupTarget[]) {
-    const lookupTabs = lookupTargets.map(t => ({
+    lookupTabs = lookupTargets.map(t => ({
       id: lookupTargetSymbolToLookupTabID(t.symbol),
       title: t.name,
       symbol: t.symbol,
@@ -112,6 +121,10 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
       group: 0,
     }));
     setTabs([...BASE_NOTEBOOK_TABS, ...lookupTabs]);
+  }
+
+  function getLookupTabs(): readonly NotebookTab[] {
+    return lookupTabs;
   }
 
   return {
@@ -123,6 +136,8 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     // setHeight,
     resizing,
     setResizing,
+    lookupOverride,
+    setLookupOverride,
 
     groupedTabs,
     activeTab,
@@ -133,5 +148,6 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     setTabHidden,
     activateTab,
     updateLookupTabs,
+    getLookupTabs,
   };
 }
