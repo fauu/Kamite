@@ -47,6 +47,10 @@ Options:
       .filter(arg -> arg.startsWith("--"))
       .map(arg -> arg.substring(2))
       .map(arg -> arg.split("=", 2))
-      .collect(toMap(segs -> segs[0], segs -> segs.length == 2 ? segs[1] : "true"));
+      .collect(toMap(
+        segs -> segs[0],
+        segs -> segs.length == 2 ? segs[1] : "true",
+        (arg1, arg2) -> arg2 // Keep last
+      ));
   }
 }
