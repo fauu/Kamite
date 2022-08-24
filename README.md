@@ -56,9 +56,11 @@ script; [waycorner][waycorner-icxes].
         * [Arch User Repository](#arch-user-repository)
         * [Generic](#generic)
     * [Windows](#windows)
-2. [Launching Kamite](#launching-kamite)
-3. [User interface overview](#user-interface-overview)
-4. [Text extraction](#text-extraction)
+2. [Updating Kamite](#updating-kamite)
+    * [Linux Generic and Windows](#linux-generic-and-windows)
+3. [Launching Kamite](#launching-kamite)
+4. [User interface overview](#user-interface-overview)
+5. [Text extraction](#text-extraction)
     * [Anime (and other video) text extraction](#anime-and-other-video-text-extraction)
         * [Mining anime](#mining-anime)
         * [Tip: auto-pausing at the end of subtitle](#tip-auto-pausing-at-the-end-of-subtitle)
@@ -80,24 +82,24 @@ script; [waycorner][waycorner-icxes].
         * [Alternatives for games](#alternatives-for-games)
     * [Clipboard](#clipboard)
     * [Custom source / alternative method text extraction](#custom-source--alternative-method-text-extraction)
-5. [Text use](#text-use)
+6. [Text use](#text-use)
     * [Editing and transforming the text](#editing-and-transforming-the-text)
     * [Pop-up dictionary](#pop-up-dictionary)
     * [Lookups](#lookups)
         * [Custom lookups](#custom-lookups)
-6. [Custom commands (Launching external executables)](#custom-commands-launching-external-executables)
-7. [Keyboard shortcuts](#keyboard-shortcuts)
+7. [Custom commands (Launching external executables)](#custom-commands-launching-external-executables)
+8. [Keyboard shortcuts](#keyboard-shortcuts)
     * [Client-only keyboard shortcuts](#client-only-keyboard-shortcuts)
         * [Chunk edit mode keyboard shortcuts](#chunk-edit-mode-keyboard-shortcuts)
         * [Media player keyboard shortcuts (client)](#media-player-keyboard-shortcuts-client)
     * [Global keyboard shortcuts](#global-keyboard-shortcuts)
         * [Linux/Xorg and Windows](#linuxxorg-and-windows)
         * [Linux/wlroots](#linuxwlroots)
-8. [Launch options](#launch-options)
-9. [Config](#config)
+9. [Launch options](#launch-options)
+10. [Config](#config)
     * [Config profiles](#config-profiles)
-10. [Style customization](#style-customization)
-11. [Command API](#command-api)
+11. [Style customization](#style-customization)
+12. [Command API](#command-api)
     * [Sending commands](#sending-commands)
         * [DBus (Linux)](#dbus-linux)
         * [HTTP](#http)
@@ -107,9 +109,9 @@ script; [waycorner][waycorner-icxes].
         * [`character-counter_` commands](#character-counter_-commands)
         * [`session-timer_` commands](#session-timer_-commands)
         * [`chunk_` commands](#chunk_-commands)
-12. [Privacy](#privacy)
-13. [Development](#development)
-14. [License](#license)
+13. [Privacy](#privacy)
+14. [Development](#development)
+15. [License](#license)
     * [Third-party components](#third-party-components)
 
 ## Installing Kamite
@@ -138,9 +140,6 @@ the installation script can be removed by running:
 install.sh --uninstall
 ```
 
-To update, remove the old `kamite` directory and extract the new release package
-in its place.
-
 ### Windows
 
 Download the latest release package from the [Releases] page and extract it
@@ -148,6 +147,16 @@ to the location where you want to keep the program files. You can now launch
 Kamite using `Kamite.exe` inside the extracted directory.
 
 [Releases]: https://github.com/fauu/Kamite/releases
+
+## Updating Kamite
+
+**When updating, please check [the Changelog](CHANGELOG.md) for breaking chages in
+the newer versions.**
+
+### Linux Generic and Windows
+
+To update, remove the old `kamite` directory and extract the new release package
+in its place.
 
 ## Launching Kamite
 
