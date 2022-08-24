@@ -1,9 +1,6 @@
 import { For, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
-import { horizontalWheelScroll } from "~/directives";
-const [_] = [horizontalWheelScroll];
-
 import { ChromeClassName, PaletteButtonClass } from "~/globalStyles";
 import { themeLayoutFlipped } from "~/theme";
 
