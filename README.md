@@ -154,16 +154,12 @@ Kamite using `Kamite.exe` inside the extracted directory.
 
 Kamite can be launched:
 
-* <ins>Linux</ins>: either using the `bin/kamite` executable directly or a using
-  desktop launcher;
+* <ins>Linux</ins>: either direclty using the `bin/kamite` executable in the
+  program directory or through a desktop launcher (assuming the `.desktop` file
+  was installed);
 
-* <ins>Windows</ins>: either using the `Kamite.exe` executable or using the
-  `Kamite.ps1` PowerShell script (the latter provides console output).
-
-> Note (Windows): The execution of PowerShell scripts is disabled by default. To
-> enable it, start PowerShell with the Run as Administrator option and execute
-> the command `Set-ExecutionPolicy RemoteSigned`. Be aware that this lowers
-> system security.
+* <ins>Windows</ins>: using either the `Kamite.exe` or the `Kamite.com`
+  executable (the latter provides console output).
 
 Besides the [config file](#config), Kamite supports configuration through
 launch options. See [Launch options](#launch-options).
@@ -772,7 +768,7 @@ select the desired areas, and copy the resulting region specifications from the
 console output.
 
 > Note (Windows): To get console output on Windows, you must launch Kamite using
-> the `Kamite.ps1` PowerShell script.
+> the `Kamite.com` executable, not `Kamite.exe`.
 
 ###### Region OCR quality
 
@@ -1347,10 +1343,9 @@ bindsym $mod+d exec "dbus-send --type=method_call --dest=io.github.kamitejp /Rec
 
 > <b><ins>Windows</ins></b>: To launch Kamite with extra options, either: 1)
 > create a shortcut to `Kamite.exe`, open its Properties, and append the options
-> to the Target string after `…\Kamite.exe`, e.g.,
-> `…\Kamite.exe[space]--profile=myprofile` or 2) append them when invoking
-> either `Kamite.exe` or `Kamite.ps1` from a PowerShell window. Console output
-> will only be available when using `Kamite.ps1`.
+> to the Target string after `…\Kamite.exe` (e.g.,
+> `…\Kamite.exe[space]--profile=myprofile`) or 2) append them when invoking
+> `Kamite.exe` or `Kamite.com` from a console window.
 
 First, there are the basic launch options that are read before the config file:
 
