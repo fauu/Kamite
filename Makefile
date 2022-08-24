@@ -60,7 +60,7 @@ jar: gen-config client
 
 launcher-linux:
 	pushd launcher; \
-	cargo build --release; \
+	cargo build -p kamite-launcher-linux --target-dir "../target/launcher" --release; \
 
 launcher-win:
 	mkdir -p target/launcher/res; \
