@@ -75,7 +75,7 @@ export function availableActions(chunks: ChunksState): Action[] {
     if (resizedVariant) {
       candidateTransforms.push(resizedVariant);
     }
-    [kanaVoiceVariants, visuallySimilarCharacters, characterFunctionalReplacements].map(f => 
+    [kanaVoiceVariants, visuallySimilarCharacters, characterFunctionalReplacements].map(f =>
       candidateTransforms.push(...f(chunks.currentEffectiveText()))
     );
 
