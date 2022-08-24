@@ -7,6 +7,7 @@ import { WSCloseCode } from "./ws";
 const HOST = import.meta.env.DEV ? "localhost:4110" : window.location.host;
 const WS_ENDPOINT_ADDR = `ws://${HOST}/ws`;
 const RECONNECT_INTERVAL_MS = 5000;
+const CONNECTION_TIMEOUT = 1000;
 const REQUEST_TIMEOUT = 3000;
 
 type PendingRequest = {
@@ -20,11 +21,8 @@ type Callbacks = {
 };
 
 export type BackendConnectionState =
-  | "initial"
-  | "first-connecting"
+  | "connecting"
   | "connected"
-  | "just-disconnected"
-  | "reconnecting"
   | "disconnected-wont-reconnect";
 
 export class Backend {
@@ -32,23 +30,14 @@ export class Backend {
   #ws?: WebSocket;
   #pendingRequests: Map<number, PendingRequest>;
 
-  #connectionStateSignal = createSignal<BackendConnectionState>("initial");
+  #connectionStateSignal = createSignal<BackendConnectionState>("connecting");
   #connectionState = this.#connectionStateSignal[0];
   #setConnectionState = this.#connectionStateSignal[1];
 
   constructor(cbs: Callbacks) {
     this.#cbs = cbs;
     this.#pendingRequests = new Map();
-    this.#connect();
-    this.#setConnectionState("first-connecting");
-  }
-
-  reconnect() {
-    const state = this.#connectionState();
-    if (state === "just-disconnected" || state === "disconnected-wont-reconnect") {
-      this.#setConnectionState("reconnecting");
-      this.#connect();
-    }
+    void this.connect();
   }
 
   command(command: Command | Command["kind"]) {
@@ -83,17 +72,47 @@ export class Backend {
     return `http://${HOST}/custom.css`;
   }
 
-  #connect() {
-    const state = this.#connectionState();
-    if (state !== "initial" && state !== "reconnecting") {
-      return;
+  async connect(): Promise<void> {
+    this.#setConnectionState("connecting");
+    try {
+      const ws = await this.#doConnect(WS_ENDPOINT_ADDR);
+      this.#setConnectionState("connected");
+      ws.addEventListener("message", this.#handleMessage.bind(this));
+      ws.addEventListener("close", this.#handleConnectionClose.bind(this));
+      this.#ws = ws;
+    } catch (_event) {
+      // Timed out, try again
+      setTimeout(() => void this.connect(), RECONNECT_INTERVAL_MS);
     }
-    const ws = new WebSocket(WS_ENDPOINT_ADDR);
-    ws.onopen = this.#handleConnectionOpen.bind(this);
-    ws.onmessage = this.#handleMessage.bind(this);
-    ws.onclose = this.#handleConnectionClose.bind(this);
-    ws.onerror = this.#handleConnectionError.bind(this);
-    this.#ws = ws;
+  }
+
+  #doConnect(endpoint: string): Promise<WebSocket> {
+    return new Promise((resolve, reject) => {
+      const ws = new WebSocket(endpoint);
+      ws.addEventListener("open", handleOpen);
+      ws.addEventListener("error", handleError);
+
+      function handleOpen() {
+        resolve(ws);
+        cleanup();
+      }
+
+      function handleError(event: Event) {
+        reject(event);
+        cleanup();
+      }
+
+      const timeoutTimeout = setTimeout(() => {
+        reject(new Error("WebSocket connection timed out"));
+        cleanup();
+        ws.close();
+      }, CONNECTION_TIMEOUT);
+
+      function cleanup() {
+        clearTimeout(timeoutTimeout);
+        ws.removeEventListener("error", handleError);
+      }
+    });
   }
 
   #send(msg: OutMessage) {
@@ -126,38 +145,15 @@ export class Backend {
     }
   }
 
-  #handleConnectionOpen() {
-    this.#setConnectionState("connected");
-  }
-
-  #handleConnectionClose(event: CloseEvent) {
-    if (event.code !== WSCloseCode.AbnormalClosure) {
-      // Isn't a failed connection attempt
-      this.#setConnectionState("just-disconnected");
-    }
-    if (event.code === WSCloseCode.SupersededByAnotherClient) {
-      // Don't reconnect
+  #handleConnectionClose({ code }: CloseEvent) {
+    if (
+      code === WSCloseCode.SupersededByAnotherClient
+      || code === WSCloseCode.NoStatusReceived
+      || code === WSCloseCode.AbnormalClosue
+    ) {
       this.#setConnectionState("disconnected-wont-reconnect");
       return;
     }
-
-    // This point is reached after disconnecting AND after a failed connection attempt
-
-    // If just disconnected, try to reconnect immediately, then try it recurrently
-    switch (this.#connectionState()) {
-      case "just-disconnected":
-        this.reconnect();
-        break;
-      case "reconnecting":
-        setTimeout(this.#connect.bind(this), RECONNECT_INTERVAL_MS);
-        break;
-    }
-  }
-
-  #handleConnectionError() {
-    const state = this.#connectionState();
-    if (state === "first-connecting" || state === "reconnecting") {
-      this.reconnect();
-    }
+    void this.connect();
   }
 }

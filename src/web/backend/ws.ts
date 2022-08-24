@@ -1,4 +1,5 @@
 export enum WSCloseCode {
-  AbnormalClosure = 1006,
+  NoStatusReceived = 1005,
+  AbnormalClosue = 1006,
   SupersededByAnotherClient = 4000,
 }

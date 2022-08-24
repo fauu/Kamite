@@ -284,7 +284,7 @@ export const App: VoidComponent = () => {
 
   const handleRootMouseLeave = () => chunks.textSelection.set(undefined);
 
-  const handleReconnectClick = () => backend.reconnect();
+  const handleReconnectClick = () => void backend.connect();
 
   const handleChunkInput = (newText: string) => chunks.setEditText(newText);
 
