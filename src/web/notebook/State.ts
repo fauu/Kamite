@@ -15,7 +15,7 @@ export const INITIAL_HEIGHT = notebookHeightFromPercent(0.5);
 type LookupOverride = {
   text?: string,
   symbol: string,
-}
+};
 
 export type NotebookState = ReturnType<typeof createNotebookState>;
 

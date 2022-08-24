@@ -1,5 +1,6 @@
 import { onCleanup } from "solid-js";
 
+// QUAL: Currently unused
 export function horizontalWheelScroll(el: HTMLElement, value: () => boolean) {
   if (!value()) {
     return;
