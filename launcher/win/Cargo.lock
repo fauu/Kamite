@@ -17,17 +17,13 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "jni-sys-dynamic"
 version = "0.3.0"
-source = "git+https://github.com/fauu/jni-sys-dynamic-rs#9aa5084aedffc40c4bfa5267187cd67587c36f09"
+source = "git+https://github.com/Radviger/rust-jni-sys?rev=9aa5084#9aa5084aedffc40c4bfa5267187cd67587c36f09"
 dependencies = [
  "libloading 0.5.2",
 ]
 
 [[package]]
-name = "kamite-launcher-linux"
-version = "0.0.0"
-
-[[package]]
-name = "kamite-launcher-win"
+name = "kamite-launcher"
 version = "0.0.0"
 dependencies = [
  "jni-sys-dynamic",
