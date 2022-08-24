@@ -195,9 +195,6 @@ Below are some non-obvious tips regarding the interface that might come useful.
   (in order for the setting to persist, however, it must be set in the [config
   file](#config)).
 
-* When the *action palette* does not fit the screen entirely, it can be scrolled
-  with the mouse wheel.
-
 * You can have incoming text chunk inserted into the current chunk instead of
   entirely replacing it. To do that, enter the chunk edit mode as described
   above and either: 1) place the caret where you want the incoming chunk to be
