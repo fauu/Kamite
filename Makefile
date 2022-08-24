@@ -1,5 +1,7 @@
 .PHONY: clean client dist dist-only-linux dist-only-win-post-linux gen-config jar launcher-linux lint lint-docs lint-java lint-ts runtime-linux textractor
 
+LAUNCHER_TARGET_DIR=../target/launcher
+
 ifneq (,$(wildcard make-env))
   include make-env
 endif
@@ -26,7 +28,7 @@ dist-only-linux:
 	cp -r target/textractor target/dist/extra/textractor; \
 	cp -r target/dist target/kamite; \
 	mkdir target/kamite/bin; \
-	cp target/launcher/release/kamite-launcher target/kamite/bin/kamite; \
+	cp target/launcher/release/kamite-launcher-linux target/kamite/bin/kamite; \
 	cp -r res target/kamite; \
 	cp scripts/install.sh target/kamite; \
 	cp README.md target/kamite; \
@@ -38,14 +40,14 @@ dist-only-linux:
 # Assumes the Windows runtime is already built in a location specified by WIN_RUNTIME (can be put in
 # the make-env file)
 dist-only-win-post-linux:
-	cp launcher/scripts/Kamite.ps1 target/kamite; \
 	rm -rf target/kamite/runtime; \
 	cp -r "$(WIN_RUNTIME)" target/kamite; \
 	pushd target; \
 	pushd kamite/runtime/bin; \
-	rm jrunscript.exe keytool.exe rmiregistry.exe kinit.exe klist.exe ktab.exe; \
+	rm java.exe javaw.exe jrunscript.exe keytool.exe rmiregistry.exe kinit.exe klist.exe ktab.exe; \
 	popd; \
-	cp launcher/x86_64-pc-windows-gnu/release/kamite-launcher.exe kamite/Kamite.exe; \
+	cp launcher/x86_64-pc-windows-gnu/release/kamite-launcher-win-main.exe kamite/Kamite.exe; \
+	cp launcher/x86_64-pc-windows-gnu/release/kamite-launcher-win-console-wrapper.exe kamite/Kamite.com; \
 	rm kamite/install.sh; \
 	rm -rf kamite/res; \
 	rm -rf kamite/scripts; \
@@ -60,13 +62,14 @@ jar: gen-config client
 
 launcher-linux:
 	pushd launcher; \
-	cargo build -p kamite-launcher-linux --target-dir "../target/launcher" --release; \
+	cargo build -p kamite-launcher-linux --target-dir "$(LAUNCHER_TARGET_DIR)" --release; \
 
 launcher-win:
 	mkdir -p target/launcher/res; \
 	convert res/icon/icon-16.png res/icon/icon-32.png res/icon/icon-48.png res/icon/icon-256.png target/launcher/res/icon.ico; \
 	pushd launcher; \
-	cargo build --target x86_64-pc-windows-gnu --release; \
+	x86_64-w64-mingw32-windres win/res/resources.rc --output "$(LAUNCHER_TARGET_DIR)/res/resources.o"; \
+	cargo build -p kamite-launcher-win --target x86_64-pc-windows-gnu --target-dir "$(LAUNCHER_TARGET_DIR)" --release; \
 
 lint: lint-docs lint-java lint-js
 
