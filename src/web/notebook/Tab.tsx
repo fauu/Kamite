@@ -63,7 +63,9 @@ export const NotebookTabDisplayClass = css`
 `;
 
 const ActiveClass = css`
-  --active-bg: linear-gradient(45deg, var(--color-bg2) 3%, var(--color-bg3-hl) 53%, var(--color-bg2) 100%);
+  --active-bg: linear-gradient(45deg, var(--color-bg2) 3%,
+    var(--color-bg3-hl) 53%,
+    var(--color-bg2) 100%);
   background: var(--active-bg);
 
   &:after {
@@ -107,7 +109,8 @@ const RemoteLookupClass = css`
     right: 4px;
     width 8px;
     height: 8px;
-    background-image: url("icons/remote.png");
+    background-image: url("icons/remote.svg");
+    background-size: 8px;
     opacity: 0.5;
   }
 `;
