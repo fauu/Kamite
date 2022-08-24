@@ -17,6 +17,7 @@ fn main() {
     env::set_var("_started_from_console", "yes");
 
     let mut child = Command::new(main_exe_path)
+        .args(env::args().skip(1))
         .stdin(Stdio::null())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
