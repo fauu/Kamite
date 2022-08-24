@@ -22,13 +22,13 @@ public class OCRDirectoryWatcher {
 
   private final Path dirPath;
   private final WatchService watchService;
-  private final Consumer<BufferedImage> recognizeBox;
+  private final Consumer<BufferedImage> recognizeImageFn;
   private final Thread worker;
 
   public OCRDirectoryWatcher(
-    String rawDirPath, Consumer<BufferedImage> recognizeBox
+    String rawDirPath, Consumer<BufferedImage> recognizeImageFn
   ) throws OCRDirectoryWatcherCreationException {
-    this.recognizeBox = recognizeBox;
+    this.recognizeImageFn = recognizeImageFn;
     try {
       dirPath = Paths.get(rawDirPath);
     } catch (InvalidPathException e) {
@@ -69,7 +69,7 @@ public class OCRDirectoryWatcher {
       .ifPresentOrElse(
         img -> {
           LOG.debug("Recognizing image from watched directory: {}", absolutePath);
-          recognizeBox.accept(img);
+          recognizeImageFn.accept(img);
         },
         () -> LOG.error("OCR directory watcher did not receive image: {}", absolutePath)
       );

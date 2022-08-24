@@ -1,4 +1,4 @@
-package io.github.kamitejp.platform;
+package io.github.kamitejp.recognition;
 
 public enum RecognitionOpError {
   OCR_UNAVAILABLE,

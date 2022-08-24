@@ -14,14 +14,14 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
-import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
-import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.linux.WaylandPlatform;
 import io.github.kamitejp.recognition.OCREngine;
+import io.github.kamitejp.recognition.PointSelectionMode;
+import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;
 
 @SuppressWarnings("PMD")

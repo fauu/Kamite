@@ -1,6 +1,6 @@
 package io.github.kamitejp.api;
 
-import io.github.kamitejp.operations.PointSelectionMode;
+import io.github.kamitejp.recognition.PointSelectionMode;
 
 public interface CommandParams {
   interface OCR {

@@ -13,11 +13,9 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
-import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
-import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.linux.WaylandPlatform;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.grim.Grim;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.grim.GrimResult;
@@ -28,6 +26,8 @@ import io.github.kamitejp.platform.linux.wlroots.dependencies.slurp.SlurpResult;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.wlrctl.Wlrctl;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.wlrctl.WlrctlResult;
 import io.github.kamitejp.recognition.OCREngine;
+import io.github.kamitejp.recognition.PointSelectionMode;
+import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;
 
 public class WlrootsPlatform extends WaylandPlatform {

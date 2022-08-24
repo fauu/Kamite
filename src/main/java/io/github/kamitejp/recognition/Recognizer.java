@@ -34,7 +34,6 @@ import io.github.kamitejp.platform.MangaOCREvent;
 import io.github.kamitejp.platform.MangaOCRInitializationException;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
-import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;

@@ -2,7 +2,6 @@ package io.github.kamitejp;
 
 import static java.util.stream.Collectors.joining;
 
-import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Base64;
@@ -24,15 +23,12 @@ import io.github.kamitejp.config.ConfigManager;
 import io.github.kamitejp.controlgui.ControlGUI;
 import io.github.kamitejp.dbus.DBusEvent;
 import io.github.kamitejp.geometry.Dimension;
-import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
-import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformInitializationException;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
-import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.linux.LinuxPlatform;
 import io.github.kamitejp.platform.mpv.MPVCommand;
 import io.github.kamitejp.platform.mpv.MPVController;
@@ -43,9 +39,9 @@ import io.github.kamitejp.recognition.ChunkVariants;
 import io.github.kamitejp.recognition.OCRDirectoryWatcher;
 import io.github.kamitejp.recognition.OCRDirectoryWatcherCreationException;
 import io.github.kamitejp.recognition.OCREngine;
-import io.github.kamitejp.recognition.Recognizer;
+import io.github.kamitejp.recognition.PointSelectionMode;
+import io.github.kamitejp.recognition.RecognitionConductor;
 import io.github.kamitejp.recognition.RecognizerEvent;
-import io.github.kamitejp.recognition.RecognizerInitializationException;
 import io.github.kamitejp.recognition.RecognizerStatus;
 import io.github.kamitejp.recognition.TextOrientation;
 import io.github.kamitejp.server.InMessage;
@@ -77,12 +73,11 @@ public class Kamite {
   private Config config;
   private Server server;
   private Platform platform;
+  private RecognitionConductor recognitionConductor;
   private OCRDirectoryWatcher ocrDirectoryWatcher;
-  private Recognizer recognizer;
   private TextProcessor textProcessor;
   private MPVController mpvController;
   private ChunkCheckpoint chunkCheckpoint;
-
   private ProgramStatus status;
 
   public void run(Map<String,String> args, BuildInfo buildInfo) {
@@ -154,7 +149,10 @@ public class Kamite {
     var ocrWatchDir = config.ocr().watchDir();
     if (ocrWatchDir != null) {
       try {
-        ocrDirectoryWatcher = new OCRDirectoryWatcher(ocrWatchDir, this::recognizeImageProvided);
+        ocrDirectoryWatcher = new OCRDirectoryWatcher(
+          ocrWatchDir,
+          /* recognizeImageFn */ recognitionConductor::recognizeImageProvided
+        );
       } catch (OCRDirectoryWatcherCreationException e) {
         LOG.error("Failed to create OCR directory watcher: {}", () -> e.toString());
       }
@@ -189,7 +187,15 @@ public class Kamite {
 
     initMPVController();
 
-    initRecognizer();
+    recognitionConductor = RecognitionConductor.getInstance(
+      platform,
+      config,
+      status,
+      /* recognizerEventCb */               this::handleRecognizerEvent,
+      /* chunkVariantsCb */                 this::handleChunkVariants,
+      /* notifyErrorFn */                   this::notifyError,
+      /* updateAndSendRecognizerStatusFn */ this::updateAndSendRecognizerStatus
+    );
 
     Runtime.getRuntime().addShutdownHook(
       new Thread(() -> {
@@ -198,8 +204,8 @@ public class Kamite {
         if (ocrDirectoryWatcher != null) {
           ocrDirectoryWatcher.destroy();
         }
-        if (recognizer != null) {
-          recognizer.destroy();
+        if (recognitionConductor != null) {
+          recognitionConductor.destroy();
         }
         mpvController.destroy();
       })
@@ -278,43 +284,10 @@ public class Kamite {
     }
   }
 
-  private void initRecognizer() {
-    var unavailable = true;
-    try {
-      var engineRes = OCREngine.uninitializedFromConfig(config);
-      if (engineRes.isErr()) {
-        LOG.error("Error setting up OCR engine for initialization: {}", engineRes.err());
-      } else {
-        var engine = engineRes.get();
-        if (!(engine instanceof OCREngine.None)) {
-          platform.initOCR(engine);
-          recognizer = new Recognizer(
-            platform,
-            engine,
-            status.isDebug(),
-            this::handleRecognizerEvent
-          );
-          unavailable = false;
-        }
-      }
-    } catch (PlatformOCRInitializationException.MissingDependencies e) {
-      LOG.error(
-        "Text recognition will not be available due to missing dependencies: {}",
-        () -> String.join(", ", e.getDependencies())
-      );
-    } catch (PlatformOCRInitializationException e) {
-      throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
-    } catch (RecognizerInitializationException e) {
-      if (e.getMessage() != null) {
-        LOG.error(() -> e.getMessage());
-      } else {
-        LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
-        e.printStackTrace();
-      }
-    }
-    if (unavailable) {
-      updateAndSendRecognizerStatus(RecognizerStatus.Kind.UNAVAILABLE);
-    }
+  private void handleChunkVariants(ChunkVariants variants) {
+    server.send(new ChunkVariantsOutMessage(
+      variants.getPostprocessedChunks(config.chunk().correct())
+    ));
   }
 
   private void handleRecognizerEvent(RecognizerEvent event) {
@@ -351,187 +324,6 @@ public class Kamite {
   private void updateAndSendRecognizerStatus(RecognizerStatus.Kind statusKind) {
     status.updateRecognizerStatus(statusKind);
     sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
-  }
-
-  private void recognizeRegion(Rectangle region, boolean autoNarrow) {
-    LOG.debug("Handling region recognition request ({})", region);
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeRegion(
-      region,
-      TextOrientation.HORIZONTAL,
-      /* autoBlockHeuristic */ autoNarrow ? AutoBlockHeuristic.GAME_TEXTBOX : null
-    );
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.IDLE);
-  }
-
-  private void doRecognizeRegion(
-    Rectangle region,
-    TextOrientation textOrientation,
-    AutoBlockHeuristic autoBlockHeuristic
-  ) {
-    var screenshotRes = platform.takeAreaScreenshot(region);
-    if (screenshotRes.isErr()) {
-      var errorNotification = switch (screenshotRes.err()) {
-        case SELECTION_CANCELLED -> null;
-        default                  -> "Could not take a screenshot";
-      };
-      recognitionAbandon(errorNotification, screenshotRes.err());
-      return;
-    }
-
-    if (autoBlockHeuristic != null) {
-      doRecognizeAutoBlockImageProvided(screenshotRes.get(), textOrientation, autoBlockHeuristic);
-    } else {
-      doRecognizeBox(screenshotRes.get(), textOrientation);
-    }
-  }
-
-  private void recognizeManualBlockDefault() {
-    recognizeManualBlock(TextOrientation.UNKNOWN);
-  }
-
-  private void recognizeManualBlock(TextOrientation textOrientation) {
-    LOG.debug("Handling manual block recognition request");
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.AWAITING_USER_INPUT);
-
-    var areaRes = platform.getUserSelectedArea();
-    if (areaRes.isErr()) {
-      var errorNotification = switch (areaRes.err()) {
-        case SELECTION_CANCELLED -> null;
-        default                  -> "Could not get user screen area selection";
-      };
-      recognitionAbandon(errorNotification, areaRes.err());
-      return;
-    }
-
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeRegion(areaRes.get(), textOrientation, /* heuristic */ null);
-    // doRecognizeRegion(areaRes.get(), /* heuristic */ AutoBlockHeuristic.GAME_TEXTBOX); // DEV
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.IDLE);
-  }
-
-  private void recognizeAutoBlockDefault(PointSelectionMode mode) {
-    recognizeAutoBlock(mode, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_FULL);
-  }
-
-  private void recognizeAutoBlockColumnDefault(PointSelectionMode mode) {
-    recognizeAutoBlock(mode, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_SINGLE_COLUMN);
-  }
-
-  private void recognizeImageProvided(BufferedImage img) {
-    LOG.debug("Handling image provided recognition request");
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeBox(img, TextOrientation.UNKNOWN);
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.IDLE);
-  }
-
-  @SuppressWarnings("SameParameterValue")
-  private void recognizeAutoBlock(
-    PointSelectionMode mode, TextOrientation textOrientation, AutoBlockHeuristic heuristic
-  ) {
-    LOG.debug(
-      "Handling auto block recognition request (mode = {}, heuristic = {})", mode, heuristic
-    );
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.AWAITING_USER_INPUT);
-
-    var selectionRes = platform.getUserSelectedPoint(mode);
-    if (selectionRes.isErr()) {
-      var errorNotification = switch (selectionRes.err()) {
-        case SELECTION_CANCELLED -> null;
-        default                  -> "Could get user screen point selection";
-      };
-      recognitionAbandon(errorNotification, selectionRes.err());
-      return;
-    }
-
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.PROCESSING);
-
-    var point = selectionRes.get();
-    var screenshotRes = platform.takeAreaScreenshot(
-      Rectangle.around(point, Recognizer.AUTO_BLOCK_AREA_SIZE)
-    );
-    if (screenshotRes.isErr()) {
-      var errorNotification = switch (screenshotRes.err()) {
-        case SELECTION_CANCELLED -> null;
-        default                  -> "Could not take a screenshot";
-      };
-      recognitionAbandon(errorNotification, screenshotRes.err());
-      return;
-    }
-
-    doRecognizeAutoBlockImageProvided(screenshotRes.get(), textOrientation, heuristic);
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.IDLE);
-  }
-
-  @SuppressWarnings("SameParameterValue")
-  private void recognizeAutoBlockImageProvided(
-    BufferedImage img, TextOrientation textOrientation, AutoBlockHeuristic mode
-  ) {
-    LOG.debug("Handling auto block image recognition request (mode = {})", mode);
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeAutoBlockImageProvided(img, textOrientation, mode);
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.IDLE);
-  }
-
-  private void doRecognizeAutoBlockImageProvided(
-    BufferedImage img, TextOrientation textOrientation, AutoBlockHeuristic heuristic
-  ) {
-    var maybeBlockImg = recognizer.autoNarrowToTextBlock(img, heuristic);
-    if (maybeBlockImg.isEmpty()) {
-      var msg = "Text block detection has failed";
-      notifyError(msg);
-      LOG.info(msg);
-      return;
-    }
-    doRecognizeBox(maybeBlockImg.get(), textOrientation);
-  }
-
-  private void doRecognizeBox(BufferedImage img, TextOrientation textOrientation) {
-    var recognitionRes = recognizer.recognizeBox(img, textOrientation);
-    if (recognitionRes.isErr()) {
-      var errorNotification = switch (recognitionRes.err()) {
-        case SELECTION_CANCELLED -> null;
-        case INPUT_TOO_SMALL     -> "Input image is too small";
-        case ZERO_VARIANTS       -> "Could not recognize any text";
-        default -> "Box recognition has failed.\nCheck control window or console for errors";
-      };
-      recognitionAbandon(errorNotification, recognitionRes.err());
-      return;
-    }
-    server.send(new ChunkVariantsOutMessage(
-      recognitionRes.get().chunkVariants().getPostprocessedChunks(config.chunk().correct())
-    ));
-  }
-
-  private void recognitionAbandon(String errorNotification, RecognitionOpError errorToLog) {
-    if (errorNotification != null) {
-      notifyError(errorNotification);
-    }
-    updateAndSendRecognizerStatus(RecognizerStatus.Kind.IDLE);
-    if (errorToLog != null) {
-      recognitionLogError(errorToLog);
-    }
-  }
-
-  private static void recognitionLogError(RecognitionOpError reason) {
-    switch (reason) { // NOPMD - misidentifies as non-exhaustive
-      case OCR_UNAVAILABLE ->
-        LOG.error("No OCR engine is available for use");
-      case SCREENSHOT_API_COMMUNICATION_FAILED ->
-        LOG.error("Failed to communicate with the screenshot API");
-      case SELECTION_CANCELLED ->
-        LOG.debug("Screen area/point selection was cancelled by the user");
-      case SELECTION_FAILED ->
-        LOG.error("Failed to perform screen area selection");
-      case SCREENSHOT_FAILED ->
-        LOG.error("Failed to take a screenshot");
-      case INPUT_TOO_SMALL ->
-        LOG.error("Input image is too small");
-      case OCR_ERROR ->
-        LOG.error("OCR failed abnormally");
-      case ZERO_VARIANTS ->
-        LOG.debug("Could not recognize text");
-    }
   }
 
   private void notifyError(String content) {
@@ -643,17 +435,17 @@ public class Kamite {
         }
         switch (cmd) {
           case Command.OCR.ManualBlock ignored ->
-            recognizeManualBlockDefault();
+            recognitionConductor.recognizeManualBlockDefault();
           case Command.OCR.ManualBlockVertical ignored ->
-            recognizeManualBlock(TextOrientation.VERTICAL);
+            recognitionConductor.recognizeManualBlock(TextOrientation.VERTICAL);
           case Command.OCR.ManualBlockHorizontal ignored ->
-            recognizeManualBlock(TextOrientation.HORIZONTAL);
+            recognitionConductor.recognizeManualBlock(TextOrientation.HORIZONTAL);
           case Command.OCR.AutoBlock cm ->
-            recognizeAutoBlockDefault(cm.mode());
+            recognitionConductor.recognizeAutoBlockDefault(cm.mode());
           case Command.OCR.AutoColumn cm ->
-            recognizeAutoBlockColumnDefault(cm.mode());
+            recognitionConductor.recognizeAutoBlockColumnDefault(cm.mode());
           case Command.OCR.Region cm ->
-            recognizeRegion(cm.region(), cm.autoNarrow());
+            recognitionConductor.recognizeRegion(cm.region(), cm.autoNarrow());
           case Command.OCR.Image cm ->
             handleOCRImageCommand(cm.bytesB64(), cm.size());
           default -> throw new IllegalStateException("Unhandled command type");
@@ -722,7 +514,9 @@ public class Kamite {
   private void handleOCRImageCommand(String bytesB64, Dimension size) {
     var bytes = Base64.getDecoder().decode(bytesB64);
     var img = ImageOps.arrayToBufferedImage(bytes, size.width(), size.height());
-    recognizeAutoBlockImageProvided(img, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_FULL);
+    recognitionConductor.recognizeAutoBlockImageProvided(
+      img, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_FULL
+    );
   }
 
   private void runCustomCommand(String[] command) {
@@ -789,7 +583,9 @@ public class Kamite {
     var count = 0;
     if (keybindings.ocr().manualBlock() != null) {
       registerGlobalKeybinding(
-        provider, keybindings.ocr().manualBlock(), this::recognizeManualBlockDefault
+        provider,
+        keybindings.ocr().manualBlock(),
+        recognitionConductor::recognizeManualBlockDefault
       );
       count++;
     }
@@ -797,7 +593,7 @@ public class Kamite {
       registerGlobalKeybinding(
         provider,
         keybindings.ocr().autoBlock(),
-        () -> recognizeAutoBlockDefault(PointSelectionMode.INSTANT)
+        () -> recognitionConductor.recognizeAutoBlockDefault(PointSelectionMode.INSTANT)
       );
       count++;
     }
@@ -805,7 +601,7 @@ public class Kamite {
       registerGlobalKeybinding(
         provider,
         keybindings.ocr().autoBlockSelect(),
-        () -> recognizeAutoBlockDefault(PointSelectionMode.SELECT)
+        () -> recognitionConductor.recognizeAutoBlockDefault(PointSelectionMode.SELECT)
       );
       count++;
     }

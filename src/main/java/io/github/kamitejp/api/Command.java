@@ -7,7 +7,7 @@ import io.github.kamitejp.chunk.IncomingChunkText;
 import io.github.kamitejp.chunk.IncomingChunkTranslation;
 import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Rectangle;
-import io.github.kamitejp.operations.PointSelectionMode;
+import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.util.JSON;
 import io.github.kamitejp.util.Result;
 

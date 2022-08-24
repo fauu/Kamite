@@ -12,17 +12,17 @@ import com.tulskiy.keymaster.common.Provider;
 
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
-import io.github.kamitejp.operations.PointSelectionMode;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
-import io.github.kamitejp.platform.RecognitionOpError;
 import io.github.kamitejp.platform.RobotScreenshoter;
 import io.github.kamitejp.platform.RobotScreenshoterUnavailableException;
 import io.github.kamitejp.platform.linux.LinuxPlatform;
 import io.github.kamitejp.platform.linux.xorg.dependencies.slop.Slop;
 import io.github.kamitejp.platform.linux.xorg.dependencies.slop.SlopResult;
 import io.github.kamitejp.recognition.OCREngine;
+import io.github.kamitejp.recognition.PointSelectionMode;
+import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;
 
 public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvider {
