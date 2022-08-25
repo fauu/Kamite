@@ -187,7 +187,7 @@ public class Kamite {
 
     initMPVController();
 
-    recognitionConductor = RecognitionConductor.getInstance(
+    recognitionConductor = new RecognitionConductor(
       platform,
       config,
       status,

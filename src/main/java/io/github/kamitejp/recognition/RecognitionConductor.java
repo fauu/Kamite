@@ -16,8 +16,6 @@ import io.github.kamitejp.status.ProgramStatus;
 public class RecognitionConductor {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static RecognitionConductor INSTANCE;
-
   private Platform platform;
   private Recognizer recognizer;
   private ProgramStatus status;
@@ -26,7 +24,7 @@ public class RecognitionConductor {
   private Consumer<String> notifyErrorFn;
   private Consumer<RecognizerStatus.Kind> updateAndSendRecognizerStatusFn;
 
-  private RecognitionConductor(
+  public RecognitionConductor(
     Platform platform,
     Config config,
     ProgramStatus status,
@@ -43,29 +41,6 @@ public class RecognitionConductor {
     this.updateAndSendRecognizerStatusFn = updateAndSendRecognizerStatusFn;
 
     initRecognizer(config);
-  }
-
-  public static RecognitionConductor getInstance(
-    Platform platform,
-    Config config,
-    ProgramStatus status,
-    Consumer<RecognizerEvent> recognizerEventCb,
-    Consumer<ChunkVariants> chunkVariantsCb,
-    Consumer<String> notifyErrorFn,
-    Consumer<RecognizerStatus.Kind> updateAndSendRecognizerStatusFn
-  ) {
-    if (INSTANCE == null) {
-      INSTANCE = new RecognitionConductor(
-        platform,
-        config,
-        status,
-        recognizerEventCb,
-        chunkVariantsCb,
-        notifyErrorFn,
-        updateAndSendRecognizerStatusFn
-      );
-    }
-    return INSTANCE;
   }
 
   public void destroy() {
