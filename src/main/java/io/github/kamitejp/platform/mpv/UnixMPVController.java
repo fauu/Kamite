@@ -20,7 +20,7 @@ public final class UnixMPVController extends BaseMPVController {
 
   private SocketChannel socketChannel;
 
-  protected UnixMPVController() {
+  UnixMPVController() {
     var workerThread = new Thread(new Worker(this::handleMessages));
     LOG.debug("Starting mpv controller worker thread");
     workerThread.start();
@@ -42,12 +42,12 @@ public final class UnixMPVController extends BaseMPVController {
     }
   }
 
-  private class Worker extends BaseMPVController.Worker {
+  private class Worker extends BaseMPVController.BaseWorker {
     private final ByteBuffer readBuffer;
 
     Worker(Function<String, Boolean> messagesCb) {
       super(messagesCb);
-      this.readBuffer = ByteBuffer.allocate(READ_BUFFER_CAPACITY);
+      readBuffer = ByteBuffer.allocate(READ_BUFFER_CAPACITY);
     }
 
     @Override
@@ -62,7 +62,7 @@ public final class UnixMPVController extends BaseMPVController {
       return true;
     }
 
-    private SocketChannel waitForConnection() {
+    private static SocketChannel waitForConnection() {
       try {
         while (true) {
           var channel = tryConnect();

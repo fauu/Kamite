@@ -50,6 +50,7 @@ public class WlrootsPlatform extends WaylandPlatform {
     return List.of(PlatformDependentFeature.GLOBAL_KEYBINDINGS);
   }
 
+  @SuppressWarnings("OverlyBroadThrowsClause")
   @Override
   public void initOCR(OCREngine engine) throws PlatformOCRInitializationException {
     super.initOCR(engine);
@@ -99,6 +100,7 @@ public class WlrootsPlatform extends WaylandPlatform {
       } catch (InterruptedException | ExecutionException e) {
         LOG.error("Could not run slurp. See stderr for the stack trace");
         e.printStackTrace();
+        return Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
     } else {
       slurpRunRes = runSlurp(SlurpMode.POINT, SlurpFade.FADE);
@@ -149,16 +151,16 @@ public class WlrootsPlatform extends WaylandPlatform {
       }
 
       case SlurpResult.Error error -> {
-        LOG.error("slurp returned an error: {}", () -> error.error());
+        LOG.error("slurp returned an error: {}", error::error);
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
 
-      case SlurpResult.Cancelled __ -> Result.Err(RecognitionOpError.SELECTION_CANCELLED);
+      case SlurpResult.Cancelled ignored -> Result.Err(RecognitionOpError.SELECTION_CANCELLED);
 
       case SlurpResult.FormatDifferentFromExpected expected -> {
         LOG.error(
           "slurp returned malformatted result instead of expected {}",
-          () -> expected.expected()
+          expected::expected
         );
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
@@ -176,7 +178,7 @@ public class WlrootsPlatform extends WaylandPlatform {
           LOG.error("wlrctl did not execute properly");
         }
         case WlrctlResult.Error error -> {
-          LOG.error("wlrctl returned an error: {}", () -> error.error());
+          LOG.error("wlrctl returned an error: {}", error::error);
         }
         default -> {}
       }
@@ -192,12 +194,12 @@ public class WlrootsPlatform extends WaylandPlatform {
     }
     var selection = "%d,%d %dx%d".formatted(a.getLeft(), a.getTop(), a.getWidth(), a.getHeight());
     return switch (grim.takeScreenshotOfSlurpSelection(selection)) {
-      case GrimResult.ExecutionFailed __ -> {
+      case GrimResult.ExecutionFailed ignored -> {
         LOG.error("grim did not execute properly");
         yield Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
       }
       case GrimResult.Error error -> {
-        LOG.error("grim returned an error: {}", () -> error.error());
+        LOG.error("grim returned an error: {}", error::error);
         yield Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
       }
       case GrimResult.Screenshot screenshot -> Result.Ok(screenshot.screenshot());

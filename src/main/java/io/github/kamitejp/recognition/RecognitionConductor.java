@@ -16,13 +16,13 @@ import io.github.kamitejp.status.ProgramStatus;
 public class RecognitionConductor {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private Platform platform;
+  private final Platform platform;
+  private final ProgramStatus status;
+  private final Consumer<RecognizerEvent> recognizerEventCb;
+  private final Consumer<ChunkVariants> chunkVariantsCb;
+  private final Consumer<String> notifyErrorFn;
+  private final Consumer<RecognizerStatus.Kind> updateAndSendRecognizerStatusFn;
   private Recognizer recognizer;
-  private ProgramStatus status;
-  private Consumer<RecognizerEvent> recognizerEventCb;
-  private Consumer<ChunkVariants> chunkVariantsCb;
-  private Consumer<String> notifyErrorFn;
-  private Consumer<RecognizerStatus.Kind> updateAndSendRecognizerStatusFn;
 
   public RecognitionConductor(
     Platform platform,
@@ -77,7 +77,7 @@ public class RecognitionConductor {
       throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
     } catch (RecognizerInitializationException e) {
       if (e.getMessage() != null) {
-        LOG.error(() -> e.getMessage());
+        LOG.error(e::getMessage);
       } else {
         LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
         e.printStackTrace();

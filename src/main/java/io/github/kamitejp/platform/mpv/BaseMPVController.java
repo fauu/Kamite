@@ -14,16 +14,16 @@ import io.github.kamitejp.status.PlayerStatus;
 public abstract class BaseMPVController implements MPVController {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  protected static final String IPC_MEDIUM_FILENAME = "kamite-mpvsocket";
-  protected static final int CONNECTION_RETRY_INTERVAL_MS = 2000;
+  static final String IPC_MEDIUM_FILENAME = "kamite-mpvsocket";
+  static final int CONNECTION_RETRY_INTERVAL_MS = 2000;
 
-  protected Consumer<PlayerStatus> statusUpdateCb;
-  protected Consumer<Subtitle> subtitleCb;
+  Consumer<PlayerStatus> statusUpdateCb;
+  Consumer<Subtitle> subtitleCb;
   protected State state;
 
   private String[] pendingSubtitleTexts;
 
-  public BaseMPVController() {
+  BaseMPVController() {
     state = State.NOT_CONNECTED;
     pendingSubtitleTexts = new String[Subtitle.Kind.values().length];
   }
@@ -54,7 +54,7 @@ public abstract class BaseMPVController implements MPVController {
 
   protected abstract void sendBytes(byte[] bytes) throws IOException;
 
-  protected boolean handleMessages(String messagesJSON) {
+  boolean handleMessages(String messagesJSON) {
     LOG.debug("Received mpv messages: {}", () -> ipcJSONToPrintable(messagesJSON));
 
     boolean gotQuitMessage = false;
@@ -102,6 +102,7 @@ public abstract class BaseMPVController implements MPVController {
     if (processedText.isEmpty()) {
       return;
     }
+    // PERF: Replace with compiled Pattern
     processedText = subtitleTextMidTransform(processedText)
       .replaceAll("\\\\n", "\n")
       .replaceAll("\\\\\"", "\"");
@@ -126,14 +127,14 @@ public abstract class BaseMPVController implements MPVController {
     return text; // Pass through
   }
 
-  private String ipcJSONToPrintable(String json) {
+  private static String ipcJSONToPrintable(String json) {
     return json.replace("\n", "\\n");
   }
 
-  protected abstract class Worker implements Runnable {
-    protected final Function<String, Boolean> messagesCb;
+  protected abstract class BaseWorker implements Runnable {
+    final Function<String, Boolean> messagesCb;
 
-    public Worker(Function<String, Boolean> messagesCb) {
+    BaseWorker(Function<String, Boolean> messagesCb) {
       this.messagesCb = messagesCb;
     }
 

@@ -1,18 +1,12 @@
 package io.github.kamitejp.recognition;
 
 import java.awt.image.BufferedImage;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import io.github.kamitejp.geometry.Rectangle;
 
 interface AutoBlockDetector {
-  Map<AutoBlockHeuristic, Class<? extends AutoBlockDetector>> heuristicToDetectorClass = Map.of(
-    AutoBlockHeuristic.MANGA_FULL, MangaAutoBlockDetector.class,
-    AutoBlockHeuristic.GAME_TEXTBOX, GameTextboxAutoBlockDetector.class
-  );
-
   Optional<Rectangle> detect(
     BufferedImage img,
     boolean debug,

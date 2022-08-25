@@ -18,9 +18,9 @@ public final class WindowsMPVController extends BaseMPVController {
   private static final int MAX_EXPECTED_RESPONSE_TIME_MS = 33;
 
   private RandomAccessFile pipeFile;
-  private Thread workerThread;
+  private final Thread workerThread;
 
-  protected WindowsMPVController() {
+  WindowsMPVController() {
     workerThread = new Thread(new Worker(this::handleMessages));
     LOG.debug("Starting mpv controller worker thread");
     workerThread.start();
@@ -63,7 +63,7 @@ public final class WindowsMPVController extends BaseMPVController {
     return new String(transformedBytes, StandardCharsets.UTF_8);
   }
 
-  private class Worker extends BaseMPVController.Worker {
+  private class Worker extends BaseMPVController.BaseWorker {
     Worker(Function<String, Boolean> messagesCb) {
       super(messagesCb);
     }
@@ -80,7 +80,7 @@ public final class WindowsMPVController extends BaseMPVController {
       return true;
     }
 
-    private RandomAccessFile waitForConnection() {
+    private static RandomAccessFile waitForConnection() {
       try {
         while (true) {
           var pipe = tryConnect();
@@ -135,10 +135,12 @@ public final class WindowsMPVController extends BaseMPVController {
       // we need to poll until there's something to read and only then call readLine().
       while (pipeFile.length() <= 0) {
         try {
+          //noinspection BusyWait
           Thread.sleep(READ_POLL_INTERVAL_MS);
         } catch (InterruptedException e) {
           // This interrupt means that we expect an incoming command response message shortly
           try {
+            //noinspection BusyWait
             Thread.sleep(MAX_EXPECTED_RESPONSE_TIME_MS);
           } catch (InterruptedException e1) {
             // Ignore

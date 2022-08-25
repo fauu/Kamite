@@ -81,7 +81,7 @@ public class Kamite {
   private ProgramStatus status;
 
   public void run(Map<String,String> args, BuildInfo buildInfo) {
-    LOG.info("Starting Kamite (version {})", () -> buildInfo.getVersion());
+    LOG.info("Starting Kamite (version {})", buildInfo::getVersion);
 
     var preconfigArgs = processPreconfigArgs(args);
 
@@ -124,7 +124,7 @@ public class Kamite {
 
     if (config.controlWindow()) {
       createControlGUI();
-      LOG.info("Created control window (Kamite version {})", () -> buildInfo.getVersion());
+      LOG.info("Created control window (Kamite version {})", buildInfo::getVersion);
     }
 
     // Unsupported platform features message deferred until control GUI potentially present
@@ -154,7 +154,7 @@ public class Kamite {
           /* recognizeImageFn */ recognitionConductor::recognizeImageProvided
         );
       } catch (OCRDirectoryWatcherCreationException e) {
-        LOG.error("Failed to create OCR directory watcher: {}", () -> e.toString());
+        LOG.error("Failed to create OCR directory watcher: {}", e::toString);
       }
     }
 
@@ -223,7 +223,7 @@ public class Kamite {
     try {
       platform.initOCR(new OCREngine.None());
     } catch (PlatformOCRInitializationException e) {
-      LOG.error("Could not init platform OCR for Region Helper Mode: {}", e);
+      LOG.error("Could not init platform OCR for Region Helper Mode:", e);
     }
 
     System.out.println(
@@ -237,13 +237,16 @@ public class Kamite {
           case SELECTION_CANCELLED -> "Selection has been cancelled";
           default -> "There has been an error getting area selection (%s)".formatted(areaRes.err());
         };
-        System.out.println("%s. Exiting".formatted(exitMsg));
+        System.out.printf("%s. Exiting%n", exitMsg);
         return;
       }
       var area = areaRes.get();
-      System.out.println(
-        "    x = %s\n    y = %s\n    width = %s\n    height = %s\n"
-          .formatted(area.getLeft(), area.getTop(), area.getWidth(), area.getHeight())
+      System.out.printf(
+        "    x = %s\n    y = %s\n    width = %s\n    height = %s\n%n",
+        area.getLeft(),
+        area.getTop(),
+        area.getWidth(),
+        area.getHeight()
       );
     }
   }
@@ -406,11 +409,11 @@ public class Kamite {
   private void doHandleCommand(IncomingCommand incoming, CommandSource source) {
     var cmdParseRes = Command.fromIncoming(incoming);
     if (cmdParseRes.isErr()) {
-      LOG.warn("Error parsing command: {}", () -> cmdParseRes.err());
+      LOG.warn("Error parsing command: {}", cmdParseRes::err);
       return;
     }
     var command = cmdParseRes.get();
-    LOG.debug("Handling command: {}", () -> command.getClass());
+    LOG.debug("Handling command: {}", command::getClass);
     switch (command) {
       case Command.OCR cmd -> {
         var refuseMsg = switch (status.getRecognizerStatus().getKind()) {
@@ -433,7 +436,7 @@ public class Kamite {
           LOG.warn("Refused OCR command. Reason: {}", refuseMsg);
           return;
         }
-        switch (cmd) {
+        switch (cmd) { // NOPMD - misidentifies as non-exhaustive
           case Command.OCR.ManualBlock ignored ->
             recognitionConductor.recognizeManualBlockDefault();
           case Command.OCR.ManualBlockVertical ignored ->
@@ -448,7 +451,6 @@ public class Kamite {
             recognitionConductor.recognizeRegion(cm.region(), cm.autoNarrow());
           case Command.OCR.Image cm ->
             handleOCRImageCommand(cm.bytesB64(), cm.size());
-          default -> throw new IllegalStateException("Unhandled command type");
         }
       }
 
@@ -458,31 +460,26 @@ public class Kamite {
           case Command.Player.SeekBack ignored     -> new MPVCommand.Seek(-1);
           case Command.Player.SeekForward ignored  -> new MPVCommand.Seek(1);
           case Command.Player.SeekStartSub ignored -> new MPVCommand.SeekStartSub();
-          default -> throw new IllegalStateException("Unhandled command type");
         };
         mpvController.sendCommand(mpvCmd);
       }
 
       case Command.CharacterCounter cmd -> {
-        switch (cmd) {
+        switch (cmd) { // NOPMD - misidentifies as non-exhaustive
           case Command.CharacterCounter.ToggleFreeze ignored ->
             status.getCharacterCounter().toggleFreeze();
           case Command.CharacterCounter.Reset ignored ->
             status.getCharacterCounter().reset();
-          default ->
-            throw new IllegalStateException("Unhandled command type");
         }
         sendStatus(ProgramStatusOutMessage.CharacterCounter.class);
       }
 
       case Command.SessionTimer cmd -> {
-        switch (cmd) {
+        switch (cmd) { // NOPMD - misidentifies as non-exhaustive
           case Command.SessionTimer.TogglePause ignored ->
             status.getSessionTimer().togglePause();
           case Command.SessionTimer.Reset ignored ->
             status.getSessionTimer().reset();
-          default ->
-            throw new IllegalStateException("Unhandled command type");
         }
         sendStatus(ProgramStatusOutMessage.SessionTimer.class);
       }
@@ -508,7 +505,7 @@ public class Kamite {
         throw new IllegalStateException("Unhandled command type");
     }
 
-    LOG.debug("Finished handling command: {}", () -> command.getClass());
+    LOG.debug("Finished handling command: {}", command::getClass);
   }
 
   private void handleOCRImageCommand(String bytesB64, Dimension size) {
@@ -621,7 +618,7 @@ public class Kamite {
 
   private static PreconfigArgs processPreconfigArgs(Map<String, String> args) {
     var rawDebug = args.get("debug");
-    var debug = !isArgValueFalsey(rawDebug);
+    var debug = isArgValueTruthy(rawDebug);
     if (debug) {
       var loggingExtent =
         "all".equalsIgnoreCase(rawDebug)
@@ -630,13 +627,13 @@ public class Kamite {
       enableDebugLogging(loggingExtent);
     }
 
-    var regionHelper = !isArgValueFalsey(args.get("regionHelper"));
+    var regionHelper = isArgValueTruthy(args.get("regionHelper"));
 
     return new PreconfigArgs(debug, args.get("profile"), regionHelper);
   }
 
-  private static boolean isArgValueFalsey(String value) {
-    return value == null || "false".equalsIgnoreCase(value) || "0".equalsIgnoreCase(value);
+  private static boolean isArgValueTruthy(String value) {
+    return value != null && !"false".equalsIgnoreCase(value) && !"0".equalsIgnoreCase(value);
   }
 
   private enum DebugLoggingExtent { APP, EVERYTHING }

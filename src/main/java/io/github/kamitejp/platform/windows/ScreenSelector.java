@@ -3,10 +3,12 @@ package io.github.kamitejp.platform.windows;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Stroke;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -28,7 +30,7 @@ import io.github.kamitejp.controlgui.ControlGUI;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 
-public class ScreenSelector extends JFrame {
+public final class ScreenSelector extends JFrame {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final List<Integer> CANCEL_KEYS = List.of(KeyEvent.VK_ESCAPE, KeyEvent.VK_Q);
@@ -165,7 +167,7 @@ public class ScreenSelector extends JFrame {
     setBounds(fullBounds);
 
     setVisible(true);
-    setExtendedState(JFrame.NORMAL);
+    setExtendedState(Frame.NORMAL);
     toFront();
     requestFocus();
   }
@@ -234,22 +236,12 @@ public class ScreenSelector extends JFrame {
     }
   }
 
-  private class KeyListener implements java.awt.event.KeyListener {
-    @Override
-    public void keyTyped(KeyEvent e) {
-      // Empty
-    }
-
+  private class KeyListener extends KeyAdapter {
     @Override
     public void keyPressed(KeyEvent e) {
       if (CANCEL_KEYS.contains(e.getKeyCode())) {
         cancel();
       }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-      // Empty
     }
   }
 }

@@ -13,7 +13,7 @@ public final class ChunkFilter {
 
   static {
     REJECT_PATTERNS = REJECT_REGEXES.stream()
-      .map(r -> Pattern.compile(r))
+      .map(Pattern::compile)
       .toList();
   }
 

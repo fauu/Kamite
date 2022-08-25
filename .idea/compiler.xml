@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/java/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Kamite" />
+        <module name="kamite" />
       </profile>
     </annotationProcessing>
   </component>

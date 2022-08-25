@@ -31,7 +31,6 @@ import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;
 
-@SuppressWarnings("PMD") // DEV
 public class WindowsPlatform extends GenericPlatform implements Platform, GlobalKeybindingProvider {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -69,7 +68,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
           selector = new ScreenSelector();
         }
         yield selector.getFuturePoint().join()
-          .<Result<Point, RecognitionOpError>>map(p -> Result.Ok(p))
+          .<Result<Point, RecognitionOpError>>map(Result::Ok)
           .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
       }
     };
@@ -81,10 +80,11 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
       selector = new ScreenSelector();
     }
     return selector.getFutureArea().join()
-      .<Result<Rectangle, RecognitionOpError>>map(a -> Result.Ok(a))
+      .<Result<Rectangle, RecognitionOpError>>map(Result::Ok)
       .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
   }
 
+  @SuppressWarnings("LocalVariableNamingConvention")
   @Override
   public Result<BufferedImage, RecognitionOpError> takeAreaScreenshot(Rectangle area) {
     final var USER = User32.INSTANCE;
@@ -174,6 +174,6 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   @Override
   public void setKeymasterProvider(Provider provider) {
-    this.keymasterProvider = provider;
+    keymasterProvider = provider;
   }
 }

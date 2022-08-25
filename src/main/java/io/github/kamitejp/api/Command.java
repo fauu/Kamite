@@ -28,15 +28,31 @@ public sealed interface Command
             OCR.Region,
             OCR.Image {
     record ManualBlock() implements OCR {}
+
     record ManualBlockVertical() implements OCR {}
+
     record ManualBlockHorizontal() implements OCR {}
+
     record AutoBlock(PointSelectionMode mode) implements OCR {}
+
     record AutoColumn(PointSelectionMode mode) implements OCR {}
-    record Region(Rectangle region, boolean autoNarrow) implements OCR {}
-    record Image(String bytesB64, Dimension size) implements OCR {}
+
+    record Region(Rectangle region, boolean autoNarrow) implements OCR {
+      @Override
+      public boolean isGlobalOCRCommand() {
+        return false;
+      }
+    }
+
+    record Image(String bytesB64, Dimension size) implements OCR {
+      @Override
+      public boolean isGlobalOCRCommand() {
+        return false;
+      }
+    }
 
     default boolean isGlobalOCRCommand() {
-      return !(this instanceof OCR.Region || this instanceof OCR.Image);
+      return true;
     }
   }
 

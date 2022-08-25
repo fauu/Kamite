@@ -61,7 +61,7 @@ public abstract class GenericPlatform {
     return binName;
   }
 
-  public OS getOS() {
+  public final OS getOS() {
     if (os == null) {
       os = detectOS();
     }
@@ -92,6 +92,7 @@ public abstract class GenericPlatform {
     return openImage(path.toFile());
   }
 
+  @SuppressWarnings("WeakerAccess")
   public static Optional<BufferedImage> openImage(File file) {
     try {
       return Optional.ofNullable(ImageIO.read(file));
@@ -101,14 +102,17 @@ public abstract class GenericPlatform {
     }
   }
 
+  @SuppressWarnings("unused")
   public static boolean writeImage(BufferedImage img, String path) {
     return writeImage(img, new File(path));
   }
 
+  @SuppressWarnings("unused")
   public static boolean writeImage(BufferedImage img, Path path) {
     return writeImage(img, path.toFile());
   }
 
+  @SuppressWarnings("WeakerAccess")
   public static boolean writeImage(BufferedImage img, File file) {
     try {
       ImageIO.write(img, "png", file);
@@ -119,6 +123,7 @@ public abstract class GenericPlatform {
     return true;
   }
 
+  @SuppressWarnings("OverlyBroadThrowsClause")
   public void initOCR(OCREngine engine) throws PlatformOCRInitializationException {
     if (engine instanceof OCREngine.Tesseract tesseractEngine) {
       tesseract = new Tesseract(tesseractEngine.binPath());
@@ -149,7 +154,7 @@ public abstract class GenericPlatform {
     return getGenericLibDirPath().resolve(MANGAOCR_ADAPTER_FILENAME);
   }
 
-  protected Path getProgramPath() {
+  private Path getProgramPath() {
     if (programPath == null) {
       try {
         programPath = determineProgramPath();
@@ -166,17 +171,17 @@ public abstract class GenericPlatform {
     return programPath;
   }
 
-  protected Result<Void, List<String>> checkIfDependenciesAvailable(
+  protected static Result<Void, List<String>> checkIfDependenciesAvailable(
     List<SimpleDependency> dependencies
   ) {
     var unavailable = dependencies.stream()
       .filter(not(SimpleDependency::checkIsAvailable))
-      .map(d -> d.getName())
+      .map(SimpleDependency::getName)
       .collect(toList());
     return unavailable.isEmpty() ? Result.Ok(null) : Result.Err(unavailable);
   }
 
-  private Path determineProgramPath() throws URISyntaxException, IOException {
+  private static Path determineProgramPath() throws URISyntaxException, IOException {
     var classCodeLocationURI = GenericPlatform.class
       .getProtectionDomain()
       .getCodeSource()

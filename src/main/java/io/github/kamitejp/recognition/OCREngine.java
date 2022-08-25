@@ -15,9 +15,9 @@ public sealed interface OCREngine
           OCREngine.MangaOCROnline,
           OCREngine.OCRSpace,
           OCREngine.None {
-  public record Tesseract(String binPath) implements OCREngine {}
+  record Tesseract(String binPath) implements OCREngine {}
 
-  public record MangaOCR(
+  record MangaOCR(
     String customPythonPath, MangaOCRController controller
   ) implements OCREngine {
     public static MangaOCR uninitialized(String customPythonPath) {
@@ -37,7 +37,7 @@ public sealed interface OCREngine
     }
   }
 
-  public record MangaOCROnline(MangaOCRGGAdapter adapter) implements OCREngine {
+  record MangaOCROnline(MangaOCRGGAdapter adapter) implements OCREngine {
     public static MangaOCROnline uninitialized() {
       return new MangaOCROnline(null);
     }
@@ -52,7 +52,7 @@ public sealed interface OCREngine
     }
   }
 
-  public record OCRSpace(String apiKey, OCRSpaceAdapter adapter) implements OCREngine {
+  record OCRSpace(String apiKey, OCRSpaceAdapter adapter) implements OCREngine {
     public static OCRSpace uninitialized(String apiKey) {
       return new OCRSpace(apiKey, null);
     }
@@ -65,15 +65,17 @@ public sealed interface OCREngine
     }
   }
 
-  public record None() implements OCREngine {}
+  record None() implements OCREngine {}
 
+  @SuppressWarnings("ClassReferencesSubclass")
   default void destroy() {
     switch (this) {
-      case OCREngine.MangaOCR engine -> engine.controller.destroy();
+      case OCREngine.MangaOCR engine -> engine.controller().destroy();
       case default -> {}
     }
   }
 
+  @SuppressWarnings("ClassReferencesSubclass")
   default String displayName() {
     return switch (this) {
       case OCREngine.Tesseract ignored      -> "Tesseract OCR";

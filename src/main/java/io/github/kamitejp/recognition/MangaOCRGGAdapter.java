@@ -28,6 +28,7 @@ public class MangaOCRGGAdapter {
   private static final String OCR_RESPONSE_TEXT_START_MARKER = "\"data\":[\"";
   private static final String OCR_RESPONSE_TEXT_END_MARKER = "\"]";
 
+  @SuppressWarnings("MethodMayBeStatic")
   public Result<String, String> ocr(BufferedImage img) {
     var reqBodyString = OCR_REQUEST_BODY_TPL.formatted(
       ImageOps.DEFAULT_IMAGE_FORMAT_MIMETYPE, ImageOps.convertToBase64(img)
