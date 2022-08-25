@@ -79,8 +79,8 @@ lint-docs:
 
 lint-java:
 	PMD_JAVA_OPTS=--enable-preview \
-		pmd -language java -version 18-preview -d src/main/java -f text \
-			-R rulesets/java/quickstart.xml; \
+		pmd -language java -version 19-preview -d src/main/java -f text \
+			-R support/definitions/pmd-ruleset.xml; \
 
 lint-ts:
 	yarn typecheck; \
