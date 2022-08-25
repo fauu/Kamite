@@ -1,4 +1,4 @@
-.PHONY: clean client dist dist-only-linux dist-only-win-post-linux gen-config jar launcher-linux lint lint-docs lint-java lint-ts runtime-linux textractor
+.PHONY: clean client dist dist-prepare-generic dist-linux dist-win dist-write-version gen-config jar launcher-linux lint lint-docs lint-java lint-ts runtime-linux textractor
 
 LAUNCHER_TARGET_DIR=../target/launcher
 
@@ -7,52 +7,55 @@ ifneq (,$(wildcard make-env))
 endif
 
 clean:
-	echo $(TESTVAR); \
 	rm -rf target/; \
 
 client:
 	yarn build; \
 
-dist: jar runtime-linux launcher-linux launcher-win textractor dist-only-linux dist-only-win-post-linux
+dist: dist-linux dist-win
 
-dist-only-linux:
-	rm -rf target/dist; \
-	rm -rf target/*.zip; \
-	rm -rf target/kamite; \
-	mkdir -p target/dist; \
-	cp -r target/java-runtime target/dist/runtime; \
-	mkdir -p target/dist/lib; \
-	cp -r lib/generic target/dist/lib; \
-	cp target/java/kamite-0.0.0.jar target/dist/lib/generic/kamite.jar; \
-	mkdir target/dist/extra; \
-	cp -r target/textractor target/dist/extra/textractor; \
-	cp -r target/dist target/kamite; \
-	mkdir target/kamite/bin; \
-	cp target/launcher/release/kamite-launcher-linux target/kamite/bin/kamite; \
-	cp -r res target/kamite; \
-	cp scripts/install.sh target/kamite; \
-	cp README.md target/kamite; \
-	cp COPYING.md target/kamite; \
-	cp CHANGELOG.md target/kamite; \
+# Makes a platform-independent base for the release packages in `target/dist-base/`
+dist-prepare-generic: jar runtime-linux textractor dist-write-version
 	pushd target; \
-	zip -r Kamite_$(shell target/java-runtime/bin/java --enable-preview -jar target/java/kamite-0.0.0.jar --version | tr " " "\n" | tail -1)_Linux.zip kamite/; \
+	rm -rf dist-base *.zip; \
+	mkdir -p dist-base/lib; \
+	cp -r ../lib/generic dist/lib; \
+	cp java/kamite-0.0.0.jar dist-base/lib/generic/kamite.jar; \
+	mkdir dist-base/extra; \
+	cp -r textractor dist-base/extra/textractor; \
+	cp ../README.md ../COPYING.md ../CHANGELOG.md dist-base; \
 
+# Writes the version of the Kamite jar in `target/java` to `target/VERSION`
+dist-write-version: runtime-linux
+	pushd target; \
+	runtime-linux/bin/java --enable-preview -jar java/kamite-0.0.0.jar --version | tr " " "\n" | tail -1 > VERSION; \
+
+# Makes the Linux release package on the basis of the platform-independent base
+dist-linux: launcher-linux dist-prepare-generic
+	pushd target; \
+	cp -r dist-base kamite; \
+	cp -r runtime-linux kamite/runtime; \
+	mkdir kamite/bin; \
+	cp launcher/release/kamite-launcher-linux kamite/bin/kamite; \
+	cp -r ../res kamite; \
+	cp ../scripts/install.sh kamite; \
+	zip -r Kamite_$(shell cat target/VERSION)_Linux.zip kamite/; \
+	rm -rf kamite; \
+
+# Makes the Windows release package on the basis of the platform-independent base.
 # Assumes the Windows runtime is already built in a location specified by WIN_RUNTIME (can be put in
 # the make-env file)
-dist-only-win-post-linux:
-	rm -rf target/kamite/runtime; \
-	cp -r "$(WIN_RUNTIME)" target/kamite; \
+dist-win: launcher-win dist-prepare-generic
 	pushd target; \
+	cp -r dist-base kamite; \
+	cp -r "$(WIN_RUNTIME)" kamite; \
 	pushd kamite/runtime/bin; \
 	rm java.exe javaw.exe jrunscript.exe keytool.exe rmiregistry.exe kinit.exe klist.exe ktab.exe; \
 	popd; \
 	cp launcher/x86_64-pc-windows-gnu/release/kamite-launcher-win-main.exe kamite/Kamite.exe; \
 	cp launcher/x86_64-pc-windows-gnu/release/kamite-launcher-win-console-wrapper.exe kamite/Kamite.com; \
-	rm kamite/install.sh; \
-	rm -rf kamite/res; \
-	rm -rf kamite/scripts; \
-	rm -rf kamite/bin; \
-	zip -r Kamite_$(shell target/java-runtime/bin/java --enable-preview -jar target/java/kamite-0.0.0.jar --version | tr " " "\n" | tail -1)_Windows.zip kamite/; \
+	zip -r Kamite_$(shell cat target/VERSION)_Windows.zip kamite/; \
+	rm -rf kamite; \
 
 gen-config:
 	support/scripts/generate-config-classes.sh; \
@@ -87,12 +90,12 @@ lint-ts:
 	yarn lint; \
 
 runtime-linux:
-	rm -rf target/java-runtime; \
+	rm -rf target/runtime-linux; \
 	jlink --no-header-files --no-man-pages --compress=2 --strip-debug \
 		--add-modules "java.datatransfer,java.desktop,java.logging,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.sql,java.transaction.xa,java.xml,jdk.jsobject,jdk.security.auth,jdk.unsupported,jdk.unsupported.desktop,jdk.xml.dom" \
-		--output target/java-runtime; \
-	pushd target/java-runtime/bin; \
-	rm jrunscript keytool rmiregistry \
+		--output target/runtime-linux; \
+	pushd target/runtime-linux/bin; \
+	rm jrunscript keytool rmiregistry; \
 
 textractor:
 	rm -rf target/textractor; \
