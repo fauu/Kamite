@@ -29,7 +29,6 @@ import io.github.kamitejp.util.JSON;
 import io.github.kamitejp.util.Result;
 
 public class OCRSpaceAdapter {
-  @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int REQUEST_TIMEOUT_S = 8;

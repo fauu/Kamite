@@ -7,7 +7,9 @@ import io.github.kamitejp.api.IncomingCommand;
 import io.github.kamitejp.util.JSON;
 import io.github.kamitejp.util.Result;
 
-public sealed interface InMessage {
+public sealed interface InMessage
+  permits InMessage.Command,
+          InMessage.Request {
   record Command(IncomingCommand incomingCommand) implements InMessage {}
   record Request(io.github.kamitejp.api.Request request) implements InMessage {}
 

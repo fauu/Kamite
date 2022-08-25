@@ -20,7 +20,6 @@ import io.github.kamitejp.recognition.imagefeature.Contour;
 import io.github.kamitejp.recognition.imagefeature.ContourFinder;
 
 public class GameTextboxAutoBlockDetector implements AutoBlockDetector {
-  @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   // NOTE: This is a temporary stand-in algorithm copy-pasted with few modifications from

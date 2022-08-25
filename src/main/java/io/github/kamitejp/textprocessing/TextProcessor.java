@@ -63,7 +63,7 @@ public class TextProcessor {
     }
   }
 
-  private record ThinToken(String surfaceForm, String reading) {};
+  private record ThinToken(String surfaceForm, String reading) {}
 
   private enum NotationBaseType {
     KANJI,
@@ -75,7 +75,7 @@ public class TextProcessor {
     String base,
     NotationBaseType baseType,
     String notation
-  ) {};
+  ) {}
 
   public TextProcessor() {
     this.tokenizer = new Tokenizer();
