@@ -7,33 +7,41 @@ export type HoldClickEventParams = {
 };
 
 export function holdClickEvent(el: HTMLElement, value: () => HoldClickEventParams) {
-  const { durationMS, holdClickCb, regularClickCb } = value();
-
-  if (!holdClickCb) {
+  const val = value();
+  if (!val) {
     return;
   }
+  const { durationMS, holdClickCb, regularClickCb } = val;
 
-  let timeout: number | undefined;
+  let holdTimeout: number | undefined;
+  let handleMouseUp: () => void;
+  let handleMouseDown: (() => void) | undefined;
 
-  const handleMouseDown = () => {
-    timeout = window.setTimeout(() => {
-      holdClickCb(el);
-      timeout = undefined;
-    }, durationMS);
-  };
-
-  const handleMouseUp = () => {
-    if (timeout) {
-      window.clearTimeout(timeout);
-      regularClickCb && regularClickCb(el);
+  if (!holdClickCb) {
+    if (!regularClickCb) {
+      return;
     }
-  };
+    handleMouseUp = () => regularClickCb(el);
+  } else {
+    handleMouseUp = () => {
+      if (holdTimeout) {
+        window.clearTimeout(holdTimeout);
+        regularClickCb && regularClickCb(el);
+      }
+    };
+    handleMouseDown = () => {
+      holdTimeout = window.setTimeout(() => {
+        holdClickCb(el);
+        holdTimeout = undefined;
+      }, durationMS);
+    };
+  }
 
-  el.addEventListener("mousedown", handleMouseDown);
+  handleMouseDown && el.addEventListener("mousedown", handleMouseDown);
   el.addEventListener("mouseup", handleMouseUp);
 
   onCleanup(() => {
-    el.removeEventListener("mousedown", handleMouseDown);
+    handleMouseDown && el.removeEventListener("mousedown", handleMouseDown);
     el.removeEventListener("mouseup", handleMouseUp);
   });
 }
