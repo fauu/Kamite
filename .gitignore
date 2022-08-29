@@ -9,6 +9,7 @@ hs_err_*
 yarn-error.log
 \#*#
 
+src/main/java/io/github/kamitejp/config/Config.java
 make-env
 
 # JetBrains
