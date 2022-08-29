@@ -2,15 +2,18 @@ import { createSignal, For, onCleanup, onMount, type VoidComponent } from "solid
 import { css, styled } from "solid-styled-components";
 
 import {
-  type GeneralScrollPosition, horizontalWheelScroll, onGeneralHorizontalScrollPositionChange
+  holdClickEvent, horizontalWheelScroll, onGeneralHorizontalScrollPositionChange, tooltipAnchor,
+  type GeneralScrollPosition
 } from "~/directives";
-const [_, __] = [horizontalWheelScroll, onGeneralHorizontalScrollPositionChange];
+const [_, __, ___, ____] = [
+  horizontalWheelScroll, onGeneralHorizontalScrollPositionChange, tooltipAnchor /* XXX */, holdClickEvent
+];
 
 import {
   LAYOUT_BREAKPOINT_SMALL, PaletteButtonClass, PaletteButtonDisabledClass
 } from "~/globalStyles";
 
-import type { Action } from ".";
+import { type Action, type ActionInvocation, actionKinds } from ".";
 
 const ACTIONS_WITH_ICONS: Action["kind"][] = ["undo", "redo"];
 const HOVER_SCROLL_INTERVAL_MS = 10;
@@ -19,7 +22,7 @@ const HOVER_SCROLL_STEP_PX = 20;
 interface ActionPaletteProps {
   actions: Action[],
   targetText?: string,
-  onAction: (a: Action) => void,
+  onAction: (action: Action, invokation: ActionInvocation) => void,
 }
 
 export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
@@ -32,7 +35,7 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
   let leftScrollerEl!: HTMLDivElement;
   let rightScrollerEl!: HTMLDivElement;
 
-  const handleButtonClick = (a: Action) => props.onAction(a);
+  const handleButtonClick = props.onAction;
 
   const observeButtonsOverflow = (): ResizeObserver => {
     const buttonsResizeObserver = new ResizeObserver(() => {
@@ -97,19 +100,40 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
       }
       ref={el => buttonsEl = el}
     >
-      <For each={props.actions}>{(a) => {
-        const hasIcon = ACTIONS_WITH_ICONS.includes(a.kind);
+      <For each={props.actions}>{action => {
+        const hasIcon = ACTIONS_WITH_ICONS.includes(action.kind);
+        const actionKind = actionKinds[action.kind];
         return <div
           role="button"
           class={ButtonClass}
           classList={{
             [PaletteButtonClass]: true,
-            [PaletteButtonDisabledClass]: a.disabled,
+            [PaletteButtonDisabledClass]: action.disabled,
             [ActionButtonClass]: true,
           }}
-          style={{ "background-image": hasIcon && `url('icons/${a.kind}.svg')` }}
-          innerHTML={!hasIcon ? textLabel(a, props.targetText) : undefined}
-          onClick={[handleButtonClick, a]}
+          style={{ "background-image": hasIcon && `url('icons/${action.kind}.svg')` }}
+          innerHTML={!hasIcon ? textLabel(action, props.targetText) : undefined}
+          use:holdClickEvent={
+            action.disabled
+            ? undefined
+            : {
+              durationMS: 400,
+              holdClickCb: actionKind.hasAlternativeInvocation
+                ? () => handleButtonClick(action, "alternative")
+                : undefined,
+              regularClickCb: () => handleButtonClick(action, "base"),
+            }
+          }
+          /* TODO: Buggy */
+          /* use:tooltipAnchor={ */
+          /*   (!action.disabled && actionKind.description) */
+          /*   ? { */
+          /*     tooltip, */
+          /*     header: hasIcon ? textLabel(action, props.targetText) : undefined, */
+          /*     body: actionKind.description, */
+          /*   } */
+          /*   : undefined */
+          /* } */
         />;
       }}</For>
     </div>
@@ -185,29 +209,11 @@ const ButtonClass = css`
 `;
 
 function textLabel(action: Action, targetText?: string): string {
-  switch (action.kind) {
-    case "select-all":
-      return "Select all";
-    case "select-highlighted":
-      return "Select highlighted";
-    case "delete-selected":
-      return "Delete";
-    case "duplicate-selected":
-      return "Duplicate";
-    case "delete-every-second-char":
-      return "Delete every 2<sup>nd</sup> char.";
-    case "copy-all":
-      return "Copy all";
-    case "copy-selected":
-      return "Copy";
-    case "copy-original":
-      return "Copy original";
-    case "transform-selected":
-      return `${targetText!} ➞ ${action.into}`;
-    case "hiragana-to-katakana":
-      return "To katakana";
-    case "katakana-to-hiragana":
-      return "To hiragana";
+  const staticLabel = actionKinds[action.kind].staticLabel;
+  if (staticLabel) {
+    return staticLabel;
+  } else if (action.kind === "transform-selected") {
+    return `${targetText!} ➞ ${action.into}`;
   }
   return "";
 }

@@ -573,6 +573,10 @@ export function createChunksState(
     setPointer(idx);
   }
 
+  function travelToLast() {
+    setPointer(chunks.length - 1);
+  }
+
   // === PRIVATE FUNCTIONS =========================================================================
 
   function applyInsertOp(
@@ -707,6 +711,7 @@ export function createChunksState(
     canTravelBy,
     travelBy,
     travelTo,
+    travelToLast,
 
     textSelection,
   };

@@ -154,6 +154,10 @@ glob`
 
 export const ChromeClassName = "chrome";
 
+export const PaletteButtonDisabledClass = css`
+  opacity: 0.5;
+`;
+
 export const PaletteButtonClass = css`
   background-color: var(--color-bg2);
   min-width: var(--palette-button-min-size);
@@ -164,7 +168,10 @@ export const PaletteButtonClass = css`
   background-size: 32px;
   background-position: center;
   padding: 0 0.8rem;
-  cursor: pointer;
+
+  &:not(.${PaletteButtonDisabledClass}) {
+    cursor: pointer;
+  }
 
   /* TODO: (DRY) notebook/Tab.tsx, notebook/chunk-history/ActionPalette.tsx. Some others share
    *             the same pattern */
@@ -185,14 +192,9 @@ export const PaletteButtonClass = css`
     border-right: 1px solid var(--color-bg);
   }
 
-  &:hover {
+  &:not(.${PaletteButtonDisabledClass}):hover {
     background-color: var(--color-bg3);
   }
-`;
-
-export const PaletteButtonDisabledClass = css`
-  opacity: 0.5;
-  pointer-events: none;
 `;
 
 const bgFlashKeyframes = keyframes`

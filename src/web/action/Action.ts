@@ -6,48 +6,49 @@ import {
 } from "./textTransform";
 
 export type Action = (
-  {
-    kind: "undo",
-  } |
-  {
-    kind: "redo",
-  } |
-  {
-    kind: "select-all",
-  } |
-  {
-    kind: "select-highlighted",
-  } |
-  {
-    kind: "delete-selected",
-  } |
-  {
-    kind: "delete-every-second-char",
-  } |
-  {
-    kind: "duplicate-selected",
-  } |
-  {
-    kind: "copy-all",
-  } |
-  {
-    kind: "copy-selected",
-  } |
-  {
-    kind: "copy-original",
-  } |
-  {
-    kind: "transform-selected",
-    into: string,
-  } |
-  {
-    kind: "hiragana-to-katakana",
-  } |
-  {
-    kind: "katakana-to-hiragana",
-  }
+  | { kind: "undo" }
+  | { kind: "redo" }
+  | { kind: "select-all" }
+  | { kind: "select-highlighted" }
+  | { kind: "delete-selected" }
+  | { kind: "delete-every-second-char" }
+  | { kind: "duplicate-selected" }
+  | { kind: "copy-all" }
+  | { kind: "copy-selected" }
+  | { kind: "copy-original" }
+  | { kind: "transform-selected", into: string }
+  | { kind: "hiragana-to-katakana" }
+  | { kind: "katakana-to-hiragana" }
 )
 & { disabled?: boolean };
+
+export type ActionKind = {
+  staticLabel?: string,
+  description?: string,
+  hasAlternativeInvocation?: boolean,
+}
+
+export const actionKinds: Readonly<Record<Action["kind"], ActionKind>> = {
+  "undo": { staticLabel: "Undo" },
+  "redo": {
+    staticLabel: "Redo",
+    description: "Next (short click) or last (long click) chunk",
+    hasAlternativeInvocation: true,
+  },
+  "select-all": { staticLabel: "Select all" },
+  "select-highlighted": { staticLabel: "Select highlighted" },
+  "delete-selected": { staticLabel: "Delete" },
+  "delete-every-second-char": { staticLabel: "Delete every 2<sup>nd</sup> char." },
+  "duplicate-selected": { staticLabel: "Duplicate" },
+  "copy-all": { staticLabel: "Copy all" },
+  "copy-selected": { staticLabel: "Copy" },
+  "copy-original": { staticLabel: "Copy original" },
+  "transform-selected": {},
+  "hiragana-to-katakana": { staticLabel: "To katakana" },
+  "katakana-to-hiragana": { staticLabel: "To hiragana" },
+};
+
+export type ActionInvocation = "base" | "alternative";
 
 export function actionsInclude(actions: Action[], kind: Action["kind"] | Action["kind"][]) {
   const manyKinds = Array.isArray(kind);

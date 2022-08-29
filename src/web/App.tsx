@@ -5,8 +5,8 @@ import { createStore } from "solid-js/store";
 import { styled, ThemeProvider } from "solid-styled-components";
 
 import {
-  ActionButtonClass, ActionPalette, actionsInclude, availableActions as getAvailableActions,
-  hiraganaToKatakana, katakanaToHiragana, type Action
+  ActionButtonClass, ActionInvocation, ActionPalette, actionsInclude,
+  availableActions as getAvailableActions, hiraganaToKatakana, katakanaToHiragana, type Action
 } from "~/action";
 import type {
   CharacterCounter as BackendCharacterCounter, ChunkVariant, Command, Config, InMessage,
@@ -368,16 +368,20 @@ export const App: VoidComponent = () => {
     }
   }
 
-  const handleCommandRequested = (c: Command) =>
-    backend.command(commandPrepareForDispatch(c, chunks));
+  const handleCommandRequested = (command: Command) =>
+    backend.command(commandPrepareForDispatch(command, chunks));
 
-  const handleActionRequested = (a: Action) => {
-    switch (a.kind) {
+  const handleActionRequested = (action: Action, invocation: ActionInvocation) => {
+    switch (action.kind) {
       case "undo":
         chunks.travelBy(-1);
         break;
       case "redo":
-        chunks.travelBy(1);
+        if (invocation === "base") {
+          chunks.travelBy(1);
+        } else {
+          chunks.travelToLast();
+        }
         break;
       case "select-all":
         chunks.textSelection.selectAll();
@@ -402,7 +406,7 @@ export const App: VoidComponent = () => {
         chunks.copyOriginalTextToClipboard();
         break;
       case "transform-selected":
-        void chunks.insert(a.into, { op: "replace-selected" });
+        void chunks.insert(action.into, { op: "replace-selected" });
         break;
       case "hiragana-to-katakana":
         void chunks.insert(
