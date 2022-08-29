@@ -83,12 +83,13 @@ public class TextProcessor {
 
   public static String correctForm(String s) {
     return kanaHalfToFull(s)
+      .trim()
       .replace("．．．", "…")
       .replace("．．", "‥")
       .replace("...", "…")
       .replace("..", "‥")
       .replaceAll("[\\r\\n]+", "\n")
-      .replaceAll("[^\\S\\r\\n]+", " ");
+      .replaceAll("[\\p{Cntrl}&&[^\n]]", "");
   }
 
   public ChunkWithFurigana addFurigana(String s) {
