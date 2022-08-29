@@ -166,6 +166,7 @@ public final class ConfigManager {
 
     validateStringNonEmptyOrNull(config.ocr().watchDir(), "ocr.watchDir");
     validateStringNonEmptyOrNull(config.ocr().mangaocr().pythonPath(), "ocr.mangaocr.pythonPath");
+    validateIntOneOf(config.ocr().ocrspace().engine(), List.of(1, 3), "ocr.ocrspace.engine");
 
     validateExtraList(config.ocr().regions(), "ocr.regions[%d]", (r, key) -> {
       validateSymbolLength(r.symbol(), key.apply("symbol"));
@@ -224,6 +225,17 @@ public final class ConfigManager {
   ) throws ConfigException.BadValue {
     if (!s.contains(substring)) {
       throw new ConfigException.BadValue(key, "should contain '%s'".formatted(substring));
+    }
+  }
+
+  @SuppressWarnings("ThrowsRuntimeException")
+  private static void validateIntOneOf(
+    // NOTE: Uses List instead of Set because that way the error message displays the numbers in
+    //       order without extra intervention
+    int intval, List<Integer> allowed, String key
+  ) throws ConfigException.BadValue {
+    if (!allowed.contains(intval)) {
+      throw new ConfigException.BadValue(key, "should be one of: %s".formatted(allowed.toString()));
     }
   }
 }

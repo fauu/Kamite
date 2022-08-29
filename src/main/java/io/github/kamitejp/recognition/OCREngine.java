@@ -15,7 +15,12 @@ public sealed interface OCREngine
           OCREngine.MangaOCROnline,
           OCREngine.OCRSpace,
           OCREngine.None {
-  record Tesseract(String binPath) implements OCREngine {}
+  record Tesseract(String binPath) implements OCREngine {
+    @Override
+    public String toString() {
+      return "Tesseract OCR";
+    }
+  }
 
   record MangaOCR(
     String customPythonPath, MangaOCRController controller
@@ -35,6 +40,16 @@ public sealed interface OCREngine
         new MangaOCRController(platform, customPythonPath, eventCb)
       );
     }
+
+    @Override
+    public void destroy() {
+      controller.destroy();
+    }
+
+    @Override
+    public String toString() {
+      return "\"Manga OCR\"";
+    }
   }
 
   record MangaOCROnline(MangaOCRGGAdapter adapter) implements OCREngine {
@@ -50,40 +65,42 @@ public sealed interface OCREngine
       }
       return new MangaOCROnline(new MangaOCRGGAdapter());
     }
+
+    @Override
+    public String toString() {
+      return "\"Manga OCR\" Online (HF Space by Gryan Galario)";
+    }
   }
 
-  record OCRSpace(String apiKey, OCRSpaceAdapter adapter) implements OCREngine {
-    public static OCRSpace uninitialized(String apiKey) {
-      return new OCRSpace(apiKey, null);
+  record OCRSpace(
+    String apiKey, OCRSpaceSubengine subengine, OCRSpaceAdapter adapter
+  ) implements OCREngine {
+    public static OCRSpace uninitialized(String apiKey, int subengineNumber) {
+      return new OCRSpace(apiKey, OCRSpaceSubengine.fromNumber(subengineNumber), null);
     }
 
     public OCRSpace initialized() {
       if (adapter != null) {
         throw new IllegalStateException("This OCREngine.OCRSpace instance is already initialized");
       }
-      return new OCRSpace(apiKey, new OCRSpaceAdapter(apiKey));
+      return new OCRSpace(apiKey, subengine, new OCRSpaceAdapter(apiKey, subengine));
+    }
+
+    @Override
+    public String toString() {
+      return "OCR.space (subengine %d)".formatted(subengine.toNumber());
     }
   }
 
-  record None() implements OCREngine {}
+  record None() implements OCREngine {
+    @Override
+    public String toString() {
+      return "None";
+    }
+  }
 
-  @SuppressWarnings("ClassReferencesSubclass")
   default void destroy() {
-    switch (this) {
-      case OCREngine.MangaOCR engine -> engine.controller().destroy();
-      case default -> {}
-    }
-  }
-
-  @SuppressWarnings("ClassReferencesSubclass")
-  default String displayName() {
-    return switch (this) {
-      case OCREngine.Tesseract ignored      -> "Tesseract OCR";
-      case OCREngine.MangaOCR ignored       -> "\"Manga OCR\"";
-      case OCREngine.MangaOCROnline ignored -> "\"Manga OCR\" Online (HF Space by Gryan Galario)";
-      case OCREngine.OCRSpace ignored       -> "OCR.space";
-      case OCREngine.None ignored           -> "None";
-    };
+    // Do nothing
   }
 
   static Result<OCREngine, String> uninitializedFromConfig(Config config) {
@@ -103,7 +120,9 @@ public sealed interface OCREngine
           errorMessage = "Please provide the API key for OCR.space ('secrets.ocrspace')";
           yield null;
         }
-        yield OCREngine.OCRSpace.uninitialized(config.secrets().ocrspace());
+        yield OCREngine.OCRSpace.uninitialized(
+          config.secrets().ocrspace(), config.ocr().ocrspace().engine()
+        );
       }
       case NONE ->
         new OCREngine.None();

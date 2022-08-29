@@ -31,7 +31,7 @@ import io.github.kamitejp.util.Result;
 public class OCRSpaceAdapter {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int REQUEST_TIMEOUT_S = 8;
+  private static final int REQUEST_TIMEOUT_BASE_S = 10;
   private static final String MULTIPART_BOUNDARY = "apUaO5xP8REdGOEJnoAy";
 
   private static final URI API_ENDPOINT = URI.create("https://api.ocr.space/parse/image");
@@ -42,9 +42,13 @@ public class OCRSpaceAdapter {
   private static final String PARAM_IMAGE_MIMETYPE = "image/png";
 
   private final String apiKey;
+  private final String engineParam;
+  private final int requestTimeout;
 
-  OCRSpaceAdapter(String apiKey) {
+  OCRSpaceAdapter(String apiKey, OCRSpaceSubengine engine) {
     this.apiKey = apiKey;
+    engineParam = String.valueOf(engine.toNumber());
+    requestTimeout = REQUEST_TIMEOUT_BASE_S * ((engine == OCRSpaceSubengine.ENGINE_3) ? 2 : 1);
   }
 
   private record ImageUpload(String filename, String mimeType, byte[] bytes) {}
@@ -53,9 +57,10 @@ public class OCRSpaceAdapter {
   public Result<String, String> ocr(byte[] imageBytes) {
     var data = Map.of(
       "apikey", apiKey,
-      "filetype", PARAM_FILETYPE,
+      "OCREngine", engineParam,
       "language", PARAM_LANGUAGE,
       "scale", PARAM_SCALE,
+      "filetype", PARAM_FILETYPE,
       "file", new ImageUpload(PARAM_IMAGE_FILENAME, PARAM_IMAGE_MIMETYPE, imageBytes)
       // "detectOrientation", "true", TODO: Test this
     );
@@ -74,7 +79,7 @@ public class OCRSpaceAdapter {
     HttpResponse<String> res;
     try {
       var resFuture = HTTP.client().sendAsync(req, HttpResponse.BodyHandlers.ofString());
-      res = resFuture.get(REQUEST_TIMEOUT_S, TimeUnit.SECONDS);
+      res = resFuture.get(requestTimeout, TimeUnit.SECONDS);
     } catch (TimeoutException e) {
       return Result.Err("OCR.space HTTP request timed out");
     } catch (ExecutionException | InterruptedException e) {

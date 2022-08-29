@@ -101,7 +101,7 @@ public class Recognizer {
     };
 
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
-    LOG.info("Initialized recognizer (engine: {})", () -> uninitializedEngine.displayName());
+    LOG.info("Initialized recognizer. Engine: {}", uninitializedEngine::toString);
   }
 
   public void destroy() {
