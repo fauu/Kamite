@@ -6,6 +6,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,32 +34,34 @@ public final class ConfigManager {
   private ConfigManager() {}
 
   @SuppressWarnings("WeakerAccess") // Mistaken
-  public record ReadSuccess(Config config, String[] loadedProfileNames) {}
+  public record ReadSuccess(Config config, List<String> loadedProfileNames) {}
+
+  record ConfigFileEntry(String profileName, File file) {};
 
   public static Result<ReadSuccess, String> read(
     Path configDirPath,
-    String profileName,
+    List<String> profileNames,
     Map<String, String> args
   ) {
     var mainConfigPath = configDirPath.resolve(MAIN_CONFIG_FILE_PATH_RELATIVE);
-    var profileConfigPath =
-      profileName == null
-      ? null
-      : configDirPath.resolve(PROFILE_CONFIG_FILE_PATH_RELATIVE_TPL.formatted(profileName));
 
     var ensureRes = ensureMainConfig(configDirPath, mainConfigPath);
     if (ensureRes.isErr()) {
       return Result.Err(ensureRes.err());
     }
 
-    String[] loadedProfileNames = null;
-    File profileConfigFile = null;
-    if (profileConfigPath != null) {
-      profileConfigFile = profileConfigPath.toFile();
-      if (!profileConfigFile.canRead()) {
-        LOG.warn("Config file for the requested profile is not accessible: {}", profileConfigPath);
-      } else {
-        loadedProfileNames = new String[] { profileName };
+    List<ConfigFileEntry> readableProfileConfigFiles = null;
+    if (profileNames.size() > 0) {
+      readableProfileConfigFiles = new ArrayList<>();
+      for (var name : profileNames) {
+        var relativePath = PROFILE_CONFIG_FILE_PATH_RELATIVE_TPL.formatted(name);
+        var path = configDirPath.resolve(relativePath);
+        var file = path.toFile();
+        if (!file.canRead()) {
+          LOG.warn("Config file for the requested profile is not accessible: {}", path);
+          continue;
+        }
+        readableProfileConfigFiles.add(new ConfigFileEntry(name, file));
       }
     }
 
@@ -67,8 +70,13 @@ public final class ConfigManager {
       if (tsConfig == null) {
         return Result.Err("Failed to parse command line arguments into a Config object");
       }
-      if (profileConfigFile != null) {
-        tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(profileConfigFile));
+
+      List<String> loadedProfileNames = new ArrayList<>();
+      if (readableProfileConfigFiles != null) {
+        for (var configFileEntry : readableProfileConfigFiles) {
+          loadedProfileNames.add(configFileEntry.profileName);
+          tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(configFileEntry.file));
+        }
       }
       tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(mainConfigPath.toFile()));
 

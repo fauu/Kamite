@@ -60,7 +60,7 @@ export interface ChunkVariant {
 
 export interface ProgramStatus {
   debug: boolean,
-  profileName: string | null,
+  profileNames: string[],
   lookupTargets: LookupTarget[],
   sessionTimer: SessionTimer,
   characterCounter: CharacterCounter,

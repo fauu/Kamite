@@ -4,7 +4,10 @@ import static java.util.stream.Collectors.joining;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Level;
@@ -113,7 +116,7 @@ public class Kamite {
       return;
     }
     var configReadRes =
-      ConfigManager.read(maybeConfigDirPath.get(), preconfigArgs.profileName(), args);
+      ConfigManager.read(maybeConfigDirPath.get(), preconfigArgs.profileNames(), args);
     if (configReadRes.isErr()) {
       createControlGUIAndShowFatalError("Failed to read config", configReadRes.err());
       return;
@@ -139,7 +142,7 @@ public class Kamite {
     }
 
     // Config load message deferred until control GUI potentially present
-    if (configReadSuccess.loadedProfileNames() != null) {
+    if (configReadSuccess.loadedProfileNames().size() > 0) {
       LOG.info(
         "Loaded config profiles: {}",
         () -> String.join(", ", configReadSuccess.loadedProfileNames())
@@ -552,7 +555,7 @@ public class Kamite {
   private void processConfig(PreconfigArgs preconfigArgs) {
     status = new ProgramStatus(
       preconfigArgs.debug(),
-      preconfigArgs.profileName(),
+      preconfigArgs.profileNames(),
       config.lookup().targets(),
       SessionTimer.startingNow(),
       new CharacterCounter(),
@@ -614,7 +617,7 @@ public class Kamite {
     LOG.debug("Registered global keybinding: {}", binding);
   }
 
-  private record PreconfigArgs(boolean debug, String profileName, boolean regionHelper) {}
+  private record PreconfigArgs(boolean debug, List<String> profileNames, boolean regionHelper) {}
 
   private static PreconfigArgs processPreconfigArgs(Map<String, String> args) {
     var rawDebug = args.get("debug");
@@ -627,9 +630,15 @@ public class Kamite {
       enableDebugLogging(loggingExtent);
     }
 
+    List<String> profileNames = new ArrayList<>();
+    var profileRaw = args.get("profile");
+    if (profileRaw != null && !profileRaw.isEmpty()) {
+      profileNames = Arrays.asList(profileRaw.split(","));
+    }
+
     var regionHelper = isArgValueTruthy(args.get("regionHelper"));
 
-    return new PreconfigArgs(debug, args.get("profile"), regionHelper);
+    return new PreconfigArgs(debug, profileNames, regionHelper);
   }
 
   private static boolean isArgValueTruthy(String value) {

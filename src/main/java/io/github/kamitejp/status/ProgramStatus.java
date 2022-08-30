@@ -7,7 +7,7 @@ import io.github.kamitejp.recognition.RecognizerStatus;
 
 public final class ProgramStatus {
   private final boolean debug;
-  private final String profileName;
+  private final List<String> profileNames;
   private final List<Config.Lookup.Target> lookupTargets;
   private final SessionTimer sessionTimer;
   private final CharacterCounter characterCounter;
@@ -16,7 +16,7 @@ public final class ProgramStatus {
 
   public ProgramStatus(
     boolean debug,
-    String profileName,
+    List<String> profileNames,
     List<Config.Lookup.Target> lookupTargets,
     SessionTimer sessionTimer,
     CharacterCounter characterCounter,
@@ -24,7 +24,7 @@ public final class ProgramStatus {
     PlayerStatus playerStatus
   ) {
     this.debug = debug;
-    this.profileName = profileName;
+    this.profileNames = profileNames;
     this.lookupTargets = lookupTargets;
     this.sessionTimer = sessionTimer;
     this.characterCounter = characterCounter;
@@ -36,8 +36,8 @@ public final class ProgramStatus {
     return debug;
   }
 
-  public String getProfileName() {
-    return profileName;
+  public List<String> getProfileNames() {
+    return profileNames;
   }
 
   public List<Config.Lookup.Target> getLookupTargets() {
