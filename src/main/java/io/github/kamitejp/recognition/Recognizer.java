@@ -124,6 +124,9 @@ public class Recognizer {
     ) {
       return Result.Err(RecognitionOpError.INPUT_TOO_SMALL);
     }
+
+    sendDebugImage(img, "recognizeBox input");
+
     LOG.debug("Starting box recognition");
     return switch (engine) {
       case OCREngine.Tesseract ignored     -> recognizeBoxTesseract(img, textOrientation);
