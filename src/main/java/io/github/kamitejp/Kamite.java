@@ -123,7 +123,28 @@ public class Kamite {
     }
     var configReadSuccess = configReadRes.get();
     config = configReadSuccess.config();
-    processConfig(preconfigArgs);
+
+    status = new ProgramStatus(
+      preconfigArgs.debug(),
+      preconfigArgs.profileNames(),
+      config.lookup().targets(),
+      SessionTimer.startingNow(),
+      new CharacterCounter(),
+      RecognizerStatus.Kind.INITIALIZING,
+      PlayerStatus.DISCONNECTED
+    );
+
+    server = new Server(platform.getConfigDirPath().orElse(null));
+    try {
+      server.run(
+        config.server().port(),
+        config.dev().serveStaticInDevMode(),
+        this::handleServerEvent
+      );
+    } catch (ServerStartException e) {
+      showFatalError("Failed to start backend web server", e.toString());
+      return;
+    }
 
     if (config.controlWindow()) {
       createControlGUI();
@@ -149,18 +170,6 @@ public class Kamite {
       );
     }
 
-    var ocrWatchDir = config.ocr().watchDir();
-    if (ocrWatchDir != null) {
-      try {
-        ocrDirectoryWatcher = new OCRDirectoryWatcher(
-          ocrWatchDir,
-          /* recognizeImageFn */ recognitionConductor::recognizeImageProvided
-        );
-      } catch (OCRDirectoryWatcherCreationException e) {
-        LOG.error("Failed to create OCR directory watcher: {}", e::toString);
-      }
-    }
-
     // Init DBus communication
     if (platform instanceof LinuxPlatform linuxPlatform) {
       linuxPlatform.getDBusClient().ifPresent((client) -> {
@@ -176,18 +185,6 @@ public class Kamite {
 
     textProcessor = new TextProcessor();
 
-    server = new Server(platform.getConfigDirPath().orElse(null));
-    try {
-      server.run(
-        config.server().port(),
-        config.dev().serveStaticInDevMode(),
-        this::handleServerEvent
-      );
-    } catch (ServerStartException e) {
-      showFatalError("Failed to start backend web server", e.toString());
-      return;
-    }
-
     initMPVController();
 
     recognitionConductor = new RecognitionConductor(
@@ -199,6 +196,33 @@ public class Kamite {
       /* notifyErrorFn */                   this::notifyError,
       /* updateAndSendRecognizerStatusFn */ this::updateAndSendRecognizerStatus
     );
+
+    // NOTE: setupGlobalKeybindings() depends on recognitionConductor being initialized (but this
+    //       can be changed)
+    if (platform.supports(PlatformDependentFeature.GLOBAL_KEYBINDINGS)) {
+      if (platform instanceof GlobalKeybindingProvider keybindingProvider) {
+        setupGlobalKeybindings(keybindingProvider, config.keybindings().global());
+      } else {
+        LOG.warn(
+          "Platform reported supporting global keybindings, yet it does not implement the required"
+          + " interface. Global keybindings will be unavailable"
+        );
+      }
+    }
+
+    // NOTE: OCRDirectoryWatcher constructor depends on recognitionConductor being initialized
+    //       (but this can be changed)
+    var ocrWatchDir = config.ocr().watchDir();
+    if (ocrWatchDir != null) {
+      try {
+        ocrDirectoryWatcher = new OCRDirectoryWatcher(
+          ocrWatchDir,
+          /* recognizeImageFn */ recognitionConductor::recognizeImageProvided
+        );
+      } catch (OCRDirectoryWatcherCreationException e) {
+        LOG.error("Failed to create OCR directory watcher: {}", e::toString);
+      }
+    }
 
     Runtime.getRuntime().addShutdownHook(
       new Thread(() -> {
@@ -549,29 +573,6 @@ public class Kamite {
       | InvocationTargetException e
     ) {
       throw new RuntimeException("Exception while instantiating Program Status message", e);
-    }
-  }
-
-  private void processConfig(PreconfigArgs preconfigArgs) {
-    status = new ProgramStatus(
-      preconfigArgs.debug(),
-      preconfigArgs.profileNames(),
-      config.lookup().targets(),
-      SessionTimer.startingNow(),
-      new CharacterCounter(),
-      RecognizerStatus.Kind.INITIALIZING,
-      PlayerStatus.DISCONNECTED
-    );
-
-    if (platform.supports(PlatformDependentFeature.GLOBAL_KEYBINDINGS)) {
-      if (platform instanceof GlobalKeybindingProvider keybindingProvider) {
-        setupGlobalKeybindings(keybindingProvider, config.keybindings().global());
-      } else {
-        LOG.warn(
-          "Platform reported supporting global keybindings, yet it does not implement the required"
-          + " interface. Global keybindings will be unavailable"
-        );
-      }
     }
   }
 
