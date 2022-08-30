@@ -34,6 +34,7 @@ export function tooltipAnchor(el: HTMLElement, value: () => TooltipAnchorParams 
   onCleanup(() => {
     el.removeEventListener("mouseenter", wrappedShow);
     el.removeEventListener("mouseleave", hide);
+    hide();
   });
 }
 
