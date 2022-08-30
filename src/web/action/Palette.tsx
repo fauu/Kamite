@@ -129,7 +129,6 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
           }
           use:tooltipAnchor={
             (!action.disabled && actionKind.description)
-            /* actionKind.description */
             ? {
               tooltip,
               header: hasIcon ? textLabel(action, props.targetText) : undefined,
