@@ -12,8 +12,9 @@ const [_, __, ___, ____] = [
 import {
   LAYOUT_BREAKPOINT_SMALL, PaletteButtonClass, PaletteButtonDisabledClass
 } from "~/globalStyles";
+import { useGlobalTooltip } from "~/GlobalTooltip";
 
-import { type Action, type ActionInvocation, actionKinds } from ".";
+import { actionKinds, type Action, type ActionInvocation } from ".";
 
 const ACTIONS_WITH_ICONS: Action["kind"][] = ["undo", "redo"];
 const HOVER_SCROLL_INTERVAL_MS = 10;
@@ -26,6 +27,8 @@ interface ActionPaletteProps {
 }
 
 export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
+  const tooltip = useGlobalTooltip()!;
+
   const [buttonsOverflow , setButtonsOverflow] =
     createSignal(false);
   const [buttonsScrollPosition , setButtonsScrollPosition] =
@@ -124,16 +127,16 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
               regularClickCb: () => handleButtonClick(action, "base"),
             }
           }
-          /* TODO: Buggy */
-          /* use:tooltipAnchor={ */
-          /*   (!action.disabled && actionKind.description) */
-          /*   ? { */
-          /*     tooltip, */
-          /*     header: hasIcon ? textLabel(action, props.targetText) : undefined, */
-          /*     body: actionKind.description, */
-          /*   } */
-          /*   : undefined */
-          /* } */
+          use:tooltipAnchor={
+            (!action.disabled && actionKind.description)
+            /* actionKind.description */
+            ? {
+              tooltip,
+              header: hasIcon ? textLabel(action, props.targetText) : undefined,
+              body: actionKind.description,
+            }
+            : undefined
+          }
         />;
       }}</For>
     </div>
