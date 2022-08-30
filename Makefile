@@ -54,6 +54,7 @@ dist-win: launcher-win dist-prepare-generic
 	popd; \
 	cp launcher/x86_64-pc-windows-gnu/release/kamite-launcher-win-main.exe kamite/Kamite.exe; \
 	cp launcher/x86_64-pc-windows-gnu/release/kamite-launcher-win-console-wrapper.exe kamite/Kamite.com; \
+	cp "../launcher/win/aux/Kamite (Debug).bat" kamite; \
 	zip -r Kamite_$(shell cat target/VERSION)_Windows.zip kamite/; \
 	rm -rf kamite; \
 
