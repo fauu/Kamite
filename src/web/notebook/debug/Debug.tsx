@@ -10,7 +10,7 @@ interface DebugProps {
   state: DebugState,
 }
 
-export const Debug: VoidComponent<DebugProps> = (props) =>
+export const Debug: VoidComponent<DebugProps> = props =>
   <div
     class={RootClass}
     // Needs delay because a new image doesn't load immediately
@@ -28,4 +28,5 @@ const RootClass = css`
 
 const Image = styled.img`
   margin: 0 0.5rem 0.5rem 0;
+  border: 2px dashed var(--color-med);
 `;
