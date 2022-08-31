@@ -54,7 +54,7 @@ main() {
 
   local sentence_part
   if [[ -n $1 ]]; then
-    sentence_part=', "'"$SENTENCE_FIELD_NAME"'": "'"$1"'"'
+    sentence_part=', "'"$SENTENCE_FIELD_NAME"'": "'"${1//$'\n'/\\n}"'"'
   fi
 
   local params
