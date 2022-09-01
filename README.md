@@ -584,12 +584,27 @@ provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
     sensitive for this kind of storage
 
     ```sh
-    …
     secrets {
       ocrspace = THE KEY GOES HERE
     }
-    …
     ```
+
+1. (Optional—for games) Change the subengine from the default (“1”)
+
+    The OCR.space service itself provides multiple OCR engines. Japanese is
+    supported by engines “1” and “3”. Kamite uses engine “1” by default. If you
+    wish to use engine “3”, specify the following configuration:
+
+    ```sh
+    ocr {
+      ocrspace {
+        engine = 3
+      }
+    }
+    ```
+
+    Engine “3” is useless for manga and slower than engine “1”, but it may be
+    more accurate for, e.g., particular games.
 
 Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
 
@@ -769,13 +784,15 @@ console output.
 
 ###### Region OCR quality
 
-“Manga OCR” and OCR.space engines should be viable here in at least some cases.
-However, they both work best when the screenshot they are provided with is
-narrowed to just the text. And since the current auto-narrowing algorithm is not
-very reliable, for now it might be best to create separate regions for each possible
-line count of the target text box (i.e., first region encompassing just one line
-of text, second region encompassing the first and the second line, and so on)
-and choose between them on the fly.
+OCR.space and “Manga OCR” engines should be viable here in at least some cases.
+(Be sure to try [OCR.space engine “3”](#setting-up-ocrspace) specifically).
+
+The above engines, however, work best when the screenshot they are provided with
+is narrowed to just the text. And since the current auto-narrowing algorithm is
+not very reliable, for now it might be best to create separate regions for each
+possible line count of the target text box (i.e., first region encompassing just
+one line of text, second region encompassing the first and the second line, and
+so on) and choose between them on the fly.
 
 See also: [Config](#config), [Visual novel / game text extraction](#visual-novel--game-text-extraction),
 [Alternatives for games](#alternatives-for-games).
@@ -1512,6 +1529,11 @@ ocr {
     # assumes that manga-ocr was installed through pipx into the default
     # location
     pythonPath = …
+  }
+
+  ocrspace {
+    # (1, 3) The OCR.space engine to use (see # https://ocr.space/OCRAPI#ocrengine)
+    engine = 1
   }
 
   # A *list* of OCR regions, for each of which a region recognition command
