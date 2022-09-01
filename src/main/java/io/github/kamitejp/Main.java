@@ -26,9 +26,10 @@ Options:
   --debug[=all]
       Print debug messages to the console, optionally also from third-party
       components
-  --profile=<profile-id>
+  --profile=<profile-id>[,<second-profile-id>]+
       Load the config file 'config.<profile-id>.hocon' on top of the main config
-      file
+      file, as well as additional config files if more than one profile ID is
+      provided.
   --regionHelper
       Launch in Region Helper mode: prints the region specifications for
       user-selected screen areas, exits once a selection is cancelled.
