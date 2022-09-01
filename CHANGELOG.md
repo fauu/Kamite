@@ -1,5 +1,45 @@
 # Changelog — Kamite
 
+## [Unreleased]
+
+### Added
+
+* Combined profile: Multiple extra config files can now be loaded
+  (`--profile=first-profile,second-profile,third-profile`).
+* An alternative OCR.space engine “3” can now be used
+  (`ocr.ocrspace.engine = 3`).
+* Long-clicking the “Redo” button in the action palette will now skip
+  forward all the way to the latest chunk.
+* New `misc_lookup` command in the command API for externally invoking lookups
+  within Kamite’s client.
+
+### Changed
+
+* (Windows) The `Kamite.ps1` console launcher script has been replaced with
+  `Kamite.com`.
+* (Windows) `Kamite.bat` script has been added for convenient launching in
+  debug mode with console window.
+* (Windows) The launcher now uses a different launch method.
+* Overflowing action palette scrolling UX no longer involves a scrollbar.
+* When chunk correction is enabled (default), some garbage characters, as well
+  as leading and trailing whitespace, are now removed from incoming chunks.
+* OCR input images are now displayed in the Debug tab (available when launched
+  with `--debug`).
+* Parameters in custom commands can now be put in single quotemarks to avoid
+  splitting by spaces.
+
+### Fixed
+
+* Custom commands with placeholder parameters no longer break after first use.
+* No longer crashes when some duplicate launch options are provided.
+* (Windows) Can now be pinned to the taskbar properly.
+* Some weird behaviours have been eliminated around client
+  connecting/disconnecting in the presence of competing client tabs.
+* (Windows) An overflowing action palette no longer pushes the chunk view down
+  in Firefox.
+* A missing indicator icon to distinguish buttons for lookups that open in a
+  new tab has been restored.
+
 ## [0.5] – 2022-08-21
 
 ### Added
