@@ -217,6 +217,7 @@ export function createChunksState(
     params: InsertRestParams
   ) {
     // Default values
+    // QUAL: There should be a better way to express this
     if (!params.altOp) {
       params.altOp = "overwrite";
     }
