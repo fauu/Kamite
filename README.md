@@ -96,6 +96,7 @@ script; [waycorner][waycorner-icxes].
 8. [Launch options](#launch-options)
 9. [Config](#config)
     * [Config profiles](#config-profiles)
+        * [Combined profile (multiple extra config files)](#combined-profile-multiple-extra-config-files)
 10. [Style customization](#style-customization)
 11. [Command API](#command-api)
     * [Sending commands](#sending-commands)
@@ -1369,8 +1370,8 @@ Prints the usage message and exits.
 `--version`\
 Prints the program version and exits.
 
-`--profile=<profile-id>`\
-Instructs Kamite to use the profile config file with the specified ID. See
+`--profile=<profile-id>[,<profile-id>]+`\
+Instructs Kamite to load the profile config files with the specified IDs. See
 [Config profiles](#config-profiles).
 
 `--debug[=all]`\
@@ -1591,7 +1592,7 @@ secrets {
 
 Kamite supports having a set of different config files for different use-cases.
 
-Creating, in the config directory, a file named `config.example-profile.hocon`
+Creating in the config directory a file named `config.example-profile.hocon`
 and then launching Kamite with the [launch option](#launch-options)
 `--profile=example-profile` will instruct Kamite to take into account both the
 main `config.hocon` file and the `config.example-profile.hocon` file, with
@@ -1645,6 +1646,13 @@ lookup {
 Given the above configuration, launching normally shows `deepl`, `jpdb`, and
 `googleImages` lookups, whereas launching with `--profile=no-translations` shows
 only `googleImages` lookup.
+
+#### Combined profile (multiple extra config files)
+
+Several extra config files can be loaded at once. To achieve that, specify
+multiple profile IDs with the `--profile` launch option, separating them by
+commas, e.g., `--profile=first-profile,second-profile`. The values from the
+leftmost profile’s config file will have the highest precedence.
 
 ## Style customization
 
