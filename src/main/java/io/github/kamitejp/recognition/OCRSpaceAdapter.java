@@ -54,6 +54,7 @@ public class OCRSpaceAdapter {
   private record ImageUpload(String filename, String mimeType, byte[] bytes) {}
 
   // TODO: Don't send free API request if the image is over 1 MB
+  // TODO: Don't send free API request if engine = 3 and an image dimension is over 1000 px
   public Result<String, String> ocr(byte[] imageBytes) {
     var data = Map.of(
       "apikey", apiKey,
