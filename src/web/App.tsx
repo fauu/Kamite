@@ -265,17 +265,13 @@ export const App: VoidComponent = () => {
           // Update chunk selection
           const lastChunkElIdx = chunkLabelEl.childElementCount - 1;
           const lastChunkEl = chunkLabelEl.childNodes[lastChunkElIdx] as HTMLElement;
-          const lastRight = lastChunkEl.offsetLeft + lastChunkEl.offsetWidth;
-          const lastTop = lastChunkEl.offsetTop;
-          const lastBottom = lastTop + lastChunkEl.offsetHeight;
-          const cursorRightToLast = event.clientX > lastRight && event.clientY > lastTop;
+          const lastRect = lastChunkEl.getBoundingClientRect();
+          const cursorRightOfLast = event.clientX > lastRect.right && event.clientY > lastRect.top;
           const anchor = chunks.textSelection.get()!.anchor!;
-          if (cursorRightToLast || /* cursowBelowAll */ event.clientY > lastBottom) {
+          if (cursorRightOfLast || /* cursorBelowAll */ event.clientY > lastRect.bottom) {
             chunks.textSelection.set({ range: [anchor, chunks.current().text.length - 1], anchor });
-          } else {
-            if (event.clientY < chunkLabelEl.offsetTop) {
-              chunks.textSelection.set({ range: [0, anchor], anchor });
-            }
+          } else if (event.clientY < chunkLabelEl.getBoundingClientRect().top) {
+            chunks.textSelection.set({ range: [0, anchor], anchor });
           }
         }
       }

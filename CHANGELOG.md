@@ -39,6 +39,8 @@
   in Firefox.
 * A missing indicator icon to distinguish buttons for lookups that open in a
   new tab has been restored.
+* Chunk text selection now behaves correctly in Flipped interface layout when
+  cursor is dragged above the chunk while selecting.
 
 ## [0.5] – 2022-08-21
 
