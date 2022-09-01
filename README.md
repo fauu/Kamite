@@ -1370,7 +1370,7 @@ Prints the usage message and exits.
 `--version`\
 Prints the program version and exits.
 
-`--profile=<profile-id>[,<profile-id>]+`\
+`--profile=<profile-id>[,<second-profile-id>]+`\
 Instructs Kamite to load the profile config files with the specified IDs. See
 [Config profiles](#config-profiles).
 
