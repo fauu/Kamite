@@ -1006,8 +1006,11 @@ To install the *Kamite Send* Textractor extension:
    earlier.
 
 For Textractor’s text processing extensions (such as Remove Repeated Characters)
-to be executed before sending the text to Kamite, position Kamite Send below
+to be executed before sending the text to Kamite, position Kamite Send *below*
 them on the extensions list.
+
+> Want to prevent Textractor from inserting unnecessary hooks? Check out
+> [Textractor-HookAllowlist](https://github.com/fauu/Textractor-HookAllowlist/).
 
 #### Changing the default Textractor extension endpoint
 
