@@ -57,8 +57,9 @@ script; [waycorner][waycorner-icxes].
         * [Generic](#generic)
     * [Windows](#windows)
 2. [Launching Kamite](#launching-kamite)
-3. [User interface overview](#user-interface-overview)
-4. [Text extraction](#text-extraction)
+3. [Troubleshooting](#troubleshooting)
+4. [User interface overview](#user-interface-overview)
+5. [Text extraction](#text-extraction)
     * [Anime (and other video) text extraction](#anime-and-other-video-text-extraction)
         * [Mining anime](#mining-anime)
         * [Tip: auto-pausing at the end of subtitle](#tip-auto-pausing-at-the-end-of-subtitle)
@@ -80,25 +81,25 @@ script; [waycorner][waycorner-icxes].
         * [Alternatives for games](#alternatives-for-games)
     * [Clipboard](#clipboard)
     * [Custom source / alternative method text extraction](#custom-source--alternative-method-text-extraction)
-5. [Text use](#text-use)
+6. [Text use](#text-use)
     * [Editing and transforming the text](#editing-and-transforming-the-text)
     * [Pop-up dictionary](#pop-up-dictionary)
     * [Lookups](#lookups)
         * [Custom lookups](#custom-lookups)
-6. [Custom commands (Launching external executables)](#custom-commands-launching-external-executables)
-7. [Keyboard shortcuts](#keyboard-shortcuts)
+7. [Custom commands (Launching external executables)](#custom-commands-launching-external-executables)
+8. [Keyboard shortcuts](#keyboard-shortcuts)
     * [Client-only keyboard shortcuts](#client-only-keyboard-shortcuts)
         * [Chunk edit mode keyboard shortcuts](#chunk-edit-mode-keyboard-shortcuts)
         * [Media player keyboard shortcuts (client)](#media-player-keyboard-shortcuts-client)
     * [Global keyboard shortcuts](#global-keyboard-shortcuts)
         * [Linux/Xorg and Windows](#linuxxorg-and-windows)
         * [Linux/wlroots](#linuxwlroots)
-8. [Launch options](#launch-options)
-9. [Config](#config)
+9. [Launch options](#launch-options)
+10. [Config](#config)
     * [Config profiles](#config-profiles)
         * [Combined profile (multiple extra config files)](#combined-profile-multiple-extra-config-files)
-10. [Style customization](#style-customization)
-11. [Command API](#command-api)
+11. [Style customization](#style-customization)
+12. [Command API](#command-api)
     * [Sending commands](#sending-commands)
         * [DBus (Linux)](#dbus-linux)
         * [HTTP](#http)
@@ -109,9 +110,9 @@ script; [waycorner][waycorner-icxes].
         * [`session-timer_` commands](#session-timer_-commands)
         * [`chunk_` commands](#chunk_-commands)
         * [`misc_` commands](#misc_-commands)
-12. [Privacy](#privacy)
-13. [Development](#development)
-14. [License](#license)
+13. [Privacy](#privacy)
+14. [Development](#development)
+15. [License](#license)
     * [Third-party components](#third-party-components)
 
 ## Installing Kamite
@@ -159,8 +160,8 @@ Kamite can be launched:
   program directory or through a desktop launcher (assuming the `.desktop` file
   was installed);
 
-* <ins>Windows</ins>: using either the `Kamite.exe` or the `Kamite.com`
-  executable (the latter provides console output).
+* <ins>Windows</ins>: using one of: `Kamite.exe`, `Kamite.com` (provides console
+  output), or `Kamite.bat` (enables Debug mode and provides console output).
 
 Besides the [config file](#config), Kamite supports configuration through
 launch options. See [Launch options](#launch-options).
@@ -180,6 +181,18 @@ Kamite is run from the command line, making the control window redundant.
 
 Multiple config profiles can be prepared for Kamite and chosen between at the
 time of its launch. See [Config profiles](#config-profiles).
+
+## Troubleshooting
+
+To better diagnose problems, launch Kamite from a console window with the
+[launch option](#launch-options) `--debug`. (On Windows, this can be done simply
+by double-clicking the provided `Kamite.bat` script). This will make Kamite
+print detailed error messages and add a Debug tab to the client (the bug icon)
+where image snapshots of OCR operations appear for inspection.
+
+If something does not seem to work properly or is confusing in a way that is not
+dispelled by what is written in this README, do not hesitate to [create a GitHub
+Issue](https://github.com/fauu/Kamite/issues/new).
 
 ## User interface overview
 
