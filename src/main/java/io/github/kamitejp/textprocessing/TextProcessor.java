@@ -39,8 +39,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.atilika.kuromoji.ipadic.Token;
-import com.atilika.kuromoji.ipadic.Tokenizer;
+import com.atilika.kuromoji.unidic.Token;
+import com.atilika.kuromoji.unidic.Tokenizer;
 
 public class TextProcessor {
   private static final int KATAKANA_HIRAGANA_SHIFT = 0x3041 - 0x30A1;
@@ -104,19 +104,19 @@ public class TextProcessor {
           var patternBuilder = new StringBuilder();
           var isLastTokenKanji = false;
           var subs = new ArrayList<List<Integer>>();
-          for (var c : (Iterable<Integer>) t.surfaceForm().codePoints()::iterator) {
-            if (isKanji(c)) {
+          for (var cp : (Iterable<Integer>) t.surfaceForm().codePoints()::iterator) {
+            if (isKanji(cp)) {
               if (isLastTokenKanji) {
-                subs.get(subs.size() - 1).add(c);
+                subs.get(subs.size() - 1).add(cp);
               } else {
                 isLastTokenKanji = true;
                 patternBuilder.append("(.+)");
-                subs.add(Stream.of(c).collect(toList()));
+                subs.add(Stream.of(cp).collect(toList()));
               }
             } else {
               isLastTokenKanji = false;
-              subs.add(Stream.of(c).collect(toList()));
-              patternBuilder.append(codePointToString(isKatakana(c) ? toRawHiragana(c) : c));
+              subs.add(Stream.of(cp).collect(toList()));
+              patternBuilder.append(codePointToString(isKatakana(cp) ? toRawHiragana(cp) : cp));
             }
           }
           var re = Pattern.compile("^%s$".formatted(patternBuilder));
@@ -139,9 +139,9 @@ public class TextProcessor {
 
         case KANA_ONLY -> {
           var i = 0;
-          for (var c : (Iterable<Integer>) t.surfaceForm().codePoints()::iterator) {
+          for (var cp : (Iterable<Integer>) t.surfaceForm().codePoints()::iterator) {
             notations.add(new Notation(
-              codePointToString(c),
+              codePointToString(cp),
               NotationBaseType.KANA,
               codePointToString(toRawHiragana(t.reading().codePointAt(i++)))
             ));
@@ -149,8 +149,8 @@ public class TextProcessor {
         }
 
         case NO_JAPANESE_SCRIPT -> {
-          for (var c : (Iterable<Integer>) t.surfaceForm().codePoints()::iterator) {
-            var cStr = codePointToString(c);
+          for (var cp : (Iterable<Integer>) t.surfaceForm().codePoints()::iterator) {
+            var cStr = codePointToString(cp);
             notations.add(new Notation(cStr, NotationBaseType.OTHER, cStr));
           }
         }
@@ -178,8 +178,8 @@ public class TextProcessor {
   private TextClassification classify(String s) {
     var hasKanji = false;
     var hasKana = false;
-    for (var c : (Iterable<Integer>) s.codePoints()::iterator) {
-      var script = Character.UnicodeScript.of(c);
+    for (var cp : (Iterable<Integer>) s.codePoints()::iterator) {
+      var script = Character.UnicodeScript.of(cp);
       if (isKanji(script)) {
         hasKanji = true;
       } else if (isKana(script)) {
@@ -201,7 +201,11 @@ public class TextProcessor {
 
   private List<ThinToken> patchTokens(List<Token> tokens) {
     var processingTokens = tokens.stream().map(t ->
-      new ProcessingToken(t.getSurface(), t.getReading(), t.getPartOfSpeechLevel1())
+      new ProcessingToken(
+        t.getSurface(),
+        unidicPronunciationToKana(t.getPronunciation()),
+        t.getPartOfSpeechLevel1()
+      )
     ).collect(toList());
 
     // Patch for token structure
@@ -220,6 +224,8 @@ public class TextProcessor {
       }
       t.reading = newReading;
     }
+
+    // PERF: Verify if the following patches are necessary for UniDic
 
     // Patch for 助動詞"う" after 動詞
     for (var i = 0; i < processingTokens.size(); i++) {
@@ -263,6 +269,37 @@ public class TextProcessor {
     }
 
     return processingTokens.stream().map(t -> new ThinToken(t.surfaceForm, t.reading)).toList();
+  }
+
+  // Unidic returns, e.g., そーじ for 掃除. Transform into そうじ, etc.
+  // https://github.com/siikamiika/unidic-mecab-translate/blob/2cacfcb8024abe7ba8a672a522d57a3c0b4d644c/translate_lex.py#L257
+  private String unidicPronunciationToKana(String pronunciation) {
+    if (pronunciation.isEmpty()) {
+      return "";
+    }
+
+    var kanaBuilder = new StringBuilder();
+    Integer prevCP = null;
+    for (var cp : (Iterable<Integer>) pronunciation.codePoints()::iterator) {
+      if (prevCP == null || cp != LONG_VOWEL_MARK) {
+        kanaBuilder.appendCodePoint(cp);
+        prevCP = cp;
+        continue;
+      }
+
+      if (VOWELS_PROLONGED_WITH_A.contains(prevCP)) {
+        kanaBuilder.append(KATAKANA_A);
+      } else if (VOWELS_PROLONGED_WITH_I.contains(prevCP)) {
+        kanaBuilder.append(KATAKANA_I);
+      } else if (VOWELS_PROLONGED_WITH_U.contains(prevCP)) {
+        kanaBuilder.append(KATAKANA_U);
+      } else {
+        kanaBuilder.appendCodePoint(LONG_VOWEL_MARK);
+      }
+      prevCP = cp;
+    }
+
+    return kanaBuilder.toString();
   }
 
   private static boolean hasJapanese(String s) {
@@ -330,7 +367,7 @@ public class TextProcessor {
 
   private static String codePointListToString(List<Integer> cpList) {
     return new String(
-      cpList.stream().mapToInt(Integer::intValue).toArray(), 
+      cpList.stream().mapToInt(Integer::intValue).toArray(),
       0,
       cpList.size()
     );
@@ -346,43 +383,43 @@ public class TextProcessor {
         continue;
       }
 
-      var c = cps[i];
+      var cp = cps[i];
 
-      if (c < 0xFF61 || c > 0xFF9F || !KANA_HALF2FULL_BASE.containsKey(c)) {
-        lineBuilder.appendCodePoint(c);
+      if (cp < 0xFF61 || cp > 0xFF9F || !KANA_HALF2FULL_BASE.containsKey(cp)) {
+        lineBuilder.appendCodePoint(cp);
         continue;
       }
 
-      Integer newCp = null;
+      Integer newCP = null;
 
       if (i + 2 < cps.length) {
         if (cps[i + 1] == ' ') {
           if (cps[i + 2] == 0x3099) {
-            newCp = KANA_HALF2FULL_VOICED.get(c);
+            newCP = KANA_HALF2FULL_VOICED.get(cp);
             skip = 2;
           } else if (cps[i + 2] == 0x309A) {
-            newCp = KANA_HALF2FULL_SEMIVOICED.get(c);
+            newCP = KANA_HALF2FULL_SEMIVOICED.get(cp);
             skip = 2;
           }
         }
       }
-      if (newCp == null && i + 1 < cps.length) {
+      if (newCP == null && i + 1 < cps.length) {
         var lookahead = cps[i + 1];
         if (lookahead == 0x309B || lookahead == 0xFF9E) {
-          newCp = KANA_HALF2FULL_VOICED.get(c);
+          newCP = KANA_HALF2FULL_VOICED.get(cp);
           skip = 1;
         } else if (lookahead == 0x309C || lookahead == 0xFF9F) {
-          newCp = KANA_HALF2FULL_SEMIVOICED.get(c);
+          newCP = KANA_HALF2FULL_SEMIVOICED.get(cp);
           skip = 1;
         }
       }
 
-      if (newCp == null) {
-        newCp = KANA_HALF2FULL_BASE.get(c);
+      if (newCP == null) {
+        newCP = KANA_HALF2FULL_BASE.get(cp);
       }
 
-      if (newCp != null) {
-        lineBuilder.appendCodePoint(newCp);
+      if (newCP != null) {
+        lineBuilder.appendCodePoint(newCP);
       }
     }
     return lineBuilder.toString();
@@ -486,5 +523,27 @@ public class TextProcessor {
     entry(0xFF8D, 0x30D9),
     entry(0xFF8E, 0x30DC),
     entry(0xFF9C, 0x30F7)
+  );
+
+  private final int LONG_VOWEL_MARK = 0x30FC;
+
+  private final char KATAKANA_A = 'ア';
+  private final List<Integer> VOWELS_PROLONGED_WITH_A = List.of(
+    0x30A2, 0x30AB, 0x30AC, 0x30B5, 0x30B6, 0x30BF, 0x30C0, 0x30CA, 0x30CF, 0x30D0, 0x30D1, 0x30DE,
+    0x30E4, 0x30E3, 0x30E9, 0x30EF
+  );
+
+  private final char KATAKANA_I = 'イ';
+  private final List<Integer> VOWELS_PROLONGED_WITH_I = List.of(
+    0x30A4, 0x30AD, 0x30AE, 0x30B7, 0x30B8, 0x30C1, 0x30C2, 0x30CB, 0x30D2, 0x30D3, 0x30D4, 0x30DF,
+    0x30EA, 0x30F0, 0x30A8, 0x30B1, 0x30B2, 0x30BB, 0x30BC, 0x30C6, 0x30C7, 0x30CD, 0x30D8, 0x30D9,
+    0x30DA, 0x30E1, 0x30EC, 0x30F1
+  );
+
+  private final char KATAKANA_U = 'ウ';
+  private final List<Integer> VOWELS_PROLONGED_WITH_U = List.of(
+    0x30A6, 0x30AF, 0x30B0, 0x30B9, 0x30BA, 0x30C4, 0x30C5, 0x30CC, 0x30D5, 0x30D6, 0x30D7, 0x30E0,
+    0x30E6, 0x30E5, 0x30EB, 0x30AA, 0x30B3, 0x30B4, 0x30BD, 0x30BE, 0x30C8, 0x30C9, 0x30CE, 0x30DB,
+    0x30DC, 0x30DD, 0x30E2, 0x30E8, 0x30E7, 0x30ED, 0x30F2
   );
 }
