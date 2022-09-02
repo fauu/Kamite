@@ -18,7 +18,7 @@ dist: dist-linux dist-win
 dist-prepare-generic: jar runtime-linux textractor dist-write-version
 	pushd target; \
 	rm -rf dist-base *.zip; \
-	mkdir -p dist-base/lib; \
+	mkdir -p dist-base/lib/generic; \
 	cp -r ../lib/generic dist/lib; \
 	cp java/kamite-0.0.0.jar dist-base/lib/generic/kamite.jar; \
 	mkdir dist-base/extra; \
