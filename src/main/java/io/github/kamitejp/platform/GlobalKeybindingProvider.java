@@ -9,13 +9,21 @@ public interface GlobalKeybindingProvider {
 
   void setKeymasterProvider(Provider provider);
 
-  default void registerKeybinding(String keyStroke, Runnable cb) {
+  default void registerKeybinding(
+    String keyStrokeStr, Runnable cb
+  ) throws InvalidKeyStrokeException {
     if (getKeymasterProvider() == null) {
       setKeymasterProvider(Provider.getCurrentProvider(false));
     }
-    getKeymasterProvider().register(KeyStroke.getKeyStroke(keyStroke), keybinding -> cb.run());
+
+    var keyStroke = KeyStroke.getKeyStroke(keyStrokeStr);
+    if (keyStroke == null) {
+      throw new InvalidKeyStrokeException();
+    }
+
+    getKeymasterProvider().register(keyStroke, keybinding -> cb.run());
   }
-  
+
   default void destroyKeybindings() {
     if (getKeymasterProvider() != null) {
       getKeymasterProvider().reset();

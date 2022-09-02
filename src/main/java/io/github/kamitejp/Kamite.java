@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -22,12 +24,16 @@ import io.github.kamitejp.chunk.ChunkCheckpoint;
 import io.github.kamitejp.chunk.ChunkFilter;
 import io.github.kamitejp.chunk.IncomingChunkText;
 import io.github.kamitejp.config.Config;
+import io.github.kamitejp.config.Config.Keybindings.Global.GlobalKeybindingsOCR.RegionBinding;
+import io.github.kamitejp.config.Config.OCR.Region;
 import io.github.kamitejp.config.ConfigManager;
 import io.github.kamitejp.controlgui.ControlGUI;
 import io.github.kamitejp.dbus.DBusEvent;
 import io.github.kamitejp.geometry.Dimension;
+import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
+import io.github.kamitejp.platform.InvalidKeyStrokeException;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformInitializationException;
@@ -201,7 +207,7 @@ public class Kamite {
     //       can be changed)
     if (platform.supports(PlatformDependentFeature.GLOBAL_KEYBINDINGS)) {
       if (platform instanceof GlobalKeybindingProvider keybindingProvider) {
-        setupGlobalKeybindings(keybindingProvider, config.keybindings().global());
+        setupGlobalKeybindings(keybindingProvider, config);
       } else {
         LOG.warn(
           "Platform reported supporting global keybindings, yet it does not implement the required"
@@ -576,46 +582,81 @@ public class Kamite {
     }
   }
 
-  private void setupGlobalKeybindings(
-    GlobalKeybindingProvider provider,
-    Config.Keybindings.Global keybindings
-  ) {
-    // TODO: (QUAL) Loop
-    var count = 0;
-    if (keybindings.ocr().manualBlock() != null) {
-      registerGlobalKeybinding(
-        provider,
-        keybindings.ocr().manualBlock(),
-        recognitionConductor::recognizeManualBlockDefault
-      );
-      count++;
-    }
-    if (keybindings.ocr().autoBlock() != null) {
-      registerGlobalKeybinding(
-        provider,
-        keybindings.ocr().autoBlock(),
-        () -> recognitionConductor.recognizeAutoBlockDefault(PointSelectionMode.INSTANT)
-      );
-      count++;
-    }
-    if (keybindings.ocr().autoBlockSelect() != null) {
-      registerGlobalKeybinding(
-        provider,
-        keybindings.ocr().autoBlockSelect(),
-        () -> recognitionConductor.recognizeAutoBlockDefault(PointSelectionMode.SELECT)
-      );
-      count++;
-    }
-    if (count > 0) {
-      LOG.info("Registered global keybindings");
+  private final Map<Function<Config.Keybindings.Global, String>, Supplier<Runnable>>
+    BASE_GLOBAL_KEYBINDINGS = Map.of(
+      (Config.Keybindings.Global keybindings) -> keybindings.ocr().manualBlock(),
+      () -> recognitionConductor::recognizeManualBlockDefault,
+
+      (Config.Keybindings.Global keybindings) -> keybindings.ocr().autoBlock(),
+      () -> () -> recognitionConductor.recognizeAutoBlockDefault(PointSelectionMode.INSTANT),
+
+      (Config.Keybindings.Global keybindings) -> keybindings.ocr().autoBlockSelect(),
+      () -> () -> recognitionConductor.recognizeAutoBlockDefault(PointSelectionMode.SELECT)
+    );
+
+  private void setupGlobalKeybindings(GlobalKeybindingProvider provider, Config conifg) {
+    var keybindings = config.keybindings().global();
+
+    BASE_GLOBAL_KEYBINDINGS.forEach((keyStrokeStrProducer, runnableSupplier) -> {
+      var keyStrokeStr = keyStrokeStrProducer.apply(keybindings);
+      if (keyStrokeStr == null) {
+        return;
+      }
+      tryRegisterGlobalKeybinding(provider, keyStrokeStr, runnableSupplier.get());
+    });
+
+    if (keybindings.ocr().region() != null) {
+      var regions = config.ocr().regions();
+      if (regions != null) {
+        keybindings.ocr().region().forEach(regionBinding ->
+          tryRegisterRegionBindingIfRegionPresent(provider, regionBinding, regions)
+        );
+      }
     }
   }
 
-  private static void registerGlobalKeybinding(
+  private void tryRegisterRegionBindingIfRegionPresent(
+    GlobalKeybindingProvider provider,
+    RegionBinding regionBinding,
+    List<Region> regions
+  ) {
+    var maybeRegion = regions.stream()
+      .filter(r -> r.symbol().equals(regionBinding.symbol()))
+      .findFirst();
+    if (!maybeRegion.isPresent()) {
+      return;
+    }
+
+    var region = maybeRegion.get();
+    tryRegisterGlobalKeybinding(
+      provider,
+      regionBinding.key(),
+      () -> recognitionConductor.recognizeRegion(
+        // QUAL: (DRY) Copy-pasted from Command parsing
+        Rectangle.ofStartAndDimensions(
+          region.x(),
+          region.y(),
+          region.width(),
+          region.height()
+        ),
+        region.autoNarrow()
+      )
+    );
+  }
+
+  private static void tryRegisterGlobalKeybinding(
     GlobalKeybindingProvider provider, String binding, Runnable handler
   ) {
-    provider.registerKeybinding(binding, handler);
-    LOG.debug("Registered global keybinding: {}", binding);
+    try {
+      provider.registerKeybinding(binding, handler);
+    } catch (InvalidKeyStrokeException e) {
+      LOG.error(
+        "Could not register global keybinding: {} - does not represent a valid KeyStroke",
+        binding
+      );
+      return;
+    }
+    LOG.info("Registered global keybinding: {}", binding);
   }
 
   private record PreconfigArgs(boolean debug, List<String> profileNames, boolean regionHelper) {}

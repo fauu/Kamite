@@ -25,6 +25,9 @@ sed -ri "/^public record Config/i @SuppressWarnings(\"PMD\")" "$FILE_PATH"
 # Make list element type names prettier so that they can be used directly
 sed -i "s/Custom\$Elm/CustomCommand/g" "$FILE_PATH"
 sed -i "s/Targets\$Elm/Target/g" "$FILE_PATH"
+sed -i "s/Region\$Elm/RegionBinding/g" "$FILE_PATH"
+sed -i "s/Ocr2/OCR/g" "$FILE_PATH"
+sed -i "s/Ocr/GlobalKeybindingsOCR/g" "$FILE_PATH"
 sed -i "s/Regions\$Elm/Region/g" "$FILE_PATH"
 # Make enum value parsing case-insensitive and add default values
 patch_enum () {

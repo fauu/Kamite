@@ -38,6 +38,12 @@ keybindings {
       manualBlock = "string?"
       autoBlock = "string?"
       autoBlockSelect = "string?"
+
+      #@optional
+      region = [{
+        symbol = string
+        key = string
+      }]
     }
   }
 }
