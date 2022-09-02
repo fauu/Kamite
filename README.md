@@ -1963,7 +1963,7 @@ third-party components:
 | [jkeymaster]                    | LGPL-3.0   |
 | [Java Native Access (JNA)][JNA] | Apache-2.0 |
 | [jsoup]                         | MIT        |
-| [Kuromoji IPADIC]               | Apache-2.0 |
+| [Kuromoji UniDic]               | Apache-2.0 |
 | [Noto Sans Japanese]            | OFL        |
 | [Roboto]                        | Apache-2.0 |
 | [SLF4J]                         | MIT        |
@@ -1988,7 +1988,7 @@ the original license notices.
 [jsoup]: https://github.com/jhy/jsoup
 [Solid]: https://www.solidjs.com/
 [Solid Styled Components]: https://github.com/solidjs/solid-styled-components
-[Kuromoji IPADIC]: https://github.com/atilika/kuromoji
+[Kuromoji UniDic]: https://github.com/atilika/kuromoji
 [Roboto]: https://fonts.google.com/specimen/Roboto
 [Noto Sans Japanese]: https://fonts.google.com/noto/specimen/Noto+Sans+JP
 
