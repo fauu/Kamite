@@ -41,6 +41,9 @@
   new tab has been restored.
 * Chunk text selection now behaves correctly in Flipped interface layout when
   cursor is dragged above the chunk while selecting.
+* When switching to a different chunk from chunk history after changing the
+  “Show furigana” setting, that setting is now applied to the current chunk
+  switched into.
 
 ## [0.5] – 2022-08-21
 

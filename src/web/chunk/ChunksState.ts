@@ -181,7 +181,10 @@ export function createChunksState(
 
   // === EFFECTS ===================================================================================
 
-  createEffect(on(pointer, selectOnlyCurrent));
+  createEffect(on(pointer, () => {
+    selectOnlyCurrent();
+    getSetting(settings, "show-furigana") ? void enhanceCurrent() : void unenhanceCurrent();
+  }));
 
   // Make those two mutually exclusive: 1) text selection within the current chunk, and 2) selection
   // within chunk history window involving more than just the current chunk. This is necessary to
