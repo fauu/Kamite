@@ -77,10 +77,6 @@ public class TextProcessor {
     String notation
   ) {}
 
-  public TextProcessor() {
-    this.tokenizer = new Tokenizer();
-  }
-
   public static String correctForm(String s) {
     return kanaHalfToFull(s)
       .trim()
@@ -93,6 +89,10 @@ public class TextProcessor {
   }
 
   public ChunkWithFurigana addFurigana(String s) {
+    if (tokenizer == null) {
+      tokenizer = new Tokenizer();
+    }
+
     var tokens = patchTokens(tokenizer.tokenize(s));
     var notations = new ArrayList<Notation>();
     for (var t : tokens) {
