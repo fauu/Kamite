@@ -15,6 +15,8 @@
 
 ### Changed
 
+* Switched tokenizer dictionary from IPADIC to UniDic for improved accuracy of
+  auto-generated furigana.
 * (Windows) The `Kamite.ps1` console launcher script has been replaced with
   `Kamite.com`.
 * (Windows) `Kamite.bat` script has been added for convenient launching in
