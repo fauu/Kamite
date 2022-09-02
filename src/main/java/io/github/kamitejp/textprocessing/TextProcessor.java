@@ -138,20 +138,14 @@ public class TextProcessor {
         }
 
         case KANA_ONLY -> {
-          var i = 0;
           for (var cp : (Iterable<Integer>) t.surfaceForm().codePoints()::iterator) {
-            notations.add(new Notation(
-              codePointToString(cp),
-              NotationBaseType.KANA,
-              codePointToString(toRawHiragana(t.reading().codePointAt(i++)))
-            ));
+            notations.add(new Notation(codePointToString(cp), NotationBaseType.KANA, null));
           }
         }
 
         case NO_JAPANESE_SCRIPT -> {
           for (var cp : (Iterable<Integer>) t.surfaceForm().codePoints()::iterator) {
-            var cStr = codePointToString(cp);
-            notations.add(new Notation(cStr, NotationBaseType.OTHER, cStr));
+            notations.add(new Notation(codePointToString(cp), NotationBaseType.OTHER, null));
           }
         }
       }
@@ -161,8 +155,8 @@ public class TextProcessor {
       notations.stream()
         .map(n ->
           n.baseType() == NotationBaseType.KANJI
-          ? MaybeRuby.ruby(n.base(), n.notation())
-          : MaybeRuby.notRuby(n.base())
+            ? MaybeRuby.ruby(n.base(), n.notation())
+            : MaybeRuby.notRuby(n.base())
         )
         .toList()
     );
