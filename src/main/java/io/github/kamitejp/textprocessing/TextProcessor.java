@@ -214,7 +214,7 @@ public class TextProcessor {
   private List<ThinToken> patchTokens(List<MinimalKuromojiToken> tokens) {
     var processingTokens = tokens.stream().map(t ->
       new ProcessingToken(t.surface(), t.kana(), t.partOfSpeechLevel1())
-    ).toList();
+    ).collect(toList());
 
     // Patch for token structure
     for (var t : processingTokens) {
