@@ -39,8 +39,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.atilika.kuromoji.unidic.Token;
-import com.atilika.kuromoji.unidic.Tokenizer;
+import com.atilika.kuromoji.unidic.kanaaccent.Token;
+import com.atilika.kuromoji.unidic.kanaaccent.Tokenizer;
 
 public class TextProcessor {
   private static final int KATAKANA_HIRAGANA_SHIFT = 0x3041 - 0x30A1;
@@ -195,11 +195,7 @@ public class TextProcessor {
 
   private List<ThinToken> patchTokens(List<Token> tokens) {
     var processingTokens = tokens.stream().map(t ->
-      new ProcessingToken(
-        t.getSurface(),
-        unidicPronunciationToKana(t.getPronunciation()),
-        t.getPartOfSpeechLevel1()
-      )
+      new ProcessingToken(t.getSurface(), t.getKana(), t.getPartOfSpeechLevel1())
     ).collect(toList());
 
     // Patch for token structure
@@ -263,37 +259,6 @@ public class TextProcessor {
     }
 
     return processingTokens.stream().map(t -> new ThinToken(t.surfaceForm, t.reading)).toList();
-  }
-
-  // Unidic returns, e.g., そーじ for 掃除. Transform into そうじ, etc.
-  // https://github.com/siikamiika/unidic-mecab-translate/blob/2cacfcb8024abe7ba8a672a522d57a3c0b4d644c/translate_lex.py#L257
-  private String unidicPronunciationToKana(String pronunciation) {
-    if (pronunciation.isEmpty()) {
-      return "";
-    }
-
-    var kanaBuilder = new StringBuilder();
-    Integer prevCP = null;
-    for (var cp : (Iterable<Integer>) pronunciation.codePoints()::iterator) {
-      if (prevCP == null || cp != LONG_VOWEL_MARK) {
-        kanaBuilder.appendCodePoint(cp);
-        prevCP = cp;
-        continue;
-      }
-
-      if (VOWELS_PROLONGED_WITH_A.contains(prevCP)) {
-        kanaBuilder.append(KATAKANA_A);
-      } else if (VOWELS_PROLONGED_WITH_I.contains(prevCP)) {
-        kanaBuilder.append(KATAKANA_I);
-      } else if (VOWELS_PROLONGED_WITH_U.contains(prevCP)) {
-        kanaBuilder.append(KATAKANA_U);
-      } else {
-        kanaBuilder.appendCodePoint(LONG_VOWEL_MARK);
-      }
-      prevCP = cp;
-    }
-
-    return kanaBuilder.toString();
   }
 
   private static boolean hasJapanese(String s) {
@@ -517,27 +482,5 @@ public class TextProcessor {
     entry(0xFF8D, 0x30D9),
     entry(0xFF8E, 0x30DC),
     entry(0xFF9C, 0x30F7)
-  );
-
-  private final int LONG_VOWEL_MARK = 0x30FC;
-
-  private final char KATAKANA_A = 'ア';
-  private final List<Integer> VOWELS_PROLONGED_WITH_A = List.of(
-    0x30A2, 0x30AB, 0x30AC, 0x30B5, 0x30B6, 0x30BF, 0x30C0, 0x30CA, 0x30CF, 0x30D0, 0x30D1, 0x30DE,
-    0x30E4, 0x30E3, 0x30E9, 0x30EF
-  );
-
-  private final char KATAKANA_I = 'イ';
-  private final List<Integer> VOWELS_PROLONGED_WITH_I = List.of(
-    0x30A4, 0x30AD, 0x30AE, 0x30B7, 0x30B8, 0x30C1, 0x30C2, 0x30CB, 0x30D2, 0x30D3, 0x30D4, 0x30DF,
-    0x30EA, 0x30F0, 0x30A8, 0x30B1, 0x30B2, 0x30BB, 0x30BC, 0x30C6, 0x30C7, 0x30CD, 0x30D8, 0x30D9,
-    0x30DA, 0x30E1, 0x30EC, 0x30F1
-  );
-
-  private final char KATAKANA_U = 'ウ';
-  private final List<Integer> VOWELS_PROLONGED_WITH_U = List.of(
-    0x30A6, 0x30AF, 0x30B0, 0x30B9, 0x30BA, 0x30C4, 0x30C5, 0x30CC, 0x30D5, 0x30D6, 0x30D7, 0x30E0,
-    0x30E6, 0x30E5, 0x30EB, 0x30AA, 0x30B3, 0x30B4, 0x30BD, 0x30BE, 0x30C8, 0x30C9, 0x30CE, 0x30DB,
-    0x30DC, 0x30DD, 0x30E2, 0x30E8, 0x30E7, 0x30ED, 0x30F2
   );
 }

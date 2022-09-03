@@ -80,7 +80,7 @@
   </dependency>
   <dependency>
     <groupId>com.atilika.kuromoji</groupId>
-    <artifactId>kuromoji-unidic</artifactId>
+    <artifactId>kuromoji-unidic-kanaaccent</artifactId>
     <version>0.9.0</version>
   </dependency>
   <dependency>
