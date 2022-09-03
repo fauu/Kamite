@@ -189,7 +189,7 @@ public class Kamite {
       /* onAllowedThrough */ this::showChunkPostCheckpoint
     );
 
-    textProcessor = new TextProcessor();
+    textProcessor = new TextProcessor(platform);
 
     initMPVController();
 
@@ -557,13 +557,16 @@ public class Kamite {
 
   private void handleRequest(Request request) {
     switch (request.body()) {
-      case Request.Body.AddFurigana body ->
-        server.send(
-          new ResponseOutMessage(
-            request.timestamp(),
-            new ChunkWithFuriganaOutMessage(textProcessor.addFurigana(body.text()))
+      case Request.Body.AddFurigana body -> {
+        textProcessor.addFurigana(body.text()).ifPresent(chunkWithFurigana ->
+          server.send(
+            new ResponseOutMessage(
+              request.timestamp(),
+              new ChunkWithFuriganaOutMessage(chunkWithFurigana)
+            )
           )
         );
+      }
       default -> throw new IllegalStateException("Unhandled request type");
     }
     LOG.debug("Handled request: {}", () -> request.body().getClass());

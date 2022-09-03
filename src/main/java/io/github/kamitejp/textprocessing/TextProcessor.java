@@ -33,19 +33,28 @@ import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
 
 import java.lang.Character.UnicodeScript;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.atilika.kuromoji.unidic.kanaaccent.Token;
-import com.atilika.kuromoji.unidic.kanaaccent.Tokenizer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import io.github.kamitejp.platform.Platform;
+import io.github.kamitejp.textprocessing.kuromoji.KuromojiAdapter;
+import io.github.kamitejp.textprocessing.kuromoji.KuromojiLoadingException;
+import io.github.kamitejp.textprocessing.kuromoji.MinimalKuromojiToken;
 
 public class TextProcessor {
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
   private static final int KATAKANA_HIRAGANA_SHIFT = 0x3041 - 0x30A1;
 
-  private Tokenizer tokenizer;
+  private KuromojiAdapter kuromoji;
 
   private class ProcessingToken {
     public String surfaceForm;
@@ -59,6 +68,7 @@ public class TextProcessor {
     }
 
     public boolean partOfSpeechNonEmptyEquals(String pos) {
+      // XXX: Is this ever empty or just '*'?
       return partOfSpeech != null && !partOfSpeech.isEmpty() && pos.equals(partOfSpeech); // NOPMD - we need to check for empty before checking for equals, and for that we need to check for null early
     }
   }
@@ -77,6 +87,10 @@ public class TextProcessor {
     String notation
   ) {}
 
+  public TextProcessor(Platform platform) {
+    kuromoji = new KuromojiAdapter(platform);
+  }
+
   public static String correctForm(String s) {
     return kanaHalfToFull(s)
       .trim()
@@ -87,15 +101,19 @@ public class TextProcessor {
       .replaceAll("[\\r\\n]+", "\n")
       .replaceAll("[\\p{Cntrl}&&[^\n]]", "");
   }
-
-  public ChunkWithFurigana addFurigana(String s) {
-    if (tokenizer == null) {
-      tokenizer = new Tokenizer();
+  public Optional<ChunkWithFurigana> addFurigana(String s) {
+    List<MinimalKuromojiToken> kuromojiTokens = null;
+    try {
+      kuromojiTokens = kuromoji.tokenize(s);
+    } catch (KuromojiLoadingException e) {
+      LOG.error("Could not add furigana because of Kuromoji loading failure", e);
+      return Optional.empty();
     }
 
-    var tokens = patchTokens(tokenizer.tokenize(s));
+    var patchedTokens = patchTokens(kuromojiTokens);
+
     var notations = new ArrayList<Notation>();
-    for (var t : tokens) {
+    for (var t : patchedTokens) {
       switch (classify(t.surfaceForm())) { // NOPMD
         case KANJI_WITHOUT_KANA ->
           notations.add(new Notation(t.surfaceForm(), NotationBaseType.KANJI, t.reading()));
@@ -151,15 +169,16 @@ public class TextProcessor {
       }
     }
 
-    return new ChunkWithFurigana(
+    return Optional.of(new ChunkWithFurigana(
       notations.stream()
+        .peek(n -> System.out.printf("%s %s\n", n.base(), n.notation()))
         .map(n ->
           n.baseType() == NotationBaseType.KANJI
             ? MaybeRuby.ruby(n.base(), n.notation())
             : MaybeRuby.notRuby(n.base())
         )
         .toList()
-    );
+    ));
   }
 
   private enum TextClassification {
@@ -193,10 +212,10 @@ public class TextProcessor {
     return TextClassification.NO_JAPANESE_SCRIPT;
   }
 
-  private List<ThinToken> patchTokens(List<Token> tokens) {
+  private List<ThinToken> patchTokens(List<MinimalKuromojiToken> tokens) {
     var processingTokens = tokens.stream().map(t ->
-      new ProcessingToken(t.getSurface(), t.getKana(), t.getPartOfSpeechLevel1())
-    ).collect(toList());
+      new ProcessingToken(t.surface(), t.kana(), t.partOfSpeechLevel1())
+    ).toList();
 
     // Patch for token structure
     for (var t : processingTokens) {
@@ -215,7 +234,7 @@ public class TextProcessor {
       t.reading = newReading;
     }
 
-    // PERF: Verify if the following patches are necessary for UniDic
+    // PERF/QUAL: Verify if the following patches are necessary for UniDic
 
     // Patch for 助動詞"う" after 動詞
     for (var i = 0; i < processingTokens.size(); i++) {
