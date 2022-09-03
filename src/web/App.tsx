@@ -5,8 +5,8 @@ import { createStore } from "solid-js/store";
 import { styled, ThemeProvider } from "solid-styled-components";
 
 import {
-  ActionButtonClass, ActionInvocation, ActionPalette, actionsInclude,
-  availableActions as getAvailableActions, hiraganaToKatakana, katakanaToHiragana, type Action
+  ActionButtonClass, ActionPalette, actionsInclude, availableActions as getAvailableActions,
+  hiraganaToKatakana, katakanaToHiragana, type Action, type ActionInvocation
 } from "~/action";
 import type {
   CharacterCounter as BackendCharacterCounter, ChunkVariant, Command, Config, InMessage,

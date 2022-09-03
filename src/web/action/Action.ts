@@ -26,7 +26,7 @@ export type ActionKind = {
   staticLabel?: string,
   description?: string,
   hasAlternativeInvocation?: boolean,
-}
+};
 
 export const actionKinds: Readonly<Record<Action["kind"], ActionKind>> = {
   "undo": { staticLabel: "Undo" },
