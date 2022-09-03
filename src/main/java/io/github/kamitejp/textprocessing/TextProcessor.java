@@ -171,7 +171,6 @@ public class TextProcessor {
 
     return Optional.of(new ChunkWithFurigana(
       notations.stream()
-        .peek(n -> System.out.printf("%s %s\n", n.base(), n.notation()))
         .map(n ->
           n.baseType() == NotationBaseType.KANJI
             ? MaybeRuby.ruby(n.base(), n.notation())
