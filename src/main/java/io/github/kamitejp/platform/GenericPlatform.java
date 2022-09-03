@@ -31,7 +31,7 @@ public abstract class GenericPlatform {
   protected static final String LIB_DIR_PATH_RELATIVE = "lib/";
   protected static final String BIN_DIR_PATH_RELATIVE = "bin/";
   protected static final String GENERIC_PLATFORM_DIR_NAME = "generic";
-  protected static final String CONFIG_DIR_PATH_RELATIVE = "kamite/";
+  protected static final String APP_DIR_PATH_RELATIVE = "kamite/";
   protected static final String MANGAOCR_ADAPTER_FILENAME = "mangaocr_adapter.py";
 
   // Where the Kamite jar could be found relative to the root directory both in development and in

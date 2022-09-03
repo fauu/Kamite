@@ -68,10 +68,20 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
   public Optional<Path> getConfigDirPath() {
     var envConfigHome = getEnvVarAsNonNullableString("XDG_CONFIG_HOME");
     if (!envConfigHome.isBlank()) {
-      return Optional.of(Paths.get(envConfigHome).resolve(CONFIG_DIR_PATH_RELATIVE));
+      return Optional.of(Paths.get(envConfigHome).resolve(APP_DIR_PATH_RELATIVE));
     }
     var maybeHome = getUserHomeDirPath();
-    return maybeHome.map(home -> home.resolve(".config").resolve(CONFIG_DIR_PATH_RELATIVE));
+    return maybeHome.map(home -> home.resolve(".config").resolve(APP_DIR_PATH_RELATIVE));
+  }
+
+  @Override
+  public Optional<Path> getDataDirPath() {
+    var envDataHome = getEnvVarAsNonNullableString("XDG_DATA_HOME");
+    if (!envDataHome.isBlank()) {
+      return Optional.of(Paths.get(envDataHome).resolve(APP_DIR_PATH_RELATIVE));
+    }
+    var maybeHome = getUserHomeDirPath();
+    return maybeHome.map(home -> home.resolve(".local/share").resolve(APP_DIR_PATH_RELATIVE));
   }
 
   @Override

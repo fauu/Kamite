@@ -107,8 +107,17 @@ public class MacOSPlatform extends GenericPlatform implements Platform, GlobalKe
 
   @Override
   public Optional<Path> getConfigDirPath() {
+    return getApplicationSupportDirPath();
+  }
+
+  @Override
+  public Optional<Path> getDataDirPath() {
+    return getApplicationSupportDirPath();
+  }
+
+  private Optional<Path> getApplicationSupportDirPath() {
     return getUserHomeDirPath().map(home ->
-      home.resolve("Library/Application Support").resolve(CONFIG_DIR_PATH_RELATIVE)
+      home.resolve("Library/Application Support").resolve(APP_DIR_PATH_RELATIVE)
     );
   }
 

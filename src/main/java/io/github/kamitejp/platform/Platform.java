@@ -77,6 +77,8 @@ public interface Platform {
 
   Optional<Path> getConfigDirPath();
 
+  Optional<Path> getDataDirPath();
+
   void destroy();
 
   default String getPlatformSpecificDirName(CPUArchitecture forCPUArch) {

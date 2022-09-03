@@ -155,9 +155,18 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   @Override
   public Optional<Path> getConfigDirPath() {
+    return getLocalAppDataDirPath();
+  }
+
+  @Override
+  public Optional<Path> getDataDirPath() {
+    return getLocalAppDataDirPath();
+  }
+
+  private Optional<Path> getLocalAppDataDirPath() {
     var envLocalAppData = getEnvVarAsNonNullableString("APPDATA");
     if (!envLocalAppData.isBlank()) {
-      return Optional.of(Paths.get(envLocalAppData).resolve(CONFIG_DIR_PATH_RELATIVE));
+      return Optional.of(Paths.get(envLocalAppData).resolve(APP_DIR_PATH_RELATIVE));
     }
     return Optional.empty();
   }
