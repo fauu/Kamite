@@ -393,7 +393,7 @@ public class Kamite {
       }
       case ServerEvent.ClientConnected ignored -> {
         LOG.info("Client connected");
-        // NOTE: The order is important so that certain settings can be disabled before
+        // NOTE: The order is important so that unavailable settings can be disabled before
         //       the config is applied
         sendStatus(ProgramStatusOutMessage.Full.class);
         server.send(new ConfigOutMessage(config));
