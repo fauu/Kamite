@@ -14,7 +14,7 @@ import io.github.kamitejp.util.Hashing;
 
 public class KuromojiAdapter {
   private final static String JAR_FILENAME = "kuromoji-unidic-kanaaccent-0.9.0.jar";
-  private final static String JAR_MD5 = "a212085b1a57822da1ffecfad6c3c059";
+  private final static long JAR_CRC32 = 205347984;
 
   private final static String DICT_PACKAGE = "com.atilika.kuromoji.unidic.kanaaccent";
   private final static String TOKENIZER_CLASS_NAME = "%s.Tokenizer".formatted(DICT_PACKAGE);
@@ -81,16 +81,16 @@ public class KuromojiAdapter {
       );
     }
 
-    String jarMD5 = null;
+    Long jarCRC32 = null;
     try {
-      jarMD5 = Hashing.md5(jarFile);
+      jarCRC32 = Hashing.crc32(jarFile);
     } catch (IOException e) {
       throw new KuromojiLoadingException("Could not compute Kuromoji JAR file hash", e);
     }
 
-    if (!JAR_MD5.equalsIgnoreCase(jarMD5)) {
+    if (jarCRC32 != JAR_CRC32) {
       throw new KuromojiLoadingException(
-        "Kuromoji JAR file is incorrect (md5: %s)".formatted(jarMD5)
+        "Kuromoji JAR file is incorrect (CRC32: %s)".formatted(jarCRC32)
       );
     }
 

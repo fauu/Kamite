@@ -4,44 +4,24 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
 public final class Hashing {
-  private static MessageDigest md5Digest;
-
   private Hashing() {}
 
-  // https://mkyong.com/java/how-to-generate-a-file-checksum-value-in-java/
-  public static String md5(File file) throws IOException {
-    if (md5Digest == null) {
-      try {
-        md5Digest = MessageDigest.getInstance("MD5");
-      } catch (NoSuchAlgorithmException e) {
-        throw new IllegalStateException("MD5 algorithm unavailable");
+  public static long crc32(File file) throws IOException {
+    try (
+      final var in = new CheckedInputStream(
+        new BufferedInputStream(new FileInputStream(file)),
+        new CRC32()
+      )
+    ) {
+      var buf = new byte[4096];
+      while (in.read(buf) != -1) {
+        // Pass
       }
-    } else {
-      md5Digest.reset();
+      return in.getChecksum().getValue();
     }
-
-    var fis = new FileInputStream(file);
-    var bis = new BufferedInputStream(fis);
-    var dis = new DigestInputStream(bis, md5Digest);
-
-    try {
-      while (dis.read() != -1) {
-        // Empty loop to clear the data
-      }
-    } finally {
-      fis.close();
-    }
-
-    // Bytes to hex
-    var res = new StringBuilder();
-    for (var b : md5Digest.digest()) {
-      res.append(String.format("%02x", b));
-    }
-    return res.toString();
   }
 }
