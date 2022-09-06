@@ -52,40 +52,7 @@ import io.github.kamitejp.textprocessing.kuromoji.MinimalKuromojiToken;
 public class TextProcessor {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int KATAKANA_HIRAGANA_SHIFT = 0x3041 - 0x30A1;
-
   private KuromojiAdapter kuromoji;
-
-  private class ProcessingToken {
-    public String surfaceForm;
-    public String reading;
-    public String partOfSpeech;
-
-    public ProcessingToken(String surfaceForm, String reading, String partOfSpeech) {
-      this.surfaceForm = surfaceForm;
-      this.reading = reading;
-      this.partOfSpeech = partOfSpeech;
-    }
-
-    public boolean partOfSpeechNonEmptyEquals(String pos) {
-      // XXX: Is this ever empty or just '*'?
-      return partOfSpeech != null && !partOfSpeech.isEmpty() && pos.equals(partOfSpeech); // NOPMD - we need to check for empty before checking for equals, and for that we need to check for null early
-    }
-  }
-
-  private record ThinToken(String surfaceForm, String reading) {}
-
-  private enum NotationBaseType {
-    KANJI,
-    KANA,
-    OTHER
-  }
-
-  private record Notation(
-    String base,
-    NotationBaseType baseType,
-    String notation
-  ) {}
 
   public TextProcessor(Platform platform) {
     kuromoji = new KuromojiAdapter(platform);
@@ -101,6 +68,7 @@ public class TextProcessor {
       .replaceAll("[\\r\\n]+", "\n")
       .replaceAll("[\\p{Cntrl}&&[^\n]]", "");
   }
+
   public Optional<ChunkWithFurigana> addFurigana(String s) {
     List<MinimalKuromojiToken> kuromojiTokens = null;
     try {
@@ -180,13 +148,6 @@ public class TextProcessor {
     ));
   }
 
-  private enum TextClassification {
-    KANJI_WITHOUT_KANA,
-    KANJI_WITH_KANA,
-    KANA_ONLY,
-    NO_JAPANESE_SCRIPT
-  }
-
   private TextClassification classify(String s) {
     var hasKanji = false;
     var hasKana = false;
@@ -233,9 +194,8 @@ public class TextProcessor {
       t.reading = newReading;
     }
 
-    // PERF/QUAL: Verify if the following patches are necessary for UniDic
-
     // Patch for 助動詞"う" after 動詞
+    // TODO: (QUAL) Verify if this patch is necessary for the current use-case
     for (var i = 0; i < processingTokens.size(); i++) {
       var t = processingTokens.get(i);
       if (
@@ -256,6 +216,7 @@ public class TextProcessor {
     }
 
     // Patch for "っ" at the tail of 動詞、形容詞
+    // E.g., [選っ, て] -> [選って]
     for (var i = 0; i < processingTokens.size(); i++) {
       var t = processingTokens.get(i);
       if (t.partOfSpeechNonEmptyEquals("動詞") || t.partOfSpeechNonEmptyEquals("形容詞")) {
@@ -335,7 +296,7 @@ public class TextProcessor {
   }
 
   private static int toRawHiragana(int c) {
-   return c + (c > 0x30A0 && c < 0x30F7 ? KATAKANA_HIRAGANA_SHIFT : 0);
+   return c + (c >= KATAKANA_START && c <= KATAKANA_END ? KATAKANA_HIRAGANA_SHIFT : 0);
   }
 
   private static String codePointToString(int cp) {
@@ -362,7 +323,7 @@ public class TextProcessor {
 
       var cp = cps[i];
 
-      if (cp < 0xFF61 || cp > 0xFF9F || !KANA_HALF2FULL_BASE.containsKey(cp)) {
+      if (cp < KANA_HALF_START || cp > KANA_HALF_END) {
         lineBuilder.appendCodePoint(cp);
         continue;
       }
@@ -371,22 +332,28 @@ public class TextProcessor {
 
       if (i + 2 < cps.length) {
         if (cps[i + 1] == ' ') {
-          if (cps[i + 2] == 0x3099) {
-            newCP = KANA_HALF2FULL_VOICED.get(cp);
-            skip = 2;
-          } else if (cps[i + 2] == 0x309A) {
-            newCP = KANA_HALF2FULL_SEMIVOICED.get(cp);
+          newCP = switch (cps[i + 2]) {
+            case COMBINING_KATAKANA_HIRAGANA_VOICED_SOUND_MARK ->
+              KANA_HALF2FULL_VOICED.get(cp);
+            case COMBINING_KATAKANA_HIRAGANA_SEMIVOICED_SOUND_MARK ->
+              KANA_HALF2FULL_SEMIVOICED.get(cp);
+            default -> null;
+          };
+          if (newCP != null) {
             skip = 2;
           }
         }
       }
+
       if (newCP == null && i + 1 < cps.length) {
-        var lookahead = cps[i + 1];
-        if (lookahead == 0x309B || lookahead == 0xFF9E) {
-          newCP = KANA_HALF2FULL_VOICED.get(cp);
-          skip = 1;
-        } else if (lookahead == 0x309C || lookahead == 0xFF9F) {
-          newCP = KANA_HALF2FULL_SEMIVOICED.get(cp);
+        newCP = switch (cps[i + 1]) {
+          case KATAKANA_HIRAGANA_VOICED_SOUND_MARK, HALFWIDTH_KATAKANA_VOICED_SOUND_MARK ->
+            KANA_HALF2FULL_VOICED.get(cp);
+          case KATAKANA_HIRAGANA_SEMIVOICED_SOUND_MARK, HALFWIDTH_KATAKANA_SEMIVOICED_SOUND_MARK ->
+            KANA_HALF2FULL_SEMIVOICED.get(cp);
+          default -> null;
+        };
+        if (newCP != null) {
           skip = 1;
         }
       }
@@ -401,6 +368,20 @@ public class TextProcessor {
     }
     return lineBuilder.toString();
   }
+
+  private static final int KATAKANA_START = 0x30A1;
+  private static final int KATAKANA_END = 0x30F6;
+  private static final int KANA_HALF_START = 0xFF61;
+  private static final int KANA_HALF_END = 0xFF9F;
+
+  private static final int KATAKANA_HIRAGANA_SHIFT = 0x3041 - 0x30A1;
+
+  private static final int COMBINING_KATAKANA_HIRAGANA_VOICED_SOUND_MARK = 0x3099;
+  private static final int COMBINING_KATAKANA_HIRAGANA_SEMIVOICED_SOUND_MARK = 0x309A;
+  private static final int KATAKANA_HIRAGANA_VOICED_SOUND_MARK = 0x309B;
+  private static final int KATAKANA_HIRAGANA_SEMIVOICED_SOUND_MARK = 0x309C;
+  private static final int HALFWIDTH_KATAKANA_VOICED_SOUND_MARK = 0xFF9E;
+  private static final int HALFWIDTH_KATAKANA_SEMIVOICED_SOUND_MARK = 0xFF9F;
 
   private static final Map<Integer, Integer> KANA_HALF2FULL_BASE = Map.ofEntries(
     entry(0xFF61, 0x3002),
