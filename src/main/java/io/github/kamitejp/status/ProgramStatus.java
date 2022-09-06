@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.github.kamitejp.config.Config;
 import io.github.kamitejp.recognition.RecognizerStatus;
+import io.github.kamitejp.universalfeature.UnavailableUniversalFeature;
 
 public final class ProgramStatus {
   private final boolean debug;
@@ -11,6 +12,7 @@ public final class ProgramStatus {
   private final List<Config.Lookup.Target> lookupTargets;
   private final SessionTimer sessionTimer;
   private final CharacterCounter characterCounter;
+  private final List<UnavailableUniversalFeature> unavailableUniversalFeatures;
   private RecognizerStatus recognizerStatus;
   private PlayerStatus playerStatus;
 
@@ -20,6 +22,7 @@ public final class ProgramStatus {
     List<Config.Lookup.Target> lookupTargets,
     SessionTimer sessionTimer,
     CharacterCounter characterCounter,
+    List<UnavailableUniversalFeature> unavailableUniversalFeatures,
     RecognizerStatus.Kind recognizerStatusKind,
     PlayerStatus playerStatus
   ) {
@@ -28,6 +31,7 @@ public final class ProgramStatus {
     this.lookupTargets = lookupTargets;
     this.sessionTimer = sessionTimer;
     this.characterCounter = characterCounter;
+    this.unavailableUniversalFeatures = unavailableUniversalFeatures;
     this.recognizerStatus = new RecognizerStatus(recognizerStatusKind, null);
     this.playerStatus = playerStatus;
   }
@@ -50,6 +54,10 @@ public final class ProgramStatus {
 
   public CharacterCounter getCharacterCounter() {
     return characterCounter;
+  }
+
+  public List<UnavailableUniversalFeature> getUnavailableUniversalFeatures() {
+    return unavailableUniversalFeatures;
   }
 
   public RecognizerStatus getRecognizerStatus() {

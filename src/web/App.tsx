@@ -30,13 +30,15 @@ import {
   availableChunkHistoryActions as getAvailableChunkHistoryActions, type ChunkHistoryAction
 } from "~/notebook/chunk-history";
 import {
-  DEFAULT_SETTINGS, getSetting, Settings, type Setting, type SettingChangeRequest
+  DEFAULT_SETTINGS, getSetting, isSettingDisabled, Settings, type Setting,
+  type SettingChangeRequest
 } from "~/settings";
 import {
   CharacterCounter, createSessionTimerState, createStatusPanelFader, SessionTimer, StatusPanel
 } from "~/status-panel";
 
 import { integrateClipboardInserter } from "./clipboardInserter";
+import { SHOW_FURIGANA_DISABLED_MSG } from "./features";
 import { ChromeClass } from "./globalStyles";
 import { useGlobalTooltip } from "./GlobalTooltip";
 import { createTheme, themeLayoutFlipped } from "./theme";
@@ -345,6 +347,16 @@ export const App: VoidComponent = () => {
               notify("info", "Connected to media player");
             }
           }
+          if (msg.unavailableUniversalFeatures) {
+            for (const feature of msg.unavailableUniversalFeatures) {
+              if (feature.id === "auto-furigana") {
+                setSettings(s => s.id === "show-furigana", {
+                  "disabled": { msg: SHOW_FURIGANA_DISABLED_MSG },
+                  "value": false
+                });
+              }
+            }
+          }
         });
         break;
 
@@ -458,6 +470,10 @@ export const App: VoidComponent = () => {
   };
 
   const handleSettingChangeRequest: SettingChangeRequest = (id, value) => {
+    if (isSettingDisabled(settings, id)) {
+      return;
+    }
+    // PERF: Unnecessary double search if not disabled
     setSettings(s => s.id === id, "value", value);
     switch (id) {
       case "show-furigana":

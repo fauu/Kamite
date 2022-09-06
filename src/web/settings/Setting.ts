@@ -8,6 +8,7 @@ export type SettingBase = {
   configKey: (c: Config) => Setting["value"],
   warning?: SettingWarning,
   help?: string,
+  disabled?: false | { msg: string },
 };
 
 export type SettingMain = ToggleSettingMain | SelectSettingMain;
@@ -34,7 +35,11 @@ export type SelectValue = UILayout;
 export function getSetting<T extends Setting["value"]>(
   settings: Setting[], id: Setting["id"]
 ) : T | undefined {
-  return settings.find(s => s.id === id)?.value as T;
+  return settings.find(s => s.id === id)!.value as T;
+}
+
+export function isSettingDisabled(settings: Setting[], id: Setting["id"]): boolean {
+  return !!settings.find(s => s.id === id)!.disabled;
 }
 
 export type SettingWarning = {

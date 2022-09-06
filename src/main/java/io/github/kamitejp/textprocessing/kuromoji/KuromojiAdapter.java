@@ -2,17 +2,25 @@ package io.github.kamitejp.textprocessing.kuromoji;
 
 import static java.util.stream.Collectors.toList;
 
+import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.util.Hashing;
+import io.github.kamitejp.util.Result;
 
 public class KuromojiAdapter {
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
   private final static String JAR_FILENAME = "kuromoji-unidic-kanaaccent-0.9.0.jar";
   private final static long JAR_CRC32 = 205347984;
 
@@ -42,7 +50,7 @@ public class KuromojiAdapter {
   @SuppressWarnings("unchecked")
   public List<MinimalKuromojiToken> tokenize(String s) throws KuromojiLoadingException {
     if (tokenizer == null) {
-      loadKuromoji();
+      loadLibrary();
     }
 
     try {
@@ -67,36 +75,48 @@ public class KuromojiAdapter {
     return null; // XXX
   }
 
-  private void loadKuromoji() throws KuromojiLoadingException {
+  public Result<File, KuromojiLibraryVerificationError> getVerifiedLibraryFile() {
     var maybeJARPath = platform.getDataDirPath().map(p -> p.resolve(JAR_FILENAME));
     if (maybeJARPath.isEmpty()) {
-      throw new KuromojiLoadingException("Could not determine Kuromoji JAR file path");
+      return Result.Err(KuromojiLibraryVerificationError.COULD_NOT_DETERMINE_PATH);
     }
 
     var jarPath = maybeJARPath.get();
     var jarFile = jarPath.toFile();
     if (!jarFile.canRead()) {
-      throw new KuromojiLoadingException(
-        "No readable Kuromoji JAR file at `%s`".formatted(jarPath)
-      );
+      return Result.Err(KuromojiLibraryVerificationError.NO_READABLE_FILE_AT_PATH);
     }
 
-    Long jarCRC32 = null;
     try {
-      jarCRC32 = Hashing.crc32(jarFile);
+      var jarCRC32 = Hashing.crc32(jarFile);
+      if (jarCRC32 != JAR_CRC32) {
+        return Result.Err(KuromojiLibraryVerificationError.HASH_DOES_NOT_MATCH);
+      }
     } catch (IOException e) {
-      throw new KuromojiLoadingException("Could not compute Kuromoji JAR file hash", e);
+      LOG.error("Exception while hashing Kuromoji JAR file", e);
+      return Result.Err(KuromojiLibraryVerificationError.COULD_NOT_COMPUTE_HASH);
     }
 
-    if (jarCRC32 != JAR_CRC32) {
+    return Result.Ok(jarFile);
+  }
+
+  public boolean kuromojiAvailable() {
+    return getVerifiedLibraryFile().isOk();
+  }
+
+  private void loadLibrary() throws KuromojiLoadingException {
+    LOG.info("Loading Kuromoji");
+
+    var maybeVerifiedJAR = getVerifiedLibraryFile();
+    if (maybeVerifiedJAR.isErr()) {
       throw new KuromojiLoadingException(
-        "Kuromoji JAR file is incorrect (CRC32: %s)".formatted(jarCRC32)
+        "Do not have valid Kuromoji JAR file: %s".formatted(maybeVerifiedJAR.err())
       );
     }
 
     try {
       var classLoader = new URLClassLoader(
-        new URL[] {jarFile.toURI().toURL()},
+        new URL[] { maybeVerifiedJAR.get().toURI().toURL() },
         this.getClass().getClassLoader()
       );
       var tokenizerClass = Class.forName(TOKENIZER_CLASS_NAME, true, classLoader);
@@ -105,7 +125,8 @@ public class KuromojiAdapter {
 
       tokenClass = Class.forName(TOKEN_CLASS_NAME, true, classLoader);
       getSurfaceMethod = tokenClass.getMethod(GET_SURFACE_METHOD_NAME);
-      getPartOfSpeechLevel1Method = tokenClass.getDeclaredMethod(GET_PART_OF_SPEECH_LEVEL1_METHOD_NAME);
+      getPartOfSpeechLevel1Method =
+        tokenClass.getDeclaredMethod(GET_PART_OF_SPEECH_LEVEL1_METHOD_NAME);
       getKanaMethod = tokenClass.getDeclaredMethod(GET_KANA_METHOD_NAME);
     } catch (Exception e) {
       throw new KuromojiLoadingException("Could not load objects from Kuromoji JAR", e);

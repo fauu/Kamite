@@ -72,6 +72,9 @@ import io.github.kamitejp.status.PlayerStatus;
 import io.github.kamitejp.status.ProgramStatus;
 import io.github.kamitejp.status.SessionTimer;
 import io.github.kamitejp.textprocessing.TextProcessor;
+import io.github.kamitejp.textprocessing.kuromoji.KuromojiAdapter;
+import io.github.kamitejp.universalfeature.UnavailableAutoFurigana;
+import io.github.kamitejp.universalfeature.UnavailableUniversalFeature;
 
 public class Kamite {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
@@ -88,6 +91,7 @@ public class Kamite {
   private MPVController mpvController;
   private ChunkCheckpoint chunkCheckpoint;
   private ProgramStatus status;
+  private KuromojiAdapter kuromojiAdapter;
 
   public void run(Map<String,String> args, BuildInfo buildInfo) {
     LOG.info("Starting Kamite (version {})", buildInfo::getVersion);
@@ -130,12 +134,28 @@ public class Kamite {
     var configReadSuccess = configReadRes.get();
     config = configReadSuccess.config();
 
+    // Detect unavailable platform-independent features
+    var unavailableUniversalFeatures = new ArrayList<UnavailableUniversalFeature>();
+    kuromojiAdapter = new KuromojiAdapter(platform);
+    if (!kuromojiAdapter.kuromojiAvailable()) {
+      unavailableUniversalFeatures.add(
+        new UnavailableAutoFurigana(UnavailableAutoFurigana.Reason.KUROMOJI_UNAVAILABLE)
+      );
+      if (config.chunk().showFurigana()) {
+        LOG.warn(
+          "`chunk.showFurigana` is enabled, but a library needed for generating furigana is"
+          + " not available"
+        );
+      }
+    }
+
     status = new ProgramStatus(
       preconfigArgs.debug(),
       preconfigArgs.profileNames(),
       config.lookup().targets(),
       SessionTimer.startingNow(),
       new CharacterCounter(),
+      unavailableUniversalFeatures,
       RecognizerStatus.Kind.INITIALIZING,
       PlayerStatus.DISCONNECTED
     );
@@ -177,6 +197,7 @@ public class Kamite {
     }
 
     // Init DBus communication
+    // QUAL: Move to LinuxPlatform?
     if (platform instanceof LinuxPlatform linuxPlatform) {
       linuxPlatform.getDBusClient().ifPresent((client) -> {
         client.onEvent(this::handleDBusEvent);
@@ -189,9 +210,11 @@ public class Kamite {
       /* onAllowedThrough */ this::showChunkPostCheckpoint
     );
 
-    textProcessor = new TextProcessor(platform);
+    textProcessor = new TextProcessor(kuromojiAdapter);
 
-    initMPVController();
+    mpvController = MPVController.create(
+      platform, this::handlePlayerStatusUpdate, this::handlePlayerSubtitle
+    );
 
     recognitionConductor = new RecognitionConductor(
       platform,
@@ -302,12 +325,6 @@ public class Kamite {
     LOG.error("{}. The program will not continue.{}", message, detailsPart);
   }
 
-  private void initMPVController() {
-    mpvController = MPVController.create(
-      platform, this::handlePlayerStatusUpdate, this::handlePlayerSubtitle
-    );
-  }
-
   private void handlePlayerStatusUpdate(PlayerStatus newStatus) {
     status.setPlayerStatus(newStatus);
     sendStatus(ProgramStatusOutMessage.PlayerStatus.class);
@@ -376,8 +393,10 @@ public class Kamite {
       }
       case ServerEvent.ClientConnected ignored -> {
         LOG.info("Client connected");
-        server.send(new ConfigOutMessage(config));
+        // NOTE: The order is important so that certain settings can be disabled before
+        //       the config is applied
         sendStatus(ProgramStatusOutMessage.Full.class);
+        server.send(new ConfigOutMessage(config));
       }
       case ServerEvent.CommandReceived e ->
         handleCommand(e.command(), CommandSource.API);

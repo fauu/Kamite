@@ -69,7 +69,7 @@ export const Settings: VoidComponent<SettingsProps> = (props) => {
     </Notice>
     <Main>
       <For each={props.store}>{s =>
-        <SettingsField setting={s} onChange={(s, e) => handleInputChange(s, e)} />
+        <SettingsField setting={s} onChange={handleInputChange} />
       }</For>
     </Main>
   </Root>;

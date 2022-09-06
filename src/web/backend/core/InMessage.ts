@@ -64,6 +64,7 @@ export interface ProgramStatus {
   lookupTargets: LookupTarget[],
   sessionTimer: SessionTimer,
   characterCounter: CharacterCounter,
+  unavailableUniversalFeatures: UnavailableUniversalFeature[],
   recognizerStatus: InRecognizerStatus,
   playerStatus: PlayerStatus,
 }
@@ -90,6 +91,9 @@ export type CharacterCounter = {
   count: number,
   frozen: boolean,
 };
+
+export type UnavailableUniversalFeature =
+  | { id: "auto-furigana", reason: "KUROMOJI_UNAVAILABLE" }
 
 export type InRecognizerStatus = {
   kind: InRecognizerStatusKind,

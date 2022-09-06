@@ -44,7 +44,6 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.textprocessing.kuromoji.KuromojiAdapter;
 import io.github.kamitejp.textprocessing.kuromoji.KuromojiLoadingException;
 import io.github.kamitejp.textprocessing.kuromoji.MinimalKuromojiToken;
@@ -54,8 +53,8 @@ public class TextProcessor {
 
   private KuromojiAdapter kuromoji;
 
-  public TextProcessor(Platform platform) {
-    kuromoji = new KuromojiAdapter(platform);
+  public TextProcessor(KuromojiAdapter kuromoji) {
+    this.kuromoji = kuromoji;
   }
 
   public static String correctForm(String s) {

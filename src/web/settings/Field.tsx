@@ -32,7 +32,10 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
   return <Root>
     <Label
       class="issue-9"
-      classList={{ [SettingsToggleClass]: props.setting.kind === "toggle" }}
+      classList={{
+        [SettingsToggleClass]: props.setting.kind === "toggle",
+        [DisabledFieldClass]: !!props.setting.disabled,
+      }}
     >
       <Info>
         <InfoMain>
@@ -51,14 +54,17 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
         <ConfigKey value={humanizeConfigKey(props.setting)} />
       </Info>
       <Switch>
-        <Match when={admitToggle(props.setting)}>{s =>
+        <Match when={admitToggle(props.setting)} keyed>{s =>
           <SettingsToggleMain setting={s} onChange={handleChange} />
         }</Match>
-        <Match when={admitSelect(props.setting)}>{s =>
+        <Match when={admitSelect(props.setting)} keyed>{s =>
           <SettingsSelect setting={s} onChange={handleChange} />
         }</Match>
       </Switch>
     </Label>
+    <Show when={props.setting.disabled} keyed>{ disabled =>
+      <DisabledMessage innerHTML={disabled.msg} />
+    }</Show>
     <Show when={props.setting.warning && props.setting.warning.show(props.setting.value)}>
       <Warning>
         <WarningIcon/>
@@ -67,6 +73,8 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
     </Show>
   </Root>;
 };
+
+export const DisabledFieldClass = "disabled";
 
 const Root = styled.div`
   display: inline-block;
@@ -88,6 +96,11 @@ const Label = styled.label`
   display: flex;
   user-select: none;
   align-items: center;
+
+  &.${DisabledFieldClass} {
+    opacity: 0.4;
+    pointer-events: none;
+  }
 `;
 
 const Info = styled.div`
@@ -115,6 +128,12 @@ const HelpIndicatorClass = css`
     content: "?";
   }
 `;
+
+const DisabledMessage = styled.div`
+  color: var(--color-fg3);
+  margin-top: 0.15rem;
+  font-size: 0.95rem;
+`
 
 const Warning = styled.div`
   margin-top: 0.3rem;
