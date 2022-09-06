@@ -139,6 +139,8 @@ public class TextProcessor {
       }
     }
 
+    patchNotations(notations);
+
     return Optional.of(new ChunkWithFurigana(
       notations.stream()
         .map(n ->
@@ -172,6 +174,37 @@ public class TextProcessor {
       return TextClassification.KANA_ONLY;
     }
     return TextClassification.NO_JAPANESE_SCRIPT;
+  }
+
+  private void patchNotations(List<Notation> notations) {
+    for (var i = 0; i < notations.size(); i++) {
+      var n = notations.get(i);
+
+      var newNotation = switch (n.base()) {
+        // Expected to be more frequent in typical user’s material
+        case "私" -> "わたし";
+        case "明後日" -> "あさって";
+        default -> null;
+      };
+      n = newNotation == null
+        ? n
+        : n.withNotation(newNotation);
+      notations.set(i, n);
+
+      if (i - 1 < 0) {
+        continue;
+      }
+
+      var prevN = notations.get(i - 1);
+      if (
+        prevN != null
+        && "誕生".equalsIgnoreCase(prevN.base())
+        && "日".equalsIgnoreCase(n.base())
+      ) {
+        notations.set(i - 1, new Notation("誕生日", NotationBaseType.KANJI, "たんじょうび"));
+        notations.remove(i);
+      }
+    }
   }
 
   private List<ThinToken> patchTokens(List<MinimalKuromojiToken> tokens) {
