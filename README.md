@@ -1729,7 +1729,7 @@ dbus-send --type=method_call \
 
 ```sh
 curl -i -X POST \
-  -d 'params={"chunk": "This is the chunk text"}' \
+  -d '{"chunk": "This is the chunk text"}' \
   localhost:4110/cmd/chunk/show # {kamite_host}/cmd/{command_group}/{command_name}
 ```
 
@@ -1741,7 +1741,7 @@ $body = @{
 }
 Invoke-RestMethod -Method 'Post' `
   -Uri 'http://localhost:4110/cmd/chunk/show' `
-  -Body "params=$($body | ConvertTo-Json)"
+  -Body "$($body | ConvertTo-Json)"
 ```
 
 ### Command listing
