@@ -36,8 +36,8 @@ bool ProcessSentence(std::wstring& sentence, SentenceInfo sentenceInfo) {
 		http::Request request{ "http://" + host + "/cmd/chunk/show" };
 		request.send(
       "POST",
-      "params={\"chunk\": \"" + escape_string(WideStringToString(sentence)) + "\"}",
-      { "Content-Type: application/x-www-form-urlencoded" }
+      "{\"chunk\": \"" + escape_string(WideStringToString(sentence)) + "\"}",
+      { "Content-Type: application/json" }
     );
 	} catch (const std::exception& e) {}
 	return false;
