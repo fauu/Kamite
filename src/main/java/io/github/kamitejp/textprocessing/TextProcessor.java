@@ -77,10 +77,13 @@ public class TextProcessor {
       return Optional.empty();
     }
 
-    var patchedTokens = patchTokens(kuromojiTokens);
+    if (kuromojiTokens.isEmpty()) {
+      LOG.error("Received empty token list from Kuromoji while trying to add fuirgana");
+      return Optional.empty();
+    }
 
     var notations = new ArrayList<Notation>();
-    for (var t : patchedTokens) {
+    for (var t : patchTokens(kuromojiTokens)) {
       switch (classify(t.surfaceForm())) { // NOPMD
         case KANJI_WITHOUT_KANA ->
           notations.add(new Notation(t.surfaceForm(), NotationBaseType.KANJI, t.reading()));

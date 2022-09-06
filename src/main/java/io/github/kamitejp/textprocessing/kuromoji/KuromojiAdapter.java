@@ -1,7 +1,5 @@
 package io.github.kamitejp.textprocessing.kuromoji;
 
-import static java.util.stream.Collectors.toList;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -10,6 +8,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,16 +62,16 @@ public class KuromojiAdapter {
             (String) getPartOfSpeechLevel1Method.invoke(t)
           );
         } catch (IllegalAccessException | InvocationTargetException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          LOG.error("Error invoking Kuromoji' `Token.get...()`", e);
+          return null;
         }
-        return null; // XXX
-      }).collect(toList());
+      })
+        .filter(Objects::nonNull)
+        .toList();
     } catch (IllegalAccessException | InvocationTargetException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.error("Error invoking Kuromoji's `Tokenizer.tokenize()`", e);
+      return List.of();
     }
-    return null; // XXX
   }
 
   public Result<File, KuromojiLibraryVerificationError> getVerifiedLibraryFile() {
