@@ -37,7 +37,7 @@ import {
 } from "~/status-panel";
 
 import { integrateClipboardInserter } from "./clipboardInserter";
-import { ChromeClassName } from "./globalStyles";
+import { ChromeClass } from "./globalStyles";
 import { useGlobalTooltip } from "./GlobalTooltip";
 import { createTheme, themeLayoutFlipped } from "./theme";
 
@@ -591,7 +591,7 @@ export const App: VoidComponent = () => {
       onMouseMove={handleRootMouseMove}
       onMouseLeave={handleRootMouseLeave}
       class="issue-9"
-      classList={{ [ChromeClassName]: assumeChrome }}
+      classList={{ [ChromeClass]: assumeChrome }}
       id="root"
       ref={el => rootEl = el}
     >

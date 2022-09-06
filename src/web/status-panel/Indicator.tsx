@@ -1,7 +1,7 @@
 import { type JSX, type ParentComponent } from "solid-js";
 import { css } from "solid-styled-components";
 
-import { ChromeClassName } from "~/globalStyles";
+import { ChromeClass } from "~/globalStyles";
 
 import { holdClickEvent, tooltipAnchor } from "~/directives";
 const [_, __] = [holdClickEvent, tooltipAnchor];
@@ -54,7 +54,7 @@ const RootClass = css`
   width: max-content;
 
   box-shadow: inset 0px 0px 1px var(--color-bgm1);
-  .${ChromeClassName} & {
+  .${ChromeClass} & {
     box-shadow: inset 0px 0px 2px var(--color-bgm1);
   }
 `;

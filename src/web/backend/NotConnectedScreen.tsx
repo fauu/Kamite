@@ -1,7 +1,7 @@
 import { createEffect, createSignal, onCleanup, Show, type VoidComponent } from "solid-js";
 import { styled } from "solid-styled-components";
 
-import { ChromeClassName } from "~/globalStyles";
+import { ChromeClass } from "~/globalStyles";
 
 import type { BackendConnectionState } from "./Backend";
 
@@ -99,7 +99,7 @@ const ReconnectButton = styled.div`
   cursor: pointer;
 
   box-shadow: inset 0px 0px 1px var(--color-bg3-hl);
-  .${ChromeClassName} & {
+  .${ChromeClass} & {
     box-shadow: inset 0px 0px 2px var(--color-bg3-hl);
   }
 

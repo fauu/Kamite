@@ -152,7 +152,7 @@ glob`
   }
 `;
 
-export const ChromeClassName = "chrome";
+export const ChromeClass = "chrome";
 
 export const PaletteButtonDisabledClass = css`
   opacity: 0.5;
@@ -176,7 +176,7 @@ export const PaletteButtonClass = css`
   /* TODO: (DRY) notebook/Tab.tsx, notebook/chunk-history/ActionPalette.tsx. Some others share
    *             the same pattern */
   box-shadow: inset 0px 0px 1px var(--color-bg3-hl);
-  .${ChromeClassName} & {
+  .${ChromeClass} & {
     box-shadow: inset 0px 0px 2px var(--color-bg3-hl);
   }
 

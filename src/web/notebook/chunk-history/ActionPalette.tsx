@@ -1,7 +1,7 @@
 import { For, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
-import { ChromeClassName, PaletteButtonClass } from "~/globalStyles";
+import { ChromeClass, PaletteButtonClass } from "~/globalStyles";
 import { themeLayoutFlipped } from "~/theme";
 
 import type { ChunkHistoryAction } from "./Action";
@@ -51,7 +51,7 @@ const SelectionActionPaletteButtonClass = css`
   background-color: var(--color-bg4);
 
   box-shadow: inset 0px 0px 1px var(--color-med2);
-  .${ChromeClassName} & {
+  .${ChromeClass} & {
     box-shadow: inset 0px 0px 2px var(--color-med2);
   }
 
