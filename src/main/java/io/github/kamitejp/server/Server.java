@@ -178,7 +178,7 @@ public class Server {
     }
     var group = ctx.pathParam("group");
     var name = ctx.pathParam("name");
-    var params = ctx.formParam("params");
+    var params = ctx.body();
     eventCb.accept(new ServerEvent.CommandReceived(
       new IncomingCommand.Segmented(
         new IncomingCommand.Kind.Segmented(group, name),
