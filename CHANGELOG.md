@@ -29,11 +29,18 @@
   with `--debug`).
 * Parameters in custom commands can now be put in single quotemarks to avoid
   splitting by spaces.
+* (API) When sending commands through HTTP, the params JSON object is now
+  expected directly in the request body instead of in a form param. **BREAKING
+  CHANGE (API): – command HTTP request body must be changed into the form
+  `{"chunk": "Example text"}` instead of `params={"chunk": "Example text"}`;
+  – Gomics-v must be updated to version 0.2.**.
 
 ### Fixed
 
 * Custom commands with placeholder parameters no longer break after first use.
 * No longer crashes when some duplicate launch options are provided.
+* Certain special characters in params of commands sent through HTTP, such as
+  `&` or `$`, no longer cause command processing to fail.
 * (Windows) Can now be pinned to the taskbar properly.
 * Some weird behaviours have been eliminated around client
   connecting/disconnecting in the presence of competing client tabs.
