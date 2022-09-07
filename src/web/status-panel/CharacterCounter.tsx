@@ -16,7 +16,7 @@ export const CharacterCounter: VoidComponent<CharacterCounterProps> = (props) =>
     tooltipHeader="Character counter"
     tooltipBody={<>
       Click to {props.state.frozen && "un"}freeze<br/>
-      Click and hold to reset<br/>
+      Long click to reset<br/>
     </>}
     onClick={props.onClick}
     onHoldClick={props.onHoldClick}
