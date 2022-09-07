@@ -55,6 +55,7 @@
 * When switching to a different chunk from chunk history after changing the
   “Show furigana” setting, that setting is now applied to the current chunk
   switched into.
+* Overflowing current chunk area can now be scrolled when in flipped layout.
 
 ## [0.5] – 2022-08-21
 

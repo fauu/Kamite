@@ -39,7 +39,7 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
       <Show
         when={props.chunksState.editing()}
         fallback={
-          <div ref={props.labelAndTranslationRef}>
+          <ChunkLabelAndTranslation ref={props.labelAndTranslationRef}>
             <Show when={!props.chunksState.current().text.isEmpty}>
               <ChunkLabel
                 text={props.chunksState.current().text}
@@ -49,10 +49,10 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
                 ref={props.labelRef}
               />
             </Show>
-            <Show when={props.chunksState.translationWithContext()}>{translations =>
+            <Show when={props.chunksState.translationWithContext()} keyed>{translations =>
               <CurrentTranslation translations={translations}/>
             }</Show>
-          </div>
+          </ChunkLabelAndTranslation>
         }
       >
         <ChunkInput
@@ -68,7 +68,6 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
 
 const Root = styled.div`
   overflow-x: hidden;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -78,3 +77,7 @@ const Root = styled.div`
 const SpinnerContainer = styled.div`
   padding: 0.75rem;
 `;
+
+const ChunkLabelAndTranslation = styled.div`
+  overflow-y: scroll;
+`
