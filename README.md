@@ -86,6 +86,7 @@ script; [waycorner][waycorner-icxes].
     * [Pop-up dictionary](#pop-up-dictionary)
     * [Lookups](#lookups)
         * [Custom lookups](#custom-lookups)
+    * [Auto-generated furigana](#auto-generated-furigana)
 7. [Custom commands (Launching external executables)](#custom-commands-launching-external-executables)
 8. [Keyboard shortcuts](#keyboard-shortcuts)
     * [Client-only keyboard shortcuts](#client-only-keyboard-shortcuts)
@@ -1085,7 +1086,7 @@ Custom sources and alternative extraction methods can be integrated using the
 
 ## Text use
 
-What can be done with the text once it has been collected into the program.
+What can be done with the text once it has been collected into the program?
 
 ### Editing and transforming the text
 
@@ -1222,6 +1223,30 @@ main config file:
 [modify-headers-ff]: https://addons.mozilla.org/firefox/addon/simple-modify-header/
 [modify-headers-chrome]: https://chrome.google.com/webstore/detail/simple-modify-headers/gjgiipmpldkpbdfjkgofildhapegmmic
 [Immersion Kit]: https://www.immersionkit.com
+
+### Auto-generated furigana
+
+Kamite can add auto-generated [furigana] to the current chunk. Please keep in mind
+that this furigana will frequently be incorrect. To enable this feature:
+
+1. **Acquire the necessary library file** (a morphological analyzer with an
+   included dictionary).
+
+   Download [kuromoji-unidic-kanaaccent-e18ff911fd.jar][kuromoji-jar] and put it
+   *directly* in:
+
+    * <ins>Linux</ins>: either `$XDG_DATA_HOME/kamite` or, if that is not set,
+        `$HOME/.local/share/kamite`;
+
+    * <ins>Windows</ins>: same directory as the [config file](#config) (usually
+      `C:\Users\<user>\AppData\Roaming\kamite`).
+
+1. Set `chunk.showFurigana = true` in the config file and start Kamite; or, to
+   enable temporarily, start Kamite and switch on the “Show furigana” setting in
+   the Settings tab.
+
+[furigana]: https://en.wikipedia.org/wiki/Furigana
+[kuromoji-jar]: https://jitpack.io/com/github/atilika/kuromoji/kuromoji-unidic-kanaaccent/e18ff911fd/kuromoji-unidic-kanaaccent-e18ff911fd.jar
 
 ## Custom commands (Launching external executables)
 
@@ -1411,7 +1436,8 @@ Kamite is configured through a config file placed in the directory:
 * <ins>Linux</ins>: either `$XDG_CONFIG_HOME/kamite` or, if that is not set,
     `$HOME/.config/kamite`;
 
-* <ins>Windows</ins>: `C:\Users\<user>\AppData\Roaming\kamite`.
+* <ins>Windows</ins>: `%AppData%\kamite` (usually
+  `C:\Users\<user>\AppData\Roaming\kamite`).
 
 The main config file must have the name `config.hocon`.
 
@@ -1441,8 +1467,9 @@ launchBrowser = true
 
 chunk {
   # Whether to add auto-generated furigana to the current chunk.
-  # WARNING: The auto-generated furigana is frequently incorrect. Use
-  #          cautiously.
+  # Note that feature requires an extra download (see the Auto-generated
+  # furigana section in the README).
+  # WARNING: The auto-generated furigana will frequently be incorrect.
   showFurigana = false
 
   # (Milliseconds) The minimum allowed delay between successive incoming chunks
