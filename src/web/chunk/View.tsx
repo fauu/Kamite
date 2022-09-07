@@ -80,4 +80,5 @@ const SpinnerContainer = styled.div`
 
 const ChunkLabelAndTranslation = styled.div`
   overflow-y: scroll;
+  overflow-x: hidden;
 `;
