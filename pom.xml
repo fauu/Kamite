@@ -12,6 +12,13 @@
   <maven.compiler.target>18</maven.compiler.target>
 </properties>
 
+<repositories>
+  <repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+  </repository>
+</repositories>
+
 <dependencies>
   <dependency>
     <groupId>com.github.hypfvieh</groupId>
@@ -84,9 +91,9 @@
     <version>5.12.1</version>
   </dependency>
   <dependency>
-    <groupId>com.atilika.kuromoji</groupId>
+    <groupId>com.github.atilika.kuromoji</groupId>
     <artifactId>kuromoji-core</artifactId>
-    <version>0.9.0</version>
+    <version>e18ff911fd</version>
   </dependency>
 </dependencies>
 
