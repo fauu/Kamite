@@ -79,6 +79,6 @@ const SpinnerContainer = styled.div`
 `;
 
 const ChunkLabelAndTranslation = styled.div`
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
 `;
