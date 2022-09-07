@@ -25,12 +25,12 @@ export const CurrentTranslation: VoidComponent<CurrentTranslationProps> = (props
       }}
       id="chunk-translation"
     >
-      <Show when={props.translations.previous}>{text =>
+      <Show when={props.translations.previous} keyed>{text =>
         <PreviousText class={ChunkCurrentTranslationSelectionParentClass}>
           {text}
         </PreviousText>
       }</Show>
-      <Show when={props.translations.current}>{text =>
+      <Show when={props.translations.current} keyed>{text =>
         <Text class={ChunkCurrentTranslationSelectionParentClass}>
           {text}
         </Text>

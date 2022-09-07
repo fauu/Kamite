@@ -114,7 +114,7 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
             [PaletteButtonDisabledClass]: action.disabled,
             [ActionButtonClass]: true,
           }}
-          style={{ "background-image": hasIcon && `url('icons/${action.kind}.svg')` }}
+          style={{ "background-image": hasIcon ? `url('icons/${action.kind}.svg')` : undefined }}
           innerHTML={!hasIcon ? textLabel(action, props.targetText) : undefined}
           use:holdClickEvent={
             action.disabled

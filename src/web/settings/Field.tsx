@@ -133,7 +133,7 @@ const DisabledMessage = styled.div`
   color: var(--color-fg3);
   margin-top: 0.15rem;
   font-size: 0.95rem;
-`
+`;
 
 const Warning = styled.div`
   margin-top: 0.3rem;

@@ -93,7 +93,7 @@ export type CharacterCounter = {
 };
 
 export type UnavailableUniversalFeature =
-  | { id: "auto-furigana", reason: "KUROMOJI_UNAVAILABLE" }
+  | { id: "auto-furigana", reason: "KUROMOJI_UNAVAILABLE" };
 
 export type InRecognizerStatus = {
   kind: InRecognizerStatusKind,
