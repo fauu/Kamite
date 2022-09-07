@@ -2,6 +2,7 @@ package io.github.kamitejp.textprocessing.kuromoji;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,23 +21,27 @@ import io.github.kamitejp.util.Result;
 public class KuromojiAdapter {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final static String JAR_FILENAME = "kuromoji-unidic-kanaaccent-0.9.0.jar";
-  private final static long JAR_CRC32 = 205347984;
+  private final static String JAR_VER = "e18ff911fd";
+  private final static String JAR_FILENAME
+    = "kuromoji-unidic-kanaaccent-%s.jar".formatted(JAR_VER);
+  private final static long JAR_CRC32 = 3601520699L;
 
   private final static String DICT_PACKAGE = "com.atilika.kuromoji.unidic.kanaaccent";
   private final static String TOKENIZER_CLASS_NAME = "%s.Tokenizer".formatted(DICT_PACKAGE);
+  private final static String TOKENIZER_BUILDER_CLASS_NAME =
+    "%s$Builder".formatted(TOKENIZER_CLASS_NAME);
   private final static String TOKEN_CLASS_NAME = "%s.Token".formatted(DICT_PACKAGE);
-
+  private final static String USER_DICTIONARY_METHOD_NAME = "userDictionary";
+  private final static String USER_DICTIONARY_RESOURCE_PATH = "/kuromoji_user_dict.txt";
+  private final static String BUILD_METHOD_NAME = "build";
   private final static String TOKENIZE_METHOD_NAME = "tokenize";
   private final static String GET_SURFACE_METHOD_NAME = "getSurface";
   private final static String GET_PART_OF_SPEECH_LEVEL1_METHOD_NAME = "getPartOfSpeechLevel1";
   private final static String GET_KANA_METHOD_NAME = "getKana";
 
   private Platform platform;
-
   private Object tokenizer;
   private Method tokenizeMethod;
-
   private Method getSurfaceMethod;
   private Method getPartOfSpeechLevel1Method;
   private Method getKanaMethod;
@@ -113,13 +118,26 @@ public class KuromojiAdapter {
     }
 
     URLClassLoader classLoader = null;
+    InputStream userDictionaryIn = null;
     try {
        classLoader = new URLClassLoader(
         new URL[] { maybeVerifiedJAR.get().toURI().toURL() },
         this.getClass().getClassLoader()
       );
+      var tokenizerBuilderClass = Class.forName(TOKENIZER_BUILDER_CLASS_NAME, true, classLoader);
+      var tokenizerBuilder = tokenizerBuilderClass.getDeclaredConstructors()[0].newInstance();
+
+      var userDictionaryMethod =
+        tokenizerBuilderClass.getMethod(USER_DICTIONARY_METHOD_NAME, InputStream.class);
+      userDictionaryIn =
+        KuromojiAdapter.class.getResourceAsStream(USER_DICTIONARY_RESOURCE_PATH);
+      var tokenizerBuilderWithDict =
+        userDictionaryMethod.invoke(tokenizerBuilder, userDictionaryIn);
+
+      var buildMethod = tokenizerBuilderClass.getMethod(BUILD_METHOD_NAME);
+      tokenizer = buildMethod.invoke(tokenizerBuilderWithDict);
+
       var tokenizerClass = Class.forName(TOKENIZER_CLASS_NAME, true, classLoader);
-      tokenizer = tokenizerClass.getDeclaredConstructor().newInstance();
       tokenizeMethod = tokenizerClass.getDeclaredMethod(TOKENIZE_METHOD_NAME, String.class);
 
       var tokenClass = Class.forName(TOKEN_CLASS_NAME, true, classLoader);
@@ -128,11 +146,14 @@ public class KuromojiAdapter {
         tokenClass.getDeclaredMethod(GET_PART_OF_SPEECH_LEVEL1_METHOD_NAME);
       getKanaMethod = tokenClass.getDeclaredMethod(GET_KANA_METHOD_NAME);
     } catch (Exception e) {
-      throw new KuromojiLoadingException("Could not load objects from Kuromoji JAR", e);
+      throw new KuromojiLoadingException("Could not load things from Kuromoji JAR", e);
     } finally {
       try {
         if (classLoader != null) {
           classLoader.close();
+        }
+        if (userDictionaryIn != null) {
+          userDictionaryIn.close();
         }
       } catch (IOException e) {
         LOG.debug("Exception while closing class loader", e);

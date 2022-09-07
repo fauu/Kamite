@@ -176,6 +176,7 @@ public class TextProcessor {
     return TextClassification.NO_JAPANESE_SCRIPT;
   }
 
+  // TODO: Replace with the user dictionary
   private void patchNotations(List<Notation> notations) {
     for (var i = 0; i < notations.size(); i++) {
       var n = notations.get(i);
