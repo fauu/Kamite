@@ -37,7 +37,6 @@ public class KuromojiAdapter {
   private Object tokenizer;
   private Method tokenizeMethod;
 
-  private Class<?> tokenClass;
   private Method getSurfaceMethod;
   private Method getPartOfSpeechLevel1Method;
   private Method getKanaMethod;
@@ -113,8 +112,9 @@ public class KuromojiAdapter {
       );
     }
 
+    URLClassLoader classLoader = null;
     try {
-      var classLoader = new URLClassLoader(
+       classLoader = new URLClassLoader(
         new URL[] { maybeVerifiedJAR.get().toURI().toURL() },
         this.getClass().getClassLoader()
       );
@@ -122,13 +122,21 @@ public class KuromojiAdapter {
       tokenizer = tokenizerClass.getDeclaredConstructor().newInstance();
       tokenizeMethod = tokenizerClass.getDeclaredMethod(TOKENIZE_METHOD_NAME, String.class);
 
-      tokenClass = Class.forName(TOKEN_CLASS_NAME, true, classLoader);
+      var tokenClass = Class.forName(TOKEN_CLASS_NAME, true, classLoader);
       getSurfaceMethod = tokenClass.getMethod(GET_SURFACE_METHOD_NAME);
       getPartOfSpeechLevel1Method =
         tokenClass.getDeclaredMethod(GET_PART_OF_SPEECH_LEVEL1_METHOD_NAME);
       getKanaMethod = tokenClass.getDeclaredMethod(GET_KANA_METHOD_NAME);
     } catch (Exception e) {
       throw new KuromojiLoadingException("Could not load objects from Kuromoji JAR", e);
+    } finally {
+      try {
+        if (classLoader != null) {
+          classLoader.close();
+        }
+      } catch (IOException e) {
+        LOG.debug("Exception while closing class loader", e);
+      }
     }
   }
 }

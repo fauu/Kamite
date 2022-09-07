@@ -87,8 +87,8 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
   @SuppressWarnings("LocalVariableNamingConvention")
   @Override
   public Result<BufferedImage, RecognitionOpError> takeAreaScreenshot(Rectangle area) {
-    final var USER = User32.INSTANCE;
-    final var GDI = GDI32.INSTANCE;
+    final var USER = User32.INSTANCE; // NOPMD
+    final var GDI = GDI32.INSTANCE; // NOPMD
 
     var srcDC = USER.GetDC(null);
     if (srcDC == null) {

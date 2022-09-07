@@ -12,15 +12,13 @@ public final class Hashing {
 
   public static long crc32(File file) throws IOException {
     try (
-      final var in = new CheckedInputStream(
+      var in = new CheckedInputStream(
         new BufferedInputStream(new FileInputStream(file)),
         new CRC32()
       )
     ) {
       var buf = new byte[4096];
-      while (in.read(buf) != -1) {
-        // Pass
-      }
+      while (in.read(buf) != -1) {} // NOPMD - intentionally empty
       return in.getChecksum().getValue();
     }
   }

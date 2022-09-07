@@ -91,7 +91,6 @@ public class Kamite {
   private MPVController mpvController;
   private ChunkCheckpoint chunkCheckpoint;
   private ProgramStatus status;
-  private KuromojiAdapter kuromojiAdapter;
 
   public void run(Map<String,String> args, BuildInfo buildInfo) {
     LOG.info("Starting Kamite (version {})", buildInfo::getVersion);
@@ -136,7 +135,7 @@ public class Kamite {
 
     // Detect unavailable platform-independent features
     var unavailableUniversalFeatures = new ArrayList<UnavailableUniversalFeature>();
-    kuromojiAdapter = new KuromojiAdapter(platform);
+    var kuromojiAdapter = new KuromojiAdapter(platform);
     if (!kuromojiAdapter.kuromojiAvailable()) {
       unavailableUniversalFeatures.add(
         new UnavailableAutoFurigana(UnavailableAutoFurigana.Reason.KUROMOJI_UNAVAILABLE)
@@ -230,7 +229,7 @@ public class Kamite {
     //       can be changed)
     if (platform.supports(PlatformDependentFeature.GLOBAL_KEYBINDINGS)) {
       if (platform instanceof GlobalKeybindingProvider keybindingProvider) {
-        setupGlobalKeybindings(keybindingProvider, config);
+        setupGlobalKeybindings(keybindingProvider);
       } else {
         LOG.warn(
           "Platform reported supporting global keybindings, yet it does not implement the required"
@@ -616,7 +615,7 @@ public class Kamite {
       () -> () -> recognitionConductor.recognizeAutoBlockDefault(PointSelectionMode.SELECT)
     );
 
-  private void setupGlobalKeybindings(GlobalKeybindingProvider provider, Config conifg) {
+  private void setupGlobalKeybindings(GlobalKeybindingProvider provider) {
     var keybindings = config.keybindings().global();
 
     BASE_GLOBAL_KEYBINDINGS.forEach((keyStrokeStrProducer, runnableSupplier) -> {

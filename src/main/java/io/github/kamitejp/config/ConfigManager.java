@@ -36,7 +36,7 @@ public final class ConfigManager {
   @SuppressWarnings("WeakerAccess") // Mistaken
   public record ReadSuccess(Config config, List<String> loadedProfileNames) {}
 
-  record ConfigFileEntry(String profileName, File file) {};
+  record ConfigFileEntry(String profileName, File file) {}
 
   public static Result<ReadSuccess, String> read(
     Path configDirPath,
@@ -51,7 +51,7 @@ public final class ConfigManager {
     }
 
     List<ConfigFileEntry> readableProfileConfigFiles = null;
-    if (profileNames.size() > 0) {
+    if (!profileNames.isEmpty()) {
       readableProfileConfigFiles = new ArrayList<>();
       for (var name : profileNames) {
         var relativePath = PROFILE_CONFIG_FILE_PATH_RELATIVE_TPL.formatted(name);
