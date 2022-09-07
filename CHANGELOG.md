@@ -34,6 +34,8 @@
   CHANGE (API): – command HTTP request body must be changed into the form
   `{"chunk": "Example text"}` instead of `params={"chunk": "Example text"}`;
   – Gomics-v must be updated to version 0.2.**.
+* Character counter now only counts characters in Unicode categories Letter,
+  Number, and Symbol.
 
 ### Fixed
 

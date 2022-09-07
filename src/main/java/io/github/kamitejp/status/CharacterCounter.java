@@ -1,8 +1,12 @@
 package io.github.kamitejp.status;
 
+import java.util.regex.Pattern;
+
 import io.github.kamitejp.recognition.PostprocessedChunk;
 
 public final class CharacterCounter {
+  private static final Pattern COUNTED_CHARACTER_RE = Pattern.compile("\\p{L}|\\p{N}|\\p{S}");
+
   private int count;
   private boolean frozen;
   private String lastCountedContent;
@@ -14,9 +18,7 @@ public final class CharacterCounter {
     if (c.content().equals(lastCountedContent)) {
       return;
     }
-    var contentNoWhitespace = c.content().replaceAll("\\s+", "");
-    contentNoWhitespace = contentNoWhitespace.replaceAll("　", "");
-    count += contentNoWhitespace.length();
+    count += COUNTED_CHARACTER_RE.matcher(c.content()).results().count();
     lastCountedContent = c.content();
   }
 
