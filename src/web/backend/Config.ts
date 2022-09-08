@@ -69,7 +69,7 @@ interface PlayerCommands {
 export interface CustomCommand {
   symbol: string,
   name: string,
-  command: string,
+  command: string[],
 }
 
 interface Notebook {

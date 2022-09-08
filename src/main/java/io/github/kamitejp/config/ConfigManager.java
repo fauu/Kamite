@@ -160,7 +160,7 @@ public final class ConfigManager {
     validateExtraList(config.commands().custom(), "commands.custom[%d]", (c, key) -> {
       validateSymbolLength(c.symbol(), key.apply("symbol"));
       validateStringNonEmpty(c.name(), key.apply("name"));
-      validateStringNonEmpty(c.command(), key.apply("command"));
+      validateListNonEmpty(c.command(), key.apply("command"));
     });
 
     validateExtraList(config.lookup().targets(), "lookup.targets[%d]", (t, key) ->{
@@ -244,6 +244,13 @@ public final class ConfigManager {
   ) throws ConfigException.BadValue {
     if (!allowed.contains(intval)) {
       throw new ConfigException.BadValue(key, "should be one of: %s".formatted(allowed.toString()));
+    }
+  }
+
+  @SuppressWarnings({"rawtypes", "ThrowsRuntimeException"})
+  private static void validateListNonEmpty(List list, String key) throws ConfigException.BadValue {
+    if (list.isEmpty()) {
+      throw new ConfigException.BadValue(key, "should not be empty");
     }
   }
 }

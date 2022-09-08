@@ -78,22 +78,9 @@ export function commandFromOCRRegion(r: OCRRegion): OCRRegionCommand {
   };
 }
 
-const COMMAND_SEGS_RE = /(?:[^\s']+|['][^']*')+/g;
-
 export function commandFromConfigCustomCommand(c: ConfigCustomCommand): CustomCommand {
-  // Split into segments by spaces, except when they're within single quotemarks. Fallback to the
-  // entire command string
-  const segmented = c.command.match(COMMAND_SEGS_RE) || [c.command];
-
-  // If segment enclosed in single quotemarks, trim them
-  segmented.forEach((seg, i) => {
-    if (seg.charAt(0) == "'" && seg.charAt(seg.length - 1) == "'") {
-      segmented[i] = seg.slice(1, -1);
-    }
-  });
-
   return {
     kind: "misc_custom" as const,
-    params: { command: segmented }
+    params: { command: c.command }
   };
 }

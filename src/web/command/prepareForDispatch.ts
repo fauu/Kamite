@@ -15,8 +15,7 @@ function customCommandWithFilledPlaceholders(
     ...command,
     params: {
       command: command.params.command.map(seg => {
-        const trimmed = seg.trim();
-        switch (trimmed) {
+        switch (seg) {
           case "{effectiveText}":
             return `${chunks.effectiveText()}`;
           case "{originalEffectiveText}":

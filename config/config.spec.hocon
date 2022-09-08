@@ -24,7 +24,7 @@ commands {
   custom = [{
     symbol = string
     name = string
-    command = string
+    command = [string]
   }]
 }
 
