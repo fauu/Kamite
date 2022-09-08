@@ -48,6 +48,7 @@ glob`
     --shadow-panel: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
     --shadow-faint-glow: 0 0 5px 3px var(--color-bg3);
     --palette-button-min-size: 46px;
+    --palette-button-padding-fix: 1px; /* TODO: Try to do without this */
     --notebook-tab-size: 52px;
     --form-control-height: 32px;
   }
@@ -175,7 +176,7 @@ export const PaletteButtonClass = css`
   background-repeat: no-repeat;
   background-size: 32px;
   background-position: center;
-  padding: 0 0.8rem;
+  padding: var(--palette-button-padding-fix) 0.8rem 0 0.8rem;
 
   &:not(.${PaletteButtonDisabledClass}) {
     cursor: pointer;

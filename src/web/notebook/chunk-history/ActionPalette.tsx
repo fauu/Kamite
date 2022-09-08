@@ -37,7 +37,7 @@ const Root = styled.div`
   overflow-x: auto;
   white-space: nowrap;
   width: max-content;
-  height: var(--palette-button-min-size);
+  height: calc(var(--palette-button-min-size) + var(--palette-button-padding-fix));
   position: absolute;
   box-shadow: var(--shadow-panel);
   margin: 0 auto;
