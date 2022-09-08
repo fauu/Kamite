@@ -6,8 +6,9 @@
 
 * Combined profile: Multiple extra config files can now be loaded
   (`--profile=first-profile,second-profile,third-profile`).
-* An alternative OCR.space engine “3” can now be used
-  (`ocr.ocrspace.engine = 3`).
+* An alternative OCR.space engine “3” (`ocr.ocrspace.engine = 3`).
+* Global keybindings for user-defined OCR regions
+  (`keybindings.global.ocr.region`).
 * Long-clicking the “Redo” button in the action palette will now skip
   forward all the way to the latest chunk.
 * New `misc_lookup` command in the command API for externally invoking lookups
