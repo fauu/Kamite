@@ -112,7 +112,6 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
           classList={{
             [PaletteButtonClass]: true,
             [PaletteButtonDisabledClass]: action.disabled,
-            [ActionButtonClass]: true,
           }}
           style={{ "background-image": hasIcon ? `url('icons/${action.kind}.svg')` : undefined }}
           innerHTML={!hasIcon ? textLabel(action, props.targetText) : undefined}
@@ -141,8 +140,6 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
     </div>
   </Root>;
 };
-
-export const ActionButtonClass = "action-button";
 
 const Root = styled.div`
   position: relative;

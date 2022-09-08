@@ -5,8 +5,8 @@ import { createStore } from "solid-js/store";
 import { styled, ThemeProvider } from "solid-styled-components";
 
 import {
-  ActionButtonClass, ActionPalette, actionsInclude, availableActions as getAvailableActions,
-  hiraganaToKatakana, katakanaToHiragana, type Action, type ActionInvocation
+  ActionPalette, actionsInclude, availableActions as getAvailableActions, hiraganaToKatakana,
+  katakanaToHiragana, type Action, type ActionInvocation
 } from "~/action";
 import type {
   CharacterCounter as BackendCharacterCounter, ChunkVariant, Command, Config, InMessage,
@@ -39,7 +39,7 @@ import {
 
 import { integrateClipboardInserter } from "./clipboardInserter";
 import { SHOW_FURIGANA_DISABLED_MSG } from "./features";
-import { ChromeClass } from "./globalStyles";
+import { ChromeClass, PaletteButtonClass } from "./globalStyles";
 import { useGlobalTooltip } from "./GlobalTooltip";
 import { createTheme, themeLayoutFlipped } from "./theme";
 
@@ -201,7 +201,7 @@ export const App: VoidComponent = () => {
           // Clear chunk selection
           if (chunks.textSelection.get()) {
             const insideSelectionClearningEl =
-              mainSectionEl!.contains(target) && !target.classList.contains(ActionButtonClass);
+              mainSectionEl!.contains(target) && !target.classList.contains(PaletteButtonClass);
             if (insideSelectionClearningEl) {
               chunks.textSelection.set(undefined);
             }
