@@ -897,7 +897,7 @@ CUSTOM_COMMANDS {
   ankiScreenshot {
     symbol = ASS
     name = Anki screenshot
-    command = "/path/to/anki-screenshot.sh {effectiveText}"
+    command = ["/path/to/anki-screenshot.sh", "{effectiveText}"]
   }
 }
 ```
@@ -1273,21 +1273,23 @@ CUSTOM_COMMANDS {
     # The name that will appear in the command button's tooltip
     name = Example command
 
-    # The system command to execute, with optional placeholders to be filled by
-    # Kamite
-    command = "/path/to/the/system/executable.sh {effectiveText}"
+    # (String list) The system command to execute.
+    # The first element in the list is the executable, the rest are the
+    # arguments. The arguments can be specific placeholders to be filled by
+    # Kamite at execution time.
+    command = ["/path/to/the/executable.sh", "some argument", "{effectiveText}"]
   }
 }
 ```
 
-> **Note (Windows)**: To execute a PowerShell script, set `command` to
-> `powershell.exe C:\\path\\to\\the\\script.ps1` (note the double backslashes).
-> The execution of PowerShell scripts is disabled by default in the system. To
-> enable it, start PowerShell with the Run as Administrator option and execute
-> the command `Set-ExecutionPolicy RemoteSigned`. Be aware that this lowers
-> system security.
+> **Note (Windows)**: To execute a PowerShell script, set `command` to, e.g.,
+> `["powershell.exe", "C:\\path\\to\\the\\script.ps1", "first argument"]` (note
+> the double backslashes). The execution of PowerShell scripts is disabled by
+> default in the system. To enable it, start PowerShell with the Run as
+> Administrator option and execute the command `Set-ExecutionPolicy
+> RemoteSigned`. Be aware that this lowers system security.
 
-Supported placeholder arguments for custom commands are:
+The supported placeholder arguments for custom commands are:
 
 `{effectiveText}`\
 Equivalent to the text used for lookups at the given moment. If there is a
@@ -1507,8 +1509,9 @@ commands {
       # The name that will appear in the command button's tooltip
       name = …
 
-      # The system command to execute. Can contain placeholders which will be
-      # filled in by Kamite at the moment of the command’s activation
+      # (String list) The system command to execute. Can contain certain
+      # placeholders which will be filled in by Kamite at the moment of the
+      # command’s activation
       command = …
     }
   ]
