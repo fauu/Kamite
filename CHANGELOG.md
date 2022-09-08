@@ -56,6 +56,9 @@
   “Show furigana” setting, that setting is now applied to the current chunk
   switched into.
 * Overflowing current chunk area can now be scrolled when in flipped layout.
+* Clicking a command button no longer removes selection from the current chunk
+  (this made impossible passing selected text to a custom command invoked by a
+  click).
 
 ## [0.5] – 2022-08-21
 
