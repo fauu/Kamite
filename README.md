@@ -758,14 +758,14 @@ Below is an illustration of setting up a region in the [config file](#config).
 ocr {
   regions = [
     ${REGIONS.exampleGameTextbox}
-    ${REGIONS.anotherRegion}
+    ${REGIONS.someOtherRegionOmittedBelow}
   ]
 }
 
 REGIONS = [
   exampleGameTextbox {
     # (1 character) This symbol will appear on the region’s button
-    symbol = "E"
+    symbol = E
 
     # This description will appear in the region’s button tooltip
     description = "OCR Example Game's textbox"
@@ -785,6 +785,17 @@ REGIONS = [
     autoNarrow = false
   }
 ]
+
+keybindings {
+  global {
+    ocr {
+      region = [
+        # Global keybinding for the above-defined region
+        { symbol = E, key = meta shift E }
+      ]
+    }
+  }
+}
 ```
 
 ###### Obtaining region parameters
@@ -1365,6 +1376,10 @@ keybindings {
       manualBlock = …
       autoBlock = … # Instant detection under mouse cursor
       autoBlockSelect = … # Must click to select a point
+
+      region = [
+        { symbol = …, key = … }
+      ]
     }
   }
 }
@@ -1524,7 +1539,7 @@ dev {
 
 keybindings {
   # Global keybindings. See the "Keyboard shortcuts" section of the Readme.
-  # WARNING: This setting has no effect on the Linux/wlroots platform 
+  # WARNING: Not all platforms support global keybindings
   global {
     ocr {
       # A key combination to assign to the command. See the "Keyboard shortcuts"
@@ -1532,6 +1547,11 @@ keybindings {
       manualBlock = …
       autoBlock = … # Instant detection under mouse cursor
       autoBlockSelect = … # Must click to select a point
+
+      # Bindings for user-defined OCR regions by symbol
+      region = [
+        { symbol = …, key = … }
+      ]
     }
   }
 }
