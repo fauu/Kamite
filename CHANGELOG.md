@@ -15,6 +15,12 @@
 
 ### Changed
 
+* (API) When sending commands through HTTP, the params JSON object is now
+  expected directly in the request body instead of in a form param. **BREAKING
+  CHANGE (API): command HTTP request body must be changed into the form
+  `{"chunk": "Example text"}` instead of `params={"chunk": "Example text"}`.**
+  * **The Textractor extension must be updated to the current version.**
+  * **Gomics-v must be updated to version 0.2.**
 * Switched tokenizer dictionary from IPADIC to UniDic for improved accuracy of
   auto-generated furigana.
 * (Windows) The `Kamite.ps1` console launcher script has been replaced with
@@ -29,11 +35,6 @@
   with `--debug`).
 * Parameters in custom commands can now be put in single quotemarks to avoid
   splitting by spaces.
-* (API) When sending commands through HTTP, the params JSON object is now
-  expected directly in the request body instead of in a form param. **BREAKING
-  CHANGE (API): – command HTTP request body must be changed into the form
-  `{"chunk": "Example text"}` instead of `params={"chunk": "Example text"}`;
-  – Gomics-v must be updated to version 0.2.**.
 * Character counter now only counts characters in Unicode categories Letter,
   Number, and Symbol.
 
