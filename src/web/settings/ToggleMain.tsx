@@ -1,6 +1,8 @@
 import { type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
+import { ChromeClass } from "~/globalStyles";
+
 import type { SettingsFieldMainProps } from "./FieldMainProps";
 import type { ToggleSettingMain } from "./Setting";
 
@@ -120,6 +122,10 @@ const Input = styled.input`
       height: 100%;
       font-size: 0.9rem;
       font-weight: 500;
+
+      .${ChromeClass} & {
+        padding-top: 1px;
+      }
     }
 
     &:before {
