@@ -1,1 +1,1 @@
-start "" "Kamite.com" --debug
+start "Kamite (Debug)" "Kamite.com" --debug
