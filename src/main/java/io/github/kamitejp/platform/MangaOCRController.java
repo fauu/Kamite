@@ -151,7 +151,7 @@ public class MangaOCRController {
     } catch (TimeoutException e) {
       state = State.FAILED;
       eventCb.accept(new MangaOCREvent.TimedOutAndRestarting());
-      LOG.info("\"Manga OCR\" is taking too long to answer. Restarting");
+      LOG.info("\"Manga OCR\" is taking too long to respond. Restarting");
       process.destroy();
       try {
         start();
