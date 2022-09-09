@@ -45,6 +45,8 @@
 * No longer crashes when some duplicate launch options are provided.
 * Certain special characters in params of commands sent through HTTP, such as
   `&` or `$`, no longer cause command processing to fail.
+* (Windows) “Manga OCR” no longer fails to start when executing Kamite through
+  the launcher
 * (Windows) Can now be pinned to the taskbar properly.
 * Some weird behaviours have been eliminated around client
   connecting/disconnecting in the presence of competing client tabs.

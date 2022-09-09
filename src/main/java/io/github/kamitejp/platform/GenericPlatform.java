@@ -37,7 +37,7 @@ public abstract class GenericPlatform {
   // Where the Kamite jar could be found relative to the root directory both in development and in
   // release
   private static final List<String> JAR_DIR_PATH_RELATIVE_VARIANTS =
-    List.of("target/java", "lib/generic");
+    List.of("target/java", "lib/generic", "lib\\generic");
 
   private String binName;
   private OS os;
@@ -189,6 +189,7 @@ public abstract class GenericPlatform {
       .toURI();
     var jarPathStr = new File(classCodeLocationURI).getCanonicalPath();
     var jarDirPathStr = jarPathStr.substring(0, jarPathStr.lastIndexOf(File.separator));
+    // Strip relative JAR path so that we are left with the base program path
     for (var v : JAR_DIR_PATH_RELATIVE_VARIANTS) {
       if (jarDirPathStr.contains(v)) {
         jarDirPathStr = jarDirPathStr.replace(v, "");
