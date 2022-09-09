@@ -12,7 +12,7 @@ SHOW_CHUNK_ENDPOINT="$HOST/cmd/chunk/show"
 
 watch_wl_clipboard() {
   wl-paste --watch bash -c \
-    "xargs -r -0 -I{} curl -i -X POST -d 'params={\"chunk\":\"{}\"}' $SHOW_CHUNK_ENDPOINT"
+    "xargs -r -0 -I{} curl -i -X POST -d '{\"chunk\":\"{}\"}' $SHOW_CHUNK_ENDPOINT"
 }
 
 x11_prev_text=""
@@ -23,7 +23,7 @@ watch_clipnotify() {
     local text
     text="$(xsel -b)"
     if [[ $text != "$x11_prev_text" ]]; then
-      curl -i -X POST -d 'params={"chunk":"'"$text"'"}' "$SHOW_CHUNK_ENDPOINT"
+      curl -i -X POST -d '{"chunk":"'"$text"'"}' "$SHOW_CHUNK_ENDPOINT"
       x11_prev_text=$text
     fi
   done
