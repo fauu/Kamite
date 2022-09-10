@@ -15,8 +15,8 @@
   forward all the way to the latest chunk.
 * New `misc_lookup` command in the command API for externally invoking lookups
   within Kamite’s client.
-* (Windows) `Kamite.bat` script for convenient launching in debug mode with
-  a console window.
+* (Windows) `Kamite (Debug).bat` script for convenient launching in debug mode
+  with a console window.
 
 ### Changed
 
