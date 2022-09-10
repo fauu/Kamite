@@ -13,31 +13,33 @@
   forward all the way to the latest chunk.
 * New `misc_lookup` command in the command API for externally invoking lookups
   within Kamite’s client.
+* (Windows) `Kamite.bat` script for convenient launching in debug mode with
+  a console window.
 
 ### Changed
 
+* Custom commands are now specified in the form of a list. **BREAKING CHANGE:
+  Custom command definitions in the config file must be changed accordingly,
+  e.g., `command = "the-command first-argument second-argument …"` → `command =
+  ["the-command", "first-argument", "second-argument", …]`.**
 * (API) When sending commands through HTTP, the params JSON object is now
   expected directly in the request body instead of in a form param. **BREAKING
   CHANGE (API): command HTTP request body must be changed into the form
-  `{"chunk": "Example text"}` instead of `params={"chunk": "Example text"}`.**
+  `{"chunk": "text"}` instead of `params={"chunk": "text"}`.**
   * **The Textractor extension must be updated to the current version.**
   * **Gomics-v must be updated to version 0.2.**
-* Switched tokenizer dictionary from IPADIC to UniDic for improved accuracy of
-  auto-generated furigana.
-* (Windows) The `Kamite.ps1` console launcher script has been replaced with
-  `Kamite.com`.
-* (Windows) `Kamite.bat` script has been added for convenient launching in
-  debug mode with console window.
-* (Windows) The launcher now uses a different launch method.
-* Overflowing action palette scrolling UX no longer involves a scrollbar.
+* Improved the accuracy of auto-generated furigana by switching the dictionary
+  from IPADIC to UniDic.
+* (Windows) Replaced the `Kamite.ps1` console launcher script with `Kamite.com`.
+* (Windows) The launcher now loads the Java Virtual Machine as a library instead
+  of launching it in the form of an external executable.
 * When chunk correction is enabled (default), some garbage characters, as well
   as leading and trailing whitespace, are now removed from incoming chunks.
-* OCR input images are now displayed in the Debug tab (available when launched
-  with `--debug`).
-* Parameters in custom commands can now be put in single quotemarks to avoid
-  splitting by spaces.
 * Character counter now only counts characters in Unicode categories Letter,
   Number, and Symbol.
+* Overflowing action palette scrolling UX no longer involves a scrollbar.
+* OCR input images are now displayed in the Debug tab (available when launched
+  with `--debug`).
 
 ### Fixed
 
@@ -46,7 +48,7 @@
 * Certain special characters in params of commands sent through HTTP, such as
   `&` or `$`, no longer cause command processing to fail.
 * (Windows) “Manga OCR” no longer fails to start when executing Kamite through
-  the launcher
+  the launcher.
 * (Windows) Can now be pinned to the taskbar properly.
 * Some weird behaviours have been eliminated around client
   connecting/disconnecting in the presence of competing client tabs.
@@ -54,15 +56,16 @@
   in Firefox.
 * A missing indicator icon to distinguish buttons for lookups that open in a
   new tab has been restored.
-* Chunk text selection now behaves correctly in Flipped interface layout when
-  cursor is dragged above the chunk while selecting.
 * When switching to a different chunk from chunk history after changing the
   “Show furigana” setting, that setting is now applied to the current chunk
   switched into.
-* Overflowing current chunk area can now be scrolled when in flipped layout.
+* Chunk text selection now behaves correctly in Flipped interface layout in
+  cases when the cursor is dragged above the chunk while selecting.
+* Overflowing current chunk area can now be scrolled when in Flipped layout.
 * Clicking a command button no longer removes selection from the current chunk
   (this made impossible passing selected text to a custom command invoked by a
   click).
+* Vertical label alignment on some UI controls.
 
 ## [0.5] – 2022-08-21
 
