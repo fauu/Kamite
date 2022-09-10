@@ -32,6 +32,10 @@
   * **Gomics-v must be updated to version 0.2.**
 * Improved the accuracy of auto-generated furigana by switching the dictionary
   from IPADIC to UniDic.
+* The library used for furigana generation is no longer included in the release
+  package. **BREAKING CHANGE: The “Show furigana” option now requires an extra
+  download (see
+  [README](https://github.com/fauu/Kamite#auto-generated-furigana)).**
 * (Windows) Replaced the `Kamite.ps1` console launcher script with `Kamite.com`.
 * (Windows) The launcher now loads the Java Virtual Machine as a library instead
   of launching it in the form of an external executable.
