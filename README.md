@@ -56,9 +56,8 @@ script; [waycorner][waycorner-icxes].
         * [Arch User Repository](#arch-user-repository)
         * [Generic](#generic)
     * [Windows](#windows)
-2. [Updating Kamite](#updating-kamite)
-    * [Linux Generic and Windows](#linux-generic-and-windows)
-3. [Launching Kamite](#launching-kamite)
+2. [Launching Kamite](#launching-kamite)
+3. [Troubleshooting](#troubleshooting)
 4. [User interface overview](#user-interface-overview)
 5. [Text extraction](#text-extraction)
     * [Anime (and other video) text extraction](#anime-and-other-video-text-extraction)
@@ -87,6 +86,7 @@ script; [waycorner][waycorner-icxes].
     * [Pop-up dictionary](#pop-up-dictionary)
     * [Lookups](#lookups)
         * [Custom lookups](#custom-lookups)
+    * [Auto-generated furigana](#auto-generated-furigana)
 7. [Custom commands (Launching external executables)](#custom-commands-launching-external-executables)
 8. [Keyboard shortcuts](#keyboard-shortcuts)
     * [Client-only keyboard shortcuts](#client-only-keyboard-shortcuts)
@@ -98,6 +98,7 @@ script; [waycorner][waycorner-icxes].
 9. [Launch options](#launch-options)
 10. [Config](#config)
     * [Config profiles](#config-profiles)
+        * [Combined profile (multiple extra config files)](#combined-profile-multiple-extra-config-files)
 11. [Style customization](#style-customization)
 12. [Command API](#command-api)
     * [Sending commands](#sending-commands)
@@ -109,6 +110,7 @@ script; [waycorner][waycorner-icxes].
         * [`character-counter_` commands](#character-counter_-commands)
         * [`session-timer_` commands](#session-timer_-commands)
         * [`chunk_` commands](#chunk_-commands)
+        * [`misc_` commands](#misc_-commands)
 13. [Privacy](#privacy)
 14. [Development](#development)
 15. [License](#license)
@@ -162,16 +164,12 @@ in its place.
 
 Kamite can be launched:
 
-* <ins>Linux</ins>: either using the `bin/kamite` executable directly or a using
-  desktop launcher;
+* <ins>Linux</ins>: either direclty using the `bin/kamite` executable in the
+  program directory or through a desktop launcher (assuming the `.desktop` file
+  was installed);
 
-* <ins>Windows</ins>: either using the `Kamite.exe` executable or using the
-  `Kamite.ps1` PowerShell script (the latter provides console output).
-
-> Note (Windows): The execution of PowerShell scripts is disabled by default. To
-> enable it, start PowerShell with the Run as Administrator option and execute
-> the command `Set-ExecutionPolicy RemoteSigned`. Be aware that this lowers
-> system security.
+* <ins>Windows</ins>: using one of: `Kamite.exe`, `Kamite.com` (provides console
+  output), or `Kamite.bat` (enables Debug mode and provides console output).
 
 Besides the [config file](#config), Kamite supports configuration through
 launch options. See [Launch options](#launch-options).
@@ -192,6 +190,18 @@ Kamite is run from the command line, making the control window redundant.
 Multiple config profiles can be prepared for Kamite and chosen between at the
 time of its launch. See [Config profiles](#config-profiles).
 
+## Troubleshooting
+
+To better diagnose problems, launch Kamite from a console window with the
+[launch option](#launch-options) `--debug`. (On Windows, this can be done simply
+by double-clicking the provided `Kamite.bat` script). This will make Kamite
+print detailed error messages and add a Debug tab to the client (the bug icon)
+where image snapshots of OCR operations appear for inspection.
+
+If something does not seem to work properly or is confusing in a way that is not
+dispelled by what is written in this README, do not hesitate to [create a GitHub
+Issue](https://github.com/fauu/Kamite/issues/new).
+
 ## User interface overview
 
 <p align="center">
@@ -206,9 +216,6 @@ Below are some non-obvious tips regarding the interface that might come useful.
 * The *notebook* can be temporarily resized by dragging its edge with the mouse
   (in order for the setting to persist, however, it must be set in the [config
   file](#config)).
-
-* When the *action palette* does not fit the screen entirely, it can be scrolled
-  with the mouse wheel.
 
 * You can have incoming text chunk inserted into the current chunk instead of
   entirely replacing it. To do that, enter the chunk edit mode as described
@@ -599,12 +606,27 @@ provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
     sensitive for this kind of storage
 
     ```sh
-    …
     secrets {
       ocrspace = THE KEY GOES HERE
     }
-    …
     ```
+
+1. (Optional—for games) Change the subengine from the default (“1”)
+
+    The OCR.space service itself provides multiple OCR engines. Japanese is
+    supported by engines “1” and “3”. Kamite uses engine “1” by default. If you
+    wish to use engine “3”, specify the following configuration:
+
+    ```sh
+    ocr {
+      ocrspace {
+        engine = 3
+      }
+    }
+    ```
+
+    Engine “3” is useless for manga and slower than engine “1”, but it may be
+    more accurate for, e.g., particular games.
 
 Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
 
@@ -743,14 +765,14 @@ Below is an illustration of setting up a region in the [config file](#config).
 ocr {
   regions = [
     ${REGIONS.exampleGameTextbox}
-    ${REGIONS.anotherRegion}
+    ${REGIONS.someOtherRegionOmittedBelow}
   ]
 }
 
 REGIONS = [
   exampleGameTextbox {
     # (1 character) This symbol will appear on the region’s button
-    symbol = "E"
+    symbol = E
 
     # This description will appear in the region’s button tooltip
     description = "OCR Example Game's textbox"
@@ -770,6 +792,17 @@ REGIONS = [
     autoNarrow = false
   }
 ]
+
+keybindings {
+  global {
+    ocr {
+      region = [
+        # Global keybinding for the above-defined region
+        { symbol = E, key = meta shift E }
+      ]
+    }
+  }
+}
 ```
 
 ###### Obtaining region parameters
@@ -780,17 +813,19 @@ select the desired areas, and copy the resulting region specifications from the
 console output.
 
 > Note (Windows): To get console output on Windows, you must launch Kamite using
-> the `Kamite.ps1` PowerShell script.
+> the `Kamite.com` executable, not `Kamite.exe`.
 
 ###### Region OCR quality
 
-“Manga OCR” and OCR.space engines should be viable here in at least some cases.
-However, they both work best when the screenshot they are provided with is
-narrowed to just the text. And since the current auto-narrowing algorithm is not
-very reliable, for now it might be best to create separate regions for each possible
-line count of the target text box (i.e., first region encompassing just one line
-of text, second region encompassing the first and the second line, and so on)
-and choose between them on the fly.
+OCR.space and “Manga OCR” engines should be viable here in at least some cases.
+(Be sure to try [OCR.space engine “3”](#setting-up-ocrspace) specifically).
+
+The above engines, however, work best when the screenshot they are provided with
+is narrowed to just the text. And since the current auto-narrowing algorithm is
+not very reliable, for now it might be best to create separate regions for each
+possible line count of the target text box (i.e., first region encompassing just
+one line of text, second region encompassing the first and the second line, and
+so on) and choose between them on the fly.
 
 See also: [Config](#config), [Visual novel / game text extraction](#visual-novel--game-text-extraction),
 [Alternatives for games](#alternatives-for-games).
@@ -880,7 +915,7 @@ CUSTOM_COMMANDS {
   ankiScreenshot {
     symbol = ASS
     name = Anki screenshot
-    command = "/path/to/anki-screenshot.sh {effectiveText}"
+    command = ["/path/to/anki-screenshot.sh", "{effectiveText}"]
   }
 }
 ```
@@ -1072,7 +1107,7 @@ Custom sources and alternative extraction methods can be integrated using the
 
 ## Text use
 
-What can be done with the text once it has been collected into the program.
+What can be done with the text once it has been collected into the program?
 
 ### Editing and transforming the text
 
@@ -1210,6 +1245,30 @@ main config file:
 [modify-headers-chrome]: https://chrome.google.com/webstore/detail/simple-modify-headers/gjgiipmpldkpbdfjkgofildhapegmmic
 [Immersion Kit]: https://www.immersionkit.com
 
+### Auto-generated furigana
+
+Kamite can add auto-generated [furigana] to the current chunk. Please keep in mind
+that this furigana will frequently be incorrect. To enable this feature:
+
+1. **Acquire the necessary library file** (a morphological analyzer with an
+   included dictionary).
+
+   Download [kuromoji-unidic-kanaaccent-e18ff911fd.jar][kuromoji-jar] and put it
+   *directly* in:
+
+    * <ins>Linux</ins>: either `$XDG_DATA_HOME/kamite` or, if that is not set,
+        `$HOME/.local/share/kamite`;
+
+    * <ins>Windows</ins>: same directory as the [config file](#config) (usually
+      `C:\Users\<user>\AppData\Roaming\kamite`).
+
+1. Set `chunk.showFurigana = true` in the config file and start Kamite; or, to
+   enable temporarily, start Kamite and switch on the “Show furigana” setting in
+   the Settings tab.
+
+[furigana]: https://en.wikipedia.org/wiki/Furigana
+[kuromoji-jar]: https://jitpack.io/com/github/atilika/kuromoji/kuromoji-unidic-kanaaccent/e18ff911fd/kuromoji-unidic-kanaaccent-e18ff911fd.jar
+
 ## Custom commands (Launching external executables)
 
 You can add buttons to the *command palette* that execute specified system
@@ -1235,21 +1294,23 @@ CUSTOM_COMMANDS {
     # The name that will appear in the command button's tooltip
     name = Example command
 
-    # The system command to execute, with optional placeholders to be filled by
-    # Kamite
-    command = "/path/to/the/system/executable.sh {effectiveText}"
+    # (String list) The system command to execute.
+    # The first element in the list is the executable, the rest are the
+    # arguments. The arguments can be specific placeholders to be filled by
+    # Kamite at execution time.
+    command = ["/path/to/the/executable.sh", "some argument", "{effectiveText}"]
   }
 }
 ```
 
-> **Note (Windows)**: To execute a PowerShell script, set `command` to
-> `powershell.exe C:\\path\\to\\the\\script.ps1` (note the double backslashes).
-> The execution of PowerShell scripts is disabled by default in the system. To
-> enable it, start PowerShell with the Run as Administrator option and execute
-> the command `Set-ExecutionPolicy RemoteSigned`. Be aware that this lowers
-> system security.
+> **Note (Windows)**: To execute a PowerShell script, set `command` to, e.g.,
+> `["powershell.exe", "C:\\path\\to\\the\\script.ps1", "first argument"]` (note
+> the double backslashes). The execution of PowerShell scripts is disabled by
+> default in the system. To enable it, start PowerShell with the Run as
+> Administrator option and execute the command `Set-ExecutionPolicy
+> RemoteSigned`. Be aware that this lowers system security.
 
-Supported placeholder arguments for custom commands are:
+The supported placeholder arguments for custom commands are:
 
 `{effectiveText}`\
 Equivalent to the text used for lookups at the given moment. If there is a
@@ -1325,6 +1386,10 @@ keybindings {
       manualBlock = …
       autoBlock = … # Instant detection under mouse cursor
       autoBlockSelect = … # Must click to select a point
+
+      region = [
+        { symbol = …, key = … }
+      ]
     }
   }
 }
@@ -1358,10 +1423,9 @@ bindsym $mod+d exec "dbus-send --type=method_call --dest=io.github.kamitejp /Rec
 
 > <b><ins>Windows</ins></b>: To launch Kamite with extra options, either: 1)
 > create a shortcut to `Kamite.exe`, open its Properties, and append the options
-> to the Target string after `…\Kamite.exe`, e.g.,
-> `…\Kamite.exe[space]--profile=myprofile` or 2) append them when invoking
-> either `Kamite.exe` or `Kamite.ps1` from a PowerShell window. Console output
-> will only be available when using `Kamite.ps1`.
+> to the Target string after `…\Kamite.exe` (e.g.,
+> `…\Kamite.exe[space]--profile=myprofile`) or 2) append them when invoking
+> `Kamite.exe` or `Kamite.com` from a console window.
 
 First, there are the basic launch options that are read before the config file:
 
@@ -1371,8 +1435,8 @@ Prints the usage message and exits.
 `--version`\
 Prints the program version and exits.
 
-`--profile=<profile-id>`\
-Instructs Kamite to use the profile config file with the specified ID. See
+`--profile=<profile-id>[,<second-profile-id>]+`\
+Instructs Kamite to load the profile config files with the specified IDs. See
 [Config profiles](#config-profiles).
 
 `--debug[=all]`\
@@ -1399,7 +1463,8 @@ Kamite is configured through a config file placed in the directory:
 * <ins>Linux</ins>: either `$XDG_CONFIG_HOME/kamite` or, if that is not set,
     `$HOME/.config/kamite`;
 
-* <ins>Windows</ins>: `C:\Users\<user>\AppData\Roaming\kamite`.
+* <ins>Windows</ins>: `%AppData%\kamite` (usually
+  `C:\Users\<user>\AppData\Roaming\kamite`).
 
 The main config file must have the name `config.hocon`.
 
@@ -1429,8 +1494,9 @@ launchBrowser = true
 
 chunk {
   # Whether to add auto-generated furigana to the current chunk.
-  # WARNING: The auto-generated furigana is frequently incorrect. Use
-  #          cautiously.
+  # Note that feature requires an extra download (see the Auto-generated
+  # furigana section in the README).
+  # WARNING: The auto-generated furigana will frequently be incorrect.
   showFurigana = false
 
   # (Milliseconds) The minimum allowed delay between successive incoming chunks
@@ -1468,8 +1534,9 @@ commands {
       # The name that will appear in the command button's tooltip
       name = …
 
-      # The system command to execute. Can contain placeholders which will be
-      # filled in by Kamite at the moment of the command’s activation
+      # (String list) The system command to execute. Can contain certain
+      # placeholders which will be filled in by Kamite at the moment of the
+      # command’s activation
       command = …
     }
   ]
@@ -1482,7 +1549,7 @@ dev {
 
 keybindings {
   # Global keybindings. See the "Keyboard shortcuts" section of the Readme.
-  # WARNING: This setting has no effect on the Linux/wlroots platform 
+  # WARNING: Not all platforms support global keybindings
   global {
     ocr {
       # A key combination to assign to the command. See the "Keyboard shortcuts"
@@ -1490,6 +1557,11 @@ keybindings {
       manualBlock = …
       autoBlock = … # Instant detection under mouse cursor
       autoBlockSelect = … # Must click to select a point
+
+      # Bindings for user-defined OCR regions by symbol
+      region = [
+        { symbol = …, key = … }
+      ]
     }
   }
 }
@@ -1531,6 +1603,11 @@ ocr {
     # assumes that manga-ocr was installed through pipx into the default
     # location
     pythonPath = …
+  }
+
+  ocrspace {
+    # (1, 3) The OCR.space engine to use (see # https://ocr.space/OCRAPI#ocrengine)
+    engine = 1
   }
 
   # A *list* of OCR regions, for each of which a region recognition command
@@ -1588,7 +1665,7 @@ secrets {
 
 Kamite supports having a set of different config files for different use-cases.
 
-Creating, in the config directory, a file named `config.example-profile.hocon`
+Creating in the config directory a file named `config.example-profile.hocon`
 and then launching Kamite with the [launch option](#launch-options)
 `--profile=example-profile` will instruct Kamite to take into account both the
 main `config.hocon` file and the `config.example-profile.hocon` file, with
@@ -1643,6 +1720,13 @@ Given the above configuration, launching normally shows `deepl`, `jpdb`, and
 `googleImages` lookups, whereas launching with `--profile=no-translations` shows
 only `googleImages` lookup.
 
+#### Combined profile (multiple extra config files)
+
+Several extra config files can be loaded at once. To achieve that, specify
+multiple profile IDs with the `--profile` launch option, separating them by
+commas, e.g., `--profile=first-profile,second-profile`. The values from the
+leftmost profile’s config file will have the highest precedence.
+
 ## Style customization
 
 If present, Kamite loads the `custom.css` file from the root of the [config
@@ -1682,7 +1766,8 @@ Available commands are distinguished by *command kind*, which is made up of two
 segments: *command group* and *command name*. For example, kind `ocr_region`
 corresponds to the group `ocr` and the name `region`.
 
-The command parameters are required unless a default value is specified.
+The command parameters are required unless they are marked as optional or a
+default value is specified.
 
 ### Sending commands
 
@@ -1704,7 +1789,7 @@ dbus-send --type=method_call \
 
 ```sh
 curl -i -X POST \
-  -d 'params={"chunk": "This is the chunk text"}' \
+  -d '{"chunk": "This is the chunk text"}' \
   localhost:4110/cmd/chunk/show # {kamite_host}/cmd/{command_group}/{command_name}
 ```
 
@@ -1716,7 +1801,7 @@ $body = @{
 }
 Invoke-RestMethod -Method 'Post' `
   -Uri 'http://localhost:4110/cmd/chunk/show' `
-  -Body "params=$($body | ConvertTo-Json)"
+  -Body "$($body | ConvertTo-Json)"
 ```
 
 ### Command listing
@@ -1792,6 +1877,14 @@ Seeks to the start of the current subtitle.
 **`show`** `(chunk: string)`
 
 **`show-translation`** `(translation: string)`
+
+#### `misc_` commands
+
+**`lookup`** `(targetSymbol: string, customText: optional[string])`\
+Initiates a lookup in the client. The `targetSymbol` must match one of the
+lookup target symbols defined in the config. If `customText` is not provided,
+that lookup text is used which would be used if the user clicked a lookup button
+instead.
 
 ## Privacy
 
@@ -1919,7 +2012,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>.
 ### Third-party components
 
 The Kamite repository and the Kamite release package include the following
-third-party components:
+third-party components (as well as their subcomponents):
 
 | Component                       | License    |
 |---------------------------------|------------|
@@ -1930,7 +2023,7 @@ third-party components:
 | [jkeymaster]                    | LGPL-3.0   |
 | [Java Native Access (JNA)][JNA] | Apache-2.0 |
 | [jsoup]                         | MIT        |
-| [Kuromoji IPADIC]               | Apache-2.0 |
+| [Kuromoji UniDic Kana Accent]   | Apache-2.0 |
 | [Noto Sans Japanese]            | OFL        |
 | [Roboto]                        | Apache-2.0 |
 | [SLF4J]                         | MIT        |
@@ -1955,7 +2048,7 @@ the original license notices.
 [jsoup]: https://github.com/jhy/jsoup
 [Solid]: https://www.solidjs.com/
 [Solid Styled Components]: https://github.com/solidjs/solid-styled-components
-[Kuromoji IPADIC]: https://github.com/atilika/kuromoji
+[Kuromoji UniDic Kana Accent]: https://github.com/atilika/kuromoji
 [Roboto]: https://fonts.google.com/specimen/Roboto
 [Noto Sans Japanese]: https://fonts.google.com/noto/specimen/Noto+Sans+JP
 
