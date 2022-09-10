@@ -178,7 +178,8 @@ Kamite can be launched:
   was installed);
 
 * <ins>Windows</ins>: using one of: `Kamite.exe`, `Kamite.com` (provides console
-  output), or `Kamite.bat` (enables Debug mode and provides console output).
+  output), or `Kamite (Debug).bat` (enables Debug mode and provides console
+  output).
 
 Besides the [config file](#config), Kamite supports configuration through
 launch options. See [Launch options](#launch-options).
@@ -203,9 +204,9 @@ time of its launch. See [Config profiles](#config-profiles).
 
 To better diagnose problems, launch Kamite from a console window with the
 [launch option](#launch-options) `--debug`. (On Windows, this can be done simply
-by double-clicking the provided `Kamite.bat` script). This will make Kamite
-print detailed error messages and add a Debug tab to the client (the bug icon)
-where image snapshots of OCR operations appear for inspection.
+by double-clicking the provided `Kamite (Debug).bat` script). This will make
+Kamite print detailed error messages and add a Debug tab to the client (the bug
+icon) where image snapshots of OCR operations appear for inspection.
 
 If something does not seem to work properly or is confusing in a way that is not
 dispelled by what is written in this README, do not hesitate to [create a GitHub
