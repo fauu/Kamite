@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.7] – 2022-09-12
+
+### Fixed
+
+* (Windows) No longer crashes at startup when JRE dlls do not happen to be on
+  `PATH`.
+
 ## [0.6] – 2022-09-10
 
 ### Added
@@ -187,7 +194,8 @@
 
 Initial release.
 
-[Unreleased]: https://github.com/fauu/Kamite/compare/v0.6...HEAD
+[Unreleased]: https://github.com/fauu/Kamite/compare/v0.7...HEAD
+[0.7]: https://github.com/fauu/Kamite/releases/tag/v0.7
 [0.6]: https://github.com/fauu/Kamite/releases/tag/v0.6
 [0.5]: https://github.com/fauu/Kamite/releases/tag/v0.5
 [0.4]: https://github.com/fauu/Kamite/releases/tag/v0.4
