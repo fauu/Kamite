@@ -2,6 +2,7 @@
 
 use std::ffi::{c_void, CString};
 use std::os::raw::c_char;
+use std::os::windows::ffi::OsStrExt;
 use std::path::PathBuf;
 use std::{env, ptr};
 
@@ -11,8 +12,10 @@ use jni_sys_dynamic::{
     JNI_EVERSION, JNI_FALSE, JNI_OK, JNI_VERSION_10,
 };
 
+use winapi::um::winbase::SetDllDirectoryW;
 use winapi::um::wincon::{AttachConsole, ATTACH_PARENT_PROCESS};
 
+const JVM_BIN_DIR_PATH_REL: &[&str] = &["runtime", "bin"];
 const JVM_DLL_PATH_REL: &[&str] = &["runtime", "bin", "server", "jvm.dll"];
 const JAR_PATH_REL: &[&str] = &["lib", "generic", "kamite.jar"];
 const MAIN_CLASS_NAME: &str = "io/github/kamitejp/Main";
@@ -33,8 +36,18 @@ fn main() {
         p.pop();
         p
     };
+    let jvm_bin_dir_path = make_jvm_bin_dir_path(program_dir.clone());
     let jvm_dll_path = make_jvm_dll_path(program_dir.clone());
     let jar_path = make_jar_path(program_dir);
+
+    let dll_dir: Vec<u16> = jvm_bin_dir_path
+        .as_os_str()
+        .encode_wide()
+        .chain(Some(0))
+        .collect();
+    unsafe {
+        SetDllDirectoryW(dll_dir.as_ptr());
+    }
 
     let jni = JNILibrary::new(jvm_dll_path).expect("Could not load jvm.dll");
 
@@ -66,6 +79,13 @@ fn main() {
     jni_fail_if_error("DestroyJavaVM", unsafe {
         (**jvm).DestroyJavaVM.unwrap()(jvm)
     });
+}
+
+fn make_jvm_bin_dir_path(mut program_dir: PathBuf) -> PathBuf {
+    JVM_BIN_DIR_PATH_REL
+        .iter()
+        .for_each(|seg| program_dir.push(seg));
+    program_dir
 }
 
 fn make_jvm_dll_path(mut program_dir: PathBuf) -> PathBuf {
