@@ -54,6 +54,7 @@ script; [waycorner][waycorner-icxes].
 1. [Installing Kamite](#installing-kamite)
     * [Linux](#linux)
         * [Arch User Repository](#arch-user-repository)
+        * [Debian/Ubuntu-based](#debianubuntu-based)
         * [Generic](#generic)
     * [Windows](#windows)
 2. [Updating Kamite](#updating-kamite)
@@ -135,6 +136,21 @@ An AUR package is available under the name [kamite-bin] (installs to
 `/opt/kamite`).
 
 [kamite-bin]: https://aur.archlinux.org/packages/kamite-bin
+
+#### Debian/Ubuntu-based
+
+A Debian (`.deb`) package is available among the files on the [Releases] page.
+Install with:
+
+```sh
+sudo apt install /path/to/[package-file].deb
+```
+
+Uninstall with:
+
+```sh
+sudo apt remove kamite-bin
+```
 
 #### Generic
 
