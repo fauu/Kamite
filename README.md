@@ -80,6 +80,7 @@ script; [waycorner][waycorner-icxes].
         * [Tip: quickly trigger OCR with mouse hot corners](#tip-quickly-trigger-ocr-with-mouse-hot-corners)
         * [Alternatives for manga](#alternatives-for-manga)
     * [Visual novel / game text extraction](#visual-novel--game-text-extraction)
+        * [Mining visual novels / games](#mining-visual-novels--games)
         * [Changing the default Textractor extension endpoint](#changing-the-default-textractor-extension-endpoint)
         * [Alternatives for games](#alternatives-for-games)
     * [Clipboard](#clipboard)
@@ -116,13 +117,6 @@ script; [waycorner][waycorner-icxes].
         * [`misc_` commands](#misc_-commands)
 14. [Privacy](#privacy)
 15. [Development](#development)
-    * [Technology](#technology)
-    * [Running for development](#running-for-development)
-    * [Development-specific config](#development-specific-config)
-    * [Config handling](#config-handling)
-    * [Code linting](#code-linting)
-    * [Docs](#docs)
-    * [Textractor extension](#textractor-extension)
 16. [License](#license)
     * [Third-party components](#third-party-components)
 
@@ -919,13 +913,14 @@ The integration must be enabled in Gomics-v under `Preferences › Kamite`.
 
 #### Mining manga
 
-The [`contrib/anki-screenshot.sh`](contrib/anki-screenshot.sh) script
-(Linux/wlroots and Xorg) is convenient for enhancing cards mined from manga
-with Kamite. When executed, it uses an external program to take a screenshot of
-a user-selected screen area, scales it down to a configured size, converts it to
-the storage-efficient WebP format, and adds it to the latest Anki card.
+The [`contrib/anki-screenshot.sh`](contrib/anki-screenshot.sh) script (for
+Linux/wlroots and Xorg) is convenient for enhancing cards mined from manga with
+Kamite. When executed, it uses an external program to take a screenshot of a
+screen area (either user-selected or defined earlier), scales it down to a
+configured size, converts it to the storage-efficient WebP format, and adds it
+to the latest Anki card.
 
-The script takes an optional positional argument, which by default is put into
+The script also takes an optional parameter whose value will be inserted into
 the latest card’s Sentence field. This can be used to automatically update the
 card with text present in Kamite. Below is a [config](#config) excerpt
 illustrating how to achieve this.
@@ -941,7 +936,7 @@ CUSTOM_COMMANDS {
   ankiScreenshot {
     symbol = ASS
     name = Anki screenshot
-    command = ["/path/to/anki-screenshot.sh", "{effectiveText}"]
+    command = ["/path/to/anki-screenshot.sh", "-s", "{effectiveText}"]
   }
 }
 ```
@@ -949,8 +944,7 @@ CUSTOM_COMMANDS {
 This configuration will add a button labeled “ASS” to the command palette
 that will execute the Anki Screenshot script, supplying it with Kamite’s
 `effectiveText` (see
-[Custom commands](#custom-commands-launching-external-executables)) as the
-positional argument.
+[Custom commands](#custom-commands-launching-external-executables)).
 
 See near the top of the script file for the list of required dependencies and
 for the configuration options.
@@ -1072,6 +1066,14 @@ them on the extensions list.
 
 > Want to prevent Textractor from inserting unnecessary hooks? Check out
 > [Textractor-HookAllowlist](https://github.com/fauu/Textractor-HookAllowlist/).
+
+#### Mining visual novels / games
+
+The [`contrib/anki-screenshot.sh`](contrib/anki-screenshot.sh) script (for
+Linux/wlroots and Xorg) described in the [Mining manga](#mining-manga) section
+is also useful for visual novels / games. It can be supplied with an appropriate
+screen area definition, so that the game’s display area does not have to be
+selected manually each time for the screenshot (use the script’s `-g` option).
 
 #### Changing the default Textractor extension endpoint
 
