@@ -1,6 +1,6 @@
-import { type Accessor, createSignal } from "solid-js";
+import { createSignal, type Accessor } from "solid-js";
 
-import type { Command, InMessage, OutMessage, Request, RequestMain } from "./core";
+import type { Command, InMessage, Notification, OutMessage, Request, RequestMain } from "./core";
 import { requestKindToResponseKind } from "./core";
 import { WSCloseCode } from "./ws";
 
@@ -62,6 +62,13 @@ export class Backend {
     this.#send({ kind: "request", body });
 
     return promise as Promise<T>; // We verify the response kind later, before resolving
+  }
+
+  notify(notification: Notification) {
+    this.#send({
+      kind: "notification",
+      body: notification,
+    });
   }
 
   get connectionState(): Accessor<BackendConnectionState> {

@@ -16,13 +16,15 @@ import {
   Backend, BackendNotConnectedScreen, parseBackendConstant, parseRecognizerStatus,
   playerStatusGotConnected
 } from "~/backend";
-import { ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState } from "~/chunk";
+import {
+  type Chunk, ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState
+} from "~/chunk";
 import {
   availableCommandPaletteCommands, CommandPalette, commandPrepareForDispatch
 } from "~/command";
 import { YomichanSentenceDelimiter } from "~/common";
 import { TooltipView } from "~/common/floating";
-import { notify, type NotificationKind } from "~/common/notify";
+import { notifyUser, type NotificationToastKind } from "~/common/notify";
 import {
   ChunkHistory, ChunkPicker, createDebugState, createNotebookState, Debug, Notebook
 } from "~/notebook";
@@ -87,6 +89,7 @@ export const App: VoidComponent = () => {
     settings,
     inputSelection: chunkInputSelection,
     allowedToFlash: () => config()?.chunk.flash || false,
+    onChunkAdded: handleChunkAdded,
   });
   const sessionTimer = createSessionTimerState();
   const notebook     = createNotebookState({ chunks });
@@ -124,7 +127,7 @@ export const App: VoidComponent = () => {
     });
     mainSectionEl && notebook.syncHeight(mainSectionEl, c);
     if (import.meta.env.DEV && c.dev.serveStaticInDevMode) {
-      notify("warning", "serveStaticInDevMode override is enabled");
+      notifyUser("warning", "serveStaticInDevMode override is enabled");
     }
   }));
 
@@ -288,8 +291,11 @@ export const App: VoidComponent = () => {
 
   function handleBackendMessage(msg: InMessage) {
     switch (msg.kind) {
-      case "notification":
-        notify(parseBackendConstant(msg.notificationKind) as NotificationKind, msg.content);
+      case "user-notification":
+        notifyUser(
+          parseBackendConstant(msg.userNotificationKind) as NotificationToastKind,
+          msg.content
+        );
         break;
 
       case "chunk-variants": {
@@ -342,9 +348,9 @@ export const App: VoidComponent = () => {
             const newStatus = parseBackendConstant(msg.playerStatus as string) as PlayerStatus;
             setPlayerStatus(newStatus);
             if (newStatus !== prevStatus && newStatus === "disconnected") {
-              notify("info", "Media player disconnected");
+              notifyUser("info", "Media player disconnected");
             } else if (playerStatusGotConnected(prevStatus, newStatus)) {
-              notify("info", "Connected to media player");
+              notifyUser("info", "Connected to media player");
             }
           }
           if (msg.unavailableUniversalFeatures) {
@@ -484,6 +490,11 @@ export const App: VoidComponent = () => {
         break;
     }
   };
+
+  function handleChunkAdded(chunk: Chunk) {
+    // PERF: Only needed when chunk logging enabled (as of 2022-09-17)
+    backend.notify({ kind: "chunk-added", body: { chunk: chunk.text.base } });
+  }
 
   window.addEventListener("resize", () => mainSectionEl && notebook.syncHeight(mainSectionEl));
 

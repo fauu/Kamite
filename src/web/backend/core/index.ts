@@ -8,6 +8,7 @@ export type {
   CharacterCounter, ChunkVariant, ChunkWithFurigana, ChunkWithFuriganaMessage, InMessage,
   LookupTarget, MaybeRuby, ProgramStatus, SessionTimer
 } from "./InMessage";
+export type { Notification } from "./Notification";
 export type { CommandMessage, OutMessage, RequestMessage } from "./OutMessage";
 export { playerStatusGotConnected, type PlayerStatus } from "./PlayerStatus";
 export {

@@ -14,7 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.kamitejp.Env;
 import io.github.kamitejp.api.IncomingCommand;
 import io.github.kamitejp.server.outmessage.OutMessage;
-import io.github.kamitejp.server.outmessage.NotificationOutMessage;
+import io.github.kamitejp.server.outmessage.UserNotificationOutMessage;
 import io.github.kamitejp.util.JSON;
 import io.javalin.Javalin;
 import io.javalin.core.util.JavalinException;
@@ -85,8 +85,8 @@ public class Server {
     }
   }
 
-  public void notify(NotificationKind kind, String content) {
-    send(new NotificationOutMessage(kind, content));
+  public void notifyUser(UserNotificationKind kind, String content) {
+    send(new UserNotificationOutMessage(kind, content));
   }
 
   public void send(OutMessage message) {

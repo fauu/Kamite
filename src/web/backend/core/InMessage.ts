@@ -7,8 +7,8 @@ export type InMessage =
   innerMessage: InMessage,
 }
 | {
-  kind: "notification",
-  notificationKind: InNotificationKind,
+  kind: "user-notification",
+  userNotificationKind: UserNotificationKind,
   content: string,
 }
 | {
@@ -49,7 +49,7 @@ export type ChunkWithFuriganaMessage = {
   chunkWithFurigana: ChunkWithFurigana,
 };
 
-type InNotificationKind = "INFO" | "ERROR";
+type UserNotificationKind = "INFO" | "ERROR";
 
 export interface ChunkVariant {
   content: string,

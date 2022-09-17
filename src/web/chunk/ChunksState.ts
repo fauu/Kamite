@@ -2,7 +2,7 @@ import { batch, createEffect, createMemo, createSignal, on } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 
 import type { Backend, ChunkWithFuriganaMessage, MaybeRuby } from "~/backend";
-import { notify } from "~/common/notify";
+import { notifyUser } from "~/common/notify";
 import { BG_FLASH_DURATION_MS } from "~/globalStyles";
 import { getSetting, type Setting } from "~/settings";
 
@@ -37,10 +37,11 @@ interface CreateChunksStateParams {
   settings: Setting[],
   inputSelection: () => [number, number] | undefined,
   allowedToFlash: () => boolean,
+  onChunkAdded: (chunk: Chunk) => void,
 }
 
 export function createChunksState(
-  { backend, settings, inputSelection, allowedToFlash }: CreateChunksStateParams
+  { backend, settings, inputSelection, allowedToFlash, onChunkAdded }: CreateChunksStateParams
 ) {
   // === STATE ====================================================================================
 
@@ -375,6 +376,10 @@ export function createChunksState(
         }));
       }
 
+      if (!inPlace || initialInsert) {
+        onChunkAdded(newChunk);
+      }
+
       textSelection.set(undefined);
     });
     if (!inPlace) {
@@ -643,7 +648,7 @@ export function createChunksState(
     if (text !== "") {
       void navigator.clipboard.writeText(text);
       const originalPart = mode === "original-text" ? "original " : "";
-      notify("info", `Copied ${originalPart}text to clipboard`);
+      notifyUser("info", `Copied ${originalPart}text to clipboard`);
 
       const selInfo = selectionInfo();
       selInfo.otherThanCurrentSelected

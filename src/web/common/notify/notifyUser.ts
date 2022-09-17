@@ -2,15 +2,15 @@
 /* global Toastify:false */
 declare const Toastify: any;
 
-export type NotificationKind = "info" | "warning" | "error";
+export type NotificationToastKind = "info" | "warning" | "error";
 
-const DURATIONS_MS: Record<NotificationKind, number> = {
+const DURATIONS_MS: Record<NotificationToastKind, number> = {
   "info": 5000,
   "warning": 5000,
   "error": 10000,
 };
 
-export function notify(kind: NotificationKind, text: string) {
+export function notifyUser(kind: NotificationToastKind, text: string) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
   const toast = new Toastify({
     className: kind.toString().toLowerCase(),

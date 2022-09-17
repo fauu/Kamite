@@ -9,9 +9,11 @@ import io.github.kamitejp.util.Result;
 
 public sealed interface InMessage
   permits InMessage.Command,
-          InMessage.Request {
+          InMessage.Request,
+          InMessage.Notification {
   record Command(IncomingCommand incomingCommand) implements InMessage {}
   record Request(io.github.kamitejp.api.Request request) implements InMessage {}
+  record Notification(io.github.kamitejp.server.Notification notification) implements InMessage {}
 
   static Result<InMessage, String> fromJSON(String json) {
     JsonNode root = null;
@@ -31,6 +33,13 @@ public sealed interface InMessage
           yield Result.Err("parsing request: %s".formatted(requestParseRes.err()));
         }
         yield Result.Ok(new Request(requestParseRes.get()));
+      }
+      case "notification" -> {
+        var notificatonParseRes = io.github.kamitejp.server.Notification.fromJSON(bodyNode);
+        if (notificatonParseRes.isErr()) {
+          yield Result.Err("parsing notification: %s".formatted(notificatonParseRes.err()));
+        }
+        yield Result.Ok(new Notification(notificatonParseRes.get()));
       }
       default -> Result.Err("message of unrecognized kind: %s".formatted(kind));
     };

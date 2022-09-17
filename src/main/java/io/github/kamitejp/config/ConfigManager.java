@@ -157,6 +157,10 @@ public final class ConfigManager {
 
   @SuppressWarnings("ThrowsRuntimeException")
   private static void validateExtra(Config config) throws ConfigException {
+    if (config.chunk().log() != null) {
+      validateStringNonEmptyOrNull(config.chunk().log().dir(), "chunk.log.dir");
+    }
+
     validateExtraList(config.commands().custom(), "commands.custom[%d]", (c, key) -> {
       validateSymbolLength(c.symbol(), key.apply("symbol"));
       validateStringNonEmpty(c.name(), key.apply("name"));

@@ -1,2 +1,2 @@
-export { notify, type NotificationKind } from "./notify";
+export { notifyUser, type NotificationToastKind } from "./notifyUser";
 

@@ -54,7 +54,8 @@ import io.github.kamitejp.recognition.RecognizerEvent;
 import io.github.kamitejp.recognition.RecognizerStatus;
 import io.github.kamitejp.recognition.TextOrientation;
 import io.github.kamitejp.server.InMessage;
-import io.github.kamitejp.server.NotificationKind;
+import io.github.kamitejp.server.Notification;
+import io.github.kamitejp.server.UserNotificationKind;
 import io.github.kamitejp.server.Server;
 import io.github.kamitejp.server.ServerEvent;
 import io.github.kamitejp.server.ServerStartException;
@@ -64,7 +65,7 @@ import io.github.kamitejp.server.outmessage.ChunkWithFuriganaOutMessage;
 import io.github.kamitejp.server.outmessage.ConfigOutMessage;
 import io.github.kamitejp.server.outmessage.DebugImageOutMessage;
 import io.github.kamitejp.server.outmessage.LookupRequestOutMessage;
-import io.github.kamitejp.server.outmessage.NotificationOutMessage;
+import io.github.kamitejp.server.outmessage.UserNotificationOutMessage;
 import io.github.kamitejp.server.outmessage.ProgramStatusOutMessage;
 import io.github.kamitejp.server.outmessage.ResponseOutMessage;
 import io.github.kamitejp.status.CharacterCounter;
@@ -221,7 +222,7 @@ public class Kamite {
       status,
       /* recognizerEventCb */               this::handleRecognizerEvent,
       /* chunkVariantsCb */                 this::handleChunkVariants,
-      /* notifyErrorFn */                   this::notifyError,
+      /* notifyUserOfErrorFn */             this::notifyUserOfError,
       /* updateAndSendRecognizerStatusFn */ this::updateAndSendRecognizerStatus
     );
 
@@ -349,20 +350,20 @@ public class Kamite {
         sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
       }
       case RecognizerEvent.MangaOCRStartedDownloadingModel ignored ->
-        server.notify(
-          NotificationKind.INFO,
+        server.notifyUser(
+          UserNotificationKind.INFO,
           "\"Manga OCR\" is downloading OCR model. This might take a while…"
         );
       case RecognizerEvent.Crashed ignored -> {
         LOG.info("Recognizer has crashed and will not be restarted");
-        notifyError("Recognizer has crashed. Text recognition will be unavailable");
+        notifyUserOfError("Recognizer has crashed. Text recognition will be unavailable");
         updateAndSendRecognizerStatus(RecognizerStatus.Kind.UNAVAILABLE);
       }
       case RecognizerEvent.Restarting e -> {
         switch (e.reason()) {
           case MANGA_OCR_TIMED_OUT_AND_RESTARTING -> {
             updateAndSendRecognizerStatus(RecognizerStatus.Kind.INITIALIZING);
-            notifyError("\"Manga OCR\" is taking too long to answer. Restarting");
+            notifyUserOfError("\"Manga OCR\" is taking too long to answer. Restarting");
           }
           default -> throw new IllegalStateException("Unhandled recognizer restart reason");
         }
@@ -378,8 +379,8 @@ public class Kamite {
     sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
   }
 
-  private void notifyError(String content) {
-    server.notify(NotificationKind.ERROR, content);
+  private void notifyUserOfError(String content) {
+    server.notifyUser(UserNotificationKind.ERROR, content);
   }
 
   private void handleServerEvent(ServerEvent event) {
@@ -443,8 +444,9 @@ public class Kamite {
 
   private void handleInMessage(InMessage message) {
     switch (message) { // NOPMD - misidentifies as non-exhaustive
-      case InMessage.Command msg -> handleCommand(msg.incomingCommand(), CommandSource.CLIENT);
-      case InMessage.Request msg -> handleRequest(msg.request());
+      case InMessage.Command msg      -> handleCommand(msg.incomingCommand(), CommandSource.CLIENT);
+      case InMessage.Request msg      -> handleRequest(msg.request());
+      case InMessage.Notification msg -> handleNotification(msg.notification());
     }
   }
 
@@ -483,7 +485,7 @@ public class Kamite {
           }
         };
         if (refuseMsg != null) {
-          server.send(new NotificationOutMessage(NotificationKind.INFO, refuseMsg));
+          server.send(new UserNotificationOutMessage(UserNotificationKind.INFO, refuseMsg));
           LOG.warn("Refused OCR command. Reason: {}", refuseMsg);
           return;
         }
@@ -569,7 +571,7 @@ public class Kamite {
 
   private void runCustomCommand(String[] command) {
     if (!ProcessHelper.run(command).didCompleteWithoutError()) {
-      notifyError("Custom command did not run successfully");
+      notifyUserOfError("Custom command did not run successfully");
     }
   }
 
@@ -588,6 +590,14 @@ public class Kamite {
       default -> throw new IllegalStateException("Unhandled request type");
     }
     LOG.debug("Handled request: {}", () -> request.body().getClass());
+  }
+
+  private void handleNotification(Notification notification) {
+    switch (notification) {
+      case Notification.ChunkAdded n -> {
+        LOG.debug("NOTIFICATION: chunk-added - %s".formatted(n.chunk())); // XXX: (DEV)
+      }
+    }
   }
 
   private void sendStatus(Class<? extends ProgramStatusOutMessage> clazz) {

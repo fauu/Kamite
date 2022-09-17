@@ -1,7 +1,8 @@
 import type { Command } from "./Command";
 import type { Request } from "./Request";
+import type { Notification } from "./Notification";
 
-export type OutMessage = CommandMessage | RequestMessage;
+export type OutMessage = CommandMessage | RequestMessage | NotificationMessage;
 
 export type CommandMessage = {
   kind: "command",
@@ -11,4 +12,9 @@ export type CommandMessage = {
 export type RequestMessage = {
   kind: "request",
   body: Request,
+};
+
+export type NotificationMessage = {
+  kind: "notification",
+  body: Notification,
 };

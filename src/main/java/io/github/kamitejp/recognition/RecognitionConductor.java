@@ -20,7 +20,7 @@ public class RecognitionConductor {
   private final ProgramStatus status;
   private final Consumer<RecognizerEvent> recognizerEventCb;
   private final Consumer<ChunkVariants> chunkVariantsCb;
-  private final Consumer<String> notifyErrorFn;
+  private final Consumer<String> notifyUserOfErrorFn;
   private final Consumer<RecognizerStatus.Kind> updateAndSendRecognizerStatusFn;
   private Recognizer recognizer;
 
@@ -30,14 +30,14 @@ public class RecognitionConductor {
     ProgramStatus status,
     Consumer<RecognizerEvent> recognizerEventCb,
     Consumer<ChunkVariants> chunkVariantsCb,
-    Consumer<String> notifyErrorFn,
+    Consumer<String> notifyUserOfErrorFn,
     Consumer<RecognizerStatus.Kind> updateAndSendRecognizerStatusFn
   ) {
     this.platform = platform;
     this.status = status;
     this.recognizerEventCb = recognizerEventCb;
     this.chunkVariantsCb = chunkVariantsCb;
-    this.notifyErrorFn = notifyErrorFn;
+    this.notifyUserOfErrorFn = notifyUserOfErrorFn;
     this.updateAndSendRecognizerStatusFn = updateAndSendRecognizerStatusFn;
 
     initRecognizer(config);
@@ -214,7 +214,7 @@ public class RecognitionConductor {
     var maybeBlockImg = recognizer.autoNarrowToTextBlock(img, heuristic);
     if (maybeBlockImg.isEmpty()) {
       var msg = "Text block detection has failed";
-      notifyErrorFn.accept(msg);
+      notifyUserOfErrorFn.accept(msg);
       LOG.info(msg);
       return;
     }
@@ -238,7 +238,7 @@ public class RecognitionConductor {
 
   private void recognitionAbandon(String errorNotification, RecognitionOpError errorToLog) {
     if (errorNotification != null) {
-      notifyErrorFn.accept(errorNotification);
+      notifyUserOfErrorFn.accept(errorNotification);
     }
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
     if (errorToLog != null) {
