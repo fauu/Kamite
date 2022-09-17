@@ -47,6 +47,10 @@ public class ControlGUI extends JFrame {
   private static final Font MSG_AREA_FONT = new Font("Courier", Font.PLAIN, 13);
 
   public void init(Platform platform) {
+    SwingUtilities.invokeLater(() -> doInit(platform));
+  }
+
+  private void doInit(Platform platform) {
     OS os = null;
     if (platform != null) {
       os = platform.getOS();

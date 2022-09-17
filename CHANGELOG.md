@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+* No longer occasionally quitely hangs during initialization when Control GUI is
+  enabled.
+
 ## [0.7] – 2022-09-12
 
 ### Fixed
