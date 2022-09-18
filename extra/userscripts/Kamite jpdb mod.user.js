@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         Kamite jpdb mod
 // @description  Improves jpdb user experience when embedded into Kamite
-// @version      1.0.0
+// @version      1.0.1
 // @match        https://jpdb.io/*
 // @icon         https://www.google.com/s2/favicons?domain=jpdb.io
 // @grant        GM_addStyle
 // @run-at       document-start
+// @updateURL    https://github.com/fauu/Kamite/raw/master/extra/userscripts/Kamite%20jpdb%20mod.user.js
+// @downloadURL  https://github.com/fauu/Kamite/raw/master/extra/userscripts/Kamite%20jpdb%20mod.user.js
 // ==/UserScript==
 
 (function() {
@@ -13,7 +15,7 @@
 
   function main() {
     if (window === window.parent) {
-      //return;
+      return;
     }
     document.addEventListener("DOMContentLoaded", postLoad);
     preLoad();
