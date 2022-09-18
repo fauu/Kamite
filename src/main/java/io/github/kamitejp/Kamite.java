@@ -22,6 +22,8 @@ import io.github.kamitejp.api.IncomingCommand;
 import io.github.kamitejp.api.Request;
 import io.github.kamitejp.chunk.ChunkCheckpoint;
 import io.github.kamitejp.chunk.ChunkFilter;
+import io.github.kamitejp.chunk.ChunkLogger;
+import io.github.kamitejp.chunk.ChunkLoggerInitializationException;
 import io.github.kamitejp.chunk.IncomingChunkText;
 import io.github.kamitejp.config.Config;
 import io.github.kamitejp.config.Config.Keybindings.Global.GlobalKeybindingsOCR.RegionBinding;
@@ -55,19 +57,19 @@ import io.github.kamitejp.recognition.RecognizerStatus;
 import io.github.kamitejp.recognition.TextOrientation;
 import io.github.kamitejp.server.InMessage;
 import io.github.kamitejp.server.Notification;
-import io.github.kamitejp.server.UserNotificationKind;
 import io.github.kamitejp.server.Server;
 import io.github.kamitejp.server.ServerEvent;
 import io.github.kamitejp.server.ServerStartException;
+import io.github.kamitejp.server.UserNotificationKind;
 import io.github.kamitejp.server.outmessage.ChunkTranslationOutMessage;
 import io.github.kamitejp.server.outmessage.ChunkVariantsOutMessage;
 import io.github.kamitejp.server.outmessage.ChunkWithFuriganaOutMessage;
 import io.github.kamitejp.server.outmessage.ConfigOutMessage;
 import io.github.kamitejp.server.outmessage.DebugImageOutMessage;
 import io.github.kamitejp.server.outmessage.LookupRequestOutMessage;
-import io.github.kamitejp.server.outmessage.UserNotificationOutMessage;
 import io.github.kamitejp.server.outmessage.ProgramStatusOutMessage;
 import io.github.kamitejp.server.outmessage.ResponseOutMessage;
+import io.github.kamitejp.server.outmessage.UserNotificationOutMessage;
 import io.github.kamitejp.status.CharacterCounter;
 import io.github.kamitejp.status.PlayerStatus;
 import io.github.kamitejp.status.ProgramStatus;
@@ -91,6 +93,7 @@ public class Kamite {
   private TextProcessor textProcessor;
   private MPVController mpvController;
   private ChunkCheckpoint chunkCheckpoint;
+  private ChunkLogger chunkLogger;
   private ProgramStatus status;
 
   public void run(Map<String,String> args, BuildInfo buildInfo) {
@@ -253,6 +256,14 @@ public class Kamite {
       }
     }
 
+    if (config.chunk().log() != null && config.chunk().log().dir() != null) {
+      try {
+        chunkLogger = new ChunkLogger(config.chunk().log().dir());
+      } catch (ChunkLoggerInitializationException e) {
+        LOG.error("Could not initialize chunk logger:", e);
+      }
+    }
+
     Runtime.getRuntime().addShutdownHook(
       new Thread(() -> {
         server.destroy();
@@ -264,6 +275,9 @@ public class Kamite {
           recognitionConductor.destroy();
         }
         mpvController.destroy();
+        if (chunkLogger != null) {
+          chunkLogger.finalize();
+        }
       })
     );
   }
@@ -595,7 +609,9 @@ public class Kamite {
   private void handleNotification(Notification notification) {
     switch (notification) {
       case Notification.ChunkAdded n -> {
-        LOG.debug("NOTIFICATION: chunk-added - %s".formatted(n.chunk())); // XXX: (DEV)
+        if (chunkLogger != null) {
+          chunkLogger.log(n.chunk());
+        }
       }
     }
   }

@@ -13,6 +13,10 @@ chunk {
   correct = true
   flash = true
   translationOnlyMode = false
+
+  log {
+    dir = "string?"
+  }
 }
 
 commands {
