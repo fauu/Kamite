@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         Kamite DeepL mod
 // @description  Improves DeepL user experience when embedded into Kamite
-// @version      1.1.0
+// @version      1.2.0
 // @match        https://www.deepl.com/translator*
 // @icon         https://www.google.com/s2/favicons?domain=deepl.com
 // @grant        GM_addStyle
 // @run-at       document-start
+// @updateURL    https://github.com/fauu/Kamite/raw/master/extra/userscripts/Kamite%20DeepL%20mod.user.js
+// @downloadURL  https://github.com/fauu/Kamite/raw/master/extra/userscripts/Kamite%20DeepL%20mod.user.js
 // ==/UserScript==
 
 (function() {
@@ -72,16 +74,18 @@
       #dl_translator .lmt__text .lmt__sides_container {
         flex-direction: column !important;
         height: calc(100vh - 10px) !important;
+        border: none !important;
+        box-shadow: none !important;
       }
-      .lmt__side_container,
-      #dl_translator .lmt__text .lmt__sides_container--focus_source .lmt__side_container--source,
-      #dl_translator .lmt__text .lmt__sides_container--focus_target .lmt__side_container--target {
-        border: 1px solid var(--color-bg3) !important;
-      }
-      .dl_translator_page_container .lmt--web .lmt__text .lmt__sides_container .lmt__side_container .lmt__textarea_container {
+      .dl_body.dl_body--translator #dl_translator.lmt--web .lmt__sides_container .lmt__side_container .lmt__textarea_container {
         background-color: var(--color-bg2) !important;
         border: none !important;
         padding-bottom: 20px !important;
+        border-bottom-left-radius: 5px !important;
+        border-bottom-right-radius: 5px !important;
+      }
+      .dl_body.dl_body--translator #dl_translator.lmt--web .lmt__sides_container.lmt__sides_container--focus_source .lmt__side_container.lmt__side_container--source .lmt__textarea_container {
+        border: 1px solid var(--color-accB2) !important;
       }
       #dl_translator .lmt__sides_container {
         width: 100vw !important;
