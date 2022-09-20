@@ -23,7 +23,7 @@ export const StatusPanelIndicator: ParentComponent<StatusPanelIndicatorProps> = 
     <div
       class={RootClass}
       use:holdClickEvent={{
-        durationMS: 2000,
+        durationMS: 800,
         holdClickCb: props.onHoldClick,
         regularClickCb: props.onClick,
       }}
