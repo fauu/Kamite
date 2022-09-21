@@ -1,7 +1,5 @@
 package io.github.kamitejp.chunk;
 
-import static java.util.function.Predicate.not;
-
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Objects;
@@ -18,8 +16,10 @@ public final class ChunkFilter {
 
   public ChunkFilter(List<String> rawRejectPatterns) {
     rejectPatterns = rawRejectPatterns.stream()
-      .filter(not(String::isEmpty))
       .map(p -> {
+        if (p.isEmpty()) {
+          return null;
+        }
         try {
           return Pattern.compile(p);
         } catch (PatternSyntaxException e) {
@@ -31,9 +31,9 @@ public final class ChunkFilter {
       .toList();
   }
 
-  public boolean shouldReject(String chunkStr) {
+  public boolean shouldReject(String chunk) {
     for (var p : rejectPatterns) {
-      if (p.matcher(chunkStr).find()) {
+      if (p.matcher(chunk).find()) {
         return true;
       }
     }

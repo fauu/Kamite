@@ -22,6 +22,12 @@ chunk {
     #@optional
     rejectPatterns = [string]
   }
+
+  #@optional
+  transforms = [{
+    replace: string
+    with: string
+  }]
 }
 
 commands {

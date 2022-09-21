@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import io.github.kamitejp.chunk.ChunkTransformer;
 import io.github.kamitejp.recognition.Recognizer.LabelledTesseractHOCROutput;
 
 public final class ChunkVariants {
@@ -72,11 +73,16 @@ public final class ChunkVariants {
       .collect(toList());
   }
 
-  public List<PostprocessedChunk> getPostprocessedChunks(boolean correct) {
+  public List<PostprocessedChunk> getPostprocessedChunks(
+    boolean correct, ChunkTransformer transformer
+  ) {
     var result = new ArrayList<PostprocessedChunk>();
     for (int i = 0; i < this.variants.size(); i++) {
       var variant = this.variants.get(i);
       var content = correct ? variant.getCorrectedContent() : variant.getContent();
+      if (transformer != null) {
+        content = transformer.execute(content);
+      }
 
       String finalContent;
       if (i == 0) {
@@ -96,8 +102,8 @@ public final class ChunkVariants {
         finalContent,
         originalContent,
         variant.getLabels(),
-        variant.getScore())
-      );
+        variant.getScore()
+      ));
     }
     return result;
   }

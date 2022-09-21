@@ -22,6 +22,7 @@ import io.github.kamitejp.api.IncomingCommand;
 import io.github.kamitejp.api.Request;
 import io.github.kamitejp.chunk.ChunkCheckpoint;
 import io.github.kamitejp.chunk.ChunkFilter;
+import io.github.kamitejp.chunk.ChunkTransformer;
 import io.github.kamitejp.chunk.ChunkLogger;
 import io.github.kamitejp.chunk.ChunkLoggerInitializationException;
 import io.github.kamitejp.chunk.IncomingChunkText;
@@ -94,6 +95,7 @@ public class Kamite {
   private MPVController mpvController;
   private ChunkCheckpoint chunkCheckpoint;
   private ChunkFilter chunkFilter;
+  private ChunkTransformer chunkTransformer;
   private ChunkLogger chunkLogger;
   private ProgramStatus status;
 
@@ -214,9 +216,9 @@ public class Kamite {
       /* onAllowedThrough */ this::showChunkPostCheckpoint
     );
 
-    // Init chunk filter
     var chunkConfig = config.chunk();
     if (chunkConfig != null) {
+      // Init chunk filter
       var filterConfig = chunkConfig.filter();
       if (
         filterConfig != null
@@ -224,6 +226,12 @@ public class Kamite {
         && !filterConfig.rejectPatterns().isEmpty()
       ) {
         chunkFilter = new ChunkFilter(filterConfig.rejectPatterns());
+      }
+
+      // Init chunk transformer
+      var transforms = chunkConfig.transforms();
+      if (transforms != null && !transforms.isEmpty()) {
+        chunkTransformer = new ChunkTransformer(transforms);
       }
     }
 
@@ -367,7 +375,7 @@ public class Kamite {
 
   private void handleChunkVariants(ChunkVariants variants) {
     server.send(new ChunkVariantsOutMessage(
-      variants.getPostprocessedChunks(config.chunk().correct())
+      variants.getPostprocessedChunks(config.chunk().correct(), chunkTransformer)
     ));
   }
 
@@ -459,7 +467,7 @@ public class Kamite {
       return;
     }
     var post = ChunkVariants.singleFromString(text)
-      .getPostprocessedChunks(config.chunk().correct());
+      .getPostprocessedChunks(config.chunk().correct(), chunkTransformer);
     server.send(new ChunkVariantsOutMessage(post, playbackTimeS));
   }
 

@@ -23,6 +23,7 @@ java -jar "$TSCFG_PATH" \
 # Make PMD ignore the generated file
 sed -ri "/^public record Config/i @SuppressWarnings(\"PMD\")" "$FILE_PATH"
 # Make list element type names prettier so that they can be used directly
+sed -i "s/Transforms\$Elm/Transform/g" "$FILE_PATH"
 sed -i "s/Custom\$Elm/CustomCommand/g" "$FILE_PATH"
 sed -i "s/Targets\$Elm/Target/g" "$FILE_PATH"
 sed -i "s/Region\$Elm/RegionBinding/g" "$FILE_PATH"
