@@ -1,3 +1,9 @@
+chunk {
+  filter.rejectPatterns = [
+    ${CHUNK_FILTERS.textractorMsg}
+  ]
+}
+
 keybindings {
   global {
     ocr {
@@ -19,6 +25,10 @@ lookup {
 
 ocr {
   engine = none
+}
+
+CHUNK_FILTERS {
+  textractorMsg = "^Textractor"
 }
 
 LOOKUP_TARGETS {

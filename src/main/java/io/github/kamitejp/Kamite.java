@@ -93,6 +93,7 @@ public class Kamite {
   private TextProcessor textProcessor;
   private MPVController mpvController;
   private ChunkCheckpoint chunkCheckpoint;
+  private ChunkFilter chunkFilter;
   private ChunkLogger chunkLogger;
   private ProgramStatus status;
 
@@ -212,6 +213,19 @@ public class Kamite {
       config.chunk().throttleMS(),
       /* onAllowedThrough */ this::showChunkPostCheckpoint
     );
+
+    // Init chunk filter
+    var chunkConfig = config.chunk();
+    if (chunkConfig != null) {
+      var filterConfig = chunkConfig.filter();
+      if (
+        filterConfig != null
+        && filterConfig.rejectPatterns() != null
+        && !filterConfig.rejectPatterns().isEmpty()
+      ) {
+        chunkFilter = new ChunkFilter(filterConfig.rejectPatterns());
+      }
+    }
 
     textProcessor = new TextProcessor(kuromojiAdapter);
 
@@ -439,7 +453,7 @@ public class Kamite {
   }
 
   private void showChunkPostCheckpoint(String text, Double playbackTimeS) {
-    if (ChunkFilter.shouldReject(text)) {
+    if (chunkFilter != null && chunkFilter.shouldReject(text)) {
       LOG.info("Rejected a chunk because it matched a filter pattern");
       LOG.debug("Rejected chunk: {}", text);
       return;

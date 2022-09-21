@@ -17,6 +17,11 @@ chunk {
   log {
     dir = "string?"
   }
+
+  filter {
+    #@optional
+    rejectPatterns = [string]
+  }
 }
 
 commands {
