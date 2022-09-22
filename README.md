@@ -63,7 +63,7 @@ script; [waycorner][waycorner-icxes].
 4. [Troubleshooting](#troubleshooting)
 5. [User interface overview](#user-interface-overview)
 6. [Text extraction](#text-extraction)
-    * [Anime/video text extraction](#anime--video-text-extraction)
+    * [Anime/video text extraction](#animevideo-text-extraction)
     * [Manga text extraction](#manga-text-extraction)
         * [Setting up “Manga OCR” Online](#setting-up-manga-ocr-online)
         * [Setting up “Manga OCR” (Local)](#setting-up-manga-ocr-local)
@@ -352,7 +352,7 @@ config key `chunk.translationOnlyMode` set to `true`.
 
 * [Mining anime/video with Anacreon’s mpv script](https://github.com/fauu/Kamite/wiki/Mining-recipes#anacreons-mpv-script)
 * [Auto-pausing mpv at the end of subtitle](https://github.com/fauu/Kamite/wiki/mpv-recipes#auto-pausing-at-the-end-of-subtitle)
-* [Alternative software for anime/video](https://github.com/fauu/Kamite/wiki/Alternative-software#anime--video)
+* [Alternative software for anime/video](https://github.com/fauu/Kamite/wiki/Alternative-software#animevideo)
 
 ### Manga text extraction
 
@@ -769,7 +769,7 @@ one line of text, second region encompassing the first and the second line, and
 so on) and choose between them on the fly.
 
 See also: [Config](#config), [Visual novel / game text extraction](#visual-novel--game-text-extraction),
-[Alternatives for games](#alternatives-for-games).
+[Alternative software for visual novels / games](https://github.com/fauu/Kamite/wiki/Alternative-software#visual-novels--games).
 
 ***
 
@@ -832,44 +832,6 @@ Kamite integration:
 
 The integration must be enabled in Gomics-v under `Preferences › Kamite`.
 
-#### Mining manga
-
-The [`contrib/anki-screenshot.sh`](contrib/anki-screenshot.sh) script (for
-Linux/wlroots and Xorg) is convenient for enhancing cards mined from manga with
-Kamite. When executed, it uses an external program to take a screenshot of a
-screen area (either user-selected or defined earlier), scales it down to a
-configured size, converts it to the storage-efficient WebP format, and adds it
-to the latest Anki card.
-
-The script also takes an optional parameter whose value will be inserted into
-the latest card’s Sentence field. This can be used to automatically update the
-card with text present in Kamite. Below is a [config](#config) excerpt
-illustrating how to achieve this.
-
-```sh
-commands {
-  custom = [
-    ${CUSTOM_COMMANDS.ankiScreenshot}
-  ]
-}
-
-CUSTOM_COMMANDS {
-  ankiScreenshot {
-    symbol = ASS
-    name = Anki screenshot
-    command = ["/path/to/anki-screenshot.sh", "-s", "{effectiveText}"]
-  }
-}
-```
-
-This configuration will add a button labeled “ASS” to the command palette
-that will execute the Anki Screenshot script, supplying it with Kamite’s
-`effectiveText` (see
-[Custom commands](#custom-commands-launching-external-executables)).
-
-See near the top of the script file for the list of required dependencies and
-for the configuration options.
-
 ***
 
 **Related Wiki sections:**
@@ -918,23 +880,6 @@ network address from the perspective of the machine running Textractor, e.g.:
 ```txt
 host=192.0.0.10:4110
 ```
-
-#### Alternatives for games
-
-Kamite’s own [Region OCR](#region-ocr) is provided as an alternative to using
-Textractor for games. Some other alternatives are:
-
-<dl>
-  <dt><a href="https://github.com/mathewthe2/Game2Text-Lightning">Game2Text-Lightning</a></dt>
-  <dd>A Windows OCR-powered pop-up dictionary program for games and other
-  desktop applications.</dd>
-  <dt><a href="https://github.com/rampaa/JL">JL</a></dt>
-  <dd>A pop-up dictionary program for Windows with a convenient translucent UI
-  that can be displayed on top of the game window. Needs Textractor with Copy to
-  Clipboard extension or an external OCR-to-clipboard program.</dd>
-  <dt><a href="https://github.com/marisukukise/japReader">japReader</a></dt>
-  <dd>A pop-up dictionary program that can track known words.</dd>
-</dl>
 
 ***
 
