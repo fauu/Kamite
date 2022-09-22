@@ -13,7 +13,7 @@ public sealed interface InMessage
           InMessage.Notification {
   record Command(IncomingCommand incomingCommand) implements InMessage {}
   record Request(io.github.kamitejp.api.Request request) implements InMessage {}
-  record Notification(io.github.kamitejp.server.Notification notification) implements InMessage {}
+  record Notification(io.github.kamitejp.server.Notification notification) implements InMessage {} // NOPMD - use of fully-qualified name necessary
 
   static Result<InMessage, String> fromJSON(String json) {
     JsonNode root = null;
@@ -35,7 +35,7 @@ public sealed interface InMessage
         yield Result.Ok(new Request(requestParseRes.get()));
       }
       case "notification" -> {
-        var notificatonParseRes = io.github.kamitejp.server.Notification.fromJSON(bodyNode);
+        var notificatonParseRes = io.github.kamitejp.server.Notification.fromJSON(bodyNode); // NOPMD - use of fully-qualified name necessary
         if (notificatonParseRes.isErr()) {
           yield Result.Err("parsing notification: %s".formatted(notificatonParseRes.err()));
         }

@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public final class ChunkFilter {
-  protected static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private List<Pattern> rejectPatterns;
 

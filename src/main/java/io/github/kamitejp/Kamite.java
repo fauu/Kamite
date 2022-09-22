@@ -22,9 +22,9 @@ import io.github.kamitejp.api.IncomingCommand;
 import io.github.kamitejp.api.Request;
 import io.github.kamitejp.chunk.ChunkCheckpoint;
 import io.github.kamitejp.chunk.ChunkFilter;
-import io.github.kamitejp.chunk.ChunkTransformer;
 import io.github.kamitejp.chunk.ChunkLogger;
 import io.github.kamitejp.chunk.ChunkLoggerInitializationException;
+import io.github.kamitejp.chunk.ChunkTransformer;
 import io.github.kamitejp.chunk.IncomingChunkText;
 import io.github.kamitejp.config.Config;
 import io.github.kamitejp.config.Config.Keybindings.Global.GlobalKeybindingsOCR.RegionBinding;
@@ -439,8 +439,7 @@ public class Kamite {
       case ServerEvent.MessageReceived e ->
         handleInMessage(e.message());
       case ServerEvent.AboutToSendMessage e -> {
-        var msg = e.message();
-        if (msg instanceof ChunkVariantsOutMessage cvMsg) {
+        if (e.message() instanceof ChunkVariantsOutMessage cvMsg) {
           status.getCharacterCounter().register(cvMsg.getVariants().get(0));
           sendStatus(ProgramStatusOutMessage.CharacterCounter.class);
         }
@@ -503,7 +502,7 @@ public class Kamite {
     }
     var command = cmdParseRes.get();
     LOG.debug("Handling command: {}", command::getClass);
-    switch (command) {
+    switch (command) { // NOPMD - misidentifies as non-exhaustive
       case Command.OCR cmd -> {
         var refuseMsg = switch (status.getRecognizerStatus().getKind()) {
           case UNAVAILABLE ->
@@ -589,9 +588,6 @@ public class Kamite {
       }
       case Command.Misc.Lookup cmd ->
         server.send(new LookupRequestOutMessage(cmd.targetSymbol(), cmd.customText()));
-
-      default ->
-        throw new IllegalStateException("Unhandled command type");
     }
 
     LOG.debug("Finished handling command: {}", command::getClass);
@@ -612,7 +608,7 @@ public class Kamite {
   }
 
   private void handleRequest(Request request) {
-    switch (request.body()) {
+    switch (request.body()) { // NOPMD - misidentifies as non-exhaustive
       case Request.Body.AddFurigana body -> {
         textProcessor.addFurigana(body.text()).ifPresent(chunkWithFurigana ->
           server.send(
@@ -623,16 +619,15 @@ public class Kamite {
           )
         );
       }
-      default -> throw new IllegalStateException("Unhandled request type");
     }
     LOG.debug("Handled request: {}", () -> request.body().getClass());
   }
 
   private void handleNotification(Notification notification) {
-    switch (notification) {
+    switch (notification) { // NOPMD - misidentifies as non-exhaustive
       case Notification.ChunkAdded n -> {
         if (chunkLogger != null) {
-          chunkLogger.log(n.chunk());
+          chunkLogger.log(n.chunk()); // NOPMD - misidentified as logger call
         }
       }
     }

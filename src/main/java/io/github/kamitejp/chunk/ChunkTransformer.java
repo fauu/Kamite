@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 import io.github.kamitejp.config.Config;
 
 public final class ChunkTransformer {
-  protected static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private List<CompiledTransform> transforms;
 
