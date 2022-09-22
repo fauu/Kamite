@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +24,7 @@ import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigOrigin;
 import com.typesafe.config.impl.ConfigImpl;
 
+import io.github.kamitejp.Kamite;
 import io.github.kamitejp.util.Result;
 
 public final class ConfigManager {
@@ -29,6 +33,7 @@ public final class ConfigManager {
   private static final String MAIN_CONFIG_FILE_PATH_RELATIVE = "config.hocon";
   private static final String PROFILE_CONFIG_FILE_PATH_RELATIVE_TPL = "config.%s.hocon";
   private static final String DEFAULT_CONFIG_FILE_RESOURCE_PATH = "/config.default.hocon";
+  private static final String KNOWN_KEYS_FILE_RESOURCE_PATH = "/known_config_keys.txt";
   private static final String LOOKUP_TARGET_URL_PLACEHOLDER = "{}";
 
   private ConfigManager() {}
@@ -41,7 +46,7 @@ public final class ConfigManager {
   public static Result<ReadSuccess, String> read(
     Path configDirPath,
     List<String> profileNames,
-    Map<String, String> args
+    Map<String, String> programArgs
   ) {
     var mainConfigPath = configDirPath.resolve(MAIN_CONFIG_FILE_PATH_RELATIVE);
 
@@ -66,9 +71,9 @@ public final class ConfigManager {
     }
 
     try {
-      var tsConfig = configFromArgs(args);
+      var tsConfig = configFromProgramArgs(programArgs);
       if (tsConfig == null) {
-        return Result.Err("Failed to parse command line arguments into a Config object");
+        return Result.Err("Failed to parse program arguments into a Config object");
       }
 
       List<String> loadedProfileNames = new ArrayList<>();
@@ -79,9 +84,12 @@ public final class ConfigManager {
         }
       }
       tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(mainConfigPath.toFile()));
+      tsConfig = tsConfig.resolve();
 
-      var config = new Config(tsConfig.resolve());
+      var config = new Config(tsConfig);
       validateExtra(config);
+
+      checkForUnknownKeys(tsConfig);
 
       LOG.debug("Read config: {}", config);
 
@@ -89,6 +97,10 @@ public final class ConfigManager {
     } catch (ConfigException e) {
       return Result.Err(e.toString());
     }
+  }
+
+  public static boolean isOwnKey(String key) {
+    return Character.isLowerCase(key.charAt(0));
   }
 
   private static Result<Void, String> ensureMainConfig(Path dirPath, Path filePath) {
@@ -127,8 +139,7 @@ public final class ConfigManager {
     return Result.Ok(null);
   }
 
-
-  private static com.typesafe.config.Config configFromArgs(Map<String, String> args) {
+  private static com.typesafe.config.Config configFromProgramArgs(Map<String, String> args) {
     try {
       var c = Class.forName("com.typesafe.config.impl.PropertiesParser");
       var fromStringMapMethod = c.getDeclaredMethod("fromStringMap", ConfigOrigin.class, Map.class);
@@ -153,6 +164,43 @@ public final class ConfigManager {
       LOG.error("Could not read program arguments into a Config object");
     }
     return null;
+  }
+
+  private static void checkForUnknownKeys(com.typesafe.config.Config tsConfig) {
+    List<String> knownKeys = null;
+    try {
+      knownKeys = Files.readAllLines(
+        Paths.get(ConfigManager.class.getResource(KNOWN_KEYS_FILE_RESOURCE_PATH).toURI()),
+        StandardCharsets.UTF_8
+      );
+    } catch (URISyntaxException e) {
+      throw new RuntimeException("Invalid known conifg keys file path");
+    } catch (IOException e) {
+      throw new RuntimeException("Could not read known config keys file");
+    }
+    if (knownKeys == null) {
+      return;
+    }
+
+    List<String> unknownKeys = null;
+    for (var entry : tsConfig.entrySet()) {
+      var key = entry.getKey();
+      if (!isOwnKey(key)) {
+        continue;
+      }
+      if (Kamite.PRECONFIG_ARGS.containsKey(key)) {
+        continue;
+      }
+      if (!knownKeys.contains(key)) {
+        if (unknownKeys == null) {
+          unknownKeys = new ArrayList<>();
+        }
+        unknownKeys.add(key);
+      }
+    }
+    if (unknownKeys != null) {
+      LOG.warn("Config contains unknown keys: %s".formatted(String.join(", ", unknownKeys)));
+    }
   }
 
   @SuppressWarnings("ThrowsRuntimeException")

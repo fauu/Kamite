@@ -10,6 +10,7 @@ yarn-error.log
 \#*#
 
 src/main/java/io/github/kamitejp/config/Config.java
+src/main/resources/known_config_keys.txt
 make-env
 
 # JetBrains

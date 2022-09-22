@@ -59,7 +59,7 @@ dist-win: launcher-win dist-prepare-generic
 	rm -rf kamite; \
 
 gen-config:
-	support/scripts/generate-config-classes.sh; \
+	support/scripts/codegen-config.sh; \
 
 jar: gen-config client
 	mvn package; \

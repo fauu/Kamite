@@ -86,6 +86,13 @@ public class Kamite {
   @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
   public static final String APP_NAME_DISPLAY = "Kamite";
 
+  // QUAL: Make neater
+  public static final Map<String, String> PRECONFIG_ARGS = Map.of(
+    "debug", "debug",
+    "profile", "profile",
+    "regionHelper", "regionHelper"
+  );
+
   private Config config;
   private Server server;
   private Platform platform;
@@ -726,7 +733,7 @@ public class Kamite {
   private record PreconfigArgs(boolean debug, List<String> profileNames, boolean regionHelper) {}
 
   private static PreconfigArgs processPreconfigArgs(Map<String, String> args) {
-    var rawDebug = args.get("debug");
+    var rawDebug = args.get(PRECONFIG_ARGS.get("debug"));
     var debug = isArgValueTruthy(rawDebug);
     if (debug) {
       var loggingExtent =
@@ -737,12 +744,12 @@ public class Kamite {
     }
 
     List<String> profileNames = new ArrayList<>();
-    var profileRaw = args.get("profile");
+    var profileRaw = args.get(PRECONFIG_ARGS.get("profile"));
     if (profileRaw != null && !profileRaw.isEmpty()) {
       profileNames = Arrays.asList(profileRaw.split(","));
     }
 
-    var regionHelper = isArgValueTruthy(args.get("regionHelper"));
+    var regionHelper = isArgValueTruthy(args.get(PRECONFIG_ARGS.get("regionHelper")));
 
     return new PreconfigArgs(debug, profileNames, regionHelper);
   }
