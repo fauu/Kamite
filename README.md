@@ -63,10 +63,7 @@ script; [waycorner][waycorner-icxes].
 4. [Troubleshooting](#troubleshooting)
 5. [User interface overview](#user-interface-overview)
 6. [Text extraction](#text-extraction)
-    * [Anime (and other video) text extraction](#anime-and-other-video-text-extraction)
-        * [Mining anime](#mining-anime)
-        * [Tip: auto-pausing at the end of subtitle](#tip-auto-pausing-at-the-end-of-subtitle)
-        * [Alternatives for anime](#alternatives-for-anime)
+    * [Anime/video text extraction](#anime--video-text-extraction)
     * [Manga text extraction](#manga-text-extraction)
         * [Setting up “Manga OCR” Online](#setting-up-manga-ocr-online)
         * [Setting up “Manga OCR” (Local)](#setting-up-manga-ocr-local)
@@ -76,13 +73,8 @@ script; [waycorner][waycorner-icxes].
         * [OCR usage](#ocr-usage)
         * [OCR directory watcher](#ocr-directory-watcher)
         * [Recommended Linux manga viewer](#recommended-linux-manga-viewer)
-        * [Mining manga](#mining-manga)
-        * [Tip: quickly trigger OCR with mouse hot corners](#tip-quickly-trigger-ocr-with-mouse-hot-corners)
-        * [Alternatives for manga](#alternatives-for-manga)
     * [Visual novel / game text extraction](#visual-novel--game-text-extraction)
-        * [Mining visual novels / games](#mining-visual-novels--games)
         * [Changing the default Textractor extension endpoint](#changing-the-default-textractor-extension-endpoint)
-        * [Alternatives for games](#alternatives-for-games)
     * [Clipboard](#clipboard)
     * [Custom source / alternative method text extraction](#custom-source--alternative-method-text-extraction)
 7. [Text use](#text-use)
@@ -255,7 +247,7 @@ a **chunk**.
 The method of getting text chunks into Kamite will depend on the kind of the
 source material:
 
-### Anime (and other video) text extraction
+### Anime/video text extraction
 
 Extracting text chunks from video is by default supported through integration
 with the **[mpv]** video player. *Primary* video subtitles from mpv are treated
@@ -354,84 +346,13 @@ config key `chunk.translationOnlyMode` set to `true`.
 [mpv-ref-json-ipc]: https://mpv.io/manual/stable/#json-ipc
 [mpv-ref-sub-options]: https://mpv.io/manual/stable/#subtitles
 
-#### Mining anime
+***
 
-Kamite works well with [Anacreon’s mpv script][anacreon-mpv] used for
-automatically enhancing [Anki] cards with video-derived content. After creating
-a card, with the script installed, simply press <kbd>Ctrl</kbd> + <kbd>C</kbd>
-in the Kamite tab, followed by <kbd>Ctrl</kbd> + <kbd>V</kbd> in the mpv window.
-If you want the card context to span not one but several chunks, select them in
-Kamite’s history window before pressing <kbd>Ctrl</kbd> + <kbd>C</kbd>.
+**Related Wiki sections:**
 
-[Anki]: https://apps.ankiweb.net/
-
-##### Troubleshooting “ERR: Line not found…”
-
-Sometimes this error can be caused by a slight formatting correction that Kamite
-can apply to incoming text. However, every time Kamite makes such modifications,
-it also makes it possible to copy the original, unchanged text. In such cases,
-this is available under the “Copy original” buttons in the main and the chunk
-history action palettes or under the keyboard shortcut <kbd>Ctrl</kbd> +
-<kbd>Alt</kbd> + <kbd>C</kbd>.
-
-The corrections on the side of Kamite can also be disabled by setting the
-[config](#config) key `chunk.correct` to `false`.
-
-If the error persists, make sure you are copying the entire chunk, or, if there
-are multiple of them, that they are consecutive in the video’s subtitles.
-
-##### For Wayland users
-
-Anacreon’s mpv script needs a slight modification to work on Wayland. In
-function `get_clipboard()`, replace
-
-```lua
-res = utils.subprocess({ args = {
-  'xclip', '-selection', 'clipboard', '-out'
-} })
-```
-
-with
-
-```lua
-res = utils.subprocess({ args = { 'wl-paste' } })
-```
-
-This requires [wl-clipboard] to be installed.
-
-[anacreon-mpv]: https://animecards.site/minefromanime/#anacreon-mpv-script
-[wl-clipboard]: https://github.com/bugaevc/wl-clipboard
-
-#### Tip: auto-pausing at the end of subtitle
-
-This can be useful for beginners whose comprehension is not yet at the level
-needed to follow even simple video content at the natural pace. The *sub-pause*
-mpv script from [mpv-sub-scripts] can be used for this purpose. Once the script
-is installed, press <kbd>N</kbd> inside mpv to enable auto-pausing.
-
-Additional tips:
-
-* You can pause/unpause in mpv with a right-click.
-* With the *sub-pause* script, you can replay from the start of the last
-  subtitle by pressing <kbd>Ctrl</kbd> + <kbd>R</kbd> in mpv.
-
-[mpv-sub-scripts]: https://github.com/Ben-Kerman/mpv-sub-scripts
-
-#### Alternatives for anime
-
-<dl>
-  <dt><a href="https://ripose-jp.github.io/Memento/">Memento</a></dt>
-  <dd>An mpv-based video player that includes Yomichan-like dictionary lookup
-  integrated right within the subtitle overlay as well as Anki support.</dd>
-  <dt><a href="https://github.com/animebook/animebook.github.io">Animebook</a></dt>
-  <dd>An in-browser video player which allows easy Yomichan lookups and Anki
-  card enhancement.</dd>
-  <dt><a href="https://github.com/killergerbah/asbplayer">asbplayer</a></dt>
-  <dd>A browser-based media player for subtitle sentence mining. Supports
-  various video streaming websites directly.</dd>
-  <dt><a href="https://github.com/marisukukise/japReader">japReader</a></dt>
-  <dd>A pop-up dictionary program that can track known words.</dd>
-</dl>
+* [Mining anime/video with Anacreon’s mpv script](https://github.com/fauu/Kamite/wiki/Mining-recipes#anacreons-mpv-script)
+* [Auto-pausing mpv at the end of subtitle](https://github.com/fauu/Kamite/wiki/mpv-recipes#auto-pausing-at-the-end-of-subtitle)
+* [Alternative software for anime/video](https://github.com/fauu/Kamite/wiki/Alternative-software#anime--video)
 
 ### Manga text extraction
 
@@ -949,95 +870,13 @@ that will execute the Anki Screenshot script, supplying it with Kamite’s
 See near the top of the script file for the list of required dependencies and
 for the configuration options.
 
-#### Tip: quickly trigger OCR with mouse hot corners
+***
 
-When not using a manga viewer with Kamite integration, a good alternative to
-clicking buttons in Kamite or using keyboard shortcuts for issuing OCR commands
-are hot corners, i.e. screen areas that, when entered with the mouse cursor,
-launch a supplied executable. This executable can be a script that sends a
-specified OCR command to Kamite.
+**Related Wiki sections:**
 
-Below is an example of such setup for Linux/wlroots users.
-
-> Xorg users who do not have the hot corners feature as a part of their desktop
-environment might use [cornora] instead.
-
-1. Install and build [icxes waycorner fork][waycorner-icxes] (supports not only
-screen corners but also edges)
-
-    Requires [Rust]. Run:
-
-    ```sh
-    git clone "https://github.com/icxes/waycorner"
-    cd waycorner
-    cargo build --release
-    ```
-
-1. Create a script that issues the desired OCR command to Kamite, e.g.:
-
-    ```sh
-    #!/usr/bin/env bash
-    dbus-send --type=method_call --dest=io.github.kamitejp /Receiver io.github.kamitejp.Receiver.command string:'ocr_auto-block'
-    ```
-
-1. Create a waycorner config file containing the corner definition
-
-    `~/.config/waycorner/config.toml`
-
-    ```toml
-    [kamite_ocr_auto_block]
-    command = ["/path/to/the/above/script.sh"]
-    locations = ["bottom"]
-    size_height = 50
-    size_width = 1500
-    timeout_ms = 30
-    ```
-
-    See also: [waycorner: Configuration][waycorner-config].
-
-1. Verify
-
-    Run:
-
-    ```sh
-    path/to/waycorner/target/release/waycorner --preview
-    ```
-
-    and check if the command is executed properly when entering the highlighted
-    area with the mouse cursor. If so, the program can be used normally without
-    the `--preview` parameter.
-
-[cornora]: https://github.com/okitavera/cornora/
-[waycorner-icxes]: https://github.com/icxes/waycorner
-[Rust]: https://www.rust-lang.org/tools/install
-[waycorner-config]: https://github.com/icxes/waycorner#configuration
-
-#### Alternatives for manga
-
-<dl>
-  <dt><a href="https://github.com/kha-white/mokuro">mokuro</a></dt>
-  <dd>Takes manga images and generates HTML files where detected text blocks
-  are overlaid with selectable text as recognized by “Manga OCR”, allowing for
-  direct lookup with pop-up dictionaries.</dd>
-  <dt><a href="https://wonderwize.github.io/mangareader/">Mangareader</a></dt>
-  <dd>An in-browser manga reader with built-in support for OCR-ing selected
-  regions using an online API backed by “Manga OCR”. Can be used in tandem with
-  Kamite with the help of the Clipboard Inserter browser extension.</dd>
-  <dt><a href="https://github.com/bluaxees/Cloe">Cloe</a></dt>
-  <dd>OCRs a screen selection to clipboard using “Manga OCR”.</dd>
-  <dt><a href="https://github.com/bluaxees/Poricom">Poricom</a></dt>
-  <dd>Manga reader with built-in “Manga OCR” and Tesseract support. Can
-  also be used to capture text from external programs.</dd>
-  <dt><a href="https://github.com/rampaa/JL">JL</a></dt>
-  <dd>A pop-up dictionary program for Windows with a convenient translucent UI
-  that can be displayed on top of other windows. For manga, needs a separate
-  program that can OCR to clipboard.</dd>
-  <dt><a href="https://github.com/marisukukise/japReader">japReader</a></dt>
-  <dd>A pop-up dictionary program that can track known words. For manga, needs
-  a separate OCR-to-clipboard program.</dd>
-  <dt><a href="https://github.com/Ajatt-Tools/transformers_ocr">transformers_ocr</a></dt>
-  <dd>A simple Linux/Xorg OCR-to-clipboard script using “Manga OCR”.</dd>
-</dl>
+* [Anki mining screenshot script (Linux/wlroots and Xorg)](https://github.com/fauu/Kamite/wiki/Mining-recipes#screenshot-script-linuxwlroots-and-xorg)
+* [Quickly trigger OCR with mouse hot corners (Linux/wlroots)](https://github.com/fauu/Kamite/wiki/OCR-recipes#quickly-trigger-ocr-with-mouse-hot-corners-linuxwlroots)
+* [Alternative software for manga](https://github.com/fauu/Kamite/wiki/Alternative-software#manga)
 
 ### Visual novel / game text extraction
 
@@ -1066,14 +905,6 @@ them on the extensions list.
 
 > Want to prevent Textractor from inserting unnecessary hooks? Check out
 > [Textractor-HookAllowlist](https://github.com/fauu/Textractor-HookAllowlist/).
-
-#### Mining visual novels / games
-
-The [`contrib/anki-screenshot.sh`](contrib/anki-screenshot.sh) script (for
-Linux/wlroots and Xorg) described in the [Mining manga](#mining-manga) section
-is also useful for visual novels / games. It can be supplied with an appropriate
-screen area definition, so that the game’s display area does not have to be
-selected manually each time for the screenshot (use the script’s `-g` option).
 
 #### Changing the default Textractor extension endpoint
 
@@ -1104,6 +935,13 @@ Textractor for games. Some other alternatives are:
   <dt><a href="https://github.com/marisukukise/japReader">japReader</a></dt>
   <dd>A pop-up dictionary program that can track known words.</dd>
 </dl>
+
+***
+
+**Related Wiki sections:**
+
+* [Anki mining screenshot script (Linux/wlroots and Xorg)](https://github.com/fauu/Kamite/wiki/Mining-recipes#screenshot-script-linuxwlroots-and-xorg)
+* [Alternative software for visual novels / games](https://github.com/fauu/Kamite/wiki/Alternative-software#visual-novels--games)
 
 ### Clipboard
 
