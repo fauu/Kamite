@@ -91,12 +91,49 @@ glob`
     margin-bottom: 1rem;
   }
 
+  /*
+  * Adapted from Toastify - https://github.com/apvarun/toastify-js
+  * For Kamite project license information, please see the COPYING.md file.
+  *
+  * The following is the license notice from the underlying work:
+  *
+  *  Toastify js 1.11.2
+  *  https://github.com/apvarun/toastify-js
+  *  @license MIT licensed
+  *
+  *  Copyright (C) 2018 Varun A P
+  */
   .toastify {
+    color: var(--color-fg);
+    display: inline-block;
+    position: fixed;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+    cursor: pointer;
+    text-decoration: none;
+    max-width: calc(50% - 20px);
+    z-index: 2147483647;
     font-weight: 500;
     padding: 0.5rem 0.9rem;
     border: 1px solid;
     border-radius: var(--border-radius-default);
     box-shadow: var(--shadow-panel);
+
+    &.on {
+      opacity: 1;
+    }
+
+    &.toastify-top {
+      top: -150px;
+    }
+
+    &.toastify-center {
+      margin-left: auto;
+      margin-right: auto;
+      left: 0;
+      right: 0;
+      max-width: fit-content;
+    }
 
     &.info {
       background: var(--color-med2);
@@ -113,6 +150,7 @@ glob`
       border-color: var(--color-error2-hl);
     }
   }
+  /* end adapted from Toastify */
 `;
 
 glob`
