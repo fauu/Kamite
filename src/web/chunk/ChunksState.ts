@@ -3,8 +3,8 @@ import { createStore, produce } from "solid-js/store";
 
 import type { Backend, ChunkWithFuriganaMessage, MaybeRuby } from "~/backend";
 import { notifyUser } from "~/common/notify";
-import { BG_FLASH_DURATION_MS } from "~/globalStyles";
 import { getSetting, type Setting } from "~/settings";
+import { BG_FLASH_DURATION_MS } from "~/style";
 
 import { chunk, type Chunk } from "./Chunk";
 import { chunkRawTextToClipboardForm } from "./clipboard";

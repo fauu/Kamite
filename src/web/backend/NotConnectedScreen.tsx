@@ -1,7 +1,7 @@
 import { createEffect, createSignal, onCleanup, Show, type VoidComponent } from "solid-js";
 import { styled } from "solid-styled-components";
 
-import { ChromeClass } from "~/globalStyles";
+import { ChromeClass } from "~/style";
 
 import type { BackendConnectionState } from "./Backend";
 

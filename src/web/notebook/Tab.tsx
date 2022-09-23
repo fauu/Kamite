@@ -1,7 +1,7 @@
 import { type VoidComponent } from "solid-js";
 import { css } from "solid-styled-components";
 
-import { ChromeClass } from "~/globalStyles";
+import { ChromeClass } from "~/style";
 import type { useGlobalTooltip } from "~/GlobalTooltip";
 
 import { tooltipAnchor } from "~/directives";

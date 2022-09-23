@@ -2,7 +2,7 @@ import { For, Show, type Ref, type VoidComponent } from "solid-js";
 import { styled } from "solid-styled-components";
 
 import { range, YomichanSentenceDelimiter } from "~/common";
-import { BgFlashingClass } from "~/globalStyles";
+import { BgFlashingClass } from "~/style";
 
 import { ChunkChar } from "./Char";
 import { ChunkCharString } from "./CharString";

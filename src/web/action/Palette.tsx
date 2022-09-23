@@ -11,7 +11,7 @@ const [_, __, ___, ____] = [
 
 import {
   LAYOUT_BREAKPOINT_SMALL, PaletteButtonClass, PaletteButtonDisabledClass
-} from "~/globalStyles";
+} from "~/style";
 import { useGlobalTooltip } from "~/GlobalTooltip";
 
 import { actionKinds, type Action, type ActionInvocation } from ".";

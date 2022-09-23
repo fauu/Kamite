@@ -1,7 +1,7 @@
 import { For, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
-import { ChromeClass, PaletteButtonClass } from "~/globalStyles";
+import { ChromeClass, PaletteButtonClass } from "~/style";
 import { themeLayoutFlipped } from "~/theme";
 
 import type { ChunkHistoryAction } from "./Action";

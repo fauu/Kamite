@@ -6,7 +6,7 @@ const [_, __] = [scrollToBottomOnChildListChange, tooltipAnchor];
 
 import type { ChunksState } from "~/chunk";
 import { Newline, StringWithNewlines } from "~/common";
-import { BgFlashingClass, ChromeClass } from "~/globalStyles";
+import { BgFlashingClass, ChromeClass } from "~/style";
 import { useGlobalTooltip } from "~/GlobalTooltip";
 
 import type { ChunkHistoryAction } from "./Action";

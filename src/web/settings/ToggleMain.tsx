@@ -1,7 +1,7 @@
 import { type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
-import { ChromeClass } from "~/globalStyles";
+import { ChromeClass } from "~/style";
 
 import type { SettingsFieldMainProps } from "./FieldMainProps";
 import type { ToggleSettingMain } from "./Setting";

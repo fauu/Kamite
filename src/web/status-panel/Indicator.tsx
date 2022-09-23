@@ -1,7 +1,7 @@
 import { type JSX, type ParentComponent } from "solid-js";
 import { css } from "solid-styled-components";
 
-import { ChromeClass } from "~/globalStyles";
+import { ChromeClass } from "~/style";
 
 import { holdClickEvent, tooltipAnchor } from "~/directives";
 const [_, __] = [holdClickEvent, tooltipAnchor];

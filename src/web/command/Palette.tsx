@@ -5,7 +5,7 @@ import { tooltipAnchor } from "~/directives";
 const [_] = [tooltipAnchor];
 
 import type { Command, PlayerStatus } from "~/backend";
-import { PaletteButtonClass, PaletteButtonDisabledClass } from "~/globalStyles";
+import { PaletteButtonClass, PaletteButtonDisabledClass } from "~/style";
 import { useGlobalTooltip } from "~/GlobalTooltip";
 
 import type { CommandPaletteCommand } from ".";

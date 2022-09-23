@@ -1,7 +1,11 @@
 import { glob } from "goober";
-import { css, keyframes } from "solid-styled-components";
+import { css, keyframes, setup } from "solid-styled-components";
+
+import { cssPrefixer } from "./cssPrefixer";
 
 export const LAYOUT_BREAKPOINT_SMALL = "@media (max-width: 600px)";
+
+setup(cssPrefixer);
 
 glob`
   :root {

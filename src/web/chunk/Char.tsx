@@ -2,7 +2,7 @@ import { type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
 import { CharMaybeNewline } from "~/common";
-import { BgFlashingClass } from "~/globalStyles";
+import { BgFlashingClass } from "~/style";
 
 interface ChunkCharProps {
   value: string,

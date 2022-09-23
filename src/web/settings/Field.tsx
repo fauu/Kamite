@@ -5,7 +5,7 @@ import { tooltipAnchor } from "~/directives";
 const [_] = [tooltipAnchor];
 
 import { ConfigKey } from "~/common";
-import { LAYOUT_BREAKPOINT_SMALL } from "~/globalStyles";
+import { LAYOUT_BREAKPOINT_SMALL } from "~/style";
 import { useGlobalTooltip } from "~/GlobalTooltip";
 
 import { SettingsSelect } from "./Select";

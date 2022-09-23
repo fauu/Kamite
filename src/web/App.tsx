@@ -38,10 +38,10 @@ import {
 import {
   CharacterCounter, createSessionTimerState, createStatusPanelFader, SessionTimer, StatusPanel
 } from "~/status-panel";
+import { ChromeClass, PaletteButtonClass } from "~/style";
 
 import { integrateClipboardInserter } from "./clipboardInserter";
 import { SHOW_FURIGANA_DISABLED_MSG } from "./features";
-import { ChromeClass, PaletteButtonClass } from "./globalStyles";
 import { useGlobalTooltip } from "./GlobalTooltip";
 import { createTheme, themeLayoutFlipped } from "./theme";
 
