@@ -1,5 +1,5 @@
-import { type VoidComponent } from "solid-js";
-import { css } from "solid-styled-components";
+import { Show, type VoidComponent } from "solid-js";
+import { css, styled } from "solid-styled-components";
 
 import { ChromeClass } from "~/style";
 import type { useGlobalTooltip } from "~/GlobalTooltip";
@@ -26,16 +26,21 @@ export const NotebookTab: VoidComponent<NotebookTabProps> = (props) => {
       role="button"
       class={NotebookTabDisplayClass}
       classList={{
-        [ActiveClass]: props.active,
-        [HighlightedClass]: props.tab.highlighted,
-        [WithIconClass]: hasIcon,
-        [RemoteLookupClass]: props.tab.lookup && props.tab.lookup.newTab,
+        [NotebookTabActiveClass]: props.active,
+        [NotebookTabHighlightedClass]: props.tab.highlighted,
         "notebook-tab": true,
       }}
-      style={{ "--icon-url": `url("icons/${props.tab.id}.svg")` }}
       use:tooltipAnchor={{ tooltip: props.tooltip, header: props.tab.title }}
       onClick={props.onClick}
     >
+      <Show when={hasIcon}>
+        <NotebookTabIcon
+          style={{ "--url": `url("icons/${props.tab.id}.svg")` }}
+        />
+      </Show>
+      <Show when={props.tab.lookup && props.tab.lookup.newTab}>
+        <NotebookTabRemoteLookupIndicator />
+      </Show>
       {props.tab.lookup && !hasIcon && props.tab.lookup.symbol}
     </div>;
 };
@@ -62,11 +67,32 @@ export const NotebookTabDisplayClass = css`
   }
 `;
 
-const ActiveClass = css`
-  --active-bg: linear-gradient(45deg, var(--color-bg2) 3%,
+export const NotebookTabIcon = styled.div`
+  background: var(--color-fg);
+  mask: var(--url) no-repeat center center;
+  mask-size: 34px;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+`;
+
+const NotebookTabRemoteLookupIndicator = styled.div`
+  --icon-url: url("icons/remote.svg");
+  --size: 8px;
+  background: var(--color-med2);
+  mask: var(--icon-url) no-repeat center center;
+  mask-size: var(--size);
+  width: var(--size);
+  height: var(--size);
+  position: absolute;
+  top: 4px;
+  right: 4px;
+`;
+
+const NotebookTabActiveClass = css`
+  background: linear-gradient(45deg, var(--color-bg2) 3%,
     var(--color-bg3-hl) 53%,
     var(--color-bg2) 100%);
-  background: var(--active-bg);
 
   &:after {
     content: "";
@@ -79,38 +105,12 @@ const ActiveClass = css`
   }
 `;
 
-const HighlightedClass = css`
+const NotebookTabHighlightedClass = css`
   &:after {
+    position: absolute;
     content: "";
     width: 100%;
     height: 100%;
     background: radial-gradient(circle at -25% -25%, var(--color-accB2) 0%, transparent 45%);
-  }
-`;
-
-
-const WithIconClass = css`
-  --icon-bg: var(--icon-url) no-repeat center center;
-  --icon-bg-size: 34px;
-  background: var(--color-bg2) var(--icon-bg);
-  background-size: var(--icon-bg-size);
-
-  &.${ActiveClass} {
-    background: var(--icon-bg), var(--active-bg);
-    background-size: var(--icon-bg-size), cover;
-  }
-`;
-
-const RemoteLookupClass = css`
-  &:before {
-    content: "";
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    width 8px;
-    height: 8px;
-    background-image: url("icons/remote.svg");
-    background-size: 8px;
-    opacity: 0.5;
   }
 `;
