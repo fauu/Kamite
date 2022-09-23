@@ -1,5 +1,3 @@
-package io.github.kamitejp.support;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,8 +9,6 @@ import java.util.Map;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
-
-import io.github.kamitejp.config.ConfigManager;
 
 public class ListKnownConfigKeys {
   public static void main(String[] args) {
@@ -31,9 +27,12 @@ public class ListKnownConfigKeys {
     }
 
     var outPath = args[1];
+    var keyCount = 0;
     try {
       var tsConfig = ConfigFactory.parseFile(configFile);
-      var outStr = String.join("\n", ownConfigEntryKeys(tsConfig));
+      var keys = ownConfigEntryKeys(tsConfig);
+      keyCount = keys.size();
+      var outStr = String.join("\n", keys);
       Files.write(Paths.get(outPath), outStr.getBytes(StandardCharsets.UTF_8));
     } catch (ConfigException e) {
       System.err.println("Exception while parsing config");
@@ -45,13 +44,18 @@ public class ListKnownConfigKeys {
       return;
     }
 
-    System.out.printf("Wrote to `%s`", outPath);
+    System.out.printf("Wrote %d keys to: %s", keyCount, outPath);
   }
 
   private static List<String> ownConfigEntryKeys(Config config) {
     return config.entrySet().stream()
       .map(Map.Entry::getKey)
-      .filter(ConfigManager::isOwnKey)
+      .filter(ListKnownConfigKeys::isOwnKey)
       .toList();
+  }
+
+  // NOTE: Copied from io.github.kamitejp.config.ConfigManager
+  public static boolean isOwnKey(String key) {
+    return Character.isLowerCase(key.charAt(0));
   }
 }

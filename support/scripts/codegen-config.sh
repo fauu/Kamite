@@ -8,6 +8,7 @@ TSCFG_PATH="support/lib/tscfg/tscfg-1.0.0.jar"
 SPEC_PATH="config/config.spec.hocon"
 CONFIG_FILE_NAME="$CLASS_NAME.java"
 CONFIG_FILE_PATH="$PKG_BASE$CONFIG_FILE_NAME"
+KNOWN_CONFIG_SCRIPT_PATH="support/scripts/ListKnownConfigKeys.java"
 KNOWN_CONFIG_KEYS_FILE_PATH="src/main/resources/known_config_keys.txt"
 
 # --- GENERATION -----------------------------------------------------------------------------------
@@ -40,5 +41,5 @@ patch_enum () {
 patch_enum "UILayout" "STANDARD"
 patch_enum "OCREngine" "NONE"
 
-# --- KNOWN KEYS -----------------------------------------------------------------------------------
-mvn compile exec:java@list-known-config-keys -Dexec.args="$SPEC_PATH $KNOWN_CONFIG_KEYS_FILE_PATH"
+# --- KNOWN KEY LIST -------------------------------------------------------------------------------
+java -cp "$TSCFG_PATH" "$KNOWN_CONFIG_SCRIPT_PATH" "$SPEC_PATH" "$KNOWN_CONFIG_KEYS_FILE_PATH"

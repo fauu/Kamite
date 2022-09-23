@@ -149,20 +149,9 @@
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>exec-maven-plugin</artifactId>
       <version>3.1.0</version>
-      <executions>
-        <execution>
-          <id>default-cli</id>
-          <configuration>
-            <mainClass>io.github.kamitejp.Main</mainClass>
-          </configuration>
-        </execution>
-        <execution>
-          <id>list-known-config-keys</id>
-          <configuration>
-            <mainClass>io.github.kamitejp.support.ListKnownConfigKeys</mainClass>
-          </configuration>
-        </execution>
-      </executions>
+      <configuration>
+        <mainClass>io.github.kamitejp.Main</mainClass>
+      </configuration>
     </plugin>
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
