@@ -6,4 +6,4 @@ export const cssPrefixer = (k: string, v: string): string => {
     res += `-webkit-${k}: ${v};\n`;
   }
   return res;
-}
+};
