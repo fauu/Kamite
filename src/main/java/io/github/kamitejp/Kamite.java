@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -375,15 +376,15 @@ public class Kamite {
   }
 
   private void handleConfigReload(Config config) {
-    LOG.info("Reloaded config. Applying some of the changes");
+    LOG.info("Reloaded config. Applying reloadable changes");
 
     var chunkConfig = config.chunk();
     var oldChunkConfig = this.config.chunk();
     if (chunkConfig != null) {
-      if (chunkConfig.filter() != oldChunkConfig.filter()) {
+      if (!Objects.equals(chunkConfig.filter(), oldChunkConfig.filter())) {
         maybeInitChunkFilter(chunkConfig.filter());
       }
-      if (chunkConfig.transforms() != oldChunkConfig.transforms()) {
+      if (!Objects.equals(chunkConfig.transforms(), oldChunkConfig.transforms())) {
         maybeInitChunkTransformer(chunkConfig.transforms());
       }
     }
