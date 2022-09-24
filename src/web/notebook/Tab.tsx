@@ -34,12 +34,12 @@ export const NotebookTab: VoidComponent<NotebookTabProps> = (props) => {
       onClick={props.onClick}
     >
       <Show when={hasIcon}>
-        <NotebookTabIcon
+        <Icon
           style={{ "--url": `url("icons/${props.tab.id}.svg")` }}
         />
       </Show>
       <Show when={props.tab.lookup && props.tab.lookup.newTab}>
-        <NotebookTabRemoteLookupIndicator />
+        <RemoteLookupIndicator />
       </Show>
       {props.tab.lookup && !hasIcon && props.tab.lookup.symbol}
     </div>;
@@ -67,7 +67,7 @@ export const NotebookTabDisplayClass = css`
   }
 `;
 
-export const NotebookTabIcon = styled.div`
+const Icon = styled.div`
   background: var(--color-fg);
   mask: var(--url) no-repeat center center;
   mask-size: 34px;
@@ -76,7 +76,7 @@ export const NotebookTabIcon = styled.div`
   height: 100%;
 `;
 
-const NotebookTabRemoteLookupIndicator = styled.div`
+const RemoteLookupIndicator = styled.div`
   --icon-url: url("icons/remote.svg");
   --size: 8px;
   background: var(--color-med2);
