@@ -2,14 +2,12 @@ package io.github.kamitejp.status;
 
 import java.util.List;
 
-import io.github.kamitejp.config.Config;
 import io.github.kamitejp.recognition.RecognizerStatus;
 import io.github.kamitejp.universalfeature.UnavailableUniversalFeature;
 
 public final class ProgramStatus {
   private final boolean debug;
   private final List<String> profileNames;
-  private final List<Config.Lookup.Target> lookupTargets;
   private final SessionTimer sessionTimer;
   private final CharacterCounter characterCounter;
   private final List<UnavailableUniversalFeature> unavailableUniversalFeatures;
