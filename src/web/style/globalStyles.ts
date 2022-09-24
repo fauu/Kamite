@@ -215,10 +215,7 @@ export const PaletteButtonClass = css`
   height: var(--palette-button-min-size);
   line-height: var(--palette-button-min-size);
   border-radius: var(--border-radius-default);
-  background-repeat: no-repeat;
-  background-size: 32px;
-  background-position: center;
-  padding: var(--palette-button-padding-fix) 0.8rem 0 0.8rem;
+  padding: var(--palette-button-padding-fix) 0 0 0;
 
   &:not(.${PaletteButtonDisabledClass}) {
     cursor: pointer;

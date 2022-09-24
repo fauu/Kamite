@@ -4,9 +4,9 @@ import { css, styled } from "solid-styled-components";
 import { tooltipAnchor } from "~/directives";
 const [_] = [tooltipAnchor];
 
-import { ConfigKey } from "~/common";
-import { LAYOUT_BREAKPOINT_SMALL } from "~/style";
+import { ConfigKey, DefaultIcon } from "~/common";
 import { useGlobalTooltip } from "~/GlobalTooltip";
+import { LAYOUT_BREAKPOINT_SMALL } from "~/style";
 
 import { SettingsSelect } from "./Select";
 import type { SelectSettingMain, Setting, SettingBase, ToggleSettingMain } from "./Setting";
@@ -67,7 +67,7 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
     }</Show>
     <Show when={props.setting.warning && props.setting.warning.show(props.setting.value)}>
       <Warning>
-        <WarningIcon/>
+        <WarningIcon iconName="warning" sizePx={16} />
         <WarningText>{props.setting.warning!.text}</WarningText>
       </Warning>
     </Show>
@@ -139,12 +139,10 @@ const Warning = styled.div`
   margin-top: 0.3rem;
 `;
 
-const WarningIcon = styled.span`
+const WarningIcon = styled(DefaultIcon)`
   display: inline-block;
-  width: 16px;
-  height: 16px;
-  background: url('icons/warning.svg');
-  background-size: 16px;
+  height: ${p => p.sizePx}px;
+  background: var(--color-warning);
   vertical-align: -2px;
   margin-right: 3px;
 `;

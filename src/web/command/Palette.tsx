@@ -1,12 +1,13 @@
-import { For, type Ref, type VoidComponent } from "solid-js";
+import { For, Show, type Ref, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
 import { tooltipAnchor } from "~/directives";
 const [_] = [tooltipAnchor];
 
 import type { Command, PlayerStatus } from "~/backend";
-import { PaletteButtonClass, PaletteButtonDisabledClass } from "~/style";
+import { DefaultIcon } from "~/common";
 import { useGlobalTooltip } from "~/GlobalTooltip";
+import { PaletteButtonClass, PaletteButtonDisabledClass } from "~/style";
 
 import type { CommandPaletteCommand } from ".";
 
@@ -20,12 +21,9 @@ interface CommandPaletteProps {
 export const CommandPalette: VoidComponent<CommandPaletteProps> = (props) => {
   const tooltip = useGlobalTooltip()!;
 
-  const buttonBackgroundImage = (c: Command) =>
-    c.kind === "misc_custom"
-    ? "none"
-    : `url('icons/${iconBasename(c)}.svg')`;
+  const hasIcon = (c: Command) => c.kind !== "misc_custom";
 
-  const iconBasename = (c: Command) =>
+  const iconName = (c: Command) =>
     c.kind === "player_playpause"
     ? `player_${props.mediaPlayerStatus === "playing" ? "pause" : "play"}`
     : c.kind;
@@ -41,12 +39,15 @@ export const CommandPalette: VoidComponent<CommandPaletteProps> = (props) => {
           [PaletteButtonClass]: true,
           [PaletteButtonDisabledClass]: !pc.enabled
         }}
-        style={{ "background-image": `${buttonBackgroundImage(pc.command)}` }}
         data-kind={pc.command.kind}
         data-symbol={pc.symbol}
         use:tooltipAnchor={pc.description ? { tooltip, header: pc.description } : undefined}
         onClick={[handleButtonClick, pc.command]}
-      />
+      >
+        <Show when={hasIcon(pc.command)}>
+          <Icon iconName={iconName(pc.command)} sizePx={32} />
+        </Show>
+      </div>
     }</For>
   </Root>;
 };
@@ -80,4 +81,11 @@ const ButtonClass = css`
   &[data-kind="misc_custom"]:before {
     font-size: 0.88rem;
   }
+`;
+
+const Icon = styled(DefaultIcon)`
+  position: absolute;
+  width: 100%;
+  left: 0;
+  top: 0;
 `;

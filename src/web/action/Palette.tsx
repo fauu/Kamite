@@ -1,4 +1,4 @@
-import { createSignal, For, onCleanup, onMount, type VoidComponent } from "solid-js";
+import { createSignal, For, onCleanup, onMount, Show, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
 import {
@@ -6,13 +6,14 @@ import {
   type GeneralScrollPosition
 } from "~/directives";
 const [_, __, ___, ____] = [
-  horizontalWheelScroll, onGeneralHorizontalScrollPositionChange, tooltipAnchor /* XXX */, holdClickEvent
+  horizontalWheelScroll, onGeneralHorizontalScrollPositionChange, tooltipAnchor, holdClickEvent
 ];
 
+import { DefaultIcon } from "~/common";
+import { useGlobalTooltip } from "~/GlobalTooltip";
 import {
   LAYOUT_BREAKPOINT_SMALL, PaletteButtonClass, PaletteButtonDisabledClass
 } from "~/style";
-import { useGlobalTooltip } from "~/GlobalTooltip";
 
 import { actionKinds, type Action, type ActionInvocation } from ".";
 
@@ -85,6 +86,7 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
           : "none"
       }}
     >
+      <FadeIcon />
       <Scroller ref={leftScrollerEl}/>
     </LeftFade>
     <RightFade
@@ -94,6 +96,7 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
           : "none"
       }}
     >
+      <FadeIcon />
       <Scroller ref={rightScrollerEl}/>
     </RightFade>
     <div
@@ -113,8 +116,6 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
             [PaletteButtonClass]: true,
             [PaletteButtonDisabledClass]: action.disabled,
           }}
-          style={{ "background-image": hasIcon ? `url('icons/${action.kind}.svg')` : undefined }}
-          innerHTML={!hasIcon ? textLabel(action, props.targetText) : undefined}
           use:holdClickEvent={
             action.disabled
             ? undefined
@@ -130,12 +131,16 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
             (!action.disabled && actionKind.description)
             ? {
               tooltip,
-              header: hasIcon ? textLabel(action, props.targetText) : undefined,
+              header: hasIcon ? labelText(action, props.targetText) : undefined,
               body: actionKind.description,
             }
             : undefined
           }
-        />;
+        >
+          <Show when={hasIcon} fallback={<Label innerHTML={labelText(action, props.targetText)} />}>
+            <DefaultIcon iconName={action.kind} sizePx={34} />
+          </Show>
+        </div>;
       }}</For>
     </div>
   </Root>;
@@ -157,11 +162,14 @@ const Fade = styled.div`
   position: absolute;
   width: 3.5rem;
   height: 100%;
-  background: url('icons/scroll-arrow.svg'),
-    linear-gradient(270deg, var(--color-bg) 60%, rgba(0, 0, 0, 0) 100%);
-  background-repeat: no-repeat;
-  background-position: right, right;
-  background-size: 32px, cover;
+  background: linear-gradient(270deg, var(--color-bg) 50%, rgba(0, 0, 0, 0) 100%);
+`;
+
+const FadeIcon: VoidComponent = () => <FadeIconRoot iconName="scroll-arrow" sizePx={32} />
+const FadeIconRoot = styled(DefaultIcon)`
+  background: var(--color-med);
+  position: absolute;
+  right: 0;
 `;
 
 const LeftFade = styled(Fade)`
@@ -184,7 +192,7 @@ const ButtonsClass = css`
 
   ${LAYOUT_BREAKPOINT_SMALL} {
     letter-spacing: -0.01rem;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 `;
 
@@ -196,10 +204,6 @@ const ButtonClass = css`
     line-height: 100%;
   }
 
-  ${LAYOUT_BREAKPOINT_SMALL} {
-    padding: 0 0.6rem;
-  }
-
   &${PaletteButtonDisabledClass} {
     opacity: 0.5;
     cursor: default;
@@ -207,7 +211,15 @@ const ButtonClass = css`
   }
 `;
 
-function textLabel(action: Action, targetText?: string): string {
+const Label = styled.span`
+  padding: 0 0.8rem;
+
+  ${LAYOUT_BREAKPOINT_SMALL} {
+    padding: 0 0.6rem;
+  }
+`;
+
+function labelText(action: Action, targetText?: string): string {
   const staticLabel = actionKinds[action.kind].staticLabel;
   if (staticLabel) {
     return staticLabel;

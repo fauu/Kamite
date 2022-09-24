@@ -1,6 +1,7 @@
 import { Show, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
+import { DefaultIcon } from "~/common";
 import { ChromeClass } from "~/style";
 import type { useGlobalTooltip } from "~/GlobalTooltip";
 
@@ -34,9 +35,7 @@ export const NotebookTab: VoidComponent<NotebookTabProps> = (props) => {
       onClick={props.onClick}
     >
       <Show when={hasIcon}>
-        <Icon
-          style={{ "--url": `url("icons/${props.tab.id}.svg")` }}
-        />
+        <Icon iconName={props.tab.id} sizePx={34} />
       </Show>
       <Show when={props.tab.lookup && props.tab.lookup.newTab}>
         <RemoteLookupIndicator />
@@ -67,23 +66,15 @@ export const NotebookTabDisplayClass = css`
   }
 `;
 
-const Icon = styled.div`
-  background: var(--color-fg);
-  mask: var(--url) no-repeat center center;
-  mask-size: 34px;
+const Icon = styled(DefaultIcon)`
   position: absolute;
   width: 100%;
-  height: 100%;
 `;
 
-const RemoteLookupIndicator = styled.div`
-  --icon-url: url("icons/remote.svg");
-  --size: 8px;
+const RemoteLookupIndicator: VoidComponent = () => <RemoteLookupIndicatorRoot iconName="remote" sizePx={8} />
+const RemoteLookupIndicatorRoot = styled(DefaultIcon)`
   background: var(--color-med2);
-  mask: var(--icon-url) no-repeat center center;
-  mask-size: var(--size);
-  width: var(--size);
-  height: var(--size);
+  height: ${p => p.sizePx}px;
   position: absolute;
   top: 4px;
   right: 4px;
