@@ -129,6 +129,7 @@ export const App: VoidComponent = () => {
     if (import.meta.env.DEV && c.dev.serveStaticInDevMode) {
       notifyUser("warning", "serveStaticInDevMode override is enabled");
     }
+    notebook.updateLookupTabs(c.lookup?.targets ?? []);
   }));
 
   createEffect(() => chunks.setWaiting(recognizerStatus().kind === "processing"));
@@ -339,7 +340,6 @@ export const App: VoidComponent = () => {
       case "program-status":
         batch(() => {
           msg.debug !== undefined && setDebugMode(msg.debug);
-          msg.lookupTargets && notebook.updateLookupTabs(msg.lookupTargets);
           msg.sessionTimer && sessionTimer.sync(msg.sessionTimer);
           msg.characterCounter && setCharacterCounter(msg.characterCounter);
           msg.recognizerStatus && setRecognizerStatus(parseRecognizerStatus(msg.recognizerStatus));

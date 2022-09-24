@@ -19,7 +19,6 @@ public final class ProgramStatus {
   public ProgramStatus(
     boolean debug,
     List<String> profileNames,
-    List<Config.Lookup.Target> lookupTargets,
     SessionTimer sessionTimer,
     CharacterCounter characterCounter,
     List<UnavailableUniversalFeature> unavailableUniversalFeatures,
@@ -28,7 +27,6 @@ public final class ProgramStatus {
   ) {
     this.debug = debug;
     this.profileNames = profileNames;
-    this.lookupTargets = lookupTargets;
     this.sessionTimer = sessionTimer;
     this.characterCounter = characterCounter;
     this.unavailableUniversalFeatures = unavailableUniversalFeatures;
@@ -42,10 +40,6 @@ public final class ProgramStatus {
 
   public List<String> getProfileNames() {
     return profileNames;
-  }
-
-  public List<Config.Lookup.Target> getLookupTargets() {
-    return lookupTargets;
   }
 
   public SessionTimer getSessionTimer() {

@@ -3,10 +3,9 @@ export {
   PARAMLESS_OCR_COMMANDS, PLAYER_COMMANDS, type Command, type CustomCommand,
   type OCRRegionCommand
 } from "./Command";
-export { lookupTargetFillURL } from "./InMessage";
 export type {
   CharacterCounter, ChunkVariant, ChunkWithFurigana, ChunkWithFuriganaMessage, InMessage,
-  LookupTarget, MaybeRuby, ProgramStatus, SessionTimer
+  MaybeRuby, ProgramStatus, SessionTimer
 } from "./InMessage";
 export type { Notification } from "./Notification";
 export type { CommandMessage, OutMessage, RequestMessage } from "./OutMessage";

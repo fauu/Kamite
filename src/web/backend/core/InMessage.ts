@@ -61,23 +61,11 @@ export interface ChunkVariant {
 export interface ProgramStatus {
   debug: boolean,
   profileNames: string[],
-  lookupTargets: LookupTarget[],
   sessionTimer: SessionTimer,
   characterCounter: CharacterCounter,
   unavailableUniversalFeatures: UnavailableUniversalFeature[],
   recognizerStatus: InRecognizerStatus,
   playerStatus: PlayerStatus,
-}
-
-export interface LookupTarget {
-  symbol: string,
-  name: string,
-  url: string,
-  newTab: boolean,
-}
-
-export function lookupTargetFillURL(t: LookupTarget, q: string) {
-  return t.url.replace("{}", q);
 }
 
 export type SessionTimer =

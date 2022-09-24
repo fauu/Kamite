@@ -8,6 +8,7 @@ export interface Config {
   chunk: Chunk,
   keybindings: Keybindings,
   dev: Dev,
+  lookup: Lookup,
 }
 
 export type UILayout = "STANDARD" | "STANDARD_FLIPPED";
@@ -78,4 +79,19 @@ interface Notebook {
 
 interface Dev {
   serveStaticInDevMode: boolean,
+}
+
+interface Lookup {
+  targets: LookupTarget[],
+}
+
+export interface LookupTarget {
+  symbol: string,
+  name: string,
+  url: string,
+  newTab: boolean,
+}
+
+export function lookupTargetFillURL(t: LookupTarget, q: string) {
+  return t.url.replace("{}", q);
 }

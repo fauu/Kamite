@@ -168,7 +168,6 @@ public class Kamite {
     status = new ProgramStatus(
       preconfigArgs.debug(),
       preconfigArgs.profileNames(),
-      config.lookup().targets(),
       SessionTimer.startingNow(),
       new CharacterCounter(),
       unavailableUniversalFeatures,
