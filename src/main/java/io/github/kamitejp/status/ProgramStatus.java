@@ -13,7 +13,7 @@ public final class ProgramStatus {
   private final SessionTimer sessionTimer;
   private final CharacterCounter characterCounter;
   private final List<UnavailableUniversalFeature> unavailableUniversalFeatures;
-  private RecognizerStatus recognizerStatus;
+  private final RecognizerStatus recognizerStatus;
   private PlayerStatus playerStatus;
 
   public ProgramStatus(
