@@ -93,9 +93,10 @@ public class Kamite {
     "regionHelper", "regionHelper"
   );
 
-  private Config config;
-  private Server server;
   private Platform platform;
+  private Server server;
+  private ConfigManager configManager;
+  private Config config;
   private RecognitionConductor recognitionConductor;
   private OCRDirectoryWatcher ocrDirectoryWatcher;
   private TextProcessor textProcessor;
@@ -138,8 +139,9 @@ public class Kamite {
       createControlGUIAndShowFatalError("Failed to get platform-specific config path");
       return;
     }
+    configManager = new ConfigManager(this::handleConfigReload);
     var configReadRes =
-      ConfigManager.read(maybeConfigDirPath.get(), preconfigArgs.profileNames(), args);
+      configManager.read(maybeConfigDirPath.get(), preconfigArgs.profileNames(), args);
     if (configReadRes.isErr()) {
       createControlGUIAndShowFatalError("Failed to read config", configReadRes.err());
       return;
@@ -225,21 +227,8 @@ public class Kamite {
 
     var chunkConfig = config.chunk();
     if (chunkConfig != null) {
-      // Init chunk filter
-      var filterConfig = chunkConfig.filter();
-      if (
-        filterConfig != null
-        && filterConfig.rejectPatterns() != null
-        && !filterConfig.rejectPatterns().isEmpty()
-      ) {
-        chunkFilter = new ChunkFilter(filterConfig.rejectPatterns());
-      }
-
-      // Init chunk transformer
-      var transforms = chunkConfig.transforms();
-      if (transforms != null && !transforms.isEmpty()) {
-        chunkTransformer = new ChunkTransformer(transforms);
-      }
+      maybeInitChunkFilter(chunkConfig.filter());
+      maybeInitChunkTransformer(chunkConfig.transforms());
     }
 
     textProcessor = new TextProcessor(kuromojiAdapter);
@@ -295,8 +284,9 @@ public class Kamite {
 
     Runtime.getRuntime().addShutdownHook(
       new Thread(() -> {
-        server.destroy();
         platform.destroy();
+        configManager.destroy();
+        server.destroy();
         if (ocrDirectoryWatcher != null) {
           ocrDirectoryWatcher.destroy();
         }
@@ -366,6 +356,37 @@ public class Kamite {
   private static void showFatalError(String message, String details) {
     var detailsPart = details == null ? "" : " Details: %s".formatted(details);
     LOG.error("{}. The program will not continue.{}", message, detailsPart);
+  }
+
+  private void maybeInitChunkFilter(Config.Chunk.Filter filterConfig) {
+    if (
+      filterConfig != null
+      && filterConfig.rejectPatterns() != null
+      && !filterConfig.rejectPatterns().isEmpty()
+    ) {
+      chunkFilter = new ChunkFilter(filterConfig.rejectPatterns());
+    }
+  }
+
+  private void maybeInitChunkTransformer(List<Config.Chunk.Transform> transformsConfig) {
+    if (transformsConfig != null && !transformsConfig.isEmpty()) {
+      chunkTransformer = new ChunkTransformer(transformsConfig);
+    }
+  }
+
+  private void handleConfigReload(Config config) {
+    LOG.info("Reloaded config. Applying some of the changes");
+
+    var chunkConfig = config.chunk();
+    var oldChunkConfig = this.config.chunk();
+    if (chunkConfig != null) {
+      if (chunkConfig.filter() != oldChunkConfig.filter()) {
+        maybeInitChunkFilter(chunkConfig.filter());
+      }
+      if (chunkConfig.transforms() != oldChunkConfig.transforms()) {
+        maybeInitChunkTransformer(chunkConfig.transforms());
+      }
+    }
   }
 
   private void handlePlayerStatusUpdate(PlayerStatus newStatus) {

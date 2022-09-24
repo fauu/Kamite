@@ -35,6 +35,7 @@ public final class ChunkTransformer {
       })
       .filter(Objects::nonNull)
       .toList();
+    LOG.info("Initialized chunk transformer");
   }
 
   public String execute(String chunk) {

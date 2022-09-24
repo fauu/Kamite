@@ -6,14 +6,17 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import org.apache.logging.log4j.LogManager;
@@ -36,14 +39,22 @@ public final class ConfigManager {
   private static final String KNOWN_KEYS_FILE_RESOURCE_PATH = "/known_config_keys.txt";
   private static final String LOOKUP_TARGET_URL_PLACEHOLDER = "{}";
 
-  private ConfigManager() {}
+  private final Consumer<Config> configReloadedCb;
+
+  private List<File> configFiles;
+  private ConfigFilesWatcher configFilesWatcher;
+  private com.typesafe.config.Config programArgsConfig;
 
   @SuppressWarnings("WeakerAccess") // Mistaken
   public record ReadSuccess(Config config, List<String> loadedProfileNames) {}
 
   record ConfigFileEntry(String profileName, File file) {}
 
-  public static Result<ReadSuccess, String> read(
+  public ConfigManager(Consumer<Config> configReloadedCb) {
+    this.configReloadedCb = configReloadedCb;
+  }
+
+  public Result<ReadSuccess, String> read(
     Path configDirPath,
     List<String> profileNames,
     Map<String, String> programArgs
@@ -71,32 +82,115 @@ public final class ConfigManager {
     }
 
     try {
-      var tsConfig = configFromProgramArgs(programArgs);
-      if (tsConfig == null) {
+      programArgsConfig = configFromProgramArgs(programArgs);
+      if (programArgsConfig == null) {
         return Result.Err("Failed to parse program arguments into a Config object");
       }
 
-      List<String> loadedProfileNames = new ArrayList<>();
+      configFiles = new ArrayList<>();
+      var loadedProfileNames = new ArrayList<String>();
       if (readableProfileConfigFiles != null) {
         for (var configFileEntry : readableProfileConfigFiles) {
+          configFiles.add(configFileEntry.file);
           loadedProfileNames.add(configFileEntry.profileName);
-          tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(configFileEntry.file));
         }
       }
-      tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(mainConfigPath.toFile()));
-      tsConfig = tsConfig.resolve();
+      configFiles.add(mainConfigPath.toFile());
 
-      var config = new Config(tsConfig);
-      validateExtra(config);
-
-      checkForUnknownKeys(tsConfig);
-
+      var config = read(configFiles, programArgsConfig);
       LOG.debug("Read config: {}", config);
+
+      configFilesWatcher = new ConfigFilesWatcher();
+      configFilesWatcher.watch(configFiles, (Void) -> {
+        try {
+          configReloadedCb.accept(reload());
+        } catch (ConfigException e) {
+          LOG.error("Error reloading config: {}", e.getMessage());
+        }
+      });
 
       return Result.Ok(new ReadSuccess(config, loadedProfileNames));
     } catch (ConfigException e) {
       return Result.Err(e.toString());
     }
+  }
+
+  private Config reload() {
+    return read(configFiles, programArgsConfig);
+  }
+
+  private class ConfigFilesWatcher implements Runnable {
+    private List<Path> configFilenames;
+    private Consumer<Void> fileModifiedCb;
+    private Thread thread;
+
+    public void watch(List<File> configFiles, Consumer<Void> fileModifiedCb) {
+      if (configFiles.isEmpty()) {
+        LOG.error("No config files to watch");
+        return;
+      }
+      configFilenames = configFiles.stream().map(File::toPath).map(Path::getFileName).toList();
+      this.fileModifiedCb = fileModifiedCb;
+      thread = new Thread(this);
+      thread.start();
+    }
+
+    @Override
+    public void run() {
+      try (var watchService = FileSystems.getDefault().newWatchService()) {
+        var watchDir = configFiles.get(0).getParentFile().toPath();
+        var watchKey = watchDir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+        while ((watchKey = watchService.take()) != null) {
+          for (var ev : watchKey.pollEvents()) {
+            LOG.debug(
+              "Received watch service event: kind='{}' context='{}'",
+              () -> ev.kind(),
+              () -> ev.context()
+            );
+            if (ev.context() != null) {
+              var filePath = (Path) ev.context();
+              if (configFilenames.contains(filePath)) {
+                fileModifiedCb.accept(null);
+              }
+            }
+          }
+          watchKey.reset();
+        }
+      } catch (IOException e) {
+        LOG.error("Exeption while creating file watcher:", e);
+      } catch (InterruptedException e) {
+        LOG.debug("Watch service was interrupted. Aborting", e);
+      }
+    }
+
+    public void destroy() {
+      if (thread != null) {
+        thread.interrupt();
+      }
+    }
+  }
+
+  public void destroy() {
+    if (configFilesWatcher != null) {
+      configFilesWatcher.destroy();
+    }
+  }
+
+  private Config read(
+    List<File> configFiles, com.typesafe.config.Config baseTsConfig
+  ) throws ConfigException {
+    var tsConfig = baseTsConfig;
+    for (var f : configFiles) {
+      tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(f));
+    }
+    tsConfig = tsConfig.resolve();
+
+    var config = new Config(tsConfig);
+    validateExtra(config);
+
+    checkForUnknownKeys(tsConfig);
+
+    return config;
   }
 
   public static boolean isOwnKey(String key) {

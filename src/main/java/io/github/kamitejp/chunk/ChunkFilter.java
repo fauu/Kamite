@@ -29,6 +29,7 @@ public final class ChunkFilter {
       })
       .filter(Objects::nonNull)
       .toList();
+    LOG.info("Initialized chunk filter");
   }
 
   public boolean shouldReject(String chunk) {
