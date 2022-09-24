@@ -388,6 +388,8 @@ public class Kamite {
         maybeInitChunkTransformer(chunkConfig.transforms());
       }
     }
+
+    server.send(new ConfigOutMessage(config));
   }
 
   private void handlePlayerStatusUpdate(PlayerStatus newStatus) {
