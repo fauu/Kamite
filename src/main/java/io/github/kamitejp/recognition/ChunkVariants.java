@@ -82,6 +82,9 @@ public final class ChunkVariants {
       var content = correct ? variant.getCorrectedContent() : variant.getContent();
       if (transformer != null) {
         content = transformer.execute(content);
+        if (content.isBlank()) {
+          continue;
+        }
       }
 
       String finalContent;

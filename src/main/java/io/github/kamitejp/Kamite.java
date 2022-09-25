@@ -414,9 +414,10 @@ public class Kamite {
   }
 
   private void handleChunkVariants(ChunkVariants variants) {
-    server.send(new ChunkVariantsOutMessage(
-      variants.getPostprocessedChunks(config.chunk().correct(), chunkTransformer)
-    ));
+    var post = variants.getPostprocessedChunks(config.chunk().correct(), chunkTransformer);
+    if (!post.isEmpty()) {
+      server.send(new ChunkVariantsOutMessage(post));
+    }
   }
 
   private void handleRecognizerEvent(RecognizerEvent event) {
@@ -507,7 +508,9 @@ public class Kamite {
     }
     var post = ChunkVariants.singleFromString(text)
       .getPostprocessedChunks(config.chunk().correct(), chunkTransformer);
-    server.send(new ChunkVariantsOutMessage(post, playbackTimeS));
+    if (!post.isEmpty()) {
+      server.send(new ChunkVariantsOutMessage(post, playbackTimeS));
+    }
   }
 
   private void showChunkTranslation(String translation, Double playbackTimeS) {
