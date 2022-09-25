@@ -25,7 +25,9 @@
   "dependencies": {
     "@floating-ui/dom": "~1.0.2",
     "solid-js": "~1.5.6",
-    "solid-styled-components": "~0.28.4"
+    "solid-styled-components": "~0.28.4",
+    "goober": "2.1.10",
+    "csstype": "3.0.10"
   },
   "private": true
 }
