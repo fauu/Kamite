@@ -51,6 +51,8 @@ export const App: VoidComponent = () => {
 
   const [config, setConfig] =
     createSignal<Config>();
+  const [profileNames, setProfileNames] =
+    createSignal<string[]>([]);
   const [recognizerStatus, setRecognizerStatus] =
     createSignal<RecognizerStatus>({ kind: "initializing" });
   const [playerStatus, setPlayerStatus] =
@@ -341,6 +343,7 @@ export const App: VoidComponent = () => {
         batch(() => {
           msg.debug !== undefined && setDebugMode(msg.debug);
           msg.sessionTimer && sessionTimer.sync(msg.sessionTimer);
+          msg.profileNames && setProfileNames(msg.profileNames);
           msg.characterCounter && setCharacterCounter(msg.characterCounter);
           msg.recognizerStatus && setRecognizerStatus(parseRecognizerStatus(msg.recognizerStatus));
           if (msg.playerStatus) {
@@ -617,8 +620,12 @@ export const App: VoidComponent = () => {
       onMouseUp={handleRootMouseUp}
       onMouseMove={handleRootMouseMove}
       onMouseLeave={handleRootMouseLeave}
-      class="issue-9"
-      classList={{ [ChromeClass]: assumeChrome }}
+      class={
+        [ // Workaround until classList works
+          [ChromeClass, assumeChrome],
+          ...profileNames().map(n => [`profile-${n}`, true])
+        ].map(([name, active]) => active ? name : undefined).filter(x => x).join(" ")
+      }
       id="root"
       ref={el => rootEl = el}
     >
