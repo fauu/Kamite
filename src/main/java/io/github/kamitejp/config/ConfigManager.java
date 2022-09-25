@@ -6,11 +6,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardWatchEventKinds;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +37,9 @@ public final class ConfigManager {
   private static final String KNOWN_KEYS_FILE_RESOURCE_PATH = "/known_config_keys.txt";
   private static final String LOOKUP_TARGET_URL_PLACEHOLDER = "{}";
 
-  private final Consumer<Config> configReloadedCb;
+  private final Consumer<Result<Config, String>> configReloadedCb;
 
+  private Config config;
   private List<File> configFiles;
   private ConfigFilesWatcher configFilesWatcher;
   private com.typesafe.config.Config programArgsConfig;
@@ -50,7 +49,7 @@ public final class ConfigManager {
 
   record ConfigFileEntry(String profileName, File file) {}
 
-  public ConfigManager(Consumer<Config> configReloadedCb) {
+  public ConfigManager(Consumer<Result<Config, String>> configReloadedCb) {
     this.configReloadedCb = configReloadedCb;
   }
 
@@ -97,15 +96,21 @@ public final class ConfigManager {
       }
       configFiles.add(mainConfigPath.toFile());
 
-      var config = read(configFiles, programArgsConfig);
+      config = read(configFiles, programArgsConfig);
       LOG.debug("Read config: {}", config);
 
-      configFilesWatcher = new ConfigFilesWatcher();
-      configFilesWatcher.watch(configFiles, (Void) -> {
+      configFilesWatcher = new ConfigFilesWatcher(configFiles, (Void) -> {
         try {
-          configReloadedCb.accept(reload());
+          var newConfig = reload();
+          // PERF: Reject doubled config file change event before parsing the config
+          if (!Objects.equals(newConfig, config)) {
+            configReloadedCb.accept(Result.Ok(newConfig));
+            config = newConfig;
+          } else {
+            LOG.debug("New config identical to previous, skipping");
+          }
         } catch (ConfigException e) {
-          LOG.error("Error reloading config: {}", e.getMessage());
+          configReloadedCb.accept(Result.Err(e.getMessage()));
         }
       });
 
@@ -117,57 +122,6 @@ public final class ConfigManager {
 
   private Config reload() {
     return read(configFiles, programArgsConfig);
-  }
-
-  private class ConfigFilesWatcher implements Runnable {
-    private List<Path> configFilenames;
-    private Consumer<Void> fileModifiedCb;
-    private Thread thread;
-
-    public void watch(List<File> configFiles, Consumer<Void> fileModifiedCb) {
-      if (configFiles.isEmpty()) {
-        LOG.error("No config files to watch");
-        return;
-      }
-      configFilenames = configFiles.stream().map(File::toPath).map(Path::getFileName).toList();
-      this.fileModifiedCb = fileModifiedCb;
-      thread = new Thread(this);
-      thread.start();
-    }
-
-    @Override
-    public void run() {
-      try (var watchService = FileSystems.getDefault().newWatchService()) {
-        var watchDir = configFiles.get(0).getParentFile().toPath();
-        var watchKey = watchDir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
-        while ((watchKey = watchService.take()) != null) {
-          for (var ev : watchKey.pollEvents()) {
-            LOG.debug(
-              "Received watch service event: kind='{}' context='{}'",
-              () -> ev.kind(),
-              () -> ev.context()
-            );
-            if (ev.context() != null) {
-              var filePath = (Path) ev.context();
-              if (configFilenames.contains(filePath)) {
-                fileModifiedCb.accept(null);
-              }
-            }
-          }
-          watchKey.reset();
-        }
-      } catch (IOException e) {
-        LOG.error("Exeption while creating file watcher:", e);
-      } catch (InterruptedException e) {
-        LOG.debug("Watch service was interrupted. Aborting", e);
-      }
-    }
-
-    public void destroy() {
-      if (thread != null) {
-        thread.interrupt();
-      }
-    }
   }
 
   public void destroy() {

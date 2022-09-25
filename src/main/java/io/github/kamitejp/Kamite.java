@@ -80,6 +80,7 @@ import io.github.kamitejp.textprocessing.TextProcessor;
 import io.github.kamitejp.textprocessing.kuromoji.KuromojiAdapter;
 import io.github.kamitejp.universalfeature.UnavailableAutoFurigana;
 import io.github.kamitejp.universalfeature.UnavailableUniversalFeature;
+import io.github.kamitejp.util.Result;
 
 public class Kamite {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
@@ -374,8 +375,13 @@ public class Kamite {
     }
   }
 
-  private void handleConfigReload(Config config) {
-    LOG.info("Reloaded config. Applying reloadable changes");
+  private void handleConfigReload(Result<Config, String> configReloadRes) {
+    if (configReloadRes.isErr()) {
+      LOG.error("Could not read new conifg: {}", configReloadRes.err());
+      notifyUserOfError("Could not read new config");
+      return;
+    }
+    var config = configReloadRes.get();
 
     var chunkConfig = config.chunk();
     var oldChunkConfig = this.config.chunk();
@@ -387,6 +393,10 @@ public class Kamite {
         maybeInitChunkTransformer(chunkConfig.transforms());
       }
     }
+
+    var msg = "Reloaded config and possibly applied changes";
+    LOG.info(msg);
+    server.notifyUser(UserNotificationKind.INFO, msg);
 
     server.send(new ConfigOutMessage(config));
   }
