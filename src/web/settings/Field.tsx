@@ -40,16 +40,16 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
       <Info>
         <InfoMain>
           {props.setting.label}
-          <Show when={props.setting.help}>
+          <Show when={props.setting.help} keyed>{ help =>
             <span
               class={HelpIndicatorClass}
               use:tooltipAnchor={{
                 tooltip,
-                body: props.setting.help,
+                body: help,
                 delayMS: 300,
               }}
             />
-          </Show>
+          }</Show>
         </InfoMain>
         <ConfigKey value={humanizeConfigKey(props.setting)} />
       </Info>

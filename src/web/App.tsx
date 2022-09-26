@@ -662,13 +662,13 @@ export const App: VoidComponent = () => {
           labelAndTranslationRef={el => chunkLabelAndTranslationEl = el}
         />
         <StatusPanel fade={statusPanelFader.shouldFade()} ref={el => statusPanelEl = el}>
-          <Show when={characterCounter()}>
+          <Show when={characterCounter()} keyed>{ counter =>
             <CharacterCounter
-              state={characterCounter()!}
+              state={counter}
               onClick={handleCharacterCounterClick}
               onHoldClick={handleCharacterCounterHoldClick}
             />
-          </Show>
+          }</Show>
           <SessionTimer
             state={sessionTimer}
             onClick={handleSessionTimerClick}

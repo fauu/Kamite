@@ -64,18 +64,18 @@ export const ChunkHistory: VoidComponent<ChunkHistoryProps> = (props) => {
               <StringWithNewlines value={c.text.base} newlineAs={<Newline/>}/>
             </span>
           </Show>
-          <Show when={c.translation}>
+          <Show when={c.translation} keyed>{ translation =>
             <span
               class={TranslationLabelClass}
               use:tooltipAnchor={{
                 tooltip,
-                body: c.translation?.text,
+                body: translation.text,
                 delayMS: 0,
               }}
             >
               Translation
             </span>
-          </Show>
+          }</Show>
         </Entry>
       }</For>
       <ChunkHistoryActionPalette
