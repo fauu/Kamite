@@ -20,7 +20,6 @@
   `["^Textractor"]`.**
 * Changing the text of chunks according to user-provided replacement rules
   before displaying them (`chunk.transforms`).
-* Warnings when unknown keys are present in user config.
 * Partial config reload: Config is reloaded on file modification and *selected*
   changes are applied immediately, while Kamite is running.
 * Custom CSS rules can now be applied per profile, using CSS classes named
@@ -32,6 +31,7 @@
 * Shortened the click duration needed to reset the character counter and the
   session timer.
 * Client UI icons can now be recolored with custom CSS.
+* Warnings are now displayed when unknown keys are present in user config.
 
 ### Fixed
 
