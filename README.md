@@ -1617,85 +1617,9 @@ Invoke-RestMethod -Method 'Post' `
 
 ### Command listing
 
-#### `ocr_` commands
-
-Text recognition commands.
-
-**`manual-block`**\
-User is prompted to select a screen area around a source text
-block, Kamite OCRs the area as is. For Tesseract, the *vertical* text model is
-used by default.
-
-**`manual-block-vertical`**\
-(Tesseract only) Like `manual-block`, but explicitly uses the vertical text
-model.
-
-**`manual-block-horizontal`**\
-(Tesseract only) Like `manual-block`, but explicitly uses the horizontal text
-model.
-
-**`auto-block`** `(mode: ["select" | "instant"] = "instant")`\
-Kamite assumes the mouse cursor is inside a source text block, attempts to infer
-the extent of the block, and OCRs the resulting area. The `mode` parameter
-specifies whether to prompt the user to click a point or to instantly take the
-current cursor position.
-
-**`region`** `(x, y, width, height: number; autoNarrow: bool)`\
-Kamite OCRs the provided screen area either as is (if `autoNarrow` is `false`), or
-after applying an algorithm designed to narrow the area to just text (if `autoNarrow`
-is `true`). **Note:** This is an experimental future, it might function poorly
-in most use-cases.
-
-**`image`** `(bytesB64: string; width, height: number)`\
-Kamite OCRs as is the image supplied as base64 string encoded from image bytes
-(R, G, B, R, G, B… from the top-left of the image). Consult the
-[Gomics-v Kamite integration code][gomicsv-kamite-src] for usage example.
-
-[gomicsv-kamite-src]: https://github.com/fauu/gomicsv/blob/master/kamite.go
-
-#### `player_` commands
-
-Commands for controlling the connected media player.
-
-> These commands will very likely be reworked in the medium term.
-
-**`playpause`**\
-Toggles the playback state.
-
-**`seek-back`**\
-Seeks back by 1 second.
-
-**`seek-forward`**\
-Seeks forward by 1 second.
-
-**`seek-start-sub`**\
-Seeks to the start of the current subtitle.
-
-#### `character-counter_` commands
-
-**`toogle-freeze`**
-
-**`reset`**
-
-#### `session-timer_` commands
-
-**`toogle-pause`**
-
-**`reset`**
-
-#### `chunk_` commands
-
-**`show`** `(chunk: string)`
-
-**`show-translation`** `(translation: string)`
-
-#### `misc_` commands
-
-**`lookup`** `(targetSymbol: string, customText: optional[string])`\
-Initiates a lookup in the client. The `targetSymbol` must match one of the
-lookup target symbols defined in the config. If `customText` is not provided,
-that lookup text is used which would be used if the user clicked a lookup button
-instead.
+See the
+[Command API listing](https://github.com/fauu/Kamite/wiki/Command-API-listing)
+page in the Wiki.
 
 ## Privacy
 
