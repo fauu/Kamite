@@ -334,20 +334,28 @@ Kamite integrates with four alternative OCR (Optical Character Recognition)
 providers to enable the extraction of text from manga pages displayed on screen.
 The available OCR engines are:
 
-* [“Manga OCR”][manga-ocr] Online ([a Hugging Face Space by Gryan
-  Galario][manga-ocr-hf-gg])
-* [“Manga OCR”][manga-ocr] (Local)
-* [OCR.space] (Online)
-* [Tesseract OCR][tesseract] (Local)
+* “Manga OCR” Online (a Hugging Face Space by Gryan Galario)
+
+    <https://github.com/kha-white/manga-ocr>\
+    <https://huggingface.co/spaces/gryan-galario/manga-ocr-demo>
+
+* “Manga OCR” (Local)
+
+    <https://github.com/kha-white/manga-ocr>
+
+* OCR.space (Online)
+
+    <https://ocr.space/>
+
+* Tesseract OCR (Local)
+
+    <https://github.com/tesseract-ocr/tesseract>
 
 **“Manga OCR” in either variant is the recommended choice** as it gives superior
 results for manga. The online version is extremely simple to set up, but
 requires sending screenshots of portions of your screen to a third party. The
 local version, on the other hand, requires a more involved setup and extra
 system resources.
-
-[manga-ocr]: https://github.com/kha-white/manga-ocr
-[tesseract]: https://github.com/tesseract-ocr/tesseract
 
 **By default, OCR is disabled.** The necessary setup steps are:
 
@@ -358,7 +366,7 @@ system resources.
 1. Set up the selected engine:
 
     * [Setting up “Manga OCR” Online](#setting-up-manga-ocr-online)
-    * [Setting up “Manga OCR”](#setting-up-manga-ocr)
+    * [Setting up “Manga OCR”](#setting-up-manga-ocr-local)
     * [Setting up OCR.space](#setting-up-ocrspace)
     * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
 
@@ -1678,5 +1686,6 @@ the original license notices.
 [Yomichan]: https://foosoft.net/projects/yomichan/
 [Gomics-v]: https://github.com/fauu/gomicsv
 [Sway]: https://swaywm.org/
+[manga-ocr]: https://github.com/kha-white/manga-ocr
 [manga-ocr-hf-gg]: https://huggingface.co/spaces/gryan-galario/manga-ocr-demo
 [OCR.space]: https://ocr.space/
