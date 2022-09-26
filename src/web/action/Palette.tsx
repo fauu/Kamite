@@ -1,4 +1,6 @@
-import { createSignal, For, onCleanup, onMount, Show, type VoidComponent } from "solid-js";
+import {
+  createSignal, For, onCleanup, onMount, type Ref, Show, type VoidComponent
+} from "solid-js";
 import { css, styled } from "solid-styled-components";
 
 import {
@@ -25,6 +27,7 @@ interface ActionPaletteProps {
   actions: Action[],
   targetText?: string,
   onAction: (action: Action, invokation: ActionInvocation) => void,
+  ref: Ref<HTMLDivElement>,
 }
 
 export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
@@ -78,7 +81,7 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
     onCleanup(() => resizeObserver.disconnect());
   });
 
-  return <Root id="action-palette">
+  return <Root id="action-palette" ref={props.ref}>
     <LeftFade
       style={{
         "display": buttonsScrollPosition() !== "start"

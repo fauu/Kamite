@@ -38,7 +38,7 @@ import {
 import {
   CharacterCounter, createSessionTimerState, createStatusPanelFader, SessionTimer, StatusPanel
 } from "~/status-panel";
-import { ChromeClass, PaletteButtonClass } from "~/style";
+import { ChromeClass } from "~/style";
 
 import { integrateClipboardInserter } from "./clipboardInserter";
 import { SHOW_FURIGANA_DISABLED_MSG } from "./features";
@@ -69,6 +69,7 @@ export const App: VoidComponent = () => {
   let rootEl: HTMLDivElement;
   let mainSectionEl: HTMLDivElement | undefined;
   let commandPaletteEl: HTMLDivElement | undefined;
+  let actionPaletteEl: HTMLDivElement | undefined;
   let chunkLabelEl: HTMLSpanElement;
   let chunkInputEl: HTMLTextAreaElement | undefined;
   let chunkLabelAndTranslationEl: HTMLDivElement;
@@ -207,7 +208,9 @@ export const App: VoidComponent = () => {
           // Clear chunk selection
           if (chunks.textSelection.get()) {
             const insideSelectionClearningEl =
-              mainSectionEl!.contains(target) && !target.classList.contains(PaletteButtonClass);
+              mainSectionEl!.contains(target)
+              && !commandPaletteEl?.contains(target)
+              && !actionPaletteEl?.contains(target);
             if (insideSelectionClearningEl) {
               chunks.textSelection.set(undefined);
             }
@@ -651,6 +654,7 @@ export const App: VoidComponent = () => {
             actions={availableActions()}
             targetText={untrack(chunks.currentEffectiveText)}
             onAction={handleActionRequested}
+            ref={el => actionPaletteEl = el}
           />
           <YomichanSentenceDelimiter/>
         </Toolbar>
