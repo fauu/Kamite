@@ -1353,7 +1353,7 @@ commands {
   ]
 }
 
-# For development only. See the "Development" section of the Readme
+# For development only. See the "Development" page in the Wiki
 dev {
   serveStaticInDevMode = false
 }
@@ -1712,96 +1712,10 @@ Kamite never sends your data through the network, with the following exceptions:
 
 ## Development
 
-### Technology
+Kamite is built mainly with Java and [SolidJS][Solid] (TypeScript).
 
-The backend (including the control window GUI) is built with Java 18 (preview
-featues enabled); its web server specifically — with [Javalin].
-
-The client is built with TypeScript + [SolidJS][Solid].
-
-### Running for development
-
-To compile and run the *backend*, run:
-
-```sh
-DEV=1 mvn compile exec:java -Dexec.args='--debug --controlWindow=false'
-```
-
-This requires Java 18.
-
-To compile and run the *client*, run:
-
-```sh
-yarn install
-yarn dev
-```
-
-Hot-reload version of the client is then served on port `3000`, while the
-backend’s HTTP API endpoint runs on the usual configured program port
-(`4110` by default).
-
-### Development-specific config
-
-```sh
-dev {
-  # Normally in dev mode the client is served separately using a dev server.
-  # With the following option enabled, the client also will be served by the
-  # backend from the client build done before compiling the program
-  serveStaticInDevMode = false
-}
-```
-
-### Config handling
-
-The config file’s shape is defined in [`config/config.spec.hocon`][config-spec]
-([specification format reference][config-spec-ref]). This file is used as the
-basis for generating the
-[`src/main/java/io/github/kamitejp/config/Config.java`][config-java] file,
-which therefore must be done every time the specification file changes.
-To generate the `Config.java`, run:
-
-```sh
-make gen-config
-```
-
-### Code linting
-
-`make lint-java`\
-Analyzes the Java code with [PMD].
-
-Beyond that, IntelliJ IDEA inspections are included, but they are work in
-progress: many of the ones that we will want disabled are not yet disabled, and
-for those that we will want to keep, a large part of the codebase has not been
-fixed yet.
-
-`make lint-ts`\
-Typechecks the TypeScript code and lints it with eslint.
-
-[config-spec]: config/config.spec.hocon
-[config-spec-ref]: https://github.com/carueda/tscfg/blob/main/README.md#configuration-spec
-[config-java]: src/main/java/io/github/kamitejp/config/Config.java
-[PMD]: https://pmd.github.io/latest/
-
-### Docs
-
-[`README.md`](README.md) and [`CHANGELOG.md`](CHANGELOG.md) are linted with
-[markdownlint] (`make lint-docs`).
-
-The Readme’s table of contents is generated with [mdtoc.rb].
-
-[markdownlint]: https://github.com/DavidAnson/markdownlint/
-[mdtoc.rb]: https://github.com/alexharv074/markdown_toc
-
-### Textractor extension
-
-The C++ source for the *Kamite Send* Textractor extension is placed under the
-[`extra/textractor/src`][textractor-kamite-send-src] directory. The build
-command is specified in the `textractor` target in the [`Makefile`][makefile].
-[Zig] is used for compilation and linking.
-
-[textractor-kamite-send-src]: extra/textractor/src
-[Zig]: https://ziglang.org/
-[makefile]: Makefile
+For more information see the
+[Development](https://github.com/fauu/Kamite/wiki/Development) page in the Wiki.
 
 ## License
 
