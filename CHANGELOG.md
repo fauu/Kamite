@@ -1,6 +1,37 @@
+<!-- vim: set textwidth=80 colorcolumn=80: -->
+<!-- markdownlint-configure-file
+{
+  "no-duplicate-heading": { "siblings_only": true }
+}
+-->
 # Changelog — Kamite
 
 ## [Unreleased]
+
+### Added
+
+* Option to log chunks that appear in the client in each session into a text
+  file (`chunk.log.dir`).
+* Rejecting chunks based on user-provided regular expressions
+  (`chunk.filter.rejectPatterns`). **BREAKING CHANGE: A pattern used for
+  filtering Textractor messages has been moved from inside the program to the
+  default config. This means that if you already have a config , to have the
+  filter back on, you need to set `chunk.filter.rejectPatterns` in config to
+  `["^Textractor"]`.**
+* Changing the text of chunks according to user-provided replacement rules
+  before displaying them (`chunk.transforms`).
+* Warnings when unknown keys are present in user config.
+* Partial config reload: Config is reloaded on file modification and *selected*
+  changes are applied immediately, while Kamite is running.
+* Custom CSS rules can now be applied per profile, using CSS classes named
+  `profile-PROFILENAME`, which are now assigned to the client application’s
+  root element.
+
+### Changed
+
+* Shortened the click duration needed to reset the character counter and the
+  session timer.
+* Client UI icons can now be recolored with custom CSS.
 
 ### Fixed
 
