@@ -1,6 +1,6 @@
 chunk {
   filter.rejectPatterns = [
-    ${CHUNK_FILTERS.textractorMsg}
+    ${CHUNK_REJECT_PATTERNS.textractorMsg}
   ]
 }
 
@@ -27,7 +27,7 @@ ocr {
   engine = none
 }
 
-CHUNK_FILTERS {
+CHUNK_REJECT_PATTERNS {
   textractorMsg = "^Textractor"
 }
 
