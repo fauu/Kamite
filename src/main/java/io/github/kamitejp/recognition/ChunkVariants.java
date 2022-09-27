@@ -74,17 +74,22 @@ public final class ChunkVariants {
   }
 
   public List<PostprocessedChunk> getPostprocessedChunks(
-    boolean correct, ChunkTransformer transformer
+    boolean shouldCorrect, ChunkTransformer transformer
   ) {
     var result = new ArrayList<PostprocessedChunk>();
     for (int i = 0; i < this.variants.size(); i++) {
       var variant = this.variants.get(i);
-      var content = correct ? variant.getCorrectedContent() : variant.getContent();
+      var processingContent = shouldCorrect ? variant.getCorrectedContent() : variant.getContent();
       if (transformer != null) {
-        content = transformer.execute(content);
-        if (content.isBlank()) {
+        processingContent = transformer.execute(processingContent);
+        if (processingContent.isBlank()) {
           continue;
         }
+      }
+
+      String originalContent = variant.getContent();
+      if (processingContent.equals(originalContent)) {
+        originalContent = null;
       }
 
       String finalContent;
@@ -92,15 +97,11 @@ public final class ChunkVariants {
         // The first variant gets automatically pulled as the main chunk and therefore doesn't
         // appear in the list of variants, so we don't need to mark it. If we did, it would also
         // mess with character counting
-        finalContent = content;
+        finalContent = processingContent;
       } else {
-        finalContent = variantContentMarkGlobalUniqueCharacters(content, i);
+        finalContent = variantContentMarkGlobalUniqueCharacters(processingContent, i);
       }
 
-      String originalContent = variant.getContent();
-      if (content.equals(originalContent)) {
-        originalContent = null;
-      }
       result.add(new PostprocessedChunk(
         finalContent,
         originalContent,
