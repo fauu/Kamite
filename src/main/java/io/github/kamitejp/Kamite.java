@@ -228,8 +228,8 @@ public class Kamite {
 
     var chunkConfig = config.chunk();
     if (chunkConfig != null) {
-      maybeInitChunkFilter(chunkConfig.filter());
-      maybeInitChunkTransformer(chunkConfig.transforms());
+      initOrDiscardChunkFilter(chunkConfig.filter());
+      initOrDiscardChunkTransformer(chunkConfig.transforms());
     }
 
     textProcessor = new TextProcessor(kuromojiAdapter);
@@ -359,20 +359,20 @@ public class Kamite {
     LOG.error("{}. The program will not continue.{}", message, detailsPart);
   }
 
-  private void maybeInitChunkFilter(Config.Chunk.Filter filterConfig) {
-    if (
+  private void initOrDiscardChunkFilter(Config.Chunk.Filter filterConfig) {
+    chunkFilter = (
       filterConfig != null
       && filterConfig.rejectPatterns() != null
       && !filterConfig.rejectPatterns().isEmpty()
-    ) {
-      chunkFilter = new ChunkFilter(filterConfig.rejectPatterns());
-    }
+    )
+      ? new ChunkFilter(filterConfig.rejectPatterns())
+      : null;
   }
 
-  private void maybeInitChunkTransformer(List<Config.Chunk.Transform> transformsConfig) {
-    if (transformsConfig != null && !transformsConfig.isEmpty()) {
-      chunkTransformer = new ChunkTransformer(transformsConfig);
-    }
+  private void initOrDiscardChunkTransformer(List<Config.Chunk.Transform> transformsConfig) {
+    chunkTransformer = transformsConfig != null && !transformsConfig.isEmpty()
+      ? new ChunkTransformer(transformsConfig)
+      : null;
   }
 
   private void handleConfigReload(Result<Config, String> configReloadRes) {
@@ -387,10 +387,10 @@ public class Kamite {
     var oldChunkConfig = this.config.chunk();
     if (chunkConfig != null) {
       if (!Objects.equals(chunkConfig.filter(), oldChunkConfig.filter())) {
-        maybeInitChunkFilter(chunkConfig.filter());
+        initOrDiscardChunkFilter(chunkConfig.filter());
       }
       if (!Objects.equals(chunkConfig.transforms(), oldChunkConfig.transforms())) {
-        maybeInitChunkTransformer(chunkConfig.transforms());
+        initOrDiscardChunkTransformer(chunkConfig.transforms());
       }
     }
 
@@ -398,6 +398,7 @@ public class Kamite {
     LOG.info(msg);
     server.notifyUser(UserNotificationKind.INFO, msg);
 
+    this.config = config;
     server.send(new ConfigOutMessage(config));
   }
 
