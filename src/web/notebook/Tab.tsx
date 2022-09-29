@@ -2,8 +2,8 @@ import { Show, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
 import { DefaultIcon } from "~/common";
-import { ChromeClass } from "~/style";
 import type { useGlobalTooltip } from "~/GlobalTooltip";
+import { ChromeClass } from "~/style";
 
 import { tooltipAnchor } from "~/directives";
 const [_] = [tooltipAnchor];
@@ -21,7 +21,7 @@ interface NotebookTabProps {
   onClick: () => void,
 }
 
-export const NotebookTab: VoidComponent<NotebookTabProps> = (props) => {
+export const NotebookTab: VoidComponent<NotebookTabProps> = props => {
   const hasIcon = !props.tab.lookup || LOOKUP_TABS_WITH_ICONS_IDS.includes(props.tab.id);
   return <div
       role="button"
@@ -83,9 +83,12 @@ const RemoteLookupIndicatorRoot = styled(DefaultIcon)`
 `;
 
 const NotebookTabActiveClass = css`
-  background: linear-gradient(45deg, var(--color-bg2) 3%,
+  background: linear-gradient(
+    45deg,
+    var(--color-bg2) 3%,
     var(--color-bg3-hl) 53%,
-    var(--color-bg2) 100%);
+    var(--color-bg2) 100%
+  );
 
   &:after {
     content: "";
