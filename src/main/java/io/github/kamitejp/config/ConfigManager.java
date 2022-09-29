@@ -99,7 +99,7 @@ public final class ConfigManager {
       config = read(configFiles, programArgsConfig);
       LOG.debug("Read config: {}", config);
 
-      configFilesWatcher = new ConfigFilesWatcher(configFiles, (Void) -> {
+      configFilesWatcher = new ConfigFilesWatcher(configFiles, (ignored) -> {
         try {
           var newConfig = reload();
           // PERF: Reject doubled config file change event before parsing the config
@@ -222,9 +222,9 @@ public final class ConfigManager {
         StandardCharsets.UTF_8
       );
     } catch (URISyntaxException e) {
-      throw new RuntimeException("Invalid known conifg keys file path");
+      throw new RuntimeException("Invalid known conifg keys file path", e);
     } catch (IOException e) {
-      throw new RuntimeException("Could not read known config keys file");
+      throw new RuntimeException("Could not read known config keys file", e);
     }
     if (knownKeys == null) {
       return;
@@ -246,8 +246,8 @@ public final class ConfigManager {
         unknownKeys.add(key);
       }
     }
-    if (unknownKeys != null) {
-      LOG.warn("Config contains unknown keys: %s".formatted(String.join(", ", unknownKeys)));
+    if (unknownKeys != null && LOG.isWarnEnabled()) {
+      LOG.warn("Config contains unknown keys: {} ", String.join(", ", unknownKeys));
     }
   }
 

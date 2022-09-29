@@ -360,17 +360,17 @@ public class Kamite {
   }
 
   private void initOrDiscardChunkFilter(Config.Chunk.Filter filterConfig) {
-    chunkFilter = (
-      filterConfig != null
+    var shouldInit = filterConfig != null
       && filterConfig.rejectPatterns() != null
-      && !filterConfig.rejectPatterns().isEmpty()
-    )
+      && !filterConfig.rejectPatterns().isEmpty();
+    chunkFilter = shouldInit
       ? new ChunkFilter(filterConfig.rejectPatterns())
       : null;
   }
 
   private void initOrDiscardChunkTransformer(List<Config.Chunk.Transform> transformsConfig) {
-    chunkTransformer = transformsConfig != null && !transformsConfig.isEmpty()
+    var shouldInit = transformsConfig != null && !transformsConfig.isEmpty();
+    chunkTransformer = shouldInit
       ? new ChunkTransformer(transformsConfig)
       : null;
   }

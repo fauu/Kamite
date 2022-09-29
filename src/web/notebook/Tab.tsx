@@ -71,7 +71,9 @@ const Icon = styled(DefaultIcon)`
   width: 100%;
 `;
 
-const RemoteLookupIndicator: VoidComponent = () => <RemoteLookupIndicatorRoot iconName="remote" sizePx={8} />
+const RemoteLookupIndicator: VoidComponent = () =>
+  <RemoteLookupIndicatorRoot iconName="remote" sizePx={8} />;
+
 const RemoteLookupIndicatorRoot = styled(DefaultIcon)`
   background: var(--color-med2);
   height: ${p => p.sizePx}px;

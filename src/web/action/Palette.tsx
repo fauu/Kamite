@@ -168,7 +168,7 @@ const Fade = styled.div`
   background: linear-gradient(270deg, var(--color-bg) 50%, rgba(0, 0, 0, 0) 100%);
 `;
 
-const FadeIcon: VoidComponent = () => <FadeIconRoot iconName="scroll-arrow" sizePx={32} />
+const FadeIcon: VoidComponent = () => <FadeIconRoot iconName="scroll-arrow" sizePx={32} />;
 const FadeIconRoot = styled(DefaultIcon)`
   background: var(--color-med);
   position: absolute;
