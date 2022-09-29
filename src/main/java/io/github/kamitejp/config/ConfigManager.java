@@ -47,7 +47,7 @@ public final class ConfigManager {
   @SuppressWarnings("WeakerAccess") // Mistaken
   public record ReadSuccess(Config config, List<String> loadedProfileNames) {}
 
-  record ConfigFileEntry(String profileName, File file) {}
+  private record ConfigFileEntry(String profileName, File file) {}
 
   public ConfigManager(Consumer<Result<Config, String>> configReloadedCb) {
     this.configReloadedCb = configReloadedCb;
@@ -67,7 +67,7 @@ public final class ConfigManager {
 
     List<ConfigFileEntry> readableProfileConfigFiles = null;
     if (!profileNames.isEmpty()) {
-      readableProfileConfigFiles = new ArrayList<>();
+      readableProfileConfigFiles = new ArrayList<>(4);
       for (var name : profileNames) {
         var relativePath = PROFILE_CONFIG_FILE_PATH_RELATIVE_TPL.formatted(name);
         var path = configDirPath.resolve(relativePath);
@@ -86,12 +86,12 @@ public final class ConfigManager {
         return Result.Err("Failed to parse program arguments into a Config object");
       }
 
-      configFiles = new ArrayList<>();
-      var loadedProfileNames = new ArrayList<String>();
+      configFiles = new ArrayList<>(4);
+      var loadedProfileNames = new ArrayList<String>(4);
       if (readableProfileConfigFiles != null) {
         for (var configFileEntry : readableProfileConfigFiles) {
-          configFiles.add(configFileEntry.file);
-          loadedProfileNames.add(configFileEntry.profileName);
+          configFiles.add(configFileEntry.file());
+          loadedProfileNames.add(configFileEntry.profileName());
         }
       }
       configFiles.add(mainConfigPath.toFile());
@@ -130,9 +130,7 @@ public final class ConfigManager {
     }
   }
 
-  private Config read(
-    List<File> configFiles, com.typesafe.config.Config baseTsConfig
-  ) throws ConfigException {
+  private static Config read(List<File> configFiles, com.typesafe.config.Config baseTsConfig) {
     var tsConfig = baseTsConfig;
     for (var f : configFiles) {
       tsConfig = tsConfig.withFallback(ConfigFactory.parseFile(f));
@@ -142,12 +140,12 @@ public final class ConfigManager {
     var config = new Config(tsConfig);
     validateExtra(config);
 
-    checkForUnknownKeys(tsConfig);
+    reportUnknownKeys(tsConfig);
 
     return config;
   }
 
-  public static boolean isOwnKey(String key) {
+  private static boolean isOwnKey(String key) {
     return Character.isLowerCase(key.charAt(0));
   }
 
@@ -214,20 +212,20 @@ public final class ConfigManager {
     return null;
   }
 
-  private static void checkForUnknownKeys(com.typesafe.config.Config tsConfig) {
+  private static void reportUnknownKeys(com.typesafe.config.Config tsConfig) {
     List<String> knownKeys = null;
     try {
       knownKeys = Files.readAllLines(
-        Paths.get(ConfigManager.class.getResource(KNOWN_KEYS_FILE_RESOURCE_PATH).toURI()),
+        Paths.get(
+          Objects.requireNonNull(ConfigManager.class.getResource(KNOWN_KEYS_FILE_RESOURCE_PATH))
+            .toURI()
+        ),
         StandardCharsets.UTF_8
       );
     } catch (URISyntaxException e) {
       throw new RuntimeException("Invalid known conifg keys file path", e);
     } catch (IOException e) {
       throw new RuntimeException("Could not read known config keys file", e);
-    }
-    if (knownKeys == null) {
-      return;
     }
 
     List<String> unknownKeys = null;
@@ -241,7 +239,7 @@ public final class ConfigManager {
       }
       if (!knownKeys.contains(key)) {
         if (unknownKeys == null) {
-          unknownKeys = new ArrayList<>();
+          unknownKeys = new ArrayList<>(4);
         }
         unknownKeys.add(key);
       }
@@ -251,8 +249,7 @@ public final class ConfigManager {
     }
   }
 
-  @SuppressWarnings("ThrowsRuntimeException")
-  private static void validateExtra(Config config) throws ConfigException {
+  private static void validateExtra(Config config) {
     if (config.chunk().log() != null) {
       validateStringNonEmptyOrNull(config.chunk().log().dir(), "chunk.log.dir");
     }
@@ -284,10 +281,9 @@ public final class ConfigManager {
     validateStringNonEmptyOrNull(config.secrets().ocrspace(), "secrets.ocrspace");
   }
 
-  @SuppressWarnings("ThrowsRuntimeException")
   private static <T> void validateExtraList(
     List<T> list, String keyPrefixTpl, BiConsumer<T, UnaryOperator<String>> validateElementFn
-  ) throws ConfigException {
+  ) {
     if (list == null) {
       return;
     }
@@ -299,56 +295,43 @@ public final class ConfigManager {
     }
   }
 
-  @SuppressWarnings("ThrowsRuntimeException")
-  private static void validateSymbolLength(
-    CharSequence symbol, String key
-  ) throws ConfigException.BadValue {
+  private static void validateSymbolLength(CharSequence symbol, String key) {
     var len = symbol.length();
     if (len < 1 || len > 3) {
       throw new ConfigException.BadValue(key, "should be between 1 and 3 characters");
     }
   }
 
-  @SuppressWarnings("ThrowsRuntimeException")
-  private static void validateStringNonEmpty(
-    CharSequence s, String key
-  ) throws ConfigException.BadValue {
+  private static void validateStringNonEmpty(CharSequence s, String key) {
     if (s.isEmpty()) {
       throw new ConfigException.BadValue(key, "should not be empty");
     }
   }
 
-  @SuppressWarnings("ThrowsRuntimeException")
-  private static void validateStringNonEmptyOrNull(
-    CharSequence s, String key
-  ) throws ConfigException.BadValue {
+  private static void validateStringNonEmptyOrNull(CharSequence s, String key) {
     if (s != null) {
       validateStringNonEmpty(s, key);
     }
   }
 
-  @SuppressWarnings({"SameParameterValue", "ThrowsRuntimeException"})
-  private static void validateStringContains(
-    String s, String substring, String key
-  ) throws ConfigException.BadValue {
+  @SuppressWarnings("SameParameterValue")
+  private static void validateStringContains(String s, String substring, String key) {
     if (!s.contains(substring)) {
       throw new ConfigException.BadValue(key, "should contain '%s'".formatted(substring));
     }
   }
 
-  @SuppressWarnings("ThrowsRuntimeException")
-  private static void validateIntOneOf(
-    // NOTE: Uses List instead of Set because that way the error message displays the numbers in
-    //       order without extra intervention
-    int intval, List<Integer> allowed, String key
-  ) throws ConfigException.BadValue {
+  @SuppressWarnings("SameParameterValue")
+  // NOTE: Uses List instead of Set because that way the error message displays the numbers in
+  //       order without extra intervention
+  private static void validateIntOneOf(int intval, List<Integer> allowed, String key) {
     if (!allowed.contains(intval)) {
       throw new ConfigException.BadValue(key, "should be one of: %s".formatted(allowed.toString()));
     }
   }
 
-  @SuppressWarnings({"rawtypes", "ThrowsRuntimeException"})
-  private static void validateListNonEmpty(List list, String key) throws ConfigException.BadValue {
+  @SuppressWarnings("rawtypes")
+  private static void validateListNonEmpty(List list, String key) {
     if (list.isEmpty()) {
       throw new ConfigException.BadValue(key, "should not be empty");
     }

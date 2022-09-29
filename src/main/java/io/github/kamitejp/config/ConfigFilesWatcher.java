@@ -15,14 +15,15 @@ import org.apache.logging.log4j.Logger;
 final class ConfigFilesWatcher implements Runnable {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private List<File> configFiles;
-  private Consumer<Void> fileModifiedCb;
-  private Thread thread;
+  private final List<File> configFiles;
+  private final Consumer<Void> fileModifiedCb;
+  private final Thread thread;
 
-  public ConfigFilesWatcher(List<File> configFiles, Consumer<Void> fileModifiedCb) {
+  ConfigFilesWatcher(List<File> configFiles, Consumer<Void> fileModifiedCb) {
     if (configFiles.isEmpty()) {
       throw new IllegalArgumentException("List of config files must not be empty");
     }
+    //noinspection AssignmentOrReturnOfFieldWithMutableType
     this.configFiles = configFiles;
     this.fileModifiedCb = fileModifiedCb;
     thread = new Thread(this);
@@ -37,11 +38,7 @@ final class ConfigFilesWatcher implements Runnable {
       var watchKey = watchDir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
       while ((watchKey = watchService.take()) != null) {
         for (var ev : watchKey.pollEvents()) {
-          LOG.debug(
-            "Received watch service event: kind='{}' context='{}'",
-            () -> ev.kind(),
-            () -> ev.context()
-          );
+          LOG.debug("Received watch service event: kind='{}' context='{}'", ev::kind, ev::context);
           if (ev.context() != null) {
             var filePath = (Path) ev.context();
             if (configFilenames.contains(filePath)) {
@@ -52,13 +49,13 @@ final class ConfigFilesWatcher implements Runnable {
         watchKey.reset();
       }
     } catch (IOException e) {
-      LOG.error("Exeption while creating file watcher:", e);
+      LOG.error("Exception while creating file watcher:", e);
     } catch (InterruptedException ignored) {
       LOG.debug("Watch service was interrupted");
     }
   }
 
-  public void destroy() {
+  void destroy() {
     if (thread != null) {
       thread.interrupt();
     }

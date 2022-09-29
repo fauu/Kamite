@@ -51,21 +51,25 @@ import io.github.kamitejp.textprocessing.kuromoji.MinimalKuromojiToken;
 public class TextProcessor {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private KuromojiAdapter kuromoji;
+  private static final Pattern NEWLINES_RE = Pattern.compile("[\\r\\n]+");
+  private static final Pattern GARBAGE_RE = Pattern.compile("[\\p{Cntrl}&&[^\n]]");
+
+  private final KuromojiAdapter kuromoji;
 
   public TextProcessor(KuromojiAdapter kuromoji) {
     this.kuromoji = kuromoji;
   }
 
   public static String correctForm(String s) {
-    return kanaHalfToFull(s)
+    var corrected = kanaHalfToFull(s)
       .trim()
       .replace("．．．", "…")
       .replace("．．", "‥")
       .replace("...", "…")
-      .replace("..", "‥")
-      .replaceAll("[\\r\\n]+", "\n")
-      .replaceAll("[\\p{Cntrl}&&[^\n]]", "");
+      .replace("..", "‥");
+    corrected = NEWLINES_RE.matcher(corrected).replaceAll("\n");
+    corrected = GARBAGE_RE.matcher(corrected).replaceAll("");
+    return corrected;
   }
 
   public Optional<ChunkWithFurigana> addFurigana(String s) {
@@ -82,16 +86,16 @@ public class TextProcessor {
       return Optional.empty();
     }
 
-    var notations = new ArrayList<Notation>();
+    var notations = new ArrayList<Notation>(50);
     for (var t : patchTokens(kuromojiTokens)) {
       switch (classify(t.surfaceForm())) { // NOPMD
         case KANJI_WITHOUT_KANA ->
           notations.add(new Notation(t.surfaceForm(), NotationBaseType.KANJI, t.reading()));
 
         case KANJI_WITH_KANA -> {
-          var patternBuilder = new StringBuilder();
+          var patternBuilder = new StringBuilder(24);
           var isLastTokenKanji = false;
-          var subs = new ArrayList<List<Integer>>();
+          var subs = new ArrayList<List<Integer>>(24);
           for (var cp : (Iterable<Integer>) t.surfaceForm().codePoints()::iterator) {
             if (isKanji(cp)) {
               if (isLastTokenKanji) {
@@ -152,7 +156,7 @@ public class TextProcessor {
     ));
   }
 
-  private TextClassification classify(String s) {
+  private static TextClassification classify(String s) {
     var hasKanji = false;
     var hasKana = false;
     for (var cp : (Iterable<Integer>) s.codePoints()::iterator) {
@@ -208,7 +212,7 @@ public class TextProcessor {
     }
   }
 
-  private List<ThinToken> patchTokens(List<MinimalKuromojiToken> tokens) {
+  private static List<ThinToken> patchTokens(List<MinimalKuromojiToken> tokens) {
     var processingTokens = tokens.stream().map(t ->
       new ProcessingToken(t.surface(), t.kana(), t.partOfSpeechLevel1())
     ).collect(toList());
@@ -235,12 +239,12 @@ public class TextProcessor {
     for (var i = 0; i < processingTokens.size(); i++) {
       var t = processingTokens.get(i);
       if (
-        t.partOfSpeechNonEmptyEquals("助動詞")
+        t.isPartOfSpeechNonEmptyEqual("助動詞")
         && ("う".equals(t.surfaceForm) || "ウ".equals(t.surfaceForm))
       ) {
         if (i - 1 >= 0) {
           var prevT = processingTokens.get(i - 1);
-          if (prevT.partOfSpeechNonEmptyEquals("動詞")) {
+          if (prevT.isPartOfSpeechNonEmptyEqual("動詞")) {
             prevT.surfaceForm += "う";
             // Pronunciation patch omitted here
             prevT.reading += "ウ";
@@ -255,7 +259,7 @@ public class TextProcessor {
     // E.g., [選っ, て] -> [選って]
     for (var i = 0; i < processingTokens.size(); i++) {
       var t = processingTokens.get(i);
-      if (t.partOfSpeechNonEmptyEquals("動詞") || t.partOfSpeechNonEmptyEquals("形容詞")) {
+      if (t.isPartOfSpeechNonEmptyEqual("動詞") || t.isPartOfSpeechNonEmptyEqual("形容詞")) {
         var cpLength = t.surfaceForm.codePointCount(0, t.surfaceForm.length());
         if (cpLength > 1) {
           var lastCp = t.surfaceForm.codePointAt(cpLength - 1);
@@ -281,11 +285,11 @@ public class TextProcessor {
   }
 
   private static boolean hasKatakana(String s) {
-    return s.codePoints().anyMatch(c -> isKatakana(Character.UnicodeScript.of(c)));
+    return s.codePoints().anyMatch(c -> isKatakana(UnicodeScript.of(c)));
   }
 
   private static boolean isJapanese(int c) {
-    return isJapanese(Character.UnicodeScript.of(c));
+    return isJapanese(UnicodeScript.of(c));
   }
 
   private static boolean isJapanese(UnicodeScript s) {
@@ -297,15 +301,15 @@ public class TextProcessor {
   }
 
   private static boolean isKanji(int c) {
-    return isKanji(Character.UnicodeScript.of(c));
+    return isKanji(UnicodeScript.of(c));
   }
 
   private static boolean isKanji(UnicodeScript s) {
-    return s == Character.UnicodeScript.HAN;
+    return s == UnicodeScript.HAN;
   }
 
   private static boolean isKana(int c) {
-    return isKana(Character.UnicodeScript.of(c));
+    return isKana(UnicodeScript.of(c));
   }
 
   private static boolean isKana(UnicodeScript s) {
@@ -313,15 +317,15 @@ public class TextProcessor {
   }
 
   private static boolean isHiragana(UnicodeScript s) {
-    return s == Character.UnicodeScript.HIRAGANA;
+    return s == UnicodeScript.HIRAGANA;
   }
 
   private static boolean isKatakana(int c) {
-    return isKatakana(Character.UnicodeScript.of(c));
+    return isKatakana(UnicodeScript.of(c));
   }
 
   private static boolean isKatakana(UnicodeScript s) {
-    return s == Character.UnicodeScript.KATAKANA;
+    return s == UnicodeScript.KATAKANA;
   }
 
   private static String toRawHiragana(String s) {

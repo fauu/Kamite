@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 public final class ChunkFilter {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private List<Pattern> rejectPatterns;
+  private final List<Pattern> rejectPatterns;
 
   public ChunkFilter(List<String> rawRejectPatterns) {
     rejectPatterns = rawRejectPatterns.stream()

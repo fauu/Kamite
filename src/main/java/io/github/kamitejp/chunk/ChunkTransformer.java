@@ -14,7 +14,7 @@ import io.github.kamitejp.config.Config;
 public final class ChunkTransformer {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private List<CompiledTransform> transforms;
+  private final List<CompiledTransform> transforms;
 
   private record CompiledTransform(Pattern pattern, String replacement) {}
 

@@ -21,25 +21,25 @@ import io.github.kamitejp.util.Result;
 public class KuromojiAdapter {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final static String JAR_VER = "e18ff911fd";
-  private final static String JAR_FILENAME
+  private static final String JAR_VER = "e18ff911fd";
+  private static final String JAR_FILENAME
     = "kuromoji-unidic-kanaaccent-%s.jar".formatted(JAR_VER);
-  private final static long JAR_CRC32 = 3601520699L;
+  private static final long JAR_CRC32 = 3601520699L;
 
-  private final static String DICT_PACKAGE = "com.atilika.kuromoji.unidic.kanaaccent";
-  private final static String TOKENIZER_CLASS_NAME = "%s.Tokenizer".formatted(DICT_PACKAGE);
-  private final static String TOKENIZER_BUILDER_CLASS_NAME =
+  private static final String DICT_PACKAGE = "com.atilika.kuromoji.unidic.kanaaccent";
+  private static final String TOKENIZER_CLASS_NAME = "%s.Tokenizer".formatted(DICT_PACKAGE);
+  private static final String TOKENIZER_BUILDER_CLASS_NAME =
     "%s$Builder".formatted(TOKENIZER_CLASS_NAME);
-  private final static String TOKEN_CLASS_NAME = "%s.Token".formatted(DICT_PACKAGE);
-  private final static String USER_DICTIONARY_METHOD_NAME = "userDictionary";
-  private final static String USER_DICTIONARY_RESOURCE_PATH = "/kuromoji_user_dict.txt";
-  private final static String BUILD_METHOD_NAME = "build";
-  private final static String TOKENIZE_METHOD_NAME = "tokenize";
-  private final static String GET_SURFACE_METHOD_NAME = "getSurface";
-  private final static String GET_PART_OF_SPEECH_LEVEL1_METHOD_NAME = "getPartOfSpeechLevel1";
-  private final static String GET_KANA_METHOD_NAME = "getKana";
+  private static final String TOKEN_CLASS_NAME = "%s.Token".formatted(DICT_PACKAGE);
+  private static final String USER_DICTIONARY_METHOD_NAME = "userDictionary";
+  private static final String USER_DICTIONARY_RESOURCE_PATH = "/kuromoji_user_dict.txt";
+  private static final String BUILD_METHOD_NAME = "build";
+  private static final String TOKENIZE_METHOD_NAME = "tokenize";
+  private static final String GET_SURFACE_METHOD_NAME = "getSurface";
+  private static final String GET_PART_OF_SPEECH_LEVEL1_METHOD_NAME = "getPartOfSpeechLevel1";
+  private static final String GET_KANA_METHOD_NAME = "getKana";
 
-  private Platform platform;
+  private final Platform platform;
   private Object tokenizer;
   private Method tokenizeMethod;
   private Method getSurfaceMethod;
@@ -78,7 +78,7 @@ public class KuromojiAdapter {
     }
   }
 
-  public Result<File, KuromojiLibraryVerificationError> getVerifiedLibraryFile() {
+  private Result<File, KuromojiLibraryVerificationError> getVerifiedLibraryFile() {
     var maybeJARPath = platform.getDataDirPath().map(p -> p.resolve(JAR_FILENAME));
     if (maybeJARPath.isEmpty()) {
       return Result.Err(KuromojiLibraryVerificationError.COULD_NOT_DETERMINE_PATH);
@@ -103,7 +103,7 @@ public class KuromojiAdapter {
     return Result.Ok(jarFile);
   }
 
-  public boolean kuromojiAvailable() {
+  public boolean isKuromojiAvailable() {
     return getVerifiedLibraryFile().isOk();
   }
 
@@ -120,9 +120,10 @@ public class KuromojiAdapter {
     URLClassLoader classLoader = null;
     InputStream userDictionaryIn = null;
     try {
-       classLoader = new URLClassLoader(
+      //noinspection ClassLoaderInstantiation
+      classLoader = new URLClassLoader(
         new URL[] { maybeVerifiedJAR.get().toURI().toURL() },
-        this.getClass().getClassLoader()
+        getClass().getClassLoader()
       );
       var tokenizerBuilderClass = Class.forName(TOKENIZER_BUILDER_CLASS_NAME, true, classLoader);
       var tokenizerBuilder = tokenizerBuilderClass.getDeclaredConstructors()[0].newInstance();
@@ -145,7 +146,7 @@ public class KuromojiAdapter {
       getPartOfSpeechLevel1Method =
         tokenClass.getDeclaredMethod(GET_PART_OF_SPEECH_LEVEL1_METHOD_NAME);
       getKanaMethod = tokenClass.getDeclaredMethod(GET_KANA_METHOD_NAME);
-    } catch (Exception e) {
+    } catch (@SuppressWarnings("OverlyBroadCatchBlock") Exception e) {
       throw new KuromojiLoadingException("Could not load things from Kuromoji JAR", e);
     } finally {
       try {

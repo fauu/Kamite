@@ -1,10 +1,11 @@
 package io.github.kamitejp.universalfeature;
 
+@SuppressWarnings("AbstractClassWithoutAbstractMethods")
 public abstract class UnavailableUniversalFeature {
-  private String id;
-  private UniversalFeatureUnavailableReason reason;
+  private final String id;
+  private final UniversalFeatureUnavailableReason reason;
 
-  public UnavailableUniversalFeature(String id, UniversalFeatureUnavailableReason reason) {
+  UnavailableUniversalFeature(String id, UniversalFeatureUnavailableReason reason) {
     this.id = id;
     this.reason = reason;
   }

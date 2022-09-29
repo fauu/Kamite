@@ -28,8 +28,6 @@ import io.github.kamitejp.chunk.ChunkLoggerInitializationException;
 import io.github.kamitejp.chunk.ChunkTransformer;
 import io.github.kamitejp.chunk.IncomingChunkText;
 import io.github.kamitejp.config.Config;
-import io.github.kamitejp.config.Config.Keybindings.Global.GlobalKeybindingsOCR.RegionBinding;
-import io.github.kamitejp.config.Config.OCR.Region;
 import io.github.kamitejp.config.ConfigManager;
 import io.github.kamitejp.controlgui.ControlGUI;
 import io.github.kamitejp.dbus.DBusEvent;
@@ -152,9 +150,9 @@ public class Kamite {
     config = configReadSuccess.config();
 
     // Detect unavailable platform-independent features
-    var unavailableUniversalFeatures = new ArrayList<UnavailableUniversalFeature>();
+    var unavailableUniversalFeatures = new ArrayList<UnavailableUniversalFeature>(1);
     var kuromojiAdapter = new KuromojiAdapter(platform);
-    if (!kuromojiAdapter.kuromojiAvailable()) {
+    if (!kuromojiAdapter.isKuromojiAvailable()) {
       unavailableUniversalFeatures.add(
         new UnavailableAutoFurigana(UnavailableAutoFurigana.Reason.KUROMOJI_UNAVAILABLE)
       );
@@ -205,7 +203,7 @@ public class Kamite {
     }
 
     // Config load message deferred until control GUI potentially present
-    if (configReadSuccess.loadedProfileNames().size() > 0) {
+    if (!configReadSuccess.loadedProfileNames().isEmpty()) {
       LOG.info(
         "Loaded config profiles: {}",
         () -> String.join(", ", configReadSuccess.loadedProfileNames())
@@ -296,7 +294,7 @@ public class Kamite {
         }
         mpvController.destroy();
         if (chunkLogger != null) {
-          chunkLogger.finalize();
+          chunkLogger.finalizeLog();
         }
       })
     );
@@ -691,7 +689,7 @@ public class Kamite {
   }
 
   private final Map<Function<Config.Keybindings.Global, String>, Supplier<Runnable>>
-    BASE_GLOBAL_KEYBINDINGS = Map.of(
+    baseGlobalKeybindings = Map.of(
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().manualBlock(),
       () -> recognitionConductor::recognizeManualBlockDefault,
 
@@ -705,7 +703,7 @@ public class Kamite {
   private void setupGlobalKeybindings(GlobalKeybindingProvider provider) {
     var keybindings = config.keybindings().global();
 
-    BASE_GLOBAL_KEYBINDINGS.forEach((keyStrokeStrProducer, runnableSupplier) -> {
+    baseGlobalKeybindings.forEach((keyStrokeStrProducer, runnableSupplier) -> {
       var keyStrokeStr = keyStrokeStrProducer.apply(keybindings);
       if (keyStrokeStr == null) {
         return;
@@ -725,13 +723,13 @@ public class Kamite {
 
   private void tryRegisterRegionBindingIfRegionPresent(
     GlobalKeybindingProvider provider,
-    RegionBinding regionBinding,
-    List<Region> regions
+    Config.Keybindings.Global.GlobalKeybindingsOCR.RegionBinding regionBinding,
+    List<Config.OCR.Region> regions
   ) {
     var maybeRegion = regions.stream()
       .filter(r -> r.symbol().equals(regionBinding.symbol()))
       .findFirst();
-    if (!maybeRegion.isPresent()) {
+    if (maybeRegion.isEmpty()) {
       return;
     }
 
@@ -780,7 +778,7 @@ public class Kamite {
       enableDebugLogging(loggingExtent);
     }
 
-    List<String> profileNames = new ArrayList<>();
+    List<String> profileNames = new ArrayList<>(4);
     var profileRaw = args.get(PRECONFIG_ARGS.get("profile"));
     if (profileRaw != null && !profileRaw.isEmpty()) {
       profileNames = Arrays.asList(profileRaw.split(","));

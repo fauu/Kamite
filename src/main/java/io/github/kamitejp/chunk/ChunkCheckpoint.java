@@ -13,8 +13,8 @@ public class ChunkCheckpoint {
 
   private static final int DELAYED_ALLOW_EXTRA_DELAY_MS = 100;
 
-  private int throttleIntervalMS;
-  private Consumer<IncomingChunkText> onAllowedThrough;
+  private final int throttleIntervalMS;
+  private final Consumer<IncomingChunkText> onAllowedThrough;
   private long lastTimestamp;
   private IncomingChunkText lastChunk;
 
