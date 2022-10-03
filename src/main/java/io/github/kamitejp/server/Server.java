@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,10 +18,10 @@ import io.github.kamitejp.server.outmessage.OutMessage;
 import io.github.kamitejp.server.outmessage.UserNotificationOutMessage;
 import io.github.kamitejp.util.JSON;
 import io.javalin.Javalin;
-import io.javalin.core.util.JavalinException;
 import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.http.staticfiles.Location;
+import io.javalin.util.JavalinException;
 import io.javalin.websocket.WsConfig;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
@@ -29,7 +30,7 @@ import io.javalin.websocket.WsMessageContext;
 public class Server {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   private static final String CUSTOM_CSS_FILE_PATH_RELATIVE = "custom.css";
-  private static final long WS_IDLE_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 hours
+  private static final Duration WS_IDLE_TIMEOUT = Duration.ofHours(2);
   private static final int WS_CLOSE_CODE_SUPERSEDED_BY_ANOTHER_CLIENT = 4000;
 
   private Javalin javalinInstance;
@@ -48,17 +49,14 @@ public class Server {
     this.eventCb = eventCb;
 
     javalinInstance = Javalin.create(config -> {
-      config.maxRequestSize = 10_000_000L; // Bumped for image recognition requests
-      config.enableCorsForAllOrigins();
+      config.http.maxRequestSize = 10_000_000L; // Bumped for image recognition requests
       if (Env.isDevMode()) {
-        config.enableDevLogging();
+        config.plugins.enableDevLogging();
       }
       if (!Env.isDevMode() || serveStaticInDevMode) {
-        config.addStaticFiles("/web", Location.CLASSPATH);
+        config.staticFiles.add("/web", Location.CLASSPATH);
       }
-      config.wsFactoryConfig(factory -> {
-        factory.getPolicy().setIdleTimeout(WS_IDLE_TIMEOUT_MS);
-      });
+      config.jetty.wsFactoryConfig(wsFactory -> wsFactory.setIdleTimeout(WS_IDLE_TIMEOUT));
     })
       .events(event -> {
         event.serverStarted(() -> {
@@ -94,10 +92,10 @@ public class Server {
     try {
       messageJson = JSON.mapper().writeValueAsString(message);
     } catch(JsonProcessingException e) {
-      LOG.debug("Error while serializing message: {}", () -> e.toString());
+      LOG.debug("Error while serializing message: {}", e::toString);
     }
     if (messageJson == null) {
-      LOG.debug("Tried to send an empty message of kind: {}", () -> message.getKind());
+      LOG.debug("Tried to send an empty message of kind: {}", message::getKind);
       return;
     }
     eventCb.accept(new ServerEvent.AboutToSendMessage(message));
@@ -109,7 +107,7 @@ public class Server {
       return;
     }
     wsClientContext.send(messageJson);
-    LOG.debug("Sent a '{}' message", () -> message.getKind());
+    LOG.debug("Sent a '{}' message", message::getKind);
   }
 
   public void destroy() {
@@ -127,7 +125,7 @@ public class Server {
       var cssPath = configDirPath.resolve(CUSTOM_CSS_FILE_PATH_RELATIVE).toString();
       ctx.contentType("text/css").result(new FileInputStream(cssPath));
     } catch (FileNotFoundException e) {
-      LOG.debug("Custom CSS file not found", () -> e.toString());
+      LOG.debug("Custom CSS file not found", e::toString);
       throw new NotFoundResponse(); // NOPMD
     }
   }
@@ -136,7 +134,7 @@ public class Server {
     ws.onConnect(this::handleClientConnect);
     ws.onMessage(this::handleClientMessage);
     ws.onClose(ctx -> {
-      LOG.info("Client websocket connection closed: code {}", () -> ctx.status());
+      LOG.info("Client websocket connection closed: code {}", ctx::status);
       // We juggle the contexts like this because we want to set `wsClientContext` to null here, but
       // only if this close event isn't the result of a new client connection replacing the old one.
       // And the status code doesn't let us distinguish that case from, e.g., a browser crash
@@ -166,7 +164,7 @@ public class Server {
   private void handleClientMessage(WsMessageContext ctx) {
     var messageParseRes = InMessage.fromJSON(ctx.message());
     if (messageParseRes.isErr()) {
-      LOG.warn("Error parsing client message: {}", () -> messageParseRes.err());
+      LOG.warn("Error parsing client message: {}", messageParseRes::err);
     }
     eventCb.accept(new ServerEvent.MessageReceived(messageParseRes.get()));
   }
