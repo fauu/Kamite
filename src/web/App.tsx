@@ -17,7 +17,8 @@ import {
   playerStatusGotConnected
 } from "~/backend";
 import {
-  type Chunk, ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState
+  ChunkCurrentTranslationSelectionParentClass, ChunkView, CHUNK_CHAR_IDX_ATTR_NAME, CHUNK_LABEL_ID,
+  createChunksState, type Chunk
 } from "~/chunk";
 import {
   availableCommandPaletteCommands, CommandPalette, commandPrepareForDispatch
@@ -70,7 +71,6 @@ export const App: VoidComponent = () => {
   let mainSectionEl: HTMLDivElement | undefined;
   let commandPaletteEl: HTMLDivElement | undefined;
   let actionPaletteEl: HTMLDivElement | undefined;
-  let chunkLabelEl: HTMLSpanElement;
   let chunkInputEl: HTMLTextAreaElement | undefined;
   let chunkLabelAndTranslationEl: HTMLDivElement;
   let statusPanelEl!: HTMLDivElement;
@@ -192,7 +192,7 @@ export const App: VoidComponent = () => {
       case 0: { // Left
         const target = event.target as HTMLElement;
 
-        const charIdxS = target.dataset["charIdx"];
+        const charIdxS = target.dataset[CHUNK_CHAR_IDX_ATTR_NAME];
         if (charIdxS) { // Mouse over chunk character
           // Initiate selection starting inside chunk label
           const charIdx = parseInt(charIdxS);
@@ -260,7 +260,7 @@ export const App: VoidComponent = () => {
         const sign = !themeLayoutFlipped(theme) ? -1 : 1;
         notebook.resizeByPx(sign * event.movementY, mainSectionEl!);
       } else {
-        const charIdxS = (event.target as HTMLElement).dataset["charIdx"];
+        const charIdxS = (event.target as HTMLElement).dataset[CHUNK_CHAR_IDX_ATTR_NAME];
         if (charIdxS) { // Mouse over chunk character
           // Update chunk selection
           const anchor =
@@ -274,14 +274,16 @@ export const App: VoidComponent = () => {
           chunks.textSelection.set({ range, anchor });
         } else if (chunks.textSelection.inProgress()) {
           // Update chunk selection
-          const lastChunkElIdx = chunkLabelEl.childElementCount - 1;
-          const lastChunkEl = chunkLabelEl.childNodes[lastChunkElIdx] as HTMLElement;
+          // QUAL: Is there a better way of passing this?
+          const labelEl = document.getElementById(CHUNK_LABEL_ID)!;
+          const lastChunkElIdx = labelEl.childElementCount - 1;
+          const lastChunkEl = labelEl.childNodes[lastChunkElIdx] as HTMLElement;
           const lastRect = lastChunkEl.getBoundingClientRect();
           const cursorRightOfLast = event.clientX > lastRect.right && event.clientY > lastRect.top;
           const anchor = chunks.textSelection.get()!.anchor!;
           if (cursorRightOfLast || /* cursorBelowAll */ event.clientY > lastRect.bottom) {
             chunks.textSelection.set({ range: [anchor, chunks.current().text.length - 1], anchor });
-          } else if (event.clientY < chunkLabelEl.getBoundingClientRect().top) {
+          } else if (event.clientY < labelEl.getBoundingClientRect().top) {
             chunks.textSelection.set({ range: [0, anchor], anchor });
           }
         }
@@ -590,13 +592,13 @@ export const App: VoidComponent = () => {
     const anchorParentEl = selection?.anchorNode?.parentElement;
 
     // Register the extent of a browser native selection in chunk (from Yomichan hover, etc.)
-    const selectingInChunk = anchorParentEl?.dataset["charIdx"] !== undefined;
+    const selectingInChunk = anchorParentEl?.dataset[CHUNK_CHAR_IDX_ATTR_NAME] !== undefined;
     if (selectingInChunk) {
       const focusParentEl = selection?.focusNode?.parentElement;
       // ASSUMPTION: Selection always made left-to-right
       chunks.setTextHighlight(
         [anchorParentEl, focusParentEl]
-          .map(el => parseInt(el!.dataset["charIdx"]!)) as [number, number]
+          .map(el => parseInt(el!.dataset[CHUNK_CHAR_IDX_ATTR_NAME]!)) as [number, number]
       );
     } else {
       setTimeout(() => {
@@ -661,7 +663,6 @@ export const App: VoidComponent = () => {
         <ChunkView
           chunksState={chunks}
           onInput={handleChunkInput}
-          labelRef={el => chunkLabelEl = el}
           inputRef={el => chunkInputEl = el}
           labelAndTranslationRef={el => chunkLabelAndTranslationEl = el}
         />

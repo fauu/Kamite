@@ -7,12 +7,11 @@ import { themeLayoutFlipped } from "~/theme";
 import type { ChunksState } from "./ChunksState";
 import { CurrentTranslation } from "./CurrentTranslation";
 import { ChunkInput } from "./Input";
-import { ChunkLabel } from "./Label";
+import { ChunkLabelWrapper } from "./LabelWrapper";
 
 interface ChunkViewProps {
   chunksState: ChunksState,
   onInput: (newText: string) => void,
-  labelRef: Ref<HTMLSpanElement>,
   inputRef: Ref<HTMLTextAreaElement>,
   labelAndTranslationRef: Ref<HTMLDivElement>,
 }
@@ -40,15 +39,7 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
         when={props.chunksState.editing()}
         fallback={
           <ChunkLabelAndTranslation ref={props.labelAndTranslationRef}>
-            <Show when={!props.chunksState.current().text.isEmpty}>
-              <ChunkLabel
-                text={props.chunksState.current().text}
-                flashState={props.chunksState.currentFlashState()}
-                selection={props.chunksState.textSelection.get()}
-                highlight={props.chunksState.textHighlight()}
-                ref={props.labelRef}
-              />
-            </Show>
+            <ChunkLabelWrapper chunksState={props.chunksState} />
             <Show when={props.chunksState.translationWithContext()} keyed>{translations =>
               <CurrentTranslation translations={translations}/>
             }</Show>
