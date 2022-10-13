@@ -1,5 +1,5 @@
 import {
-  createSignal, For, onCleanup, onMount, type Ref, Show, type VoidComponent
+  createSignal, For, onCleanup, onMount, Show, type Ref, type VoidComponent
 } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
@@ -11,7 +11,7 @@ const [_, __, ___, ____] = [
   horizontalWheelScroll, onGeneralHorizontalScrollPositionChange, tooltipAnchor, holdClickEvent
 ];
 
-import { DefaultIcon } from "~/common";
+import { DefaultIcon, PaletteButtonLabel } from "~/common";
 import { useGlobalTooltip } from "~/GlobalTooltip";
 import {
   LAYOUT_BREAKPOINT_SMALL, PaletteButtonClass, PaletteButtonDisabledClass
@@ -140,7 +140,7 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
             : undefined
           }
         >
-          <Show when={hasIcon} fallback={<Label innerHTML={labelText(action, props.targetText)} />}>
+          <Show when={hasIcon} fallback={<PaletteButtonLabel innerHTML={labelText(action, props.targetText)} />}>
             <DefaultIcon iconName={action.kind} sizePx={34} />
           </Show>
         </div>;
@@ -211,14 +211,6 @@ const ButtonClass = css`
     opacity: 0.5;
     cursor: default;
     pointer-events: none;
-  }
-`;
-
-const Label = styled.span`
-  padding: 0 0.8rem;
-
-  ${LAYOUT_BREAKPOINT_SMALL} {
-    padding: 0 0.6rem;
   }
 `;
 

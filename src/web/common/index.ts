@@ -7,7 +7,7 @@ export { DefaultIcon } from "./DefaultIcon";
 export * from "./dom";
 export type { Base64Image } from "./image";
 export { Newline } from "./Newline";
+export { PaletteButtonLabel } from "./PaletteButtonLabel";
 export { Spinner } from "./Spinner";
 export { StringWithNewlines } from "./StringWithNewlines";
 export { YomichanSentenceDelimiter } from "./YomichanSentenceDelimiter";
-

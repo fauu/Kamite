@@ -1,6 +1,7 @@
 import { For, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
+import { PaletteButtonLabel } from "~/common";
 import { ChromeClass, PaletteButtonClass } from "~/style";
 import { themeLayoutFlipped } from "~/theme";
 
@@ -24,7 +25,7 @@ export const ChunkHistoryActionPalette: VoidComponent<ChunkHistoryActionPaletteP
         }}
         onClick={[handleButtonClick, a]}
       >
-        {textLabel(a)}
+        <PaletteButtonLabel>{labelText(a)}</PaletteButtonLabel>
       </div>
     }</For>
   </Root>;
@@ -43,7 +44,7 @@ const Root = styled.div`
   margin: 0 auto;
   left: 0;
   right: 0;
-  /* QUALITY: Shouldn't need notebook tab size to position properly */
+  /* QUAL: Shouldn't need notebook tab size to position properly */
   bottom: ${p => !themeLayoutFlipped(p.theme) ? "0" : "var(--notebook-tab-size)"};
 `;
 
@@ -60,7 +61,7 @@ const SelectionActionPaletteButtonClass = css`
   }
 `;
 
-function textLabel(action: ChunkHistoryAction): string {
+function labelText(action: ChunkHistoryAction): string {
   switch (action) {
     case "copy":
       return "Copy";
