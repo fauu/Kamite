@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kamite DeepL mod
 // @description  Improves DeepL user experience when embedded into Kamite
-// @version      1.2.0
+// @version      1.2.1
 // @match        https://www.deepl.com/translator*
 // @icon         https://www.google.com/s2/favicons?domain=deepl.com
 // @grant        GM_addStyle
@@ -91,6 +91,9 @@
         width: 100vw !important;
         display: flex;
         align-items: center;
+      }
+      #dl_translator .lmt__sides_container .lmt__sides_wrapper {
+        flex-direction: column;
       }
       #dl_translator .lmt__sides_container .lmt__side_container {
         width: calc(100vw - 10px) !important;
