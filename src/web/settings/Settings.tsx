@@ -17,13 +17,20 @@ export const DEFAULT_SETTINGS: Setting[] = [
     value: "STANDARD",
   },
   {
+    id: "notebook-collapse",
+    label: "Collapse notebook",
+    configKey: (c) => c.ui.notebook.collapse,
+    kind: "toggle",
+    value: false,
+  },
+  {
     id: "show-furigana",
     label: "Show furigana",
     configKey: (c) => c.chunk.showFurigana,
     kind: "toggle",
     value: false,
     warning: {
-      text: "The furigana is auto-generated and frequently incorrect. Use cautiously",
+      text: "The furigana is auto-generated and frequently incorrect. Use cautiously.",
       show: (value: boolean) => value,
     },
   },

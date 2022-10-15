@@ -9,6 +9,6 @@ export function createTheme() {
   return createStore<DefaultTheme>({ layout: "STANDARD" });
 }
 
-export function themeLayoutFlipped(theme?: DefaultTheme) {
+export function themeLayoutFlipped(theme?: DefaultTheme): boolean {
   return theme ? theme.layout === "STANDARD_FLIPPED" : false;
 }

@@ -76,10 +76,15 @@ export const App: VoidComponent = () => {
   let statusPanelEl!: HTMLDivElement;
   let chunkPickerEl!: HTMLDivElement;
 
+  let mouseY = 0;
+
   const chunkInputSelection = (): [number, number] | undefined =>
     (chunkInputEl && [chunkInputEl.selectionStart, chunkInputEl.selectionEnd - 1]) ?? undefined;
 
   const [theme, setTheme] = createTheme();
+
+  const themeLayoutFlippedMemo =
+    createMemo(() => themeLayoutFlipped(theme));
 
   const globalTooltip = useGlobalTooltip()!;
 
@@ -128,7 +133,7 @@ export const App: VoidComponent = () => {
     settings.forEach((s) => {
       handleSettingChangeRequest(s.id, s.configKey(c));
     });
-    mainSectionEl && notebook.syncHeight(mainSectionEl, c);
+    mainSectionEl && notebook.syncHeight(c);
     if (import.meta.env.DEV && c.dev.serveStaticInDevMode) {
       notifyUser("warning", "serveStaticInDevMode override is enabled");
     }
@@ -140,6 +145,8 @@ export const App: VoidComponent = () => {
   createEffect(() => {
     notebook.setTabHidden("debug", !debugMode());
   });
+
+  // === ON MOUNT =================================================================================
 
   onMount(() => {
     if (import.meta.env.DEV) {
@@ -161,7 +168,12 @@ export const App: VoidComponent = () => {
     );
   });
 
-  // === ON INIT =============================================================================
+  function handleMainSectionRef(el: HTMLDivElement) {
+    mainSectionEl = el;
+    notebook.setMainSectionEl(el);
+  }
+
+  // === ON INIT ===================================================================================
 
   // Apply custom CSS
   const linkEl = document.createElement("link");
@@ -171,7 +183,7 @@ export const App: VoidComponent = () => {
 
   const assumeChrome = !navigator.userAgent.includes("Firefox");
 
-  // === EVENT HANDLERS ===========================================================================
+  // === EVENT HANDLERS ============================================================================
 
   const handleRootClick = ({ target }: MouseEvent) => {
     if (!target) {
@@ -216,16 +228,8 @@ export const App: VoidComponent = () => {
             }
           }
 
-          // Start resizing Notebook
-          const resizeHandleStart =
-            !themeLayoutFlipped(theme)
-            ? mainSectionEl!.offsetHeight
-            : notebook.height().px;
-          const withinResizeHandle =
-            event.clientY >= resizeHandleStart - 3
-            && event.clientY <= resizeHandleStart + 2;
-          if (withinResizeHandle) {
-            notebook.setResizing(true);
+          if (!notebook.collapsed()) {
+            notebook.resizeMaybeStart(themeLayoutFlippedMemo(), mouseY);
           }
         }
 
@@ -254,11 +258,16 @@ export const App: VoidComponent = () => {
   };
 
   const handleRootMouseMove = (event: MouseEvent) => {
+    mouseY = event.clientY;
+
+    if (notebook.isCollapseAllowed(settings)) {
+      notebook.collapseIfNotHovered(themeLayoutFlippedMemo(), mouseY);
+    }
+
     const primaryButton = (event.buttons & 1) === 1;
     if (primaryButton) {
       if (notebook.resizing()) {
-        const sign = !themeLayoutFlipped(theme) ? -1 : 1;
-        notebook.resizeByPx(sign * event.movementY, mainSectionEl!);
+        notebook.resizeTick(themeLayoutFlippedMemo(), event.movementY);
       } else {
         const charIdxS = (event.target as HTMLElement).dataset[CHUNK_CHAR_IDX_ATTR_NAME];
         if (charIdxS) { // Mouse over chunk character
@@ -493,6 +502,9 @@ export const App: VoidComponent = () => {
       case "show-furigana":
         value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
         break;
+      case "notebook-collapse":
+        value && notebook.collapseIfNotHovered(themeLayoutFlippedMemo(), mouseY);
+        break;
       case "layout":
         setTheme("layout", value as UILayout);
         break;
@@ -504,7 +516,7 @@ export const App: VoidComponent = () => {
     backend.notify({ kind: "chunk-added", body: { chunk: chunk.text.base } });
   }
 
-  window.addEventListener("resize", () => mainSectionEl && notebook.syncHeight(mainSectionEl));
+  window.addEventListener("resize", () => mainSectionEl && notebook.syncHeight());
 
   // DRY: Unify with action handling
   document.addEventListener("keydown", (event) => {
@@ -642,7 +654,7 @@ export const App: VoidComponent = () => {
           onReconnectClick={handleReconnectClick}
         />
       </Show>
-      <MainSection ref={mainSectionEl} id="main-section">
+      <MainSection ref={handleMainSectionRef} id="main-section">
         <Toolbar id="toolbar">
           <Show when={availableCommands().length > 0}>
             <CommandPalette

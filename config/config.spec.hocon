@@ -111,6 +111,7 @@ server {
 ui {
   layout = UILayout
   notebook {
+    collapse = "boolean | false"
     height = "int | 60"
   }
 }

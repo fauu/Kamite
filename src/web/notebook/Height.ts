@@ -5,6 +5,10 @@ export type NotebookHeight = {
   percent: number,
 };
 
+export function notebookHeightZero() {
+  return { px: 0, percent: 0 };
+}
+
 export function notebookHeightFromPercent(percent: number) {
   return {
     px: Math.round(percent * getClientHeight()),

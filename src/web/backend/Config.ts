@@ -74,6 +74,7 @@ export interface CustomCommand {
 }
 
 interface Notebook {
+  collapse: boolean,
   height: number | null,
 }
 

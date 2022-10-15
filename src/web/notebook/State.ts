@@ -1,16 +1,20 @@
-import { createEffect, createSelector, createSignal } from "solid-js";
+import { createEffect, createSelector, createSignal, on } from "solid-js";
 import { createStore } from "solid-js/store";
 
 import type { Config, LookupTarget } from "~/backend";
 import type { ChunksState } from "~/chunk";
 import { getClientHeight } from "~/common";
+import { getSetting, type Setting } from "~/settings";
 
-import { notebookHeightFromPercent, notebookHeightFromPx } from "./Height";
+import {
+  notebookHeightZero, notebookHeightFromPercent, notebookHeightFromPx, type NotebookHeight
+} from "./Height";
 import { BASE_NOTEBOOK_TABS, lookupTargetSymbolToLookupTabID, type NotebookTab } from "./tabs";
 
 export const MIN_HEIGHT_PERCENT = 0.25;
 export const MAX_HEIGHT_PERCENT = 0.75;
 export const INITIAL_HEIGHT = notebookHeightFromPercent(0.5);
+export const DEADZONE_PX = 20;
 
 type LookupOverride = {
   text?: string,
@@ -32,8 +36,12 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     createSignal(INITIAL_HEIGHT);
   const [resizing, setResizing] =
     createSignal(false);
+  const [collapsed, setCollapsed] =
+    createSignal(false);
   const [lookupOverride, setLookupOverride] =
     createSignal<LookupOverride | undefined>(undefined);
+
+  let mainSectionEl: HTMLDivElement;
 
   const groupedTabs = (): NotebookTab[][] =>
     tabs.reduce((acc, tab) => {
@@ -58,24 +66,31 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     );
   });
 
-  function syncHeight(mainSectionEl: HTMLDivElement, config?: Config) {
+  createEffect(on(collapsed, collapsed => {
+    syncMainSectionElHeight(collapsed ? notebookHeightZero() : height());
+  }));
+
+  function setMainSectionEl(el: HTMLDivElement) {
+    mainSectionEl = el;
+  }
+
+  function syncHeight(config?: Config) {
     let configHeight = config?.ui.notebook.height;
     if (configHeight) {
       configHeight /= 100;
     }
-    resizeToPercent(configHeight || height().percent, mainSectionEl);
+    resizeToPercent(configHeight || height().percent);
   }
 
-  function resizeByPx(deltaY: number, mainSectionEl: HTMLDivElement) {
-    resizeToPx(height().px + deltaY, mainSectionEl);
+  function resizeByPx(deltaY: number) {
+    resizeToPx(height().px + deltaY);
   }
 
-  function resizeToPercent(percent: number, mainSectionEl: HTMLDivElement) {
-    const h = notebookHeightFromPercent(percent);
-    resizeToPx(h.px, mainSectionEl);
+  function resizeToPercent(percent: number) {
+    resizeToPx(notebookHeightFromPercent(percent).px);
   }
 
-  function resizeToPx(px: number, mainSectionEl: HTMLDivElement) {
+  function resizeToPx(px: number) {
     if (px === 0) {
       // Needed to fix a bug where resizing is attempted when the height isn't
       // properly initialized due to the browser tab being opened off screen
@@ -96,9 +111,9 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
 
     setHeight(targetHeight);
 
-    const msHeight = `${getClientHeight() - targetHeight.px}px`;
-    mainSectionEl.style.maxHeight = msHeight;
-    mainSectionEl.style.flexBasis = msHeight;
+    if (!collapsed()) {
+      syncMainSectionElHeight(targetHeight);
+    }
   }
 
   function setTabHidden(id: typeof BASE_NOTEBOOK_TABS[number]["id"], hidden: boolean) {
@@ -127,6 +142,45 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     return lookupTabs;
   }
 
+  function isCollapseAllowed(settings: Setting[]) {
+    return !resizing() && !collapsed() && (getSetting(settings, "notebook-collapse") || false);
+  }
+
+  function collapseIfNotHovered(isFlipped: boolean, mouseY: number) {
+    if (isCursorDecidedlyOutside(isFlipped, mouseY)) {
+      setCollapsed(true);
+    }
+  }
+
+  function resizeMaybeStart(isFlipped: boolean, mouseY: number) {
+    const resizeHandleStart = outerEdgeY(isFlipped);
+    const withinResizeHandle = mouseY >= resizeHandleStart - 3 && mouseY <= resizeHandleStart + 2;
+    if (withinResizeHandle) {
+      setResizing(true);
+    }
+  }
+
+  function resizeTick(isFlipped: boolean, yMovement: number) {
+    const sign = !isFlipped ? -1 : 1;
+    resizeByPx(sign * yMovement);
+  }
+
+  function syncMainSectionElHeight(targetNotebookHeight: NotebookHeight) {
+    const msHeight = `${getClientHeight() - targetNotebookHeight.px}px`;
+    mainSectionEl.style.maxHeight = msHeight;
+    mainSectionEl.style.flexBasis = msHeight;
+  }
+
+  function outerEdgeY(isFlipped: boolean): number {
+    return !isFlipped ? mainSectionEl.offsetHeight : height().px;
+  }
+
+  function isCursorDecidedlyOutside(isFlipped: boolean, y: number): boolean {
+    const flipSign = !isFlipped ? -1 : 1;
+    const effectiveOuterEdgeY = outerEdgeY(isFlipped) + (flipSign * DEADZONE_PX);
+    return flipSign * y > flipSign * effectiveOuterEdgeY;
+  }
+
   return {
     tabs,
     // setTabs,
@@ -136,6 +190,8 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     // setHeight,
     resizing,
     setResizing,
+    collapsed,
+    setCollapsed,
     lookupOverride,
     setLookupOverride,
 
@@ -143,11 +199,16 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     activeTab,
     isTabActive,
 
+    setMainSectionEl,
     syncHeight,
     resizeByPx,
     setTabHidden,
     activateTab,
     updateLookupTabs,
     getLookupTabs,
+    isCollapseAllowed,
+    collapseIfNotHovered,
+    resizeMaybeStart,
+    resizeTick,
   };
 }

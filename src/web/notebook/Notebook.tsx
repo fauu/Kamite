@@ -1,5 +1,5 @@
 import { createEffect, For, Match, Show, Switch, type JSX, type VoidComponent } from "solid-js";
-import { styled } from "solid-styled-components";
+import { css, styled } from "solid-styled-components";
 
 import { lookupTargetFillURL } from "~/backend";
 import { scrollToBottom } from "~/common";
@@ -30,7 +30,10 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
   createEffect(() => props.state.activeTab() && switchPage(props.state.activeTab()));
 
   createEffect(() => {
-    pageViewEl.style.maxHeight = `${props.state.height().px - tabBarEl.offsetHeight}px`;
+    const maxHeight = props.state.collapsed()
+      ? 0
+      : props.state.height().px - tabBarEl.offsetHeight;
+    pageViewEl.style.maxHeight = `${maxHeight}px`;
   });
 
   createEffect(() => {
@@ -62,6 +65,8 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
     });
   };
 
+  const handleExpanderMouseOver = () => props.state.setCollapsed(false);
+
   const handleTabClick = (tab: NotebookTab) => {
     if (tab.lookup?.newTab) {
       window.open(lookupTargetFillURL(tab.lookup, effectiveLookupText()));
@@ -71,16 +76,18 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
       }
       props.state.activateTab(tab.id);
     }
+    props.state.setCollapsed(false);
   };
 
-  return <Root>
+  return <Root classList={{ [NotebookCollapsedClass]: props.state.collapsed() }}>
     <Show when={props.state.resizing()}>
       <NotebookHeightHud configKey="ui.notebook.height" height={props.state.height()}/>
     </Show>
     <TabBar ref={tabBarEl} id="notebook-tabbar">
-      <For each={props.state.groupedTabs()}>{(group) =>
+      <Expander onMouseOver={handleExpanderMouseOver} />
+      <For each={props.state.groupedTabs()}>{group =>
         <TabBarGroup class="notebook-tab-group">
-          <For each={group}>{(tab) =>
+          <For each={group}>{tab =>
             <Show when={!tab.hidden}>
               <NotebookTabView
                 tab={tab}
@@ -119,6 +126,8 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
   </Root>;
 };
 
+const NotebookCollapsedClass = css("");
+
 const Root = styled.div`
   display: flex;
   flex-grow: 1;
@@ -131,9 +140,15 @@ const Root = styled.div`
     height: 6px;
     width: 100%;
     position: absolute;
-    cursor: row-resize;
     z-index: 10;
     opacity: 0;
+  }
+
+  &:not(.${NotebookCollapsedClass}) {
+    &:before,
+    &:after {
+      cursor: row-resize;
+    }
   }
 
   &:before {
@@ -160,14 +175,19 @@ const TabBar = styled.div`
   box-shadow: 0px ${p => !themeLayoutFlipped(p.theme) ? "-" : ""}10px 20px rgba(0, 0, 0, 0.2), 0px 0px 6px rgba(0, 0, 0, 0.15);
 `;
 
+const Expander = styled.div`
+  flex: 1;
+`;
+
 const TabBarGroup = styled.div`
   --side-border: 1px solid var(--color-bg);
   display: flex;
 
-  &:first-child {
+  &:nth-child(2) {
     .${NotebookTabDisplayClass} {
       border-right: var(--side-border);
     }
+    order: -1;
   }
 
   &:last-child {
