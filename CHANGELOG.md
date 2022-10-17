@@ -22,16 +22,22 @@
   before displaying them (`chunk.transforms`).
 * Partial config reload: Config is reloaded on file modification and *selected*
   changes are applied immediately, while Kamite is running.
+* Option to automatically collapse the notebook UI component, so that just its
+  tab bar is visible unless the notebook is being interacted with in some way
+  (`ui.notebook.collapse`).
 * Custom CSS rules can now be applied per profile, using CSS classes named
   `profile-PROFILENAME`, which are now assigned to the client application’s
   root element.
 
 ### Changed
 
+* The current chunk label UI component has been rewritten with improved
+  performance.
 * Shortened the click duration needed to reset the character counter and the
   session timer.
 * Client UI icons can now be recolored with custom CSS.
 * Warnings are now displayed when unknown keys are present in user config.
+* Text transform action has gained an additional visually similar character.
 
 ### Fixed
 
