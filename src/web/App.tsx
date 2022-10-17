@@ -261,7 +261,7 @@ export const App: VoidComponent = () => {
     mouseY = event.clientY;
 
     if (notebook.isCollapseAllowed(settings)) {
-      notebook.collapseIfNotHovered(themeLayoutFlippedMemo(), mouseY);
+      notebook.maybeCollapse(themeLayoutFlippedMemo(), mouseY, event.movementY);
     }
 
     const primaryButton = (event.buttons & 1) === 1;
@@ -503,7 +503,7 @@ export const App: VoidComponent = () => {
         value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
         break;
       case "notebook-collapse":
-        value && notebook.collapseIfNotHovered(themeLayoutFlippedMemo(), mouseY);
+        value && notebook.maybeCollapse(themeLayoutFlippedMemo(), mouseY);
         break;
       case "layout":
         setTheme("layout", value as UILayout);

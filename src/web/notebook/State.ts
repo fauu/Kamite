@@ -124,6 +124,7 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     const idx = tabs.findIndex(t => t.id === id);
     if (idx !== undefined) {
       setActiveTabIdx(idx);
+      setCollapsed(false);
     }
   }
 
@@ -146,8 +147,14 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     return !resizing() && !collapsed() && (getSetting(settings, "notebook-collapse") || false);
   }
 
-  function collapseIfNotHovered(isFlipped: boolean, mouseY: number) {
-    if (isCursorDecidedlyOutside(isFlipped, mouseY)) {
+  function maybeCollapse(isFlipped: boolean, mouseY: number, movementY?: number) {
+    // If `movementY` is provided, collapse only when the cursor has just been moved outisde.
+    // Otherwise, collapse simply if the cursor is currently outside.
+    const previouslyInsideCondition =
+      (movementY === undefined)
+      || !isCursorDecidedlyOutside(isFlipped, mouseY - movementY);
+    const currentlyOutside = isCursorDecidedlyOutside(isFlipped, mouseY);
+    if (currentlyOutside && previouslyInsideCondition) {
       setCollapsed(true);
     }
   }
@@ -207,7 +214,7 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     updateLookupTabs,
     getLookupTabs,
     isCollapseAllowed,
-    collapseIfNotHovered,
+    maybeCollapse,
     resizeMaybeStart,
     resizeTick,
   };
