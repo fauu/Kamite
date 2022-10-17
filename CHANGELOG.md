@@ -38,6 +38,7 @@
 * Client UI icons can now be recolored with custom CSS.
 * Warnings are now displayed when unknown keys are present in user config.
 * Text transform action has gained an additional visually similar character.
+* Max. notebook height has been increased to 90%.
 
 ### Fixed
 

@@ -12,9 +12,9 @@ import {
 import { BASE_NOTEBOOK_TABS, lookupTargetSymbolToLookupTabID, type NotebookTab } from "./tabs";
 
 export const MIN_HEIGHT_PERCENT = 0.25;
-export const MAX_HEIGHT_PERCENT = 0.75;
+export const MAX_HEIGHT_PERCENT = 0.90;
 export const INITIAL_HEIGHT = notebookHeightFromPercent(0.5);
-export const DEADZONE_PX = 20;
+export const DEADZONE_PX = 25;
 
 type LookupOverride = {
   text?: string,
