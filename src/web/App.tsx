@@ -503,7 +503,11 @@ export const App: VoidComponent = () => {
         value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
         break;
       case "notebook-collapse":
-        value && notebook.maybeCollapse(themeLayoutFlippedMemo(), mouseY);
+        if (value) {
+          notebook.maybeCollapse(themeLayoutFlippedMemo(), mouseY);
+        } else if (value === false) {
+          notebook.setCollapsed(false);
+        }
         break;
       case "layout":
         setTheme("layout", value as UILayout);
