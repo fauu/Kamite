@@ -17,9 +17,19 @@ export function createStatusPanelFader(params: CreateStatusPanelFaderParams) {
   const [fadeInvalidated, setFadeInvalidated] =
     createEmptySignal();
 
-  createEffect(on(params.notebook.height, setFadeInvalidated));
-  createEffect(on(params.chunks.current, setFadeInvalidated));
-  createEffect(on(params.chunks.translationWithContext, setFadeInvalidated));
+  createEffect(on(
+    [
+      // QUAL: The two should possibly be combined into something like `effectiveHeight`, since in
+      //       reality collapsing/expanding just means changing the height, and it's only this
+      //       `effectiveHeight` that determines status panel fading
+      params.notebook.height,
+      params.notebook.collapsed,
+
+      params.chunks.current,
+      params.chunks.translationWithContext,
+    ],
+    setFadeInvalidated
+  ));
 
   createEffect(on(fadeInvalidated, () =>
     // PERF: Could debounce
