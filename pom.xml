@@ -121,7 +121,6 @@
         <include>icon-48.png</include>
         <include>icon-128.png</include>
       </includes>
-      <targetPath>${basedir}/target/java/classes</targetPath>
     </resource>
   </resources>
   <plugins>
