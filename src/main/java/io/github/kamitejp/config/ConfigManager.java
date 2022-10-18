@@ -1,14 +1,13 @@
 package io.github.kamitejp.config;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +25,7 @@ import com.typesafe.config.ConfigOrigin;
 import com.typesafe.config.impl.ConfigImpl;
 
 import io.github.kamitejp.Kamite;
+import io.github.kamitejp.config.ConfigManager.ReadSuccess;
 import io.github.kamitejp.util.Result;
 
 public final class ConfigManager {
@@ -214,16 +214,10 @@ public final class ConfigManager {
 
   private static void reportUnknownKeys(com.typesafe.config.Config tsConfig) {
     List<String> knownKeys = null;
-    try {
-      knownKeys = Files.readAllLines(
-        Paths.get(
-          Objects.requireNonNull(ConfigManager.class.getResource(KNOWN_KEYS_FILE_RESOURCE_PATH))
-            .toURI()
-        ),
-        StandardCharsets.UTF_8
-      );
-    } catch (URISyntaxException e) {
-      throw new RuntimeException("Invalid known conifg keys file path", e);
+    try (var is = ConfigManager.class.getResourceAsStream(KNOWN_KEYS_FILE_RESOURCE_PATH)) {
+      try (var reader = new BufferedReader(new InputStreamReader(is))) {
+        knownKeys = reader.lines().toList();
+      }
     } catch (IOException e) {
       throw new RuntimeException("Could not read known config keys file", e);
     }
