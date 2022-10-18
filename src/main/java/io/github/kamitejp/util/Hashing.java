@@ -3,7 +3,6 @@ package io.github.kamitejp.util;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
