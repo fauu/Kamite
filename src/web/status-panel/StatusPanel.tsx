@@ -7,17 +7,19 @@ interface StatusPanelProps {
   fade: boolean,
   ref: Ref<HTMLDivElement>,
 }
- 
+
 export const StatusPanel: ParentComponent<StatusPanelProps> = (props) => {
   const [overrideFade, setOverrideFade] = createSignal(false);
 
   const handleMouseOver = () => setOverrideFade(true);
   const handleMouseOut = () => setOverrideFade(false);
 
+  const shouldFade = () => props.fade && !overrideFade();
+
   return <Root
-      classList={{
-        [FadedClass]: props.fade && !overrideFade(),
-      }}
+      // NOTE: Must be set through `class`, not `classList`, or else it isn't applied properly on
+      // flipping the layout (isn't faded despite `props.fade` being true the whole time)
+      class={shouldFade() ? FadedClass : ""}
       onMouseOver={handleMouseOver}
       onMouseOut={handleMouseOut}
       ref={props.ref}

@@ -31,15 +31,14 @@ export function createStatusPanelFader(params: CreateStatusPanelFaderParams) {
     setFadeInvalidated
   ));
 
-  createEffect(on(fadeInvalidated, () =>
+  createEffect(on(fadeInvalidated, () => {
     // PERF: Could debounce
-    setShouldFade(
-      domRectsOverlap(
-        params.chunkLabelAndTranslationEl().getBoundingClientRect(),
-        params.statusPanelEl().getBoundingClientRect(),
-      )
-    )
-  ));
+    const overlap = domRectsOverlap(
+      params.chunkLabelAndTranslationEl().getBoundingClientRect(),
+      params.statusPanelEl().getBoundingClientRect(),
+    );
+    setShouldFade(overlap);
+  }));
 
   return { shouldFade };
 }
