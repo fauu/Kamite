@@ -20,8 +20,8 @@ export function tooltipAnchor(el: HTMLElement, value: () => TooltipAnchorParams 
 
   const wrappedShow = () => {
     show(delayMS, () => {
-      setHeader(header);
-      setBody(body);
+      setHeader(() => header);
+      setBody(() => body);
       setScale(scale || DEFAULT_TOOLTIP_SCALE);
       floating.setReference(el);
       tooltip.floating.update();

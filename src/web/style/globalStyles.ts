@@ -260,5 +260,5 @@ const bgFlashKeyframes = keyframes`
 export const BG_FLASH_DURATION_MS = 300;
 
 export const BgFlashingClass = css`
-  animation: ${bgFlashKeyframes} ${BG_FLASH_DURATION_MS}ms linear 1;
+  animation: ${bgFlashKeyframes} ${BG_FLASH_DURATION_MS.toString()}ms linear 1;
 `;
