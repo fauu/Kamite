@@ -1,5 +1,3 @@
-import { glob } from "goober";
-import { JSX } from "solid-js";
 import { createGlobalStyles, css, keyframes, setup } from "solid-styled-components";
 
 import { cssPrefixer } from "./cssPrefixer";
