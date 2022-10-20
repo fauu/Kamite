@@ -1,5 +1,6 @@
 import { glob } from "goober";
-import { css, keyframes, setup } from "solid-styled-components";
+import { JSX } from "solid-js";
+import { createGlobalStyles, css, keyframes, setup } from "solid-styled-components";
 
 import { cssPrefixer } from "./cssPrefixer";
 
@@ -7,7 +8,7 @@ export const LAYOUT_BREAKPOINT_SMALL = "@media (max-width: 600px)";
 
 setup(cssPrefixer);
 
-glob`
+export const GlobalStyles = createGlobalStyles`
   :root {
     --color-bgm2: #201D1B;
     --color-bgm1: #252320;
@@ -155,52 +156,6 @@ glob`
     }
   }
   /* end adapted from Toastify */
-`;
-
-glob`
-  @font-face {
-    font-family: 'Roboto';
-    font-style: normal;
-    font-weight: 400;
-    src: local(''),
-          url('fonts/roboto-v30-latin_greek_cyrillic-regular.woff2') format('woff2');
-  }
-`;
-glob`
-  @font-face {
-    font-family: 'Roboto';
-    font-style: normal;
-    font-weight: 500;
-    src: local(''),
-          url('fonts/roboto-v30-latin_greek_cyrillic-500.woff2') format('woff2');
-  }
-`;
-glob`
-  @font-face {
-    font-family: 'Roboto';
-    font-style: normal;
-    font-weight: 700;
-    src: local(''),
-          url('fonts/roboto-v30-latin_greek_cyrillic-700.woff2') format('woff2');
-  }
-`;
-glob`
-  @font-face {
-    font-family: 'Roboto Mono';
-    font-style: normal;
-    font-weight: 400;
-    src: local(''),
-          url('fonts/roboto-mono-v22-latin-regular.woff2') format('woff2');
-  }
-`;
-glob`
-  @font-face {
-    font-family: 'Noto Sans JP';
-    font-style: normal;
-    font-weight: 400;
-    src: local(''),
-         url('fonts/noto-sans-jp-v42-latin_japanese-regular.woff2') format('woff2');
-  }
 `;
 
 export const ChromeClass = "chrome";
