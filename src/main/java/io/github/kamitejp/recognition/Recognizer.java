@@ -18,7 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -68,6 +72,7 @@ public class Recognizer {
   private final boolean debug;
   private final Consumer<RecognizerEvent> eventCb;
   private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
+  private ExecutorService executorService;
 
   public Recognizer(
     Platform platform,
@@ -106,6 +111,9 @@ public class Recognizer {
 
   public void destroy() {
     engine.destroy();
+    if (executorService != null) {
+      executorService.shutdown();
+    }
   }
 
   private record LabelledTesseractResult(String label, TesseractResult result) {}
@@ -212,8 +220,6 @@ public class Recognizer {
       img = ImageOps.copied(img, BufferedImage.TYPE_INT_RGB);
     }
 
-    var tesseractResultFutures = new ArrayList<CompletableFuture<LabelledTesseractResult>>();
-
     // If we detect background features that are likely to ruin text detection, try to get rid of
     // them by flood filling the image with white and then applying otsu threshold
     if (!ImageOps.isMostlyColorless(img) || ImageOps.hasBusyEdges(img)) {
@@ -244,34 +250,37 @@ public class Recognizer {
     final var model = tmpModel;
     final var altModel = tmpAltModel;
 
+    var tesseractCallables = new ArrayList<Callable<LabelledTesseractResult>>();
+
     // Queue OCR on the initial screenshot
     final var initial = img;
-    tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
+    tesseractCallables.add(() ->
       new LabelledTesseractResult("initial", platform.tesseractOCR(initial, model))
-    ));
+    );
 
     // Queue OCR on the initial screenshot using the alternative model
     if (altModel != null) {
-      tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
+      tesseractCallables.add(() ->
         new LabelledTesseractResult("initial-alt", platform.tesseractOCR(initial, altModel))
-      ));
+      );
     }
 
     // Invert the image and queue OCR again if we suspect it's white on black
     if (ImageOps.isDarkDominated(img)) {
       ImageOps.negate(img);
       final var negated = img;
-      tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
+      tesseractCallables.add(() ->
         new LabelledTesseractResult("inverted", platform.tesseractOCR(negated, model))
-      ));
+      );
 
       if (altModel != null) {
-        tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
+        tesseractCallables.add(() ->
           new LabelledTesseractResult("inverted-alt", platform.tesseractOCR(negated, altModel))
-        ));
+        );
       }
     }
 
+    // XXX: (DEV)
     // if (debug) {
     //   detectTextLines(img);
     // }
@@ -282,38 +291,51 @@ public class Recognizer {
       Color.WHITE,
       WITH_BORDER_VARIANT_WHITE_BORDER_SIZE
     );
-    tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
+    tesseractCallables.add(() ->
       new LabelledTesseractResult("white-border", platform.tesseractOCR(withBorder, model))
-    ));
+    );
 
     // Queue OCR on a downscaled version
     final var downscaled = ImageOps.scaled(img, 0.75f);
-    tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
+    tesseractCallables.add(() ->
       new LabelledTesseractResult("downscaled", platform.tesseractOCR(downscaled, model))
-    ));
+    );
 
     // Queue OCR on a version with thinner lines
     final var thinLines = ImageOps.copied(img);
     ImageOps.threshold(thinLines, 70, 150);
-    tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
+    tesseractCallables.add(() ->
       new LabelledTesseractResult("thin-lines", platform.tesseractOCR(thinLines, model))
-    ));
+    );
 
     // Queue OCR on a blurred version
     final var blurred = ImageOps.blurred(ImageOps.copied(img), /* blurFactor */ 2);
-    tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
+    tesseractCallables.add(() ->
       new LabelledTesseractResult("blurred", platform.tesseractOCR(blurred, model))
-    ));
+    );
 
     // Queue OCR on a sharpened version
     final var sharpened = ImageOps.copied(img);
     ImageOps.sharpen(sharpened, /* amount */ 2f, /* threshold */ 0, /* blurFactor */ 3);
-    tesseractResultFutures.add(CompletableFuture.supplyAsync(() ->
+    tesseractCallables.add(() ->
       new LabelledTesseractResult("sharpened", platform.tesseractOCR(sharpened, model))
-    ));
+    );
 
-    // Run the queued operations
-    CompletableFuture.allOf(tesseractResultFutures.toArray(new CompletableFuture[0])).join();
+    List<Future<LabelledTesseractResult>> tesseractResultFutures = null;
+
+    if (executorService == null) {
+      executorService = Executors.newVirtualThreadPerTaskExecutor();
+    }
+
+    try {
+      tesseractResultFutures = executorService.invokeAll(tesseractCallables);
+    } catch (InterruptedException e) {
+      LOG.error(
+        "Recognizer executor service was interrupted during execution."
+        + " See stderr for the stack trace"
+      );
+      e.printStackTrace();
+    }
 
     // Transform the results
     var numExecutions = tesseractResultFutures.size();
@@ -322,7 +344,14 @@ public class Recognizer {
     ArrayList<String> errorMsgs = null;
     ArrayList<LabelledTesseractHOCROutput> variants = null;
     for (var labelledResultFuture : tesseractResultFutures) {
-      var labelledResult = labelledResultFuture.join();
+      LabelledTesseractResult labelledResult = null;
+      try {
+        labelledResult = labelledResultFuture.get();
+      } catch (ExecutionException | InterruptedException e) {
+        LOG.debug("Exception while getting future labelled tesseract result", e);
+        numExecutionFails++;
+        continue;
+      }
       switch (labelledResult.result) { // NOPMD - misidentifies as non-exhaustive
         case TesseractResult.ExecutionFailed ignored ->
           numExecutionFails++;
