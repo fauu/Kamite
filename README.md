@@ -65,17 +65,22 @@ script; [waycorner][waycorner-icxes].
     * [Visual novel / game text extraction](#visual-novel--game-text-extraction)
     * [Clipboard](#clipboard)
     * [Custom source / alternative method text extraction](#custom-source--alternative-method-text-extraction)
+    * [Filtering and transforming incoming text](#filtering-and-transforming-incoming-text)
 7. [Text use](#text-use)
     * [Editing and transforming the text](#editing-and-transforming-the-text)
     * [Pop-up dictionary](#pop-up-dictionary)
     * [Lookups](#lookups)
     * [Auto-generated furigana](#auto-generated-furigana)
+    * [Saving text to a file for external use](#saving-text-to-a-file-for-external-use)
 8. [Custom commands (Launching external executables)](#custom-commands-launching-external-executables)
 9. [Keyboard shortcuts](#keyboard-shortcuts)
     * [Client-only keyboard shortcuts](#client-only-keyboard-shortcuts)
     * [Global keyboard shortcuts](#global-keyboard-shortcuts)
 10. [Launch options](#launch-options)
 11. [Config](#config)
+    * [Live reload](#live-reload)
+    * [Full config example](#full-config-example)
+    * [Substitution (variables)](#substitution-variables)
     * [Config profiles](#config-profiles)
 12. [Style customization](#style-customization)
 13. [Command API](#command-api)
@@ -588,7 +593,7 @@ Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
    ```sh
    ocr {
      tesseract {
-       path = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe" # Note the double backslashes
+       path = """C:\Program Files\Tesseract-OCR\tesseract.exe""" # Note the triple quotes
      }
    }
    ```
@@ -789,7 +794,7 @@ file](#config):
 ```sh
 ocr {
   watchDir = "/full/path/to/the/directory" # Linux variant
-  watchDir = "C:\\path\\to\\the\\directory" # Windows variant (note the double slashes)
+  watchDir = """C:\path\to\the\directory""" # Windows variant (note the triple quotes)
 }
 ```
 
@@ -897,6 +902,98 @@ with `Right click › Run with PowerShell`).
 
 Custom sources and alternative extraction methods can be integrated using the
 [Command API](#command-api).
+
+### Filtering and transforming incoming text
+
+Kamite has the ability to discard incoming chunks that match a user-provided
+pattern and to perform text replacements on incoming chunks according to
+user-provided rules.
+
+Both features are based on *regular expressions*, which can be learned using the
+following resources:
+
+* [RegexOne] — interactive regular expression tutorial.
+* [regex101] — regular expression tester and explainer.
+
+> Note: The particular regular expression engine used by Kamite is Java’s, which
+> has some particularities. Therefore, [Java’s own regular expression
+reference][java-regex]
+> might also come useful (note that [regex101] can be instructed to use the Java
+> flavour of regex through the menu on the left side of the page).
+
+[RegexOne]: https://regexone.com/
+[regex101]: https://regex101.com/
+[java-regex]: https://docs.oracle.com/en/java/javase/18/docs/api/java.base/java/util/regex/Pattern.html#sum
+
+#### Filtering chunks
+
+To enable the chunk filter, specify chunk reject patterns in the [config](#config)
+(`chunk.filter.rejectPatterns`). The patterns are regular expressions against
+which incoming chunks will be tested. If any part of the chunk matches against
+any of the patterns, the entire chunk will be discarded. For exmple, the
+following configuration:
+
+```sh
+chunk {
+  filter.rejectPatterns = [
+    "^Textractor"
+    "(?s).{91}"
+  ]
+}
+```
+
+will discard both chunks beginning with the string of characters `Textractor`
+and chunks that are above 90 characters in length. *The first of those filters is
+already included in the [default config] that is created automatically when no
+config file exists.*
+
+**Note:** Regular expressions containing the backslash (`\`) character must
+(generally) be specified within triple instead of single quotes
+(that is, `"""` instead of `"`). See the section Transforming chunks (following)
+for an example.
+
+**Note that Kamite will automatically reload the patterns once a config file is
+modified.** There is no need to restart the program. The simplest way to test
+the filter is by pasting (<kbd>Ctrl</kbd> + <kbd>V</kbd>) prepared chunks into
+the client’s browser tab and observing whether they are allowed through.
+
+[default config]: https://github.com/fauu/Kamite/blob/master/config/config.default.hocon
+
+#### Transforming chunks
+
+To enable the chunk transformer, specify chunk transform rules in the
+[config](#config) (`chunk.transforms`). The rules are objects consisting of: 1)
+a regular expression defining the replacement target, 2) a pattern specifying
+the replacement text. For example, the following configuration:
+
+```sh
+chunk {
+  transforms = [
+    { replace: """\R""", with: "" }
+    { replace: ".+?「(.+?)」", with: "$1" }
+  ]
+}
+```
+
+will remove (replace with an empty string) any line break characters as well as
+remove the names of speakers and quotation marks from dialogue lines formatted
+as `<name>「<dialogue>」` (this will be replaced with just `<dialogue>`. The
+`$1` in the `with` field is a special reference that will be replaced with the
+text captured in the first and only [match group][regex-match-groups] defined
+within the `replace` field). The rules will be applied in the specified order.
+
+**Note:** Regular expressions containing the backslash (`\`) character must
+(generally) be specified within triple instead of single quotes
+(that is, `"""` instead of `"`). See the first transform in the example above
+for illustration.
+
+**Note that Kamite will automatically reload the transform definitions once a
+config file is modified.** There is no need to restart the program. The simplest
+way to test the transforms is by pasting (<kbd>Ctrl</kbd> + <kbd>V</kbd>)
+prepared chunks into the client’s browser tab and observing whether they come
+out modified as expected.
+
+[regex-match-groups]: https://regexone.com/lesson/capturing_groups
 
 ## Text use
 
@@ -1062,6 +1159,29 @@ that this furigana will frequently be incorrect. To enable this feature:
 [furigana]: https://en.wikipedia.org/wiki/Furigana
 [kuromoji-jar]: https://jitpack.io/com/github/atilika/kuromoji/kuromoji-unidic-kanaaccent/e18ff911fd/kuromoji-unidic-kanaaccent-e18ff911fd.jar
 
+### Saving text to a file for external use
+
+Kamite can be instructed to save all chunks that appear in the client into a
+text file for further use (for example, for purposes of statistical analysis of
+the texts you read). To enable chunk logging, specify the path (in the
+[config](#config)) of the directory where the text files ought to be saved:
+
+```sh
+chunk {
+  log.dir = "/path/to/the/directory" # Linux variant
+  log.dir = """C:\path\to\the\directory""" # Windows variant (note the triple quotes)
+}
+```
+
+Kamite will then create a dated log text file in that directory for each session
+(that is, one each time the program is started), to which chunks appearing in
+the client will be appended live, one chunk per line (note: to that end, line
+breaks within chunks will be replaced with their literal representation, `\n`,
+so that actual line break characters demarcate chunks).
+
+To disable logging, either remove the `log.dir` definition before starting
+Kamite or simply comment it out by putting the `#` character in front of it.
+
 ## Custom commands (Launching external executables)
 
 You can add buttons to the *command palette* that execute specified system
@@ -1097,11 +1217,11 @@ CUSTOM_COMMANDS {
 ```
 
 > **Note (Windows)**: To execute a PowerShell script, set `command` to, e.g.,
-> `["powershell.exe", "C:\\path\\to\\the\\script.ps1", "first argument"]` (note
-> the double backslashes). The execution of PowerShell scripts is disabled by
-> default in the system. To enable it, start PowerShell with the Run as
-> Administrator option and execute the command `Set-ExecutionPolicy
-> RemoteSigned`. Be aware that this lowers system security.
+> `["powershell.exe", """C:\path\to\the\script.ps1""", "first argument"]` (note
+> the triple quotes). The execution of PowerShell scripts is disabled by default
+> in the system. To enable it, start PowerShell with the Run as Administrator
+> option and execute the command `Set-ExecutionPolicy RemoteSigned`. Be aware
+> that this lowers system security.
 
 The supported placeholder arguments for custom commands are:
 
@@ -1111,9 +1231,9 @@ selection in the current chunk, just the selection will be used. Otherwise,
 the text selected in the *chunk history* view will be used.
 
 `{originalEffectiveText}`\
-Same as `{effectiveText}`, except prioritizes the *original text* for chunks
-that have it. Chunks have original text if their text was modified by Kamite’s
-automatic correction procedure when coming into the program.
+Same as `{effectiveText}`, except yields the *original text* for chunks that
+have it. Chunks have original text if their text was modified by Kamite’s
+automatic correction procedure or user-provided transforms.
 
 ## Keyboard shortcuts
 
@@ -1137,9 +1257,10 @@ Copy text depending on what is selected in the current chunk, the current chunk
 translation and chunk history.
 
 <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>C</kbd>\
-Copy *original* text depending on what is selected in the current
-chunk or chunk history. Original text is available in cases Kamite has applied
-corrections to the text. Otherwise, this acts the same as `Ctrl+c`.
+Copy *original* text depending on what is selected in the current chunk or chunk
+history. Original text is available in the case when Kamite’s built-in
+corrections or user-specified transforms have been applied to the text.
+Otherwise, this acts the same as `Ctrl+c`.
 
 <kbd>Ctrl</kbd> + <kbd>V</kbd>\
 Paste text from clipboard.
@@ -1270,13 +1391,22 @@ directory if absent on launch.
 > Windows versions, the system Notepad will not be able to properly display the
 > config file. In that case, please use another text editor.
 
-**Note: When providing values containing backslashes (`\`), for example Windows
-paths, you must enclose them within quotation marks (`"`) and replace each
-backslash with two backslashes.** For example: `ocr.tesseract.path =
-"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"`.
+**Note: When providing values that containin backslashes (`\`), for example
+Windows paths, you must enclose them within triple quote marks (`"""`).** For
+example: `ocr.tesseract.path = """C:\Program Files\Tesseract-OCR\tesseract.exe"""`.
+
+### Live reload
+
+The config will be automatically reloaded if one of the files is modified.
+However, **only select changes will be applied immediately**. To apply others,
+Kamite will still have to be restarted. **The config keys for which the relevant
+changes are applied immediately are marked with `[RELOADABLE]` in the following
+section**.
+
+### Full config example
 
 Below is an example config file illustrating all the possible options with their
-**default** values:
+**default** values (`…` represents no default value):
 
 ```sh
 # Whether to launch Kamite with the control window or in console only
@@ -1286,7 +1416,7 @@ controlWindow = true
 launchBrowser = true
 
 chunk {
-  # Whether to add auto-generated furigana to the current chunk.
+  # [RELOADABLE] Whether to add auto-generated furigana to the current chunk.
   # Note that feature requires an extra download (see the Auto-generated
   # furigana section in the README).
   # WARNING: The auto-generated furigana will frequently be incorrect.
@@ -1296,26 +1426,29 @@ chunk {
   # before they begin to be throttled
   throttleMS = 1000
 
-  # Whether to perform slight formatting corrections on incoming chunks
+  # [RELAODABLE] Whether to perform slight formatting corrections on incoming
+  # chunks
   correct = true
 
-  # Whether to flash backgrounds of chunk texts in the client's interface on
-  # certain occasions
+  # [RELOADABLE] Whether to flash backgrounds of chunk texts in the client's
+  # interface on certain occasions
   flash = true
 
-  # Whether to treat incoming chunks as translations and create a new chunk for
-  # each translation. Useful when watching media with just the translation
-  # subtitles
+  # [RELOADABLE] Whether to treat incoming chunks as translations and create a
+  # new chunk for each translation. Useful when watching media with just the
+  # translation subtitles
   translationOnlyMode = false
 }
 
 commands {
+  # [RELOADABLE]
   player {
     # Whether to show extra media player controls (seek -+1 second, seek to the
     # start of the current subtitle)
     showExtra = true
   }
 
+  # [RELOADABLE]
   # A *list* of custom commands that allow launching system executables through
   # buttons in Kamite's command palette. See the "Custom commands" section of
   # the Readme
@@ -1359,6 +1492,7 @@ keybindings {
   }
 }
 
+# [RELOADABLE]
 lookup {
   # A list of lookup targets that will be displayed in the notebook’s tab bar.
   # Consult the default config for further illustration of configuring lookups
@@ -1403,6 +1537,7 @@ ocr {
     engine = 1
   }
 
+  # [RELOADABLE]
   # A *list* of OCR regions, for each of which a region recognition command
   # button will be displayed in the command palette. See the "OCR region"
   # section of the Readme for details
@@ -1433,12 +1568,18 @@ server {
   port = 4110
 }
 
+# [RELOADABLE]
 ui {
   # The client’s user interface layout: standard, standard_flipped
   layout = standard
+
   notebook {
-    # (25-75) The initial height of the client's notebook as a percentage of
-    # the total browser inner window height
+    # Whether to automatically collapse the client's notebook to just its tab
+    # bar, expanding it only when it's being interacted with
+    collapse = false
+
+    # (25-90) The height of the client's notebook as a percentage of the total
+    # browser inner window height
     height = 60
   }
 }
@@ -1451,6 +1592,33 @@ secrets {
   ocrspace = …
 }
 ```
+
+### Substitution (variables)
+
+The config format supports substitution. You can define your own keys and then
+use them when specifying values for the keys read by Kamite, listed above. For
+example, the following configuration:
+
+```sh
+chunk.log.dir = ${MY_HOME_DIRECTORY}"documents/kamite-chunk-logs"
+ocr.mangaocr.pythonPath = ${MY_HOME_DIRECTORY}".local/pipx/venvs/manga-ocr/bin/python"
+
+MY_HOME_DIRECTORY = "/home/my-username/"
+```
+
+will be resolved to:
+
+```sh
+chunk.log.dir = "/home/my-username/documents/kamite-chunk-logs"
+ocr.mangaocr.pythonPath = "/home/my-username/.local/pipx/venvs/manga-ocr/bin/python"
+```
+
+Kamite will warn you if you specify an unknown key in a config file, since
+mistyping their names is a common source of mistakes. But it will at the same
+time ignore keys whose names start with a capital letter, under the assumption
+they are your own keys, like `MY_HOME_DIRECTORY` in the example above. For this
+reason, **it is advised to name your own keys using capital letters to avoid
+confusion and false positive warnings**.
 
 [HOCON]: https://github.com/lightbend/config#using-hocon-the-json-superset
 
@@ -1549,6 +1717,19 @@ customization.
   color: yellow;
 }
 ```
+
+The root client element is assigned CSS classes `profile-X`, where `X` stands
+for each profile specified at launch. Style customizations can therefore be
+defined per profile. For example, the following `custom.css`:
+
+```css
+.profile-vn {
+  --color-bg: purple;
+}
+```
+
+will recolor the background to purple only when the program was launched with
+the profile named `vn`.
 
 ## Command API
 
