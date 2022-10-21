@@ -1731,6 +1731,19 @@ defined per profile. For example, the following `custom.css`:
 will recolor the background to purple only when the program was launched with
 the profile named `vn`.
 
+### Styling recipes
+
+<!-- markdownlint-capture --><!-- markdownlint-disable -->
+<p align="center">
+<img alt="Kamite black theme" src="https://user-images.githubusercontent.com/4130634/197248754-96468c44-fd58-479c-8bd5-c7e20668269a.png" />
+</p>
+<!-- markdownlint-restore-->
+
+Examples of ready-made style customizations, including a black color theme, can
+be found on the [Styling recipes] Wiki page.
+
+[Styling recipes]: https://github.com/fauu/Kamite/wiki/Styling-recipes
+
 ## Command API
 
 Kamite can receive commands sent programmatically, which makes it simple to
