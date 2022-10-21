@@ -14,10 +14,9 @@
   file (`chunk.log.dir`).
 * Rejecting chunks based on user-provided regular expressions
   (`chunk.filter.rejectPatterns`). **BREAKING CHANGE: A pattern used for
-  filtering Textractor messages has been moved from inside the program to the
-  default config. This means that if you already have a config , to have the
-  filter back on, you need to set `chunk.filter.rejectPatterns` in config to
-  `["^Textractor"]`.**
+  filtering Textractor messages has been moved from within the program to the
+  default config. If you already have a config, to have the filter back on, you
+  need to set `chunk.filter.rejectPatterns` in config to `["^Textractor"]`.**
 * Changing the text of chunks according to user-provided replacement rules
   before displaying them (`chunk.transforms`).
 * Partial config reload: Config is reloaded on file modification and *selected*
