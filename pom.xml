@@ -7,9 +7,9 @@
 <version>0.0.0</version>
 
 <properties>
-  <java.version>18</java.version>
-  <maven.compiler.source>18</maven.compiler.source>
-  <maven.compiler.target>18</maven.compiler.target>
+  <java.version>19</java.version>
+  <maven.compiler.source>19</maven.compiler.source>
+  <maven.compiler.target>19</maven.compiler.target>
 </properties>
 
 <repositories>
