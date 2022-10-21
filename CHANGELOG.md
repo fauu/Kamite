@@ -10,30 +10,28 @@
 
 ### Added
 
-* Option to log chunks that appear in the client in each session into a text
-  file (`chunk.log.dir`).
+* Option to log to a text file chunks that appear in the client in each session
+  (`chunk.log.dir`).
 * Rejecting chunks based on user-provided regular expressions
   (`chunk.filter.rejectPatterns`). **BREAKING CHANGE: A pattern used for
   filtering Textractor messages has been moved from within the program to the
   default config. If you already have a config, to have the filter back on, you
-  need to set `chunk.filter.rejectPatterns` in config to `["^Textractor"]`.**
-* Changing the text of chunks according to user-provided replacement rules
-  before displaying them (`chunk.transforms`).
-* Partial config reload: Config is reloaded on file modification and *selected*
-  changes are applied immediately, while Kamite is running.
+  need to set `chunk.filter.rejectPatterns` in your config to `["^Textractor"]`.**
+* Transforming text of incoming chunks according to user-provided replacement
+  rules before displaying them (`chunk.transforms`).
+* Partial config reload: Config is reloaded on config file modification and
+  *selected* changes are applied immediately, while Kamite is running.
 * Option to automatically collapse the notebook UI component, so that just its
   tab bar is visible unless the notebook is being interacted with in some way
   (`ui.notebook.collapse`).
 * Custom CSS rules can now be applied per profile, using CSS classes named
-  `profile-PROFILENAME`, which are now assigned to the client application’s
-  root element.
+  `profile-PROFILENAME`.
 
 ### Changed
 
-* The current chunk label UI component has been rewritten with improved
-  performance.
-* Shortened the click duration needed to reset the character counter and the
-  session timer.
+* Rewrote the *current chunk label* UI component with improved performance.
+* Shortened the long-click duration needed to reset the character counter and
+  the session timer.
 * Client UI icons can now be recolored with custom CSS.
 * Warnings are now displayed when unknown keys are present in user config.
 * Text transform action has gained an additional visually similar character.
