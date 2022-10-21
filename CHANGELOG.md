@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+## [0.8] – 2022-10-21
+
 ### Added
 
 * Option to log to a text file chunks that appear in the client in each session
@@ -36,6 +38,7 @@
 * Warnings are now displayed when unknown keys are present in user config.
 * Text transform action has gained an additional visually similar character.
 * Max. notebook height has been increased to 90%.
+* Updated the runtime from Java 18 to Java 19.
 
 ### Fixed
 
@@ -234,7 +237,8 @@
 
 Initial release.
 
-[Unreleased]: https://github.com/fauu/Kamite/compare/v0.7...HEAD
+[Unreleased]: https://github.com/fauu/Kamite/compare/v0.8...HEAD
+[0.8]: https://github.com/fauu/Kamite/releases/tag/v0.8
 [0.7]: https://github.com/fauu/Kamite/releases/tag/v0.7
 [0.6]: https://github.com/fauu/Kamite/releases/tag/v0.6
 [0.5]: https://github.com/fauu/Kamite/releases/tag/v0.5
