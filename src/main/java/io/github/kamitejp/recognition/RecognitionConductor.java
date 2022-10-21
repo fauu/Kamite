@@ -26,7 +26,6 @@ public class RecognitionConductor {
 
   public RecognitionConductor(
     Platform platform,
-    Config config,
     ProgramStatus status,
     Consumer<RecognizerEvent> recognizerEventCb,
     Consumer<ChunkVariants> chunkVariantsCb,
@@ -39,17 +38,9 @@ public class RecognitionConductor {
     this.chunkVariantsCb = chunkVariantsCb;
     this.notifyUserOfErrorFn = notifyUserOfErrorFn;
     this.updateAndSendRecognizerStatusFn = updateAndSendRecognizerStatusFn;
-
-    initRecognizer(config);
   }
 
-  public void destroy() {
-    if (recognizer != null) {
-      recognizer.destroy();
-    }
-  }
-
-  private void initRecognizer(Config config) {
+  public void initRecognizer(Config config) {
     var unavailable = true;
     try {
       var engineRes = OCREngine.uninitializedFromConfig(config);
@@ -85,6 +76,12 @@ public class RecognitionConductor {
     }
     if (unavailable) {
       updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
+    }
+  }
+
+  public void destroy() {
+    if (recognizer != null) {
+      recognizer.destroy();
     }
   }
 

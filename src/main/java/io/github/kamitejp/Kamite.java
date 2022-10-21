@@ -238,7 +238,6 @@ public class Kamite {
 
     recognitionConductor = new RecognitionConductor(
       platform,
-      config,
       status,
       /* recognizerEventCb */               this::handleRecognizerEvent,
       /* chunkVariantsCb */                 this::handleChunkVariants,
@@ -246,8 +245,8 @@ public class Kamite {
       /* updateAndSendRecognizerStatusFn */ this::updateAndSendRecognizerStatus
     );
 
-    // NOTE: setupGlobalKeybindings() depends on recognitionConductor being initialized (but this
-    //       can be changed)
+    // NOTE: setupGlobalKeybindings() depends on recognitionConductor being present (but this can be
+    //       changed)
     if (platform.supports(PlatformDependentFeature.GLOBAL_KEYBINDINGS)) {
       if (platform instanceof GlobalKeybindingProvider keybindingProvider) {
         setupGlobalKeybindings(keybindingProvider);
@@ -259,8 +258,21 @@ public class Kamite {
       }
     }
 
-    // NOTE: OCRDirectoryWatcher constructor depends on recognitionConductor being initialized
-    //       (but this can be changed)
+    if (config.chunk().log() != null && config.chunk().log().dir() != null) {
+      try {
+        chunkLogger = new ChunkLogger(config.chunk().log().dir());
+      } catch (ChunkLoggerInitializationException e) {
+        LOG.error("Could not initialize chunk logger:", e);
+      }
+    }
+
+    // Defer to here to have chunk logging initialized before recognizer, so that chunks received
+    // during a long manga-ocr initialization aren't missing from the log.
+    // QUAL: Should probably initialize recognizer in a separate thread
+    recognitionConductor.initRecognizer(config);
+
+    // NOTE: OCRDirectoryWatcher constructor depends on recognitionConductor being present (but this
+    //       can be changed)
     var ocrWatchDir = config.ocr().watchDir();
     if (ocrWatchDir != null) {
       try {
@@ -270,14 +282,6 @@ public class Kamite {
         );
       } catch (OCRDirectoryWatcherCreationException e) {
         LOG.error("Failed to create OCR directory watcher: {}", e::toString);
-      }
-    }
-
-    if (config.chunk().log() != null && config.chunk().log().dir() != null) {
-      try {
-        chunkLogger = new ChunkLogger(config.chunk().log().dir());
-      } catch (ChunkLoggerInitializationException e) {
-        LOG.error("Could not initialize chunk logger:", e);
       }
     }
 
