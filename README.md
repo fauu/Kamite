@@ -275,10 +275,16 @@ subtitle track as *primary* (assumed by Kamite to be the Japanese subtitles) and
 glanced by pressing <kbd>F9</kbd> in mpv while the video file is opened and the
 subtitles loaded.
 
-Note: Subtitles hidden within mpv will still be recognized by Kamite.
+> **Note**
+> Subtitles hidden within mpv will still be recognized by Kamite.
 
-**Note: The subtitle extraction functionality will not work with subtitles that
-are stored as images, not as text.**
+<!-- -->
+
+> **Warning**
+> The subtitle extraction functionality will not work with subtitles that
+> are stored as images, not as text.
+
+<!-- -->
 
 > See also: [mpv reference: Subtitle options][mpv-ref-sub-options].
 
@@ -383,10 +389,11 @@ system resources.
 
 #### Setting up “Manga OCR” Online
 
-> **Note:** The “Manga OCR” Online engine depends on a third-party online
-service ([a Hugging Face Space by Gryan Galario][manga-ocr-hf-gg]), so using it
-involves sending screenshots of portions of your screen to a third-party.
-Here is [the stated privacy policy of Hugging Face][huggingface-privacy-policy].
+> **Warning**
+> The “Manga OCR” Online engine depends on a third-party online
+> service ([a Hugging Face Space by Gryan Galario][manga-ocr-hf-gg]), so using
+> it involves sending screenshots of portions of your screen to a third-party.
+> Here is [the stated privacy policy of Hugging Face][huggingface-privacy-policy].
 
 The online API used by the “Manga OCR” Online engine is freely accessible and
 consequently *does not* require any setup.
@@ -398,8 +405,9 @@ and to launch Kamite with the config key `ocr.engine` set to `mangaocr_online`.
 
 #### Setting up “Manga OCR” (Local)
 
-**Note:** “Manga OCR” will use up to 2.5 GB of disk space. During launch, it
-will use up to 1 GB of additional memory.
+> **Note**
+> “Manga OCR” will use up to 2.5 GB of disk space. During launch, it will use up
+> to 1 GB of additional memory.
 
 ##### Recommended option: installation using pipx
 
@@ -519,9 +527,10 @@ ocr {
 
 #### Setting up OCR.space
 
-> **Note:** OCR.space is an online service, so using it involves sending
-screenshots of portions of your screen to a third-party. Here is [the stated
-privacy policy of OCR.space][ocrspace-privacy-policy].
+> **Warning**
+> OCR.space is an online service, so using it involves sending screenshots of
+> portions of your screen to a third-party. Here is [the stated privacy policy
+> of OCR.space][ocrspace-privacy-policy].
 
 The usage of the [OCR.space] free API is limited. The limits are defined by the
 provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
@@ -533,8 +542,9 @@ provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
 
 1. Put the API key in Kamite’s [config file](#config):
 
-    > **Note:** This is unsafe plain-text storage. Abort if you deem your key too
-    sensitive for this kind of storage
+    > **Note**
+    > This is unsafe plain-text storage. Abort if you deem your key too
+    > sensitive for this kind of storage
 
     ```sh
     secrets {
@@ -673,10 +683,11 @@ the block and then OCR the resulting area.
 *This should be good enough for > 90% of typical manga text blocks, but the
 block detection algorithm has a lot of room for improvement.*
 
-**Note (Linux/Xorg):** On Xorg, the point selection mechanism cannot be
-restricted to just a point, meaning that when the mouse is pressed and dragged,
-a rectangle area will be selected instead of a point. If this happens, Kamite
-will consider the center of this area as the selected point.
+> **Note**
+> (Linux/Xorg) On Xorg, the point selection mechanism cannot be restricted to
+> just a point, meaning that when the mouse is pressed and dragged, a rectangle
+> area will be selected instead of a point. If this happens, Kamite will
+> consider the center of this area as the selected point.
 
 ##### Region OCR
 
@@ -687,8 +698,9 @@ Define a screen area in the config file and Kamite will OCR it as is.
 This is intended as an alternative for games that do not work well with
 Textractor.
 
-**Note:** The feature is experimental and might currently not be usable in many
-use cases.
+> **Note**
+>The feature is experimental and might currently not be usable in many use
+> cases.
 
 Below is an illustration of setting up a region in the [config file](#config).
 
@@ -743,8 +755,9 @@ Helper mode: Launch Kamite from console with the launch option `--regionHelper`,
 select the desired areas, and copy the resulting region specifications from the
 console output.
 
-> Note (Windows): To get console output on Windows, you must launch Kamite using
-> the `Kamite.com` executable, not `Kamite.exe`.
+> **Note**
+> (Windows) To get console output on Windows, you must launch Kamite using the
+> `Kamite.com` executable, not `Kamite.exe`.
 
 ###### Region OCR quality
 
@@ -845,7 +858,8 @@ To install the *Kamite Send* Textractor extension:
    package to the main Textractor directory (the one containing
    `Textractor.exe`).
 
-   > Note: If you installed Kamite from AUR, the files will be in `/opt/kamite`.
+   > **Note**
+   > If you installed Kamite from AUR, the files will be in `/opt/kamite`.
 
 2. In Textractor, press the `Extensions` button, right-click in the extension
    list, choose `Add extension` and select the `Kamite Send.xdll` file copied
@@ -918,9 +932,9 @@ following resources:
 * [RegexOne] — interactive regular expression tutorial.
 * [regex101] — regular expression tester and explainer.
 
-> Note: The particular regular expression engine used by Kamite is Java’s, which
-> has some particularities. Therefore, [Java’s own regular expression
-reference][java-regex]
+> **Note**
+> The particular regular expression engine used by Kamite is Java’s, which
+> has some particularities. Therefore, [Java’s own regular expression reference][java-regex]
 > might also come useful (note that [regex101] can be instructed to use the Java
 > flavour of regex through the menu on the left side of the page).
 
@@ -950,15 +964,18 @@ and chunks that are above 90 characters in length. *The first of those filters i
 already included in the [default config] that is created automatically when no
 config file exists.*
 
-**Note:** Regular expressions containing the backslash (`\`) character must
-(generally) be specified within triple instead of single quotes
-(that is, `"""` instead of `"`). See the section Transforming chunks (following)
-for an example.
+> **Note**
+> Regular expressions containing the backslash (`\`) character must (generally)
+> be specified within triple instead of single quotes (that is, `"""` instead of
+> `"`). See the section Transforming chunks (following) for an example.
 
-**Note that Kamite will automatically reload the patterns once a config file is
-modified.** There is no need to restart the program. The simplest way to test
-the filter is by pasting (<kbd>Ctrl</kbd> + <kbd>V</kbd>) prepared chunks into
-the client’s browser tab and observing whether they are allowed through.
+<!-- -->
+
+> **Note**
+> **Kamite will automatically reload the patterns once a config file is
+> modified.** There is no need to restart the program. The simplest way to test
+> the filter is by pasting (<kbd>Ctrl</kbd> + <kbd>V</kbd>) prepared chunks into
+> the client’s browser tab and observing whether they are allowed through.
 
 [default config]: https://github.com/fauu/Kamite/blob/master/config/config.default.hocon
 
@@ -985,16 +1002,19 @@ as `<name>「<dialogue>」` (this will be replaced with just `<dialogue>`. The
 text captured in the first and only [match group][regex-match-groups] defined
 within the `replace` field). The rules will be applied in the specified order.
 
-**Note:** Regular expressions containing the backslash (`\`) character must
-(generally) be specified within triple instead of single quotes
-(that is, `"""` instead of `"`). See the first transform in the example above
-for illustration.
+> **Note**
+> Regular expressions containing the backslash (`\`) character must (generally)
+> be specified within triple instead of single quotes (that is, `"""` instead of
+> `"`). See the first transform in the example above for illustration.
 
-**Note that Kamite will automatically reload the transform definitions once a
-config file is modified.** There is no need to restart the program. The simplest
-way to test the transforms is by pasting (<kbd>Ctrl</kbd> + <kbd>V</kbd>)
-prepared chunks into the client’s browser tab and observing whether they come
-out modified as expected.
+<!-- -->
+
+> **Note**
+> **Kamite will automatically reload the transform definitions once a config
+> file is modified.** There is no need to restart the program. The simplest way
+> to test the transforms is by pasting (<kbd>Ctrl</kbd> + <kbd>V</kbd>) prepared
+> chunks into the client’s browser tab and observing whether they come out
+> modified as expected.
 
 [regex-match-groups]: https://regexone.com/lesson/capturing_groups
 
@@ -1219,7 +1239,8 @@ CUSTOM_COMMANDS {
 }
 ```
 
-> **Note (Windows)**: To execute a PowerShell script, set `command` to, e.g.,
+> **Note**
+> (Windows) To execute a PowerShell script, set `command` to, e.g.,
 > `["powershell.exe", """C:\path\to\the\script.ps1""", "first argument"]` (note
 > the triple quotes). The execution of PowerShell scripts is disabled by default
 > in the system. To enable it, start PowerShell with the Run as Administrator
@@ -1390,13 +1411,17 @@ The config file’s format is [HOCON], which is a superset of JSON.
 A default config file is automatically placed by Kamite in the expected
 directory if absent on launch.
 
-> Note (Windows): On unupdated Windows 10 installations as well as earlier
-> Windows versions, the system Notepad will not be able to properly display the
-> config file. In that case, please use another text editor.
+> **Note**
+> (Windows) On unupdated Windows 10 installations as well as earlier Windows
+> versions, the system Notepad will not be able to properly display the config
+> file. In that case, please use another text editor.
 
-**Note: When providing values that containin backslashes (`\`), for example
-Windows paths, you must enclose them within triple quote marks (`"""`).** For
-example: `ocr.tesseract.path = """C:\Program Files\Tesseract-OCR\tesseract.exe"""`.
+<!-- -->
+
+> **Warning**
+> When providing values that containin backslashes (`\`), for example Windows
+> paths, you must enclose them within triple quote marks (`"""`). For example:
+> `ocr.tesseract.path = """C:\Program Files\Tesseract-OCR\tesseract.exe"""`.
 
 ### Live reload
 
