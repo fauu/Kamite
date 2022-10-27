@@ -521,9 +521,10 @@ ocr {
 }
 ```
 
-**Deinstallation note**: There will be a ~450 MB leftover model file in
-(<ins>Linux</ins>) `~/.cache/huggingface/transformers/`, (<ins>Windows</ins>)
-`C:\Users\<user>\.cache\huggingface\transformers`.
+> **Note**
+> After deinstallation, there will be a ~450 MB leftover model file in
+> (<ins>Linux</ins>) `~/.cache/huggingface/transformers/`, (<ins>Windows</ins>)
+> `C:\Users\<user>\.cache\huggingface\transformers`.
 
 #### Setting up OCR.space
 
@@ -542,8 +543,8 @@ provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
 
 1. Put the API key in Kamite’s [config file](#config):
 
-    > **Note**
-    > This is unsafe plain-text storage. Abort if you deem your key too
+    > **Warning**
+    > This is unsafe plain-text storage. Do not do this if you deem your key too
     > sensitive for this kind of storage
 
     ```sh
@@ -652,7 +653,8 @@ Text recognition can be initiated by:
 * Adding or modifying an image in a directory provided to the [OCR directory
   watcher](#ocr-directory-watcher).
 
-> **NOTE: On Linux / GNOME Wayland and Plasma Wayland**, only the following of
+> **Note**
+> **On Linux / GNOME Wayland and Plasma Wayland**, only the following of
 > the above are available:
 >
 > * the [`ocr_image` command](#ocr_-commands) (including external software that
@@ -1613,8 +1615,8 @@ ui {
 }
 
 # Secrets used for authentication to third-party services.
-# Note: This is unsafe plain-text storage. Do not put data here that you deem
-#       too sensitive for this kind of storage
+# Warning: This is unsafe plain-text storage. Do not put data here that you deem
+#          too sensitive for this kind of storage
 secrets {
   # The OCR.space API key
   ocrspace = …
