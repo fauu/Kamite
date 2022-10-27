@@ -9,7 +9,10 @@
 
 > A desktop language immersion companion for learners of Japanese
 
-*Note: This is alpha software.*
+<!-- -->
+
+> **Note**
+> This is alpha software.
 
 Kamite is a desktop program intended to aid learning Japanese through immersion
 in native media (manga, anime, visual novels, etc.). It helps extract Japanese
