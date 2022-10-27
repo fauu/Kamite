@@ -545,7 +545,7 @@ provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
 
     > **Warning**
     > This is unsafe plain-text storage. Do not do this if you deem your key too
-    > sensitive for this kind of storage
+    > sensitive for this kind of storage.
 
     ```sh
     secrets {
