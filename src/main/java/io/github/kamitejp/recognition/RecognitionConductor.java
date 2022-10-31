@@ -224,8 +224,8 @@ public class RecognitionConductor {
       var errorNotification = switch (recognitionRes.err()) {
         case SELECTION_CANCELLED -> null;
         case INPUT_TOO_SMALL     -> "Input image is too small";
-        case ZERO_VARIANTS       -> "Could not recognize any text";
-        default -> "Box recognition has failed.\nCheck control window or console for errors";
+        case ZERO_VARIANTS       -> "Did not recognize any text";
+        default -> "OCR has failed.\nCheck control window or console for errors";
       };
       recognitionAbandon(errorNotification, recognitionRes.err());
       return;
