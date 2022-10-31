@@ -23,7 +23,7 @@ public class MangaOCRGGAdapter {
   private static final int REQUEST_TIMEOUT_S = 8;
 
   private static final URI API_ENDPOINT =
-    URI.create("https://hf.space/embed/gryan-galario/manga-ocr-demo/+/api/predict/");
+    URI.create("https://gryan-galario-manga-ocr-demo.hf.space/api/predict/");
   private static final String OCR_REQUEST_BODY_TPL = "{\"data\": [\"data:%s;base64,%s\"]}";
   private static final String OCR_RESPONSE_TEXT_START_MARKER = "\"data\":[\"";
   private static final String OCR_RESPONSE_TEXT_END_MARKER = "\"]";
