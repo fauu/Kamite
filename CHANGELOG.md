@@ -8,6 +8,12 @@
 
 ## [Unreleased]
 
+## [0.9] – 2022-10-31
+
+### Fixed
+
+* “Manga OCR” Online OCR engine works again.
+
 ## [0.8] – 2022-10-21
 
 ### Added
@@ -237,7 +243,8 @@
 
 Initial release.
 
-[Unreleased]: https://github.com/fauu/Kamite/compare/v0.8...HEAD
+[Unreleased]: https://github.com/fauu/Kamite/compare/v0.9...HEAD
+[0.9]: https://github.com/fauu/Kamite/releases/tag/v0.9
 [0.8]: https://github.com/fauu/Kamite/releases/tag/v0.8
 [0.7]: https://github.com/fauu/Kamite/releases/tag/v0.7
 [0.6]: https://github.com/fauu/Kamite/releases/tag/v0.6
