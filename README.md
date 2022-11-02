@@ -331,23 +331,24 @@ needed to follow even simple video content at natural pace. The
 [sub-pause-advanced] mpv script can be used for this purpose. Here are some
 example learning workflows enabled by that script:
 
-* Always pause at the end of each Japanese subtitle in order to read it in
-  Kamite. (Useful when you can’t read proper texts yet and its advantageous to
-  substitute with short anime dialogues.)
+* Pause at the end of each Japanese subtitle in order to read it in Kamite.
+ (Useful when you can’t read proper texts yet and its advantageous to substitute
+ with short anime dialogues.)
 
 * Do the above, but only when you stumble while reading the subtitle live and
-  you request pause at the end of the subtitle explicitly by pressing a defined
-  request key. (Useful once you progress to the level at which you can read
-  easier lines live.)
+  you explicitly request pause at the end of the subtitle by pressing a defined
+  request key. (Useful once you progress to the level at which you can often
+  read easier lines live.)
 
-* Always pause at the start of each {known language} subtitle and then
-  automatically unpause after the time sufficient to read it (calculated by the
-  script based on the subtitle’s length), so that you can fully concentrate on
-  understandning the spoken line, with the comprehension boost of knowing
-  roughly what it’s supposed to say. (Useful for beginner listening practice.)
+* Always pause at the start of each {known language} subtitle and automatically
+  unpause after the time sufficient to read it (calculated by the script based
+  on the subtitle’s length), so that you can then fully concentrate on
+  understandning the spoken line, with the comprehension “training wheel”
+  in the form of knowing roughly what it’s supposed to say. (Useful for beginner
+  listening practice.)
 
-See the script’s README in its GitHub repository linked above for more
-information.
+For more information, see the script’s README in its GitHub repository linked
+above.
 
 ---
 
