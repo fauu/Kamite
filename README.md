@@ -332,8 +332,8 @@ needed to follow even simple video content at natural pace. The
 example learning workflows enabled by that script:
 
 * Pause at the end of each Japanese subtitle in order to read it in Kamite.
- (Useful when you can’t read proper texts yet and its advantageous to substitute
- with short anime dialogues.)
+ (Useful when you can’t read proper texts yet and it’s advantageous to
+ substitute with short anime dialogues.)
 
 * Do the above, but only when you stumble while reading the subtitle live and
   you explicitly request pause at the end of the subtitle by pressing a defined
