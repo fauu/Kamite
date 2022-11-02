@@ -322,6 +322,35 @@ C:\Program` Files\mpv\mpv "\path\to\video\*Some Anime Name*E$ep.mkv" `
   --profile=jpsub
 ```
 
+---
+
+#### Tip: Auto-pausing at the start/end of subtitles
+
+This can be useful for beginners whose comprehension is not yet at the level
+needed to follow even simple video content at natural pace. The
+[sub-pause-advanced] mpv script can be used for this purpose. Here are some
+example learning workflows enabled by that script:
+
+* Always pause at the end of each Japanese subtitle in order to read it in
+  Kamite. (Useful when you can’t read proper texts yet and its advantageous to
+  substitute with short anime dialogues.)
+
+* Do the above, but only when you stumble while reading the subtitle live and
+  you request pause at the end of the subtitle explicitly by pressing a defined
+  request key. (Useful once you progress to the level at which you can read
+  easier lines live.)
+
+* Always pause at the start of each {known language} subtitle and then
+  automatically unpause after the time sufficient to read it (calculated by the
+  script based on the subtitle’s length), so that you can fully concentrate on
+  understandning the spoken line, with the comprehension boost of knowing
+  roughly what it’s supposed to say. (Useful for beginner listening practice.)
+
+See the script’s README in its GitHub repository linked above for more
+information.
+
+---
+
 Kamite can be useful even when viewing media without Japanese subtitles, for
 example as an area where heard words and phrases can be typed in and looked up.
 
@@ -333,13 +362,13 @@ config key `chunk.translationOnlyMode` set to `true`.
 [mpv-ref-config]: https://mpv.io/manual/stable/#configuration-files
 [mpv-ref-json-ipc]: https://mpv.io/manual/stable/#json-ipc
 [mpv-ref-sub-options]: https://mpv.io/manual/stable/#subtitles
+[sub-pause-advanced]: https://github.com/fauu/mpv-sub-pause-advanced
 
-***
+---
 
 **Related Wiki sections:**
 
 * [Mining anime/video with Anacreon’s mpv script](https://github.com/fauu/Kamite/wiki/Mining-recipes#anacreons-mpv-script)
-* [Auto-pausing mpv at the end of subtitle](https://github.com/fauu/Kamite/wiki/mpv-recipes#auto-pausing-at-the-end-of-subtitle)
 * [Alternative software for anime/video](https://github.com/fauu/Kamite/wiki/Alternative-software#animevideo)
 
 ### Manga text extraction
@@ -776,7 +805,7 @@ so on) and choose between them on the fly.
 See also: [Config](#config), [Visual novel / game text extraction](#visual-novel--game-text-extraction),
 [Alternative software for visual novels / games](https://github.com/fauu/Kamite/wiki/Alternative-software#visual-novels--games).
 
-***
+---
 
 ##### Using alternative OCR variants (Tesseract OCR only)
 
@@ -837,7 +866,7 @@ Kamite integration:
 
 The integration must be enabled in Gomics-v under `Preferences › Kamite`.
 
-***
+---
 
 **Related Wiki sections:**
 
@@ -887,7 +916,7 @@ network address from the perspective of the machine running Textractor, e.g.:
 host=192.0.0.10:4110
 ```
 
-***
+---
 
 **Related Wiki sections:**
 
