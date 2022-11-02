@@ -340,12 +340,12 @@ example learning workflows enabled by that script:
   request key. (Useful once you progress to the level at which you can often
   read easier lines live.)
 
-* Always pause at the start of each {known language} subtitle and automatically
-  unpause after the time sufficient to read it (calculated by the script based
-  on the subtitle’s length), so that you can then fully concentrate on
-  understandning the spoken line, with the comprehension “training wheel”
-  in the form of knowing roughly what it’s supposed to say. (Useful for beginner
-  listening practice.)
+* Pause at the start of each {known language} subtitle and automatically unpause
+  after the time sufficient to read it (calculated by the script based on the
+  subtitle’s length), so that you can then fully concentrate on understandning
+  the Japanese spoken line, with the comprehension “training wheel” in the form
+  of knowing roughly what it’s supposed to say. (Useful for beginner listening
+  practice.)
 
 For more information, see the script’s README in its GitHub repository linked
 above.
