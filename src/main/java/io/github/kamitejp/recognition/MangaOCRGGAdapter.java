@@ -17,7 +17,7 @@ import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.util.HTTP;
 import io.github.kamitejp.util.Result;
 
-public class MangaOCRGGAdapter {
+public class MangaOCRGGAdapter implements RemoteOCRAdapter {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int REQUEST_TIMEOUT_S = 8;
@@ -28,8 +28,9 @@ public class MangaOCRGGAdapter {
   private static final String OCR_RESPONSE_TEXT_START_MARKER = "\"data\":[\"";
   private static final String OCR_RESPONSE_TEXT_END_MARKER = "\"]";
 
+  @Override
   @SuppressWarnings("MethodMayBeStatic")
-  public Result<String, String> ocr(BufferedImage img) {
+  public Result<String, RemoteOCRRequestError> ocr(BufferedImage img) {
     var reqBodyString = OCR_REQUEST_BODY_TPL.formatted(
       ImageOps.DEFAULT_IMAGE_FORMAT_MIMETYPE, ImageOps.convertToBase64(img)
     );
@@ -44,24 +45,28 @@ public class MangaOCRGGAdapter {
       var resFuture = HTTP.client().sendAsync(req, HttpResponse.BodyHandlers.ofString());
       res = resFuture.get(REQUEST_TIMEOUT_S, TimeUnit.SECONDS);
     } catch (TimeoutException e) {
-      return Result.Err("HTTP request timed out");
+      return Result.Err(new RemoteOCRRequestError.Timeout());
     } catch (ExecutionException | InterruptedException e) {
-      return Result.Err("HTTP client send execution has failed: %s".formatted(e));
+      return Result.Err(new RemoteOCRRequestError.SendFailed(e.getMessage()));
     }
 
     var code = res.statusCode();
     if (code != HttpURLConnection.HTTP_OK) {
-      return Result.Err("Got unexpected status code: %d".formatted(code));
+      return Result.Err(new RemoteOCRRequestError.UnexpectedStatusCode(code));
     }
 
     var textStartMarkerIdx = res.body().indexOf(OCR_RESPONSE_TEXT_START_MARKER);
     if (textStartMarkerIdx == -1) {
-      return Result.Err("Response did not contain the expected text start marker");
+      return Result.Err(
+        new RemoteOCRRequestError.Other("Response did not contain the expected text start marker")
+      );
     }
     var textStartIdx = textStartMarkerIdx + OCR_RESPONSE_TEXT_START_MARKER.length();
     var textEndMarkerIdx = res.body().indexOf(OCR_RESPONSE_TEXT_END_MARKER, textStartIdx);
     if (textEndMarkerIdx == -1) {
-      return Result.Err("Response did not contain the expected text end marker");
+      return Result.Err(
+        new RemoteOCRRequestError.Other("Response did not contain the expected text end marker")
+      );
     }
 
     return Result.Ok(res.body().substring(textStartIdx, textEndMarkerIdx));

@@ -3,6 +3,7 @@ package io.github.kamitejp.recognition;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.HttpURLConnection;
@@ -24,11 +25,12 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.util.HTTP;
 import io.github.kamitejp.util.JSON;
 import io.github.kamitejp.util.Result;
 
-public class OCRSpaceAdapter {
+public class OCRSpaceAdapter implements RemoteOCRAdapter {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int REQUEST_TIMEOUT_BASE_S = 10;
@@ -55,14 +57,16 @@ public class OCRSpaceAdapter {
 
   // TODO: Don't send free API request if the image is over 1 MB
   // TODO: Don't send free API request if engine = 3 and an image dimension is over 1000 px
-  public Result<String, String> ocr(byte[] imageBytes) {
+  @Override
+  public Result<String, RemoteOCRRequestError> ocr(BufferedImage img) {
+    var imgBytes = ImageOps.encodeIntoByteArrayOutputStream(img).toByteArray();
     var data = Map.of(
       "apikey", apiKey,
       "OCREngine", engineParam,
       "language", PARAM_LANGUAGE,
       "scale", PARAM_SCALE,
       "filetype", PARAM_FILETYPE,
-      "file", new ImageUpload(PARAM_IMAGE_FILENAME, PARAM_IMAGE_MIMETYPE, imageBytes)
+      "file", new ImageUpload(PARAM_IMAGE_FILENAME, PARAM_IMAGE_MIMETYPE, imgBytes)
       // "detectOrientation", "true", TODO: Test this
     );
 
@@ -74,7 +78,11 @@ public class OCRSpaceAdapter {
         .POST(multipartBodyPublisher(data, MULTIPART_BOUNDARY))
         .build();
     } catch (IOException e) {
-      return Result.Err("Failed to build HTTP request for OCR.space: %s".formatted(e));
+      return Result.Err(
+        new RemoteOCRRequestError.Other(
+          "Failed to build HTTP request for OCR.space: %s".formatted(e)
+        )
+      );
     }
 
     HttpResponse<String> res;
@@ -82,18 +90,16 @@ public class OCRSpaceAdapter {
       var resFuture = HTTP.client().sendAsync(req, HttpResponse.BodyHandlers.ofString());
       res = resFuture.get(requestTimeout, TimeUnit.SECONDS);
     } catch (TimeoutException e) {
-      return Result.Err("OCR.space HTTP request timed out");
+      return Result.Err(new RemoteOCRRequestError.Timeout());
     } catch (ExecutionException | InterruptedException e) {
-      return Result.Err("OCR.space HTTP client send execution has failed: %s".formatted(e));
+      return Result.Err(new RemoteOCRRequestError.SendFailed(e.getMessage()));
     }
 
     var code = res.statusCode();
     if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-      return Result.Err(
-        "OCR.space returned status code Unauthorized. The provided API key is likely invalid"
-      );
+      return Result.Err(new RemoteOCRRequestError.Unauthorized());
     } else if (code != HttpURLConnection.HTTP_OK) {
-      return Result.Err("OCR.space returned unexpected status code: %d".formatted(code));
+      return Result.Err(new RemoteOCRRequestError.UnexpectedStatusCode(code));
     }
 
     JsonNode root;
@@ -101,7 +107,9 @@ public class OCRSpaceAdapter {
     try {
       root = JSON.mapper().readTree(res.body());
     } catch (JsonProcessingException e) {
-      return Result.Err("Failed to read OCR.space response JSON: %s".formatted(e));
+      return Result.Err(
+        new RemoteOCRRequestError.Other("Failed to read OCR.space response JSON: %s".formatted(e))
+      );
     }
 
     List<JsonNode> parsedResultsEls = null;
@@ -115,7 +123,9 @@ public class OCRSpaceAdapter {
     var errored = root.get("IsErroredOnProcessing").asBoolean();
     if (errored) {
       return Result.Err(
-        "OCR.space reported processing error: %s".formatted(root.get("ErrorMessage"))
+        new RemoteOCRRequestError.Other(
+          "OCR.space reported processing error: %s".formatted(root.get("ErrorMessage"))
+        )
       );
     }
 

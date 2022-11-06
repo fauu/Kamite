@@ -51,6 +51,9 @@ public class Recognizer {
   // ROBUSTNESS: Should probably depend on the screen resolution
   public static final Dimension AUTO_BLOCK_AREA_SIZE = new Dimension(550, 900);
 
+  private static final int REMOTE_OCR_MAX_ATTEMPTS = 3;
+  private static final int REMOTE_OCR_RETRY_INTERVAL_MS = 4000;
+
   // Minimum dimension size allowed for box recognition input image
   private static final int BOX_RECOGNITION_INPUT_MIN_DIMENSION = 16;
 
@@ -139,8 +142,8 @@ public class Recognizer {
     return switch (engine) {
       case OCREngine.Tesseract ignored     -> recognizeBoxTesseract(img, textOrientation);
       case OCREngine.MangaOCR engine       -> recognizeBoxMangaOCR(engine.controller(), img);
-      case OCREngine.MangaOCROnline engine -> recognizeBoxMangaOCROnline(engine.adapter(), img);
-      case OCREngine.OCRSpace engine       -> recognizeBoxOCRSpace(engine.adapter(), img);
+      case OCREngine.MangaOCROnline engine -> recognizeBoxRemote(engine.adapter(), img);
+      case OCREngine.OCRSpace engine       -> recognizeBoxRemote(engine.adapter(), img);
       case OCREngine.None ignored          -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
     };
   }
@@ -175,13 +178,28 @@ public class Recognizer {
     return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
   }
 
-  private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxMangaOCROnline(
-    MangaOCRGGAdapter adapter,
+  private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxRemote(
+    RemoteOCRAdapter adapter,
     BufferedImage img
   ) {
-    var res = adapter.ocr(img);
+    var attemptsRemaining = REMOTE_OCR_MAX_ATTEMPTS;
+    var mightTry = true;
+    Result<String, RemoteOCRRequestError> res = null;
+    for (; mightTry && attemptsRemaining > 0; attemptsRemaining--) {
+      if (attemptsRemaining < REMOTE_OCR_MAX_ATTEMPTS) {
+        try {
+          Thread.sleep(REMOTE_OCR_RETRY_INTERVAL_MS);
+        } catch (InterruptedException e) {
+          LOG.debug("Interrupted while waiting to retry remote OCR request");
+        }
+        LOG.info("Retrying remote OCR request");
+      }
+      res = adapter.ocr(img);
+      if (res.isErr()) {
+        mightTry = recognizeBoxRemoteHandleErrorAndDetermineIfMightRetry(res.err());
+      }
+    }
     if (res.isErr()) {
-      LOG.error("\"Manga OCR\" Online error: {}", res.err());
       return Result.Err(RecognitionOpError.OCR_ERROR);
     }
 
@@ -193,22 +211,28 @@ public class Recognizer {
     return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
   }
 
-  private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxOCRSpace(
-    OCRSpaceAdapter adapter,
-    BufferedImage img
+  private static boolean recognizeBoxRemoteHandleErrorAndDetermineIfMightRetry(
+    RemoteOCRRequestError error
   ) {
-    var res = adapter.ocr(ImageOps.encodeIntoByteArrayOutputStream(img).toByteArray());
-    if (res.isErr()) {
-      LOG.error("OCR.space error: {}", res.err());
-      return Result.Err(RecognitionOpError.OCR_ERROR);
-    }
-
-    var text = res.get();
-    if (text.isBlank()) {
-      return Result.Err(RecognitionOpError.ZERO_VARIANTS);
-    }
-
-    return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
+    var mightRetry = false;
+    var msg = switch (error) {
+      case RemoteOCRRequestError.Timeout ignored -> {
+        mightRetry = true;
+        yield "HTTP request timed out";
+      }
+      case RemoteOCRRequestError.SendFailed err -> {
+        mightRetry = true;
+        yield "HTTP client send execution has failed: %s".formatted(err.exceptionMessage());
+      }
+      case RemoteOCRRequestError.Unauthorized ignored ->
+        "Received `Unauthorized` response. The provided API key is likely invalid";
+      case RemoteOCRRequestError.UnexpectedStatusCode err ->
+        "Received unexpected status code: %s".formatted(err.code());
+      case RemoteOCRRequestError.Other err ->
+        err.error();
+    };
+    LOG.error("Remote OCR service error: {}", msg);
+    return mightRetry;
   }
 
   private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxTesseract(
