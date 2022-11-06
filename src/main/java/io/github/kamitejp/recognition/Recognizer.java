@@ -195,8 +195,25 @@ public class Recognizer {
         LOG.info("Retrying remote OCR request");
       }
       res = adapter.ocr(img);
+      mightTry = false;
       if (res.isErr()) {
-        mightTry = recognizeBoxRemoteHandleErrorAndDetermineIfMightRetry(res.err());
+        var msg = switch (res.err()) {
+          case RemoteOCRRequestError.Timeout ignored -> {
+            mightTry = true;
+            yield "HTTP request timed out";
+          }
+          case RemoteOCRRequestError.SendFailed err -> {
+            mightTry = true;
+            yield "HTTP client send execution has failed: %s".formatted(err.exceptionMessage());
+          }
+          case RemoteOCRRequestError.Unauthorized ignored ->
+            "Received `Unauthorized` response. The provided API key is likely invalid";
+          case RemoteOCRRequestError.UnexpectedStatusCode err ->
+            "Received unexpected status code: %s".formatted(err.code());
+          case RemoteOCRRequestError.Other err ->
+            err.error();
+        };
+        LOG.error("Remote OCR service error: {}", msg);
       }
     }
     if (res.isErr()) {
@@ -209,30 +226,6 @@ public class Recognizer {
     }
 
     return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
-  }
-
-  private static boolean recognizeBoxRemoteHandleErrorAndDetermineIfMightRetry(
-    RemoteOCRRequestError error
-  ) {
-    var mightRetry = false;
-    var msg = switch (error) {
-      case RemoteOCRRequestError.Timeout ignored -> {
-        mightRetry = true;
-        yield "HTTP request timed out";
-      }
-      case RemoteOCRRequestError.SendFailed err -> {
-        mightRetry = true;
-        yield "HTTP client send execution has failed: %s".formatted(err.exceptionMessage());
-      }
-      case RemoteOCRRequestError.Unauthorized ignored ->
-        "Received `Unauthorized` response. The provided API key is likely invalid";
-      case RemoteOCRRequestError.UnexpectedStatusCode err ->
-        "Received unexpected status code: %s".formatted(err.code());
-      case RemoteOCRRequestError.Other err ->
-        err.error();
-    };
-    LOG.error("Remote OCR service error: {}", msg);
-    return mightRetry;
   }
 
   private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxTesseract(
