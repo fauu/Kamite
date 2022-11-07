@@ -10,7 +10,7 @@ clean:
 	rm -rf target/; \
 
 client:
-	yarn build; \
+	pnpm build; \
 
 dist: dist-linux dist-win
 
@@ -87,8 +87,8 @@ lint-java:
 			-R support/definitions/pmd-ruleset.xml; \
 
 lint-ts:
-	yarn typecheck; \
-	yarn lint; \
+	pnpm typecheck; \
+	pnpm lint; \
 
 runtime-linux:
 	rm -rf target/runtime-linux; \

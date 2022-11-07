@@ -5,7 +5,7 @@
     "prewatch": "rimraf ./target/web",
     "dev": "vite",
     "prebuild": "rimraf ./target/web",
-    "build": "vite build",
+    "build": "vite build --emptyOutDir",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ./src/web",
@@ -13,20 +13,21 @@
   },
   "devDependencies": {
     "@types/babel__core": "~7.1.19",
-    "@types/node": "~18.11.2",
-    "@typescript-eslint/eslint-plugin": "~5.40.0",
-    "@typescript-eslint/parser": "~5.40.0",
-    "eslint": "~8.25.0",
+    "@types/node": "~18.11.9",
+    "@typescript-eslint/eslint-plugin": "~5.42.1",
+    "@typescript-eslint/parser": "~5.42.1",
+    "eslint": "~8.27.0",
     "rimraf": "~3.0.2",
     "typescript": "~4.8.4",
-    "vite": "~3.1.8",
-    "vite-plugin-solid": "~2.3.9"
+    "vite": "~3.2.3",
+    "vite-plugin-solid": "~2.4.0"
   },
   "dependencies": {
-    "@floating-ui/dom": "~1.0.3",
+    "@floating-ui/core": "~1.0.1",
+    "@floating-ui/dom": "~1.0.4",
     "csstype": "3.0.10",
     "goober": "2.1.11",
-    "solid-js": "~1.6.0",
+    "solid-js": "~1.6.1",
     "solid-styled-components": "~0.28.5"
   },
   "private": true
