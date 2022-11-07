@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -42,6 +40,7 @@ import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
+import io.github.kamitejp.util.Executor;
 import io.github.kamitejp.util.Result;
 
 public class Recognizer {
@@ -76,7 +75,6 @@ public class Recognizer {
   private final boolean debug;
   private final Consumer<RecognizerEvent> eventCb;
   private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
-  private ExecutorService executorService;
 
   public Recognizer(
     Platform platform,
@@ -115,9 +113,6 @@ public class Recognizer {
 
   public void destroy() {
     engine.destroy();
-    if (executorService != null) {
-      executorService.shutdown();
-    }
   }
 
   private record LabelledTesseractResult(String label, TesseractResult result) {}
@@ -340,18 +335,10 @@ public class Recognizer {
 
     List<Future<LabelledTesseractResult>> tesseractResultFutures = null;
 
-    if (executorService == null) {
-      executorService = Executors.newVirtualThreadPerTaskExecutor();
-    }
-
     try {
-      tesseractResultFutures = executorService.invokeAll(tesseractCallables);
+      tesseractResultFutures = Executor.get().invokeAll(tesseractCallables);
     } catch (InterruptedException e) {
-      LOG.error(
-        "Recognizer executor service was interrupted during execution."
-        + " See stderr for the stack trace"
-      );
-      e.printStackTrace();
+      LOG.error(e);
     }
 
     // Transform the results

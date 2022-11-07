@@ -79,6 +79,7 @@ import io.github.kamitejp.textprocessing.kuromoji.KuromojiAdapter;
 import io.github.kamitejp.universalfeature.UnavailableAutoFurigana;
 import io.github.kamitejp.universalfeature.UnavailableUniversalFeature;
 import io.github.kamitejp.util.Result;
+import io.github.kamitejp.util.Executor;
 
 public class Kamite {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
@@ -299,6 +300,7 @@ public class Kamite {
         if (chunkLogger != null) {
           chunkLogger.finalizeLog();
         }
+        Executor.destroy();
       })
     );
   }
