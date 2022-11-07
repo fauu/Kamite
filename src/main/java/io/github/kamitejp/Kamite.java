@@ -269,7 +269,7 @@ public class Kamite {
 
     // Defer to here to have chunk logging initialized before recognizer, so that chunks received
     // during a long manga-ocr initialization aren't missing from the log.
-    Thread.startVirtualThread(() -> recognitionConductor.initRecognizer(config));
+    Executor.get().execute(() -> recognitionConductor.initRecognizer(config));
 
     // NOTE: OCRDirectoryWatcher constructor depends on recognitionConductor being present (but this
     //       can be changed)
