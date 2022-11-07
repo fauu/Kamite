@@ -51,8 +51,9 @@ public class Recognizer {
   // ROBUSTNESS: Should probably depend on the screen resolution
   public static final Dimension AUTO_BLOCK_AREA_SIZE = new Dimension(550, 900);
 
-  private static final int REMOTE_OCR_MAX_ATTEMPTS = 3;
-  private static final int REMOTE_OCR_RETRY_INTERVAL_MS = 4000;
+  // How many seconds to wait before each retry of remote OCR request.
+  private static final List<Integer> REMOTE_OCR_RETRY_INTERVALS_MS = List.of(4000, 7000);
+  private static final int REMOTE_OCR_MAX_ATTEMPTS = REMOTE_OCR_RETRY_INTERVALS_MS.size() + 1;
 
   // Minimum dimension size allowed for box recognition input image
   private static final int BOX_RECOGNITION_INPUT_MIN_DIMENSION = 16;
@@ -182,13 +183,12 @@ public class Recognizer {
     RemoteOCRAdapter adapter,
     BufferedImage img
   ) {
-    var attemptsRemaining = REMOTE_OCR_MAX_ATTEMPTS;
-    var mightTry = true;
     Result<String, RemoteOCRRequestError> res = null;
-    for (; mightTry && attemptsRemaining > 0; attemptsRemaining--) {
-      if (attemptsRemaining < REMOTE_OCR_MAX_ATTEMPTS) {
+    var mightTry = true;
+    for (var attemptNo = 0; mightTry && attemptNo < REMOTE_OCR_MAX_ATTEMPTS; attemptNo++) {
+      if (attemptNo > 0) {
         try {
-          Thread.sleep(REMOTE_OCR_RETRY_INTERVAL_MS);
+          Thread.sleep(REMOTE_OCR_RETRY_INTERVALS_MS.get(attemptNo - 1));
         } catch (InterruptedException e) {
           LOG.debug("Interrupted while waiting to retry remote OCR request");
         }
