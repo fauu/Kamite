@@ -39,48 +39,16 @@ const spinnerKeyframes = keyframes`
 
 interface SpinnerProps {
   size: string,
-  fgColor: string,
-  bgColor: string,
+  color: string,
 }
 
-export const Spinner = styled("div")<SpinnerProps>`
-  font-size: 10px;
-  text-indent: -9999em;
-  border-radius: 50%;
-  position: relative;
-  transform: translateZ(0);
-  background: ${p => p.fgColor};
-  background: linear-gradient(
-    to right,
-    ${p => p.fgColor} 10%,
-    rgba(255, 255, 255, 0) 42%
-  );
-  animation: ${spinnerKeyframes} 1.4s infinite linear;
+export const Spinner = styled("span")<SpinnerProps>`
   width: ${p => p.size};
   height: ${p => p.size};
-
-  &:before {
-    width: 50%;
-    height: 50%;
-    border-radius: 100% 0 0 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    content: "";
-    background: ${p => p.fgColor};
-  }
-
-  &:after {
-    width: 75%;
-    height: 75%;
-    border-radius: 50%;
-    content: "";
-    margin: auto;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: ${p => p.bgColor};
-  }
+  border: 4px solid ${p => p.color};
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: ${spinnerKeyframes} 1.4s linear infinite;
 `;

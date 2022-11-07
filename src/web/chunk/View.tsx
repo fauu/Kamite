@@ -1,5 +1,5 @@
 import { Show, type Ref, type VoidComponent } from "solid-js";
-import { styled } from "solid-styled-components";
+import { css, styled } from "solid-styled-components";
 
 import { Spinner } from "~/common";
 import { themeLayoutFlipped } from "~/theme";
@@ -17,24 +17,12 @@ interface ChunkViewProps {
 }
 
 export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
-  const handleRootDblClick = () => props.chunksState.startEditing();
+  const handleRootDblClick = () => !props.chunksState.waiting() && props.chunksState.startEditing();
 
   const handleInputCtrlEnter = () => props.chunksState.finishEditing();
 
   return <Root onDblClick={handleRootDblClick}>
-    <Show
-      when={!props.chunksState.waiting()}
-      fallback={
-        <SpinnerContainer>
-          <Spinner
-            size="28px"
-            fgColor="var(--color-fg)"
-            bgColor="var(--color-bg)"
-            id="chunk-spinner"
-          />
-        </SpinnerContainer>
-      }
-    >
+    <Main class={props.chunksState.waiting() ? WaitingClass : ""}>
       <Show
         when={props.chunksState.editing()}
         fallback={
@@ -53,6 +41,11 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
           ref={props.inputRef}
         />
       </Show>
+    </Main>
+    <Show when={props.chunksState.waiting()}>
+      <SpinnerContainer>
+        <Spinner size="28px" color="var(--color-fg)" id="chunk-spinner" />
+      </SpinnerContainer>
     </Show>
   </Root>;
 };
@@ -65,8 +58,20 @@ const Root = styled.div`
   justify-content: ${p => !themeLayoutFlipped(p.theme) ? "initial" : "flex-end"};
 `;
 
+const Main = styled.div`
+  height: 100%;
+`;
+
+const WaitingClass = css`
+  pointer-events: none;
+  opacity: 0.3;
+  transition: opacity 0.3s;
+`;
+
 const SpinnerContainer = styled.div`
-  padding: 0.75rem;
+  position: relative;
+  left: 0.7rem;
+  bottom: 0.58rem;
 `;
 
 const ChunkLabelAndTranslation = styled.div`
