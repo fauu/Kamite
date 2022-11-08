@@ -54,15 +54,15 @@ main() {
       h=${BASH_REMATCH[4]}
     else
       notify "Geometry format incorrect. Aborting"
-      exit
+      exit 2
     fi
   fi
 
   local last_note_id
   last_note_id=$(anki_cmd 'findNotes' '"query": "added:2"' | jq '.result | max')
   if [[ -z $last_note_id || -n ${last_note_id//[0-9]/} ]]; then
-    notify 'Could not get last note ID'
-    return
+    notify 'Could not get last note ID. Is Anki running?'
+    exit 3
   fi
 
   local ss_cmd
@@ -89,8 +89,8 @@ main() {
     | base64 \
     | tr -d \\n)
   if [[ -z $picture_data ]]; then
-    # Cancelled
-    return
+    notify "Screenshot cancelled"
+    exit 4
   fi
 
   local picture_filename
@@ -118,6 +118,7 @@ main() {
     notify 'Updated picture'
   else
     notify 'Failed to update picture'
+    exit 5
   fi
 }
 
