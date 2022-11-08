@@ -21,27 +21,29 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
 
   const handleInputCtrlEnter = () => props.chunksState.finishEditing();
 
+  const maybeWaitingClass = () => props.chunksState.waiting() ? WaitingClass : "";
+
   return <Root onDblClick={handleRootDblClick}>
-    <Main class={props.chunksState.waiting() ? WaitingClass : ""}>
-      <Show
-        when={props.chunksState.editing()}
-        fallback={
-          <ChunkLabelAndTranslation ref={props.labelAndTranslationRef}>
-            <ChunkLabelWrapper chunksState={props.chunksState} />
-            <Show when={props.chunksState.translationWithContext()} keyed>{translations =>
-              <CurrentTranslation translations={translations}/>
-            }</Show>
-          </ChunkLabelAndTranslation>
-        }
-      >
+    <Show
+      when={props.chunksState.editing()}
+      fallback={
+        <ChunkLabelAndTranslation class={maybeWaitingClass()} ref={props.labelAndTranslationRef}>
+          <ChunkLabelWrapper chunksState={props.chunksState} />
+          <Show when={props.chunksState.translationWithContext()} keyed>{translations =>
+            <CurrentTranslation translations={translations}/>
+          }</Show>
+        </ChunkLabelAndTranslation>
+      }
+    >
+      <ChunkInputWrapper class={maybeWaitingClass()}> {/* QUAL: Unnecessary element */}
         <ChunkInput
           text={props.chunksState.editText()}
           onInput={props.onInput}
           onCtrlEnter={handleInputCtrlEnter}
           ref={props.inputRef}
         />
-      </Show>
-    </Main>
+      </ChunkInputWrapper>
+    </Show>
     <Show when={props.chunksState.waiting()}>
       <SpinnerContainer>
         <Spinner size="28px" color="var(--color-fg)" id="chunk-spinner" />
@@ -55,11 +57,8 @@ const Root = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
+  position: relative;
   justify-content: ${p => !themeLayoutFlipped(p.theme) ? "initial" : "flex-end"};
-`;
-
-const Main = styled.div`
-  height: 100%;
 `;
 
 const WaitingClass = css`
@@ -69,12 +68,16 @@ const WaitingClass = css`
 `;
 
 const SpinnerContainer = styled.div`
-  position: relative;
+  position: absolute;
   left: 0.7rem;
-  bottom: 0.58rem;
+  ${p => !themeLayoutFlipped(p.theme) ? "bottom" : "top"}: 0.64rem;
 `;
 
 const ChunkLabelAndTranslation = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
+`;
+
+const ChunkInputWrapper = styled.div`
+  height: 100%;
 `;
