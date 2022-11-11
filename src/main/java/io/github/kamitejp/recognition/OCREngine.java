@@ -52,7 +52,7 @@ public sealed interface OCREngine
     }
   }
 
-  record MangaOCROnline(MangaOCRGGAdapter adapter) implements OCREngine {
+  record MangaOCROnline(MangaOCRHFAdapter adapter) implements OCREngine {
     public static MangaOCROnline uninitialized() {
       return new MangaOCROnline(null);
     }
@@ -63,7 +63,7 @@ public sealed interface OCREngine
           "This OCREngine.MangaOCROnline instance is already initialized"
         );
       }
-      return new MangaOCROnline(new MangaOCRGGAdapter());
+      return new MangaOCROnline(new MangaOCRHFAdapter());
     }
 
     @Override

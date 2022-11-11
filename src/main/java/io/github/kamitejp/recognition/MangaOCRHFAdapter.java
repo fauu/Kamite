@@ -17,7 +17,7 @@ import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.util.HTTP;
 import io.github.kamitejp.util.Result;
 
-public class MangaOCRGGAdapter implements RemoteOCRAdapter {
+public class MangaOCRHFAdapter implements RemoteOCRAdapter {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int REQUEST_TIMEOUT_S = 8;
