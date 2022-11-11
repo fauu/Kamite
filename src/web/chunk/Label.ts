@@ -1,6 +1,6 @@
 import { css } from "solid-styled-components";
 
-import { BgFlashingClass } from "~/style";
+import { BgFlashingClass, ChromeClass } from "~/style";
 
 import type { Chunk } from "./Chunk";
 import type { ChunkFlashState } from "./ChunksState";
@@ -132,6 +132,14 @@ export class ChunkLabel {
 const RootClass = css`
   box-sizing: content-box;
   margin-top: 0.3rem;
+
+  .${ChromeClass} & {
+    line-height: 1.39;
+
+    ruby {
+      line-height: 1.85;
+    }
+  }
 
   rt {
     font-size: 1.18rem;
