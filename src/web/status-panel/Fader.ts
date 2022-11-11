@@ -26,6 +26,7 @@ export function createStatusPanelFader(params: CreateStatusPanelFaderParams) {
       params.notebook.collapsed,
 
       params.chunks.current,
+      params.chunks.editing,
       params.chunks.translationWithContext,
     ],
     setFadeInvalidated
