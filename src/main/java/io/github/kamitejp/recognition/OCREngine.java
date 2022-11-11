@@ -68,7 +68,7 @@ public sealed interface OCREngine
 
     @Override
     public String toString() {
-      return "\"Manga OCR\" Online (HF Space by Gryan Galario)";
+      return "\"Manga OCR\" Online (HF Space by Detomo)";
     }
   }
 
