@@ -56,8 +56,7 @@ const RootClass = css`
   background: var(--color-bg2);
   border: none;
   font-family: inherit;
-  width: 100%;
-  height: 100%;
+  flex: 1;
   margin: 0;
   resize: none;
   user-select: initial;

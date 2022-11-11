@@ -35,7 +35,7 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
         </ChunkLabelAndTranslation>
       }
     >
-      <ChunkInputWrapper class={maybeWaitingClass()}> {/* QUAL: Unnecessary element */}
+      <ChunkInputWrapper class={maybeWaitingClass()}>
         <ChunkInput
           text={props.chunksState.editText()}
           onInput={props.onInput}
@@ -79,5 +79,6 @@ const ChunkLabelAndTranslation = styled.div`
 `;
 
 const ChunkInputWrapper = styled.div`
+  display: flex;
   height: 100%;
 `;
