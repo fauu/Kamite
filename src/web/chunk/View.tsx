@@ -63,14 +63,14 @@ const Root = styled.div`
 
 const WaitingClass = css`
   pointer-events: none;
-  opacity: 0.3;
-  transition: opacity 0.3s;
+  opacity: 0.25;
+  transition: opacity 0.2s;
 `;
 
 const SpinnerContainer = styled.div`
   position: absolute;
   left: 0.7rem;
-  ${p => !themeLayoutFlipped(p.theme) ? "bottom" : "top"}: 0.64rem;
+  ${p => !themeLayoutFlipped(p.theme) ? "bottom" : "top"}: 0.62rem;
 `;
 
 const ChunkLabelAndTranslation = styled.div`
