@@ -79,12 +79,16 @@ public final class ChunkVariants {
     var result = new ArrayList<PostprocessedChunk>();
     for (int i = 0; i < this.variants.size(); i++) {
       var variant = this.variants.get(i);
+
       var processingContent = shouldCorrect ? variant.getCorrectedContent() : variant.getContent();
+
       if (transformer != null) {
         processingContent = transformer.execute(processingContent);
-        if (processingContent.isBlank()) {
-          continue;
-        }
+      }
+
+      // Reject blank text post-correction and post-transformation
+      if (processingContent.isBlank()) {
+        continue;
       }
 
       String originalContent = variant.getContent();
