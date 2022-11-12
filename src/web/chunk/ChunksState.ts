@@ -204,7 +204,9 @@ export function createChunksState(
   & InsertOptions;
 
   type BasicInsertOp = "append" | "overwrite";
-  type SelectionSpecificInsertOp = "replace-selected";
+  type SelectionSpecificInsertOp =
+    | "replace-selected"
+    | "overwrite-or-replace-selected-in-edit-mode";
   type InsertOp = BasicInsertOp | SelectionSpecificInsertOp;
 
   type InsertOptions = {
@@ -261,13 +263,14 @@ export function createChunksState(
       case "string": {
         if (!params.ignoreEditing && editing()) {
           // Simple special case, handle and exit
-          setEditText(curr => applyInsertOp(params.op, input, curr, inputSelection()));
+          setEditText(curr => applyInsertOp(params.op, input, curr, editing(), inputSelection()));
           return;
         } else {
           if (params.op === "replace-selected" && !textSelection.get()) {
             params.op = params.altOp;
           }
-          transformedInput = applyInsertOp(params.op, input, currText, textSelection.get()?.range);
+          transformedInput =
+            applyInsertOp(params.op, input, currText, editing(), textSelection.get()?.range);
         }
         break;
       }
@@ -589,8 +592,11 @@ export function createChunksState(
   // === PRIVATE FUNCTIONS =========================================================================
 
   function applyInsertOp(
-    op: InsertOp, input: string, curr: string, selection?: [number, number]
+    op: InsertOp, input: string, curr: string, editMode: boolean, selection?: [number, number]
   ): string {
+    if (op === "overwrite-or-replace-selected-in-edit-mode") {
+      op = editMode ? "replace-selected" : "overwrite";
+    }
     switch (op) {
       case "replace-selected": {
         const [start, end] = selection!;

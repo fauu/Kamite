@@ -325,7 +325,7 @@ export const App: VoidComponent = () => {
         void chunks.insert(
           defaultVariantContent,
           {
-            op: "replace-selected",
+            op: "overwrite-or-replace-selected-in-edit-mode",
             original: defaultVariant.originalContent ?? undefined,
             playbackTimeS: msg.playbackTimeS ?? undefined,
             allowUnchangedText: true,
