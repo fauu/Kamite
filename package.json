@@ -12,7 +12,7 @@
     "lint-fix": "eslint --fix ./src/web"
   },
   "devDependencies": {
-    "@types/babel__core": "~7.1.19",
+    "@types/babel__core": "~7.1.20",
     "@types/node": "~18.11.9",
     "@typescript-eslint/eslint-plugin": "~5.42.1",
     "@typescript-eslint/parser": "~5.42.1",
@@ -27,7 +27,7 @@
     "@floating-ui/dom": "~1.0.4",
     "csstype": "3.0.10",
     "goober": "2.1.11",
-    "solid-js": "~1.6.1",
+    "solid-js": "~1.6.2",
     "solid-styled-components": "~0.28.5"
   },
   "private": true
