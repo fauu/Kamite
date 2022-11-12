@@ -52,7 +52,8 @@ public class TextProcessor {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final Pattern NEWLINES_RE = Pattern.compile("[\\r\\n]+");
-  private static final Pattern GARBAGE_RE = Pattern.compile("[\\p{Cntrl}&&[^\n]]");
+  private static final Pattern GARBAGE_RE =
+    Pattern.compile("[\\p{Cntrl}&&[^\n]]|[\\x{FFF0}-\\x{FFFF}]");
 
   private final KuromojiAdapter kuromoji;
 
