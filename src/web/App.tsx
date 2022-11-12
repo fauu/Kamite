@@ -300,8 +300,6 @@ export const App: VoidComponent = () => {
     }
   };
 
-  const handleRootMouseLeave = () => chunks.textSelection.set(undefined);
-
   const handleReconnectClick = () => void backend.connect();
 
   const handleChunkInput = (newText: string) => chunks.setEditText(newText);
@@ -640,7 +638,6 @@ export const App: VoidComponent = () => {
       onMouseDown={handleRootMouseDown}
       onMouseUp={handleRootMouseUp}
       onMouseMove={handleRootMouseMove}
-      onMouseLeave={handleRootMouseLeave}
       class={
         [ // Workaround until classList works
           [ChromeClass, assumeChrome],
