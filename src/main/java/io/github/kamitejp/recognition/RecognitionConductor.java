@@ -67,8 +67,9 @@ public class RecognitionConductor {
     } catch (PlatformOCRInitializationException e) {
       throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
     } catch (RecognizerInitializationException e) {
-      if (e.getMessage() != null) {
-        LOG.error(e::getMessage);
+      var message = e.getMessage();
+      if (message != null) {
+        LOG.error(message);
       } else {
         LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
         e.printStackTrace();
