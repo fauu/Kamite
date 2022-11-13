@@ -47,7 +47,7 @@ export const GlobalStyles = createGlobalStyles`
     --border-radius-default: 2px;
     --chunk-font-size: 2.1rem;
     --chunk-line-height: 2.83rem;
-    --chunk-letter-spacing: -0.07rem;
+    --chunk-letter-spacing: -0.04rem;
     --shadow-panel: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
     --shadow-faint-glow: 0 0 5px 3px var(--color-bg3);
     --palette-button-min-size: 46px;

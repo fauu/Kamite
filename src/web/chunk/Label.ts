@@ -10,6 +10,9 @@ import type { ChunkTextSelection } from "./TextSelectionState";
 export const CHUNK_LABEL_ID = "chunk-label";
 export const CHUNK_CHAR_IDX_ATTR_NAME = "charIdx";
 
+const RUBY_TEXT_SCALE_PROP_NAME = "--ruby-text-scale";
+const DEFAULT_RUBY_TEXT_SCALE = 1;
+
 export class ChunkLabel {
   #rootEl: HTMLDivElement;
   #subRootEl: HTMLSpanElement;
@@ -41,6 +44,14 @@ export class ChunkLabel {
           rtEl.textContent = maybeRuby.text;
           rubyElChildren.push(rtEl);
           rubyEl.replaceChildren(...rubyElChildren);
+
+          // Scale ruby text down if necessary to avoid overflow
+          const rubyCharsPerBaseChar = maybeRuby.text.length / maybeRuby.base.length;
+          const rubyTextScale = this.#rubyTextScale(rubyCharsPerBaseChar);
+          if (rubyTextScale !== DEFAULT_RUBY_TEXT_SCALE) {
+            rtEl.style.setProperty(RUBY_TEXT_SCALE_PROP_NAME, rubyTextScale.toString());
+          }
+
           newLabelChildren.push(rubyEl);
         }
       }
@@ -127,22 +138,36 @@ export class ChunkLabel {
       this.#setCharElementClassByRange(charEl, rawCharIdx, className, range)
     );
   }
+
+  #rubyTextScale(rubyCharsPerBaseChar: number): number {
+    if (rubyCharsPerBaseChar <= 2) {
+      return 1;
+    } else if (rubyCharsPerBaseChar < 3) {
+      return 0.85;
+    } else if (rubyCharsPerBaseChar < 4) {
+      return 0.7;
+    } else {
+      return 0.55;
+    }
+  }
 }
 
 const RootClass = css`
+  ${RUBY_TEXT_SCALE_PROP_NAME}: ${DEFAULT_RUBY_TEXT_SCALE.toString()};
+
   box-sizing: content-box;
   margin-top: 0.3rem;
 
   .${ChromeClass} & {
-    line-height: 1.39;
+    line-height: 1.3;
 
     ruby {
-      line-height: 1.85;
+      line-height: 1.8;
     }
   }
 
   rt {
-    font-size: 1.18rem;
+    font-size: calc(var(${RUBY_TEXT_SCALE_PROP_NAME}) * 1.05rem);
     margin-bottom: -0.1em;
   }
 
