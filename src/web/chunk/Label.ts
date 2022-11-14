@@ -65,6 +65,7 @@ export class ChunkLabel {
 
   setSelection(selection: ChunkTextSelection | undefined) {
     this.#setCharElementsClassByRange(SelectedCharClass, selection?.range);
+    this.#rootEl.classList.toggle(HasSelectionClass, selection !== undefined)
   }
 
   setHighlight(highlight: [number, number] | undefined) {
@@ -186,6 +187,18 @@ const CharClass = css`
 
 const SelectedCharClass = css`
   border-bottom: 2px solid var(--color-accB) !important;
+`;
+
+const HasSelectionClass = css`
+  --unselected-char-color: var(--color-fg4);
+
+  .${CharClass}:not(.${SelectedCharClass}) {
+    color: var(--unselected-char-color);
+
+    & + rt {
+      color: var(--unselected-char-color);
+    }
+  }
 `;
 
 const HighlightedCharClass = css`
