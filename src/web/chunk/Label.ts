@@ -154,6 +154,7 @@ export class ChunkLabel {
 
 const RootClass = css`
   ${RUBY_TEXT_SCALE_PROP_NAME}: ${DEFAULT_RUBY_TEXT_SCALE.toString()};
+  --ruby-text-font-size-base: calc(0.5 * var(--chunk-font-size) * var(--chunk-furigana-font-scale));
 
   box-sizing: content-box;
   margin-top: 0.3rem;
@@ -167,7 +168,7 @@ const RootClass = css`
   }
 
   rt {
-    font-size: calc(var(${RUBY_TEXT_SCALE_PROP_NAME}) * 1.05rem);
+    font-size: calc(var(${RUBY_TEXT_SCALE_PROP_NAME}) * var(--ruby-text-font-size-base));
     margin-bottom: -0.1em;
   }
 
