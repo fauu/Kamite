@@ -19,7 +19,9 @@ public final class Slurp extends BaseSimpleDependency {
 
   @Override
   public boolean checkIsAvailable() {
-    var res = ProcessHelper.run(ProcessRunParams.ofCmd(BIN, "-h").withTimeout(1000));
+    var res = ProcessHelper.run(
+      ProcessRunParams.ofCmd(BIN, "-h").withTimeout(DEFAULT_AVAILABILITY_CHECK_TIMEOUT_MS)
+    );
     return res.didComplete() && res.getStdout().startsWith("Usage: slurp");
   }
 

@@ -1,6 +1,8 @@
 package io.github.kamitejp.platform;
 
 public abstract class BaseSimpleDependency implements SimpleDependency {
+  protected static final int DEFAULT_AVAILABILITY_CHECK_TIMEOUT_MS = 1000;
+
   protected final String BIN;
   protected final String NAME;
 

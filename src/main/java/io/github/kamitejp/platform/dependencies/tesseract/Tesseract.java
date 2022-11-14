@@ -20,7 +20,9 @@ public final class Tesseract extends BaseSimpleDependency {
 
   @Override
   public boolean checkIsAvailable() {
-    var res = ProcessHelper.run(ProcessRunParams.ofCmd(BIN, "-v").withTimeout(500));
+    var res = ProcessHelper.run(
+      ProcessRunParams.ofCmd(BIN, "-v").withTimeout(DEFAULT_AVAILABILITY_CHECK_TIMEOUT_MS)
+    );
     return res.didComplete() && res.getStdout().startsWith("tesseract ");
   }
 
