@@ -169,6 +169,7 @@ const RootClass = css`
 
   rt {
     font-size: calc(var(${RUBY_TEXT_SCALE_PROP_NAME}) * var(--ruby-text-font-size-base));
+    font-weight: var(--chunk-furigana-font-weight);
     margin-bottom: -0.1em;
   }
 

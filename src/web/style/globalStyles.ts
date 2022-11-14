@@ -39,15 +39,19 @@ export const GlobalStyles = createGlobalStyles`
     --color-error2-hl: #cc5a52;
 
     --base-font-size: 16px;
-    --font-stack: Roboto, 'Noto Sans JP', 'Noto Sans CJK JP', 'Hiragino Sans',
-                  'Hiragino Kaku Gothic Pro', '游ゴシック' , '游ゴシック体' , YuGothic ,
-                  'Yu Gothic', 'ＭＳ ゴシック' , 'MS Gothic', 'Segoe UI', Helvetica, Ubuntu,
-                  Cantarell, Arial, sans-serif;
+    --font-ui: Roboto;
+    --font-jp: 'Noto Sans JP';
+    --font-stack: var(--font-ui), var(--font-jp), 'Noto Sans CJK JP', 'Hiragino Sans',
+                  'Hiragino Kaku Gothic Pro', '游ゴシック' , '游ゴシック体', YuGothic, 'Yu Gothic',
+                  'ＭＳ ゴシック' , 'MS Gothic', 'Segoe UI', Helvetica, Ubuntu, Cantarell, Arial,
+                  sans-serif;
     --font-stack-mono: 'Roboto Mono', Menlo, Monaco, 'Noto Sans Mono', Courier, monospace;
     --border-radius-default: 2px;
     --chunk-font-size: 2.1rem;
+    --chunk-font-weight: 400;
     --chunk-letter-spacing: -0.04rem;
     --chunk-furigana-font-scale: 1;
+    --chunk-furigana-font-weight: 400;
     --shadow-panel: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
     --shadow-faint-glow: 0 0 5px 3px var(--color-bg3);
     --palette-button-min-size: 46px;
