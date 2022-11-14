@@ -65,8 +65,13 @@ export function availableActions(chunks: ChunksState): Action[] {
   res.push({ kind: "undo", disabled: !chunks.canTravelBy(-1) });
   res.push({ kind: "redo", disabled: !chunks.canTravelBy(1) });
 
-  if (chunks.textHighlight()) {
-    res.push({ kind: "select-highlighted" });
+  const hl = chunks.textHighlight();
+  if (hl) {
+    const selRange = chunks.textSelection.get()?.range;
+    const selRangeDefinedEqualsHl = selRange && selRange[0] === hl[0] && selRange[1] === hl[1];
+    if (!selRangeDefinedEqualsHl) {
+      res.push({ kind: "select-highlighted" });
+    }
   }
 
   if (chunks.textSelection.get() && chunks.currentEffectiveText().length === 1) {
