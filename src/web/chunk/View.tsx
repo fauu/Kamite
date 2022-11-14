@@ -63,7 +63,7 @@ const Root = styled.div`
 
 const WaitingClass = css`
   pointer-events: none;
-  opacity: 0.25;
+  opacity: 0.3;
   transition: opacity 0.2s;
 `;
 
