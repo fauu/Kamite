@@ -8,6 +8,68 @@
 
 ## [Unreleased]
 
+## [0.10] – 2022-11-15
+
+### Changed
+
+* User selection within current chunk outside Edit mode is no longer removed
+  when the cursor leaves the client browser tab.
+* If there is a user selection within current chunk outside edit mode when a new
+  chunk comes in, the current chunk is now replaced entirely, not just the
+  selected part. (To have just a part of it replaced instead, enter Edit mode by
+  double-clicking the current chunk area and select the text to be replaced
+  there.)
+* Startup time with OCR enabled has been improved in some cases by initializing
+  Recognizer in a separate thread.
+* Remote OCR request that has failed to complete is now retried twice in some
+  cases before a failure is reported to the client.
+* The current chunk is now faded out instead of hidden while OCR is in progress.
+* Characters from unicode block [Specials][unicode-specials] are now stripped
+  from incoming chunks if `chunk.correct = true` (it is so by default).
+* Default furigana font size has been decreased and further downscaling is now
+  applied to it depending on the length of the annotation relatively to the base
+  text—this in order to prevent the furigana overflowing and introducing
+  inconsistencies in spacing between characters. (For how to restore previous
+  behaviour, see the
+  [„Current chunk” font sizing][wiki-current-chunk-font-sizing] section in the
+  Wiki.)
+* Furigana font can now be scaled in `custom.css` using the variable
+  `--chunk-furigana-font-scale`. It is now also scaled with `--chunk-font-size`.
+  (For details, see the
+  [„Current chunk” font sizing][wiki-current-chunk-font-sizing] section
+  in the Wiki.)
+* Removed the CSS variable `--chunk-line-height` for now, since due to browser
+  quirks and furigana interactions it was not fully functional for regulating
+  the line height in `custom.css`.
+* Added CSS variables `--font-ui` and `--font-jp` for easier customization of
+  font faces. (See the [Font faces][wiki-font-faces] section in the Wiki)
+* Added CSS variables `--chunk-font-weight` and `--chunk-furigana-font-weight`
+  for easier customization of chunk font weight. (See the
+  [„Current chunk” font weight][wiki-current-chunk-font-weight]
+  section in the Wiki.)
+* Make user selection in current chunk visually stand out a bit more.
+
+[unicode-specials]: https://en.wikipedia.org/wiki/Specials_(Unicode_block)
+[wiki-current-chunk-font-sizing]: https://github.com/fauu/Kamite/wiki/Styling-recipes#current-chunk-font-sizing
+[wiki-font-faces]: https://github.com/fauu/Kamite/wiki/Styling-recipes#font-faces
+[wiki-current-chunk-font-weight]: https://github.com/fauu/Kamite/wiki/Styling-recipes#current-chunk-font-weight
+
+### Fixed
+
+* “Manga OCR” Online OCR engine works again (switched to
+  [a Hugging Face Space by Detomo][manga-ocr-hf-detomo]).
+* Current chunk label now has correct line height on Chrome.
+* Status panel fade is now correctly recalculated in a certain situation where
+  it previously was not.
+* Empty incoming chunks are now rejected in some circumstances when they might
+  not have been previously.
+* Likely reduced the incidence of Tesseract executable availability check
+  failing when it should not.
+* *Select highlighted* action no longer appears when it would be a no-op because
+  of the chunk selection already being equal to the highlight.
+
+[manga-ocr-hf-detomo]: https://huggingface.co/spaces/Detomo/Japanese-OCR
+
 ## [0.9] – 2022-10-31
 
 ### Fixed
@@ -243,7 +305,8 @@
 
 Initial release.
 
-[Unreleased]: https://github.com/fauu/Kamite/compare/v0.9...HEAD
+[Unreleased]: https://github.com/fauu/Kamite/compare/v0.10...HEAD
+[0.10]: https://github.com/fauu/Kamite/releases/tag/v0.10
 [0.9]: https://github.com/fauu/Kamite/releases/tag/v0.9
 [0.8]: https://github.com/fauu/Kamite/releases/tag/v0.8
 [0.7]: https://github.com/fauu/Kamite/releases/tag/v0.7

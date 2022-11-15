@@ -378,10 +378,10 @@ Kamite integrates with four alternative OCR (Optical Character Recognition)
 providers to enable the extraction of text from manga pages displayed on screen.
 The available OCR engines are:
 
-* “Manga OCR” Online (a Hugging Face Space by Gryan Galario)
+* “Manga OCR” Online (a Hugging Face Space by Detomo)
 
     <https://github.com/kha-white/manga-ocr>\
-    <https://huggingface.co/spaces/gryan-galario/manga-ocr-demo>
+    <https://huggingface.co/spaces/Detomo/Japanese-OCR>
 
 * “Manga OCR” (Local)
 
@@ -420,10 +420,10 @@ system resources.
 #### Setting up “Manga OCR” Online
 
 > **Warning**
-> The “Manga OCR” Online engine depends on a third-party online
-> service ([a Hugging Face Space by Gryan Galario][manga-ocr-hf-gg]), so using
-> it involves sending screenshots of portions of your screen to a third-party.
-> Here is [the stated privacy policy of Hugging Face][huggingface-privacy-policy].
+> The “Manga OCR” Online engine depends on a third-party online service
+> ([a Hugging Face Space by Detomo][manga-ocr-hf]), so using it involves sending
+> screenshots of portions of your screen to a third-party. Here is
+> [the stated privacy policy of Hugging Face][huggingface-privacy-policy].
 
 The online API used by the “Manga OCR” Online engine is freely accessible and
 consequently *does not* require any setup.
@@ -1864,8 +1864,7 @@ Kamite never saves your data to disk.
 Kamite never sends your data through the network, with the following exceptions:
 
 * When `ocr.engine` is set to `mangaocr_online`, screenshots of portions of your
-  screen are sent to a [Hugging Face Space][manga-ocr-hf-gg] for text
-  recognition.
+  screen are sent to a [Hugging Face Space][manga-ocr-hf] for text recognition.
 
 * When `ocr.engine` is set to `ocrspace`, screenshots of portions of your screen
   are sent to [OCR.space] for text recognition.
@@ -1941,5 +1940,5 @@ the original license notices.
 [Gomics-v]: https://github.com/fauu/gomicsv
 [Sway]: https://swaywm.org/
 [manga-ocr]: https://github.com/kha-white/manga-ocr
-[manga-ocr-hf-gg]: https://huggingface.co/spaces/gryan-galario/manga-ocr-demo
+[manga-ocr-hf]: https://huggingface.co/spaces/Detomo/Japanese-OCR
 [OCR.space]: https://ocr.space/
