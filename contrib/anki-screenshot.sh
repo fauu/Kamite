@@ -13,7 +13,12 @@
 #   -g <geometry>  Instead of prompting for selection, take a screenshot of the specified area.
 #                  The geometry format is "X,Y WxH" (e.g., "20,-100 1000x600").
 #
-# DEPENDENCIES: grim + slurp (Wayland) / maim (Xorg), jq, curl, imagemagick, Anki Connect, libnotify
+# Exit status:
+#   0    Updated note
+#   1-5  Failed to update note
+#
+# Dependencies:
+#   grim + slurp (Wayland) / maim (Xorg), jq, curl, imagemagick, Anki Connect, libnotify
 #
 
 # Config
