@@ -65,7 +65,7 @@ export class ChunkLabel {
 
   setSelection(selection: ChunkTextSelection | undefined) {
     this.#setCharElementsClassByRange(SelectedCharClass, selection?.range);
-    this.#rootEl.classList.toggle(HasSelectionClass, selection !== undefined)
+    this.#rootEl.classList.toggle(HasSelectionClass, selection !== undefined);
   }
 
   setHighlight(highlight: [number, number] | undefined) {
