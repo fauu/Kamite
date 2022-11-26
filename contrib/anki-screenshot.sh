@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 #
-# Last Anki card: add area screenshot and sentence
+# Latest Anki card: add area screenshot and sentence
 #
 # Basic invocation:
-#   Prompt the user for an area selection, take a screenshot of it and update the most recent Anki
-#   card with it. The screenshot will be converted to WebP and downscaled if necessary
-#   ($PICTURE_RESIZE_GEOMETRY).
+#   Prompt the user for an area selection, take a screenshot of it and update the Anki note
+#   corresponding to the most recent card. The screenshot will be converted to WebP and downscaled
+#   if necessary ($PICTURE_RESIZE_GEOMETRY).
 #
 # Optional arguments:
 #   -s <sentence>  Set the card's "Sentence" field ($SENTENCE_FIELD_NAME) to the specified value.
