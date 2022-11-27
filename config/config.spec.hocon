@@ -9,6 +9,7 @@ launchBrowser = "boolean | true"
 
 chunk {
   showFurigana = false
+  concealFurigana = false
   throttleMS = "int | 1000"
   correct = true
   flash = true
