@@ -184,8 +184,12 @@ const RootClass = css`
 `;
 
 const RubyTextConcealedClass = css`
-  rt {
-    visibility: hidden;
+  ruby:not(:hover) {
+    rt {
+      filter: blur(2px);
+      opacity: 0.1;
+      background: var(--color-fg);
+    }
   }
 `;
 

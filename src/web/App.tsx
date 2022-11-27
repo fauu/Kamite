@@ -573,12 +573,6 @@ export const App: VoidComponent = () => {
         }
         break;
 
-      case "KeyF":
-        if (chunks.rubyConcealed()) {
-          chunks.setRubyConcealed(false);
-        }
-        break;
-
       case "Space":
         commandToSend = "player_playpause";
         break;
@@ -593,16 +587,6 @@ export const App: VoidComponent = () => {
     }
     if (commandToSend && !chunks.editing()) {
       backend.command(commandToSend);
-    }
-  });
-
-  document.addEventListener("keyup", event => {
-    switch (event.code) {
-      case "KeyF":
-        if (getSetting(settings, "conceal-furigana")) {
-          chunks.setRubyConcealed(true);
-        }
-        break;
     }
   });
 
@@ -652,12 +636,7 @@ export const App: VoidComponent = () => {
     chunks.setSelectingInTranslation(selectingInChunkTranslation ?? false);
   });
 
-  window.addEventListener("blur", () => {
-    if (getSetting(settings, "conceal-furigana")) {
-      chunks.setRubyConcealed(true);
-    }
-    globalTooltip.hide();
-  });
+  window.addEventListener("blur", () => globalTooltip.hide);
 
   // ==============================================================================================
 
