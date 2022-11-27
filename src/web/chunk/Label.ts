@@ -63,6 +63,10 @@ export class ChunkLabel {
     this.#subRootEl.replaceChildren(...newLabelChildren);
   }
 
+  setRubyConcealed(rubyConcealed: boolean) {
+    this.#rootEl.classList.toggle(RubyTextConcealedClass, rubyConcealed);
+  }
+
   setSelection(selection: ChunkTextSelection | undefined) {
     this.#setCharElementsClassByRange(SelectedCharClass, selection?.range);
     this.#rootEl.classList.toggle(HasSelectionClass, selection !== undefined);
@@ -176,6 +180,12 @@ const RootClass = css`
 
   ::selection {
     background: transparent;
+  }
+`;
+
+const RubyTextConcealedClass = css`
+  rt {
+    visibility: hidden;
   }
 `;
 

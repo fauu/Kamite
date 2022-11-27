@@ -57,6 +57,10 @@ export function createChunksState(
   const [pointer, setPointer] =
     createSignal(0, { equals: false });
 
+  // Whether the ruby text is temporarily concealed in the current chunk
+  const [rubyConcealed, setRubyConcealed] =
+    createSignal(false);
+
   // Whether the current chunk is being edited
   const [editing, setEditing] =
     createSignal(false);
@@ -690,6 +694,8 @@ export function createChunksState(
     //setChunks,
     pointer,
     //setPointer,
+    rubyConcealed,
+    setRubyConcealed,
     editing,
     //setEditing,
     editText,

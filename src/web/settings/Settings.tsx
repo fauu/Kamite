@@ -8,7 +8,7 @@ export const DEFAULT_SETTINGS: Setting[] = [
   {
     id: "layout",
     label: "Interface layout",
-    configKey: (c) => c.ui.layout,
+    configKey: c => c.ui.layout,
     kind: "select",
     options: [
       { label: "Standard",         value: "STANDARD" },
@@ -19,14 +19,14 @@ export const DEFAULT_SETTINGS: Setting[] = [
   {
     id: "notebook-collapse",
     label: "Collapse notebook",
-    configKey: (c) => c.ui.notebook.collapse,
+    configKey: c => c.ui.notebook.collapse,
     kind: "toggle",
     value: false,
   },
   {
     id: "show-furigana",
     label: "Show furigana",
-    configKey: (c) => c.chunk.showFurigana,
+    configKey: c => c.chunk.showFurigana,
     kind: "toggle",
     value: false,
     warning: {
@@ -35,9 +35,16 @@ export const DEFAULT_SETTINGS: Setting[] = [
     },
   },
   {
+    id: "conceal-furigana",
+    label: "Conceal furigana",
+    configKey: c => c.chunk.concealFurigana,
+    kind: "toggle",
+    value: false,
+  },
+  {
     id: "translation-only-mode",
     label: "Translation-only mode",
-    configKey: (c) => c.chunk.translationOnlyMode,
+    configKey: c => c.chunk.translationOnlyMode,
     kind: "toggle",
     value: false,
     help: `Treat incoming chunks as translations and create a new empty chunk for each translation.

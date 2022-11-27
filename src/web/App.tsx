@@ -372,7 +372,11 @@ export const App: VoidComponent = () => {
             for (const feature of msg.unavailableUniversalFeatures) {
               if (feature.id === "auto-furigana") {
                 setSettings(s => s.id === "show-furigana", {
-                  "disabled": { msg: SHOW_FURIGANA_DISABLED_MSG },
+                  "disabled": { value: true, msg: SHOW_FURIGANA_DISABLED_MSG },
+                  "value": false
+                });
+                setSettings(s => s.id === "show-furigana", {
+                  "disabled": { value: true },
                   "value": false
                 });
               }
@@ -500,6 +504,9 @@ export const App: VoidComponent = () => {
       case "show-furigana":
         value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
         break;
+      case "conceal-furigana":
+        chunks.setRubyConcealed(value as boolean);
+        break
       case "notebook-collapse":
         if (value) {
           notebook.maybeCollapse(themeLayoutFlippedMemo(), mouseY);
@@ -521,7 +528,7 @@ export const App: VoidComponent = () => {
   window.addEventListener("resize", () => mainSectionEl && notebook.syncHeight());
 
   // DRY: Unify with action handling
-  document.addEventListener("keydown", (event) => {
+  document.addEventListener("keydown", event => {
     let commandToSend: Command["kind"] | undefined = undefined;
     switch (event.code) {
       case "Backspace": // Fallthrough
@@ -566,6 +573,12 @@ export const App: VoidComponent = () => {
         }
         break;
 
+      case "KeyF":
+        if (chunks.rubyConcealed()) {
+          chunks.setRubyConcealed(false);
+        }
+        break;
+
       case "Space":
         commandToSend = "player_playpause";
         break;
@@ -580,6 +593,16 @@ export const App: VoidComponent = () => {
     }
     if (commandToSend && !chunks.editing()) {
       backend.command(commandToSend);
+    }
+  });
+
+  document.addEventListener("keyup", event => {
+    switch (event.code) {
+      case "KeyF":
+        if (getSetting(settings, "conceal-furigana")) {
+          chunks.setRubyConcealed(true);
+        }
+        break;
     }
   });
 
@@ -629,7 +652,12 @@ export const App: VoidComponent = () => {
     chunks.setSelectingInTranslation(selectingInChunkTranslation ?? false);
   });
 
-  window.addEventListener("blur", globalTooltip.hide);
+  window.addEventListener("blur", () => {
+    if (getSetting(settings, "conceal-furigana")) {
+      chunks.setRubyConcealed(true);
+    }
+    globalTooltip.hide();
+  });
 
   // ==============================================================================================
 

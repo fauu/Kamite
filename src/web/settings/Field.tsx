@@ -34,7 +34,7 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
       class="issue-9"
       classList={{
         [SettingsToggleClass]: props.setting.kind === "toggle",
-        [DisabledFieldClass]: !!props.setting.disabled,
+        [DisabledFieldClass]: !!props.setting.disabled?.value,
       }}
     >
       <Info>
@@ -62,8 +62,8 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
         }</Match>
       </Switch>
     </Label>
-    <Show when={props.setting.disabled} keyed>{ disabled =>
-      <DisabledMessage innerHTML={disabled.msg} />
+    <Show when={props.setting.disabled?.msg} keyed>{ msg =>
+      <DisabledMessage innerHTML={msg} />
     }</Show>
     <Show when={props.setting.warning && props.setting.warning.show(props.setting.value)}>
       <Warning>

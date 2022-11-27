@@ -14,6 +14,8 @@ export const ChunkLabelWrapper: VoidComponent<ChunkLabelWrapperProps> = (props) 
 
   createEffect(() => label.setChunk(props.chunksState.current()));
 
+  createEffect(() => label.setRubyConcealed(props.chunksState.rubyConcealed()));
+
   createEffect(() => label.setSelection(props.chunksState.textSelection.get()));
 
   createEffect(() => label.setHighlight(props.chunksState.textHighlight()));
