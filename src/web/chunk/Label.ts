@@ -148,11 +148,11 @@ export class ChunkLabel {
     if (rubyCharsPerBaseChar <= 2) {
       return 1;
     } else if (rubyCharsPerBaseChar < 3) {
-      return 0.85;
+      return 0.8;
     } else if (rubyCharsPerBaseChar < 4) {
-      return 0.7;
+      return 0.65;
     } else {
-      return 0.55;
+      return 0.5;
     }
   }
 }
