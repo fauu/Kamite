@@ -42,6 +42,7 @@ import {
 import { ChromeClass, GlobalStyles } from "~/style";
 
 import { integrateClipboardInserter } from "./clipboardInserter";
+import { RootId } from "./dom";
 import { SHOW_FURIGANA_DISABLED_MSG } from "./features";
 import { useGlobalTooltip } from "./GlobalTooltip";
 import { createTheme, themeLayoutFlipped } from "./theme";
@@ -651,7 +652,7 @@ export const App: VoidComponent = () => {
           ...profileNames().map(n => [`profile-${n}`, true])
         ].map(([name, active]) => active ? name : undefined).filter(x => x).join(" ")
       }
-      id="root"
+      id={RootId}
       ref={el => rootEl = el}
     >
       <GlobalStyles />

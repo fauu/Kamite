@@ -1,5 +1,6 @@
 import { css } from "solid-styled-components";
 
+import { RootId } from "~/dom";
 import { BgFlashingClass, ChromeClass } from "~/style";
 
 import type { Chunk } from "./Chunk";
@@ -190,8 +191,7 @@ const RubyTextConcealedClass = css`
       opacity: 0.1;
       background: var(--color-fg);
 
-      /* QUAL: Do without hardcoding root id? */
-      #root:not(.${ChromeClass}) & {
+      ${RootId}:not(.${ChromeClass}) & {
         /* Equalize heights of conceal blocks without stretching the ruby base */
         font-size: var(--ruby-text-font-size-base);
         /* TODO: The letter-spacing hack doesn't work on Chrome. Find another way */
