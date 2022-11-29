@@ -1,6 +1,6 @@
 import { css } from "solid-styled-components";
 
-import { ChunkCharIdxAttrName, ChunkLabelId } from "~/dom";
+import { ChunkCharIdxAttrName, ChunkLabelId, RootId } from "~/dom";
 import { BgFlashingClass, ChromeClass } from "~/style";
 
 import type { Chunk } from "./Chunk";
@@ -200,6 +200,13 @@ const RubyTextConcealedClass = css`
 `;
 
 const CharClass = css`
+  position: relative;
+
+  /* Fixes chars shifting between lines due to the selection underline pseudo-element on Firefox */
+  #${RootId}:not(.${ChromeClass}) & {
+    display: inline-block;
+  }
+
   &:hover {
     text-decoration: underline;
     text-decoration-style: dotted;
@@ -209,15 +216,16 @@ const CharClass = css`
 `;
 
 const SelectedCharClass = css`
-  position: relative;
-
   &:before {
     content: "";
     position: absolute;
     background: var(--color-accB);
     width: 100%;
     height: 2px;
-    bottom: 3px;
+    bottom: 6px;
+    .${ChromeClass} & {
+      bottom: 3px;
+    }
   }
 `;
 
