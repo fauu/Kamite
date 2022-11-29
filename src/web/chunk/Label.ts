@@ -165,6 +165,12 @@ const RootClass = css`
   box-sizing: content-box;
   margin-top: 0.3rem;
 
+  #${CHUNK_LABEL_ID} > * {
+    /* Underline continuity fix */
+    /* TODO: Doesn't work within <ruby> */
+    margin-right: -1px;
+  }
+
   .${ChromeClass} & {
     line-height: 1.3;
 
@@ -174,9 +180,9 @@ const RootClass = css`
   }
 
   rt {
-    font-size: calc(var(${RUBY_TEXT_SCALE_PROP_NAME}) * var(--ruby-text-font-size-base));
+    font-size: calc(var(--ruby-text-font-size-base) * var(${RUBY_TEXT_SCALE_PROP_NAME}));
     font-weight: var(--chunk-furigana-font-weight);
-    margin-bottom: -0.1em;
+    margin-bottom: -0.25em;
   }
 
   ::selection {
@@ -185,30 +191,39 @@ const RootClass = css`
 `;
 
 const RubyTextConcealedClass = css`
-  ruby:not(:hover) {
-    rt {
-      filter: blur(2px);
-      opacity: 0.1;
-      background: var(--color-fg);
-
-      #${RootId}:not(.${ChromeClass}) & {
-        /* Equalize heights of conceal blocks without stretching the ruby base */
-        font-size: var(--ruby-text-font-size-base);
-        /* TODO: The letter-spacing hack doesn't work on Chrome. Find another way */
-        letter-spacing: -1000rem;
-      }
-    }
+  ruby {
+    position: relative;
   }
+
+  ruby:not(:hover)::before {
+    width: calc(100% + 0.05rem);
+    height: calc(var(--ruby-text-font-size-base) + 0.15rem);
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--ruby-text-font-size-base));
+    left: calc(0rem - 0.025rem);
+    filter: blur(1px);
+    background: var(--color-bg2-hl);
+  }
+
 `;
 
 const CharClass = css`
+  text-underline-offset: 0.1em;
+
   &:hover {
-    border-bottom: 2px dotted var(--color-accC);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accC);
   }
 `;
 
 const SelectedCharClass = css`
-  border-bottom: 2px solid var(--color-accB) !important;
+  text-decoration: underline;
+  text-decoration-style: solid !important;
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--color-accB) !important;
 `;
 
 const HasSelectionClass = css`
