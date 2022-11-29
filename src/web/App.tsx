@@ -506,7 +506,7 @@ export const App: VoidComponent = () => {
         break;
       case "conceal-furigana":
         chunks.setRubyConcealed(value as boolean);
-        break
+        break;
       case "notebook-collapse":
         if (value) {
           notebook.maybeCollapse(themeLayoutFlippedMemo(), mouseY);

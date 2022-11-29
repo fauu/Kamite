@@ -8,7 +8,7 @@ export type SettingBase = {
   configKey: (c: Config) => Setting["value"],
   warning?: SettingWarning,
   help?: string,
-  disabled?: { value: true, msg?: string } | { value: false, msg: undefined };
+  disabled?: { value: true, msg?: string } | { value: false, msg: undefined },
 };
 
 export type SettingMain = ToggleSettingMain | SelectSettingMain;
