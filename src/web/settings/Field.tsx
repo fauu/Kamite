@@ -78,12 +78,10 @@ export const DisabledFieldClass = "disabled";
 
 const Root = styled.div`
   display: inline-block;
-  border: 1px dashed var(--color-bg3);
-  border-radius: var(--border-radius-default);
-  padding: 0.45rem 0.5rem;
+  padding: 0.75rem 0.5rem;
 
   &:not(:last-child) {
-    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-bg3);
   }
 
   ${LAYOUT_BREAKPOINT_SMALL} {
