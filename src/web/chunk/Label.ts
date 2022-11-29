@@ -186,7 +186,7 @@ const RubyTextConcealedClass = css`
     position: relative;
   }
 
-  ruby:not(:hover)::before {
+  ruby:not(:hover):before {
     width: calc(100% + 0.08rem);
     height: calc(var(--ruby-text-font-size-base) + 0.23rem);
     content: "";
@@ -200,8 +200,6 @@ const RubyTextConcealedClass = css`
 `;
 
 const CharClass = css`
-  text-underline-offset: 0.1em;
-
   &:hover {
     text-decoration: underline;
     text-decoration-style: dotted;
@@ -211,10 +209,16 @@ const CharClass = css`
 `;
 
 const SelectedCharClass = css`
-  text-decoration: underline;
-  text-decoration-style: solid !important;
-  text-decoration-thickness: 2px;
-  text-decoration-color: var(--color-accB) !important;
+  position: relative;
+
+  &:before {
+    content: "";
+    position: absolute;
+    background: var(--color-accB);
+    width: 100%;
+    height: 2px;
+    bottom: 3px;
+  }
 `;
 
 const HasSelectionClass = css`
