@@ -208,6 +208,9 @@ const CharClass = css`
   }
 
   &:hover {
+    .${ChromeClass} & {
+      text-underline-offset: 3px;
+    }
     text-decoration: underline;
     text-decoration-style: dotted;
     text-decoration-thickness: 2px;
