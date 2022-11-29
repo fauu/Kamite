@@ -37,6 +37,7 @@ const Root = styled.div`
   position: absolute;
   right: 0;
   ${p => !themeLayoutFlipped(p.theme) ? "bottom: 0" : "top: 0"};
+  z-index: 5;
 `;
 
 const FadedClass = css`

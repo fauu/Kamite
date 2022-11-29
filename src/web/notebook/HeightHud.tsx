@@ -39,6 +39,7 @@ const Root = styled.div`
   border-radius: var(--border-radius-default);
   padding: 0.15rem 0.28rem;
   ${p => !themeLayoutFlipped(p.theme) ? "top" : "bottom"}: -50px;
+  z-index: 5;
 `;
 
 const Height = styled.span`
