@@ -19,8 +19,6 @@ interface ChunkViewProps {
 export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
   const handleRootDblClick = () => !props.chunksState.waiting() && props.chunksState.startEditing();
 
-  const handleInputCtrlEnter = () => props.chunksState.finishEditing();
-
   const maybeWaitingClass = () => props.chunksState.waiting() ? WaitingClass : "";
 
   return <Root onDblClick={handleRootDblClick}>
@@ -39,7 +37,6 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
         <ChunkInput
           text={props.chunksState.editText()}
           onInput={props.onInput}
-          onCtrlEnter={handleInputCtrlEnter}
           ref={props.inputRef}
         />
       </ChunkInputWrapper>

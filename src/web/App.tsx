@@ -573,6 +573,19 @@ export const App: VoidComponent = () => {
         }
         break;
 
+      case "Enter":
+        if (event.ctrlKey) {
+          if (chunks.editing()) {
+            chunks.finishEditing();
+          } else {
+            chunks.startEditing();
+            if (event.shiftKey) {
+              chunks.setEditText("");
+            }
+          }
+        }
+        break;
+
       case "Space":
         commandToSend = "player_playpause";
         break;

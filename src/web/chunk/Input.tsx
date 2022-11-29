@@ -9,7 +9,6 @@ const [_] = [onMount];
 interface ChunkInputProps {
   text: string,
   onInput: (newText: string) => void,
-  onCtrlEnter: (el: HTMLElement) => any,
   ref: Ref<HTMLTextAreaElement>,
 }
 
@@ -23,19 +22,7 @@ export const ChunkInput: VoidComponent<ChunkInputProps> = (props) => {
 
       const taEl = el as HTMLTextAreaElement;
       taEl.selectionStart = taEl.value.length;
-
-      el.addEventListener("keydown", handleTextareaKeydown);
     },
-    cleanup: (el: HTMLElement) => {
-      el.removeEventListener("keydown", handleTextareaKeydown);
-    },
-  };
-
-  const handleTextareaKeydown = (event: KeyboardEvent) => {
-    if (event.code === "Enter" && event.ctrlKey) {
-      props.onCtrlEnter(event.target as HTMLElement);
-      event.preventDefault();
-    }
   };
 
   return <textarea
