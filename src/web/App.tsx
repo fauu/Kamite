@@ -32,7 +32,7 @@ import {
   availableChunkHistoryActions as getAvailableChunkHistoryActions, type ChunkHistoryAction
 } from "~/notebook/chunk-history";
 import {
-  DEFAULT_SETTINGS, getSetting, isSettingDisabled, Settings, type Setting,
+  DEFAULT_SETTINGS, disableSetting, getSetting, Settings, updateChildSettingsDisabled, type Setting,
   type SettingChangeRequest
 } from "~/settings";
 import {
@@ -371,16 +371,7 @@ export const App: VoidComponent = () => {
           if (msg.unavailableUniversalFeatures) {
             for (const feature of msg.unavailableUniversalFeatures) {
               if (feature.id === "auto-furigana") {
-                setSettings(s => s.id === "show-furigana", {
-                  "disabled": { value: true, msg: SHOW_FURIGANA_DISABLED_MSG },
-                  "value": false
-                });
-                // QUAL: DRY with `show-furigana` change handler
-                // QUAL: Could be done declaratively
-                setSettings(s => s.id === "conceal-furigana", {
-                  "disabled": { value: true, msg: undefined },
-                  "value": false,
-                });
+                disableSetting(settings, "show-furigana", setSettings, SHOW_FURIGANA_DISABLED_MSG);
               }
             }
           }
@@ -497,18 +488,16 @@ export const App: VoidComponent = () => {
   };
 
   const handleSettingChangeRequest: SettingChangeRequest = (id, value) => {
-    if (isSettingDisabled(settings, id)) {
+    const setting = settings.find(s => s.id === id)!;
+    if (setting.disabled?.value) {
       return;
     }
-    // PERF: Unnecessary double search if not disabled
+
+    // PERF: Double lookup if not disabled
     setSettings(s => s.id === id, "value", value);
     switch (id) {
       case "show-furigana":
         value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
-        // QUAL: Could be done declaratively
-        setSettings(s => s.id === "conceal-furigana", {
-          "disabled": { value: !value, msg: undefined }
-        });
         break;
       case "conceal-furigana":
         chunks.setRubyConcealed(value as boolean);
@@ -524,6 +513,8 @@ export const App: VoidComponent = () => {
         setTheme("layout", value as UILayout);
         break;
     }
+
+    updateChildSettingsDisabled(setting, setSettings);
   };
 
   function handleChunkAdded(chunk: Chunk) {

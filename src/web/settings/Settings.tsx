@@ -33,6 +33,7 @@ export const DEFAULT_SETTINGS: Setting[] = [
       text: "The furigana is auto-generated and often incorrect. Use cautiously.",
       show: (value: boolean) => value,
     },
+    childIds: ["conceal-furigana"],
   },
   {
     id: "conceal-furigana",

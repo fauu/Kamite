@@ -1,3 +1,5 @@
+import { SetStoreFunction } from "solid-js/store";
+
 import type { Config, UILayout } from "~/backend";
 
 export type Setting = SettingBase & SettingMain;
@@ -8,6 +10,7 @@ export type SettingBase = {
   configKey: (c: Config) => Setting["value"],
   warning?: SettingWarning,
   help?: string,
+  childIds?: Setting["id"][],
   child?: true,
   disabled?: { value: true, msg: string | undefined } | { value: false, msg: undefined },
 };
@@ -39,8 +42,33 @@ export function getSetting<T extends Setting["value"]>(
   return settings.find(s => s.id === id)!.value as T;
 }
 
-export function isSettingDisabled(settings: Setting[], id: Setting["id"]): boolean {
-  return !!settings.find(s => s.id === id)!.disabled?.value;
+// QUAL: Should the functions dealing with the entire store be moved?
+export function disableSetting(
+  settings: Setting[],
+  id: Setting["id"],
+  setSettings: SetStoreFunction<Setting[]>,
+  msg?: string,
+) {
+  const setting = settings.find(s => s.id === id);
+  if (!setting) {
+    return;
+  }
+  // PERF: Double lookup
+  setSettings(s => s.id === id, {
+    "disabled": { value: true, msg },
+    "value": false
+  });
+  updateChildSettingsDisabled(setting, setSettings);
+}
+
+export function updateChildSettingsDisabled(
+  setting: Setting, setSettings: SetStoreFunction<Setting[]>
+) {
+  if (setting.childIds) {
+    setSettings(s => setting.childIds!.includes(s.id), {
+      "disabled": { value: !setting.value, msg: undefined }
+    });
+  }
 }
 
 export type SettingWarning = {
