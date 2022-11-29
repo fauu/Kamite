@@ -1,15 +1,12 @@
 import { css } from "solid-styled-components";
 
-import { RootId } from "~/dom";
+import { ChunkCharIdxAttrName, ChunkLabelId } from "~/dom";
 import { BgFlashingClass, ChromeClass } from "~/style";
 
 import type { Chunk } from "./Chunk";
 import type { ChunkFlashState } from "./ChunksState";
 import { ChunkTextClass } from "./TextClass";
 import type { ChunkTextSelection } from "./TextSelectionState";
-
-export const CHUNK_LABEL_ID = "chunk-label";
-export const CHUNK_CHAR_IDX_ATTR_NAME = "charIdx";
 
 const RUBY_TEXT_SCALE_PROP_NAME = "--ruby-text-scale";
 const DEFAULT_RUBY_TEXT_SCALE = 1;
@@ -22,7 +19,7 @@ export class ChunkLabel {
     this.#rootEl = rootEl;
     rootEl.classList.add(RootClass, ChunkTextClass);
     this.#subRootEl = document.createElement("span");
-    this.#subRootEl.id = CHUNK_LABEL_ID;
+    this.#subRootEl.id = ChunkLabelId;
     this.#rootEl.prepend(this.#subRootEl);
   }
 
@@ -102,20 +99,20 @@ export class ChunkLabel {
       el.classList.add(CharClass);
       el.textContent = ch;
     }
-    el.dataset[CHUNK_CHAR_IDX_ATTR_NAME] = idx.toString();
+    el.dataset[ChunkCharIdxAttrName] = idx.toString();
     return el;
   }
 
   #forCharElement(fn: (charEl: HTMLElement, rawCharIdx: string, ...restArgs: any) => void) {
     for (const labelChildAbstractEl of this.#subRootEl.children) {
       const labelChildEl = labelChildAbstractEl as HTMLElement;
-      const rawCharIdx = labelChildEl.dataset[CHUNK_CHAR_IDX_ATTR_NAME];
+      const rawCharIdx = labelChildEl.dataset[ChunkCharIdxAttrName];
       if (rawCharIdx) {
         fn(labelChildEl, rawCharIdx);
       } else {
         for (const rubyChildAbstractEl of labelChildEl.children) {
           const rubyChildEl = rubyChildAbstractEl as HTMLElement;
-          const rawCharIdxRuby = rubyChildEl.dataset[CHUNK_CHAR_IDX_ATTR_NAME];
+          const rawCharIdxRuby = rubyChildEl.dataset[ChunkCharIdxAttrName];
           rawCharIdxRuby && fn(rubyChildEl, rawCharIdxRuby);
         }
       }
@@ -165,7 +162,7 @@ const RootClass = css`
   box-sizing: content-box;
   margin-top: 0.3rem;
 
-  #${CHUNK_LABEL_ID} > * {
+  #${ChunkLabelId} > * {
     /* Underline continuity fix */
     /* TODO: Doesn't work within <ruby> */
     margin-right: -1px;

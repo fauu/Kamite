@@ -17,8 +17,7 @@ import {
   playerStatusGotConnected
 } from "~/backend";
 import {
-  ChunkCurrentTranslationSelectionParentClass, ChunkView, CHUNK_CHAR_IDX_ATTR_NAME, CHUNK_LABEL_ID,
-  createChunksState, type Chunk
+  ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState, type Chunk
 } from "~/chunk";
 import {
   availableCommandPaletteCommands, CommandPalette, commandPrepareForDispatch
@@ -42,7 +41,7 @@ import {
 import { ChromeClass, GlobalStyles } from "~/style";
 
 import { integrateClipboardInserter } from "./clipboardInserter";
-import { RootId } from "./dom";
+import { ChunkCharIdxAttrName, ChunkLabelId, RootId } from "./dom";
 import { SHOW_FURIGANA_DISABLED_MSG } from "./features";
 import { useGlobalTooltip } from "./GlobalTooltip";
 import { createTheme, themeLayoutFlipped } from "./theme";
@@ -205,7 +204,7 @@ export const App: VoidComponent = () => {
       case 0: { // Left
         const target = event.target as HTMLElement;
 
-        const charIdxS = target.dataset[CHUNK_CHAR_IDX_ATTR_NAME];
+        const charIdxS = target.dataset[ChunkCharIdxAttrName];
         if (charIdxS) { // Mouse over chunk character
           // Initiate selection starting inside chunk label
           const charIdx = parseInt(charIdxS);
@@ -270,7 +269,7 @@ export const App: VoidComponent = () => {
       if (notebook.resizing()) {
         notebook.resizeTick(themeLayoutFlippedMemo(), event.movementY);
       } else {
-        const charIdxS = (event.target as HTMLElement).dataset[CHUNK_CHAR_IDX_ATTR_NAME];
+        const charIdxS = (event.target as HTMLElement).dataset[ChunkCharIdxAttrName];
         if (charIdxS) { // Mouse over chunk character
           // Update chunk selection
           const anchor =
@@ -285,7 +284,7 @@ export const App: VoidComponent = () => {
         } else if (chunks.textSelection.inProgress()) {
           // Update chunk selection
           // QUAL: Is there a better way of passing this?
-          const labelEl = document.getElementById(CHUNK_LABEL_ID)!;
+          const labelEl = document.getElementById(ChunkLabelId)!;
           const lastChunkElIdx = labelEl.childElementCount - 1;
           const lastChunkEl = labelEl.childNodes[lastChunkElIdx] as HTMLElement;
           const lastRect = lastChunkEl.getBoundingClientRect();
@@ -614,13 +613,13 @@ export const App: VoidComponent = () => {
     const anchorParentEl = selection?.anchorNode?.parentElement;
 
     // Register the extent of a browser native selection in chunk (from Yomichan hover, etc.)
-    const selectingInChunk = anchorParentEl?.dataset[CHUNK_CHAR_IDX_ATTR_NAME] !== undefined;
+    const selectingInChunk = anchorParentEl?.dataset[ChunkCharIdxAttrName] !== undefined;
     if (selectingInChunk) {
       const focusParentEl = selection?.focusNode?.parentElement;
       // ASSUMPTION: Selection always made left-to-right
       chunks.setTextHighlight(
         [anchorParentEl, focusParentEl]
-          .map(el => parseInt(el!.dataset[CHUNK_CHAR_IDX_ATTR_NAME]!)) as [number, number]
+          .map(el => parseInt(el!.dataset[ChunkCharIdxAttrName]!)) as [number, number]
       );
     } else {
       setTimeout(() => {
