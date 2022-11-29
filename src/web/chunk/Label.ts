@@ -184,23 +184,26 @@ const RootClass = css`
 const RubyTextConcealedClass = css`
   ruby {
     position: relative;
+    z-index: 1;
   }
 
   ruby:not(:hover):before {
-    width: calc(100% + 0.08rem);
-    height: calc(var(--ruby-text-font-size-base) + 0.23rem);
+    width: calc(100% + 0.1rem);
+    height: calc(var(--ruby-text-font-size-base) + 0.25rem);
     content: "";
     position: absolute;
     top: calc(-1 * var(--ruby-text-font-size-base) - 1px);
-    left: calc(0rem - 0.04rem);
+    left: calc(0rem - 0.05rem);
     filter: blur(1px);
     background: var(--color-bg2-hl);
+    z-index: 2;
   }
 
 `;
 
 const CharClass = css`
   position: relative;
+  z-index: 3;
 
   /* Fixes chars shifting between lines due to the selection underline pseudo-element on Firefox */
   #${RootId}:not(.${ChromeClass}) & {
