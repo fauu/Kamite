@@ -187,6 +187,7 @@ export function createChunksState(
   // === EFFECTS ===================================================================================
 
   createEffect(on(pointer, () => {
+    textSelection.set(undefined);
     selectOnlyCurrent();
     getSetting(settings, "show-furigana") ? void enhanceCurrent() : void unenhanceCurrent();
   }));
