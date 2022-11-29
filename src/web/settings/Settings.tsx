@@ -24,9 +24,9 @@ export const DEFAULT_SETTINGS: Setting[] = [
     value: false,
   },
   {
-    id: "show-furigana",
-    label: "Show furigana",
-    configKey: c => c.chunk.showFurigana,
+    id: "enable-furigana",
+    label: "Enable furigana",
+    configKey: c => c.chunk.furigana.enable,
     kind: "toggle",
     value: false,
     warning: {
@@ -38,7 +38,7 @@ export const DEFAULT_SETTINGS: Setting[] = [
   {
     id: "conceal-furigana",
     label: "Conceal furigana",
-    configKey: c => c.chunk.concealFurigana,
+    configKey: c => c.chunk.furigana.conceal,
     kind: "toggle",
     value: false,
     child: true,

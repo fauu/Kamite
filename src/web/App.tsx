@@ -371,7 +371,7 @@ export const App: VoidComponent = () => {
           if (msg.unavailableUniversalFeatures) {
             for (const feature of msg.unavailableUniversalFeatures) {
               if (feature.id === "auto-furigana") {
-                disableSetting(settings, "show-furigana", setSettings, SHOW_FURIGANA_DISABLED_MSG);
+                disableSetting(settings, "enable-furigana", setSettings, SHOW_FURIGANA_DISABLED_MSG);
               }
             }
           }
@@ -496,7 +496,7 @@ export const App: VoidComponent = () => {
     // PERF: Double lookup if not disabled
     setSettings(s => s.id === id, "value", value);
     switch (id) {
-      case "show-furigana":
+      case "enable-furigana":
         value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
         break;
       case "conceal-furigana":

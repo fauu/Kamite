@@ -41,9 +41,13 @@ interface Server {
 
 interface Chunk {
   flash: boolean,
-  showFurigana: boolean,
-  concealFurigana: boolean,
+  furigana: Furigana,
   translationOnlyMode: boolean,
+}
+
+interface Furigana {
+  enable: boolean,
+  conceal: boolean,
 }
 
 interface Keybindings {

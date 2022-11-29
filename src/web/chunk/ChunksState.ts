@@ -189,7 +189,7 @@ export function createChunksState(
   createEffect(on(pointer, () => {
     textSelection.set(undefined);
     selectOnlyCurrent();
-    getSetting(settings, "show-furigana") ? void enhanceCurrent() : void unenhanceCurrent();
+    getSetting(settings, "enable-furigana") ? void enhanceCurrent() : void unenhanceCurrent();
   }));
 
   // Make those two mutually exclusive: 1) text selection within the current chunk, and 2) selection
@@ -306,7 +306,7 @@ export function createChunksState(
 
     let shouldEnhance =
       params.mayRequestEnhancement
-      && getSetting(settings, "show-furigana") === true
+      && getSetting(settings, "enable-furigana") === true
       && typeof transformedInput === "string" // Otherwise this is was already enhanced text
       && transformedInput !== "";
     let newRawText;
@@ -506,7 +506,7 @@ export function createChunksState(
       inPlace: translationOnlyMode,
       forceKeepTranslation: translationOnlyMode
     });
-    if (getSetting(settings, "show-furigana") === true) {
+    if (getSetting(settings, "enable-furigana") === true) {
       // Enhance separately to avoid flashing old content when waiting for enhance response
       void enhanceCurrent();
     }

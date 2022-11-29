@@ -157,9 +157,9 @@ public class Kamite {
       unavailableUniversalFeatures.add(
         new UnavailableAutoFurigana(UnavailableAutoFurigana.Reason.KUROMOJI_UNAVAILABLE)
       );
-      if (config.chunk().showFurigana()) {
+      if (config.chunk().furigana().enable()) {
         LOG.warn(
-          "`chunk.showFurigana` is enabled, but a library needed for generating furigana is"
+          "`chunk.furigana.enable` is turned on, but a library needed for generating furigana is"
           + " not available"
         );
       }

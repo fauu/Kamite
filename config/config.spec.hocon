@@ -8,12 +8,10 @@ controlWindow = "boolean | true"
 launchBrowser = "boolean | true"
 
 chunk {
-  showFurigana = false
-  concealFurigana = false
-  throttleMS = "int | 1000"
   correct = true
-  flash = true
+  throttleMS = "int | 1000"
   translationOnlyMode = false
+  flash = true
 
   log {
     dir = "string?"
@@ -22,6 +20,11 @@ chunk {
   filter {
     #@optional
     rejectPatterns = [string]
+  }
+
+  furigana {
+    enable = "boolean | false"
+    conceal = "boolean | false"
   }
 
   #@optional
