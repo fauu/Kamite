@@ -162,12 +162,6 @@ const RootClass = css`
   box-sizing: content-box;
   margin-top: 0.3rem;
 
-  #${ChunkLabelId} > * {
-    /* Underline continuity fix */
-    /* TODO: Doesn't work within <ruby> */
-    margin-right: -1px;
-  }
-
   .${ChromeClass} & {
     line-height: 1.3;
 
@@ -179,7 +173,7 @@ const RootClass = css`
   rt {
     font-size: calc(var(--ruby-text-font-size-base) * var(${RUBY_TEXT_SCALE_PROP_NAME}));
     font-weight: var(--chunk-furigana-font-weight);
-    margin-bottom: -0.25em;
+    margin-bottom: -0.2em;
   }
 
   ::selection {
@@ -193,12 +187,12 @@ const RubyTextConcealedClass = css`
   }
 
   ruby:not(:hover)::before {
-    width: calc(100% + 0.05rem);
-    height: calc(var(--ruby-text-font-size-base) + 0.15rem);
+    width: calc(100% + 0.08rem);
+    height: calc(var(--ruby-text-font-size-base) + 0.23rem);
     content: "";
     position: absolute;
-    top: calc(-1 * var(--ruby-text-font-size-base));
-    left: calc(0rem - 0.025rem);
+    top: calc(-1 * var(--ruby-text-font-size-base) - 1px);
+    left: calc(0rem - 0.04rem);
     filter: blur(1px);
     background: var(--color-bg2-hl);
   }
