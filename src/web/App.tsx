@@ -375,9 +375,11 @@ export const App: VoidComponent = () => {
                   "disabled": { value: true, msg: SHOW_FURIGANA_DISABLED_MSG },
                   "value": false
                 });
-                setSettings(s => s.id === "show-furigana", {
-                  "disabled": { value: true },
-                  "value": false
+                // QUAL: DRY with `show-furigana` change handler
+                // QUAL: Could be done declaratively
+                setSettings(s => s.id === "conceal-furigana", {
+                  "disabled": { value: true, msg: undefined },
+                  "value": false,
                 });
               }
             }
@@ -503,6 +505,10 @@ export const App: VoidComponent = () => {
     switch (id) {
       case "show-furigana":
         value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
+        // QUAL: Could be done declaratively
+        setSettings(s => s.id === "conceal-furigana", {
+          "disabled": { value: !value, msg: undefined }
+        });
         break;
       case "conceal-furigana":
         chunks.setRubyConcealed(value as boolean);

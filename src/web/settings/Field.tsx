@@ -29,12 +29,15 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
   const handleChange: JSX.EventHandler<HTMLElement, Event> = event =>
     props.onChange({ id: props.setting.id, kind: props.setting.kind }, event);
 
-  return <Root>
+  return <Root
+    classList={{
+      [ChildFieldClass]: !!props.setting.child,
+      [DisabledFieldClass]: !!props.setting.disabled?.value,
+    }}
+  >
     <Label
-      class="issue-9"
       classList={{
         [SettingsToggleClass]: props.setting.kind === "toggle",
-        [DisabledFieldClass]: !!props.setting.disabled?.value,
       }}
     >
       <Info>
@@ -74,6 +77,8 @@ export const SettingsField: VoidComponent<SettingsFieldProps> = (props) => {
   </Root>;
 };
 
+export const ChildFieldClass = "child";
+
 export const DisabledFieldClass = "disabled";
 
 const Root = styled.div`
@@ -95,13 +100,17 @@ const Label = styled.label`
   user-select: none;
   align-items: center;
 
-  &.${DisabledFieldClass} {
+  .${DisabledFieldClass} & {
     opacity: 0.4;
     pointer-events: none;
   }
 `;
 
 const Info = styled.div`
+  .${ChildFieldClass} & {
+    padding-left: 1.2rem;
+  }
+
   width: 400px;
   display: flex;
   flex-direction: column;

@@ -30,7 +30,7 @@ export const DEFAULT_SETTINGS: Setting[] = [
     kind: "toggle",
     value: false,
     warning: {
-      text: "The furigana is auto-generated and frequently incorrect. Use cautiously.",
+      text: "The furigana is auto-generated and often incorrect. Use cautiously.",
       show: (value: boolean) => value,
     },
   },
@@ -40,6 +40,7 @@ export const DEFAULT_SETTINGS: Setting[] = [
     configKey: c => c.chunk.concealFurigana,
     kind: "toggle",
     value: false,
+    child: true,
   },
   {
     id: "translation-only-mode",
