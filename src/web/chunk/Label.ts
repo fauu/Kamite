@@ -55,33 +55,6 @@ export class ChunkLabel {
           }
           this.#rubyEls.push(rubyEl);
 
-          rubyEl.addEventListener("mouseover", event => {
-            if (!this.#rubyConcealed) {
-              return;
-            }
-            const targetEl = (event.currentTarget as HTMLElement);
-            for (const el of this.#rubyEls) {
-              el.classList.remove(RubyTextConcealedClass);
-              if (el === targetEl) {
-                break;
-              }
-            }
-          });
-
-          // XXX: (DRY)
-          rubyEl.addEventListener("mouseout", event => {
-            if (!this.#rubyConcealed) {
-              return;
-            }
-            const targetEl = (event.currentTarget as HTMLElement);
-            for (const el of this.#rubyEls) {
-              el.classList.add(RubyTextConcealedClass);
-              if (el === targetEl) {
-                break;
-              }
-            }
-          });
-
           const rtEl = document.createElement("rt");
           // All <rt>s must have the same `font-size` so that the line height of the annotations is
           // consistent. But we still want to have different font sizes, hence the additional inner
@@ -111,17 +84,37 @@ export class ChunkLabel {
 
     if (this.#initialRubyConcealPending) {
       this.setRubyConcealed(true);
+
+      for (const el of this.#rubyEls) {
+        el.addEventListener("mouseover", event => this.#handleRubyHoverStateChange(event, true));
+        el.addEventListener("mouseout",  event => this.#handleRubyHoverStateChange(event, false));
+      }
+    }
+  }
+
+  #handleRubyHoverStateChange(event: MouseEvent, hover: boolean) {
+    const targetRubyEl = event.currentTarget as HTMLElement;
+    if (!this.#rubyConcealed) {
+      return;
+    }
+    for (const el of this.#rubyEls) {
+      el.classList.toggle(RubyTextConcealedClass, !hover);
+      if (el === targetRubyEl) {
+        break;
+      }
     }
   }
 
   setRubyConcealed(rubyConcealed: boolean) {
+    this.#rubyConcealed = rubyConcealed;
     if (rubyConcealed && this.#rubyEls.length === 0) {
+      // <ruby> elements haven't been created yet. Call this function again after this has been done
       this.#initialRubyConcealPending = true;
+      return;
     }
     for (const el of this.#rubyEls) {
       el.classList.toggle(RubyTextConcealedClass, rubyConcealed);
     }
-    this.#rubyConcealed = rubyConcealed;
   }
 
   setSelection(selection: ChunkTextSelection | undefined) {
