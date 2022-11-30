@@ -14,6 +14,9 @@ const DEFAULT_RUBY_TEXT_SCALE = 1;
 export class ChunkLabel {
   #rootEl: HTMLDivElement;
   #subRootEl: HTMLSpanElement;
+  #rubyEls: HTMLElement[] = [];
+  #rubyConcealed = false;
+  #initialRubyConcealPending = false;
 
   #selectionMarkerEls: [HTMLDivElement, HTMLDivElement];
 
@@ -36,6 +39,7 @@ export class ChunkLabel {
 
   setChunk(chunk: Chunk) {
     const newLabelChildren: HTMLElement[] = [];
+    this.#rubyEls = [];
     let idx = 0;
     if (chunk.text.hasFurigana) {
       for (const maybeRuby of chunk.text.maybeRubies!) {
@@ -49,6 +53,34 @@ export class ChunkLabel {
           for (const ch of maybeRuby.base) {
             rubyElChildren.push(this.#makeCharElement(ch, idx++));
           }
+          this.#rubyEls.push(rubyEl);
+
+          rubyEl.addEventListener("mouseover", event => {
+            if (!this.#rubyConcealed) {
+              return;
+            }
+            const targetEl = (event.currentTarget as HTMLElement);
+            for (const el of this.#rubyEls) {
+              el.classList.remove(RubyTextConcealedClass);
+              if (el === targetEl) {
+                break;
+              }
+            }
+          });
+
+          // XXX: (DRY)
+          rubyEl.addEventListener("mouseout", event => {
+            if (!this.#rubyConcealed) {
+              return;
+            }
+            const targetEl = (event.currentTarget as HTMLElement);
+            for (const el of this.#rubyEls) {
+              el.classList.add(RubyTextConcealedClass);
+              if (el === targetEl) {
+                break;
+              }
+            }
+          });
 
           const rtEl = document.createElement("rt");
           // All <rt>s must have the same `font-size` so that the line height of the annotations is
@@ -76,10 +108,20 @@ export class ChunkLabel {
       }
     }
     this.#subRootEl.replaceChildren(...newLabelChildren);
+
+    if (this.#initialRubyConcealPending) {
+      this.setRubyConcealed(true);
+    }
   }
 
   setRubyConcealed(rubyConcealed: boolean) {
-    this.#rootEl.classList.toggle(RubyTextConcealedClass, rubyConcealed);
+    if (rubyConcealed && this.#rubyEls.length === 0) {
+      this.#initialRubyConcealPending = true;
+    }
+    for (const el of this.#rubyEls) {
+      el.classList.toggle(RubyTextConcealedClass, rubyConcealed);
+    }
+    this.#rubyConcealed = rubyConcealed;
   }
 
   setSelection(selection: ChunkTextSelection | undefined) {
@@ -167,10 +209,8 @@ export class ChunkLabel {
         for (const rubyChildAbstractEl of labelChildEl.children) {
           const rubyChildEl = rubyChildAbstractEl as HTMLElement;
           const rawCharIdxRuby = rubyChildEl.dataset[ChunkCharIdxAttrName];
-          if (rawCharIdxRuby) {
-            if (fn(rubyChildEl, rawCharIdxRuby) === false) {
-              break;
-            }
+          if (rawCharIdxRuby && fn(rubyChildEl, rawCharIdxRuby) === false) {
+            break;
           }
         }
       }
@@ -246,12 +286,10 @@ const RootClass = css`
 `;
 
 const RubyTextConcealedClass = css`
-  ruby {
-    position: relative;
-    z-index: 1;
-  }
+  position: relative;
+  z-index: 1;
 
-  ruby:not(:hover):before {
+  &:before {
     width: calc(100% + 0.1rem);
     height: calc(var(--ruby-text-font-size-base) + 0.3rem);
     content: "";
