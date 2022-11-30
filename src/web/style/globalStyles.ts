@@ -30,6 +30,7 @@ export const GlobalStyles = createGlobalStyles`
     --color-accB: #f5c4e4;
     --color-accB2: #b0769c;
     --color-accB2-hl: #ba80a6;
+    --color-accB2-hl2: #c48ab0;
     --color-accC: #c8c5a3;
     --color-success: #9bde37;
     --color-warning: #c29f48;

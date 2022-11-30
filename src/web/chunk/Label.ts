@@ -137,15 +137,16 @@ export class ChunkLabel {
 
   setSelection(selection: ChunkTextSelection | undefined) {
     this.#rootEl.classList.toggle(HasSelectionClass, selection !== undefined);
-    this.#setCharElementsClassByRange(SelectedCharClass, selection?.range);
+    this.#setCharElementsClassByRange(
+      [SelectedCharClass, SelectionStartCharClass, SelectionEndCharClass],
+      selection?.range
+    );
     if (selection) {
       const [start, end] = selection.range;
       const startStr = start.toString();
       const endStr = end.toString();
       let foundStart = false;
       this.#forCharElement((charEl, rawCharIdx) => {
-        charEl.classList.toggle(SelectionStartCharClass, false);
-        charEl.classList.toggle(SelectionEndCharClass, false);
         let rect: DOMRect | undefined = undefined;
         if (!foundStart && rawCharIdx === startStr) {
           rect = charEl.getBoundingClientRect();
@@ -153,7 +154,6 @@ export class ChunkLabel {
           this.#selectionMarkerEls[0].style.setProperty("--x", rect.left.toString());
           this.#selectionMarkerEls[0].style.setProperty("--y", rect.y.toString());
           this.#selectionMarkerEls[0].style.display = "block";
-          charEl.classList.toggle(SelectionStartCharClass, true);
 
           // PERF: Should be set once
           this.#rootEl.style.setProperty("--char-height", rect.height.toString());
@@ -166,7 +166,6 @@ export class ChunkLabel {
           this.#selectionMarkerEls[1].style.setProperty("--x", rect.right.toString());
           this.#selectionMarkerEls[1].style.setProperty("--y", rect.y.toString());
           this.#selectionMarkerEls[1].style.display = "block";
-          charEl.classList.toggle(SelectionEndCharClass, true);
           return false;
         }
       });
@@ -176,7 +175,10 @@ export class ChunkLabel {
   }
 
   setHighlight(highlight: [number, number] | undefined) {
-    this.#setCharElementsClassByRange(HighlightedCharClass, highlight);
+    this.#setCharElementsClassByRange(
+      [HighlightedCharClass, RangeWithBgFirstCharClass, RangeWithBgLastCharClass],
+      highlight
+    );
   }
 
   setFlash(flashState: ChunkFlashState) {
@@ -192,7 +194,10 @@ export class ChunkLabel {
         newFlashingRange = flashState.range;
         break;
     }
-    this.#setCharElementsClassByRange(BgFlashingClass, newFlashingRange);
+    this.#setCharElementsClassByRange(
+      [BgFlashingClass, RangeWithBgFirstCharClass, RangeWithBgLastCharClass],
+      newFlashingRange
+    );
   }
 
   #makeCharElement(ch: string, idx: number) {
@@ -231,23 +236,30 @@ export class ChunkLabel {
   #setCharElementClassByRange(
     charEl: HTMLElement,
     rawCharIdx: string,
-    className: string,
+    [everyClass, firstClass, lastClass]: [string, string, string],
     range: [number, number] | undefined
   ) {
-    let op: "add" | "remove" | undefined;
+    let everyClassOp: "add" | "remove" | undefined;
+    let idx: number | undefined = undefined;
     if (!range) {
-      op = "remove";
+      everyClassOp = "remove";
     } else {
-      const idx = parseInt(rawCharIdx);
+      idx = parseInt(rawCharIdx);
       const inRange = idx >= range[0] && idx <= range[1];
-      op = inRange ? "add" : "remove";
+      everyClassOp = inRange ? "add" : "remove";
     }
-    charEl.classList[op](className);
+    const rangeDefined = !(range === undefined);
+    charEl.classList.toggle(firstClass, rangeDefined && idx === range[0]);
+    charEl.classList.toggle(lastClass,  rangeDefined && idx === range[1]);
+    charEl.classList[everyClassOp](everyClass);
   }
 
-  #setCharElementsClassByRange(className: string, range: [number, number] | undefined) {
+  #setCharElementsClassByRange(
+    classNames: [string, string, string],
+    range: [number, number] | undefined
+  ) {
     this.#forCharElement((charEl, rawCharIdx) =>
-      this.#setCharElementClassByRange(charEl, rawCharIdx, className, range)
+      this.#setCharElementClassByRange(charEl, rawCharIdx, classNames, range)
     );
   }
 
@@ -271,6 +283,11 @@ const RootClass = css`
 
   box-sizing: content-box;
   margin-top: var(--text-margin-top);
+
+  /* Sub-root */
+  #${ChunkLabelId} {
+    border-radius: var(--border-radius-default);
+  }
 
   .${ChromeClass} & {
     ruby {
@@ -328,6 +345,16 @@ const CharClass = css`
   }
 `;
 
+const RangeWithBgFirstCharClass = css`
+  border-top-left-radius: var(--border-radius-default);
+  border-bottom-left-radius: var(--border-radius-default);
+`;
+
+const RangeWithBgLastCharClass = css`
+  border-top-right-radius: var(--border-radius-default);
+  border-bottom-right-radius: var(--border-radius-default);
+`;
+
 const SelectedCharClass = css`
   background: linear-gradient(0, var(--color-bg3) 0%, transparent 100%);
 `;
@@ -354,6 +381,9 @@ const HasSelectionClass = css`
 
 const HighlightedCharClass = css`
   background: var(--color-accB2);
+  border: 1px solid var(--color-accB2-hl2);
+  border-left: 0;
+  border-right: 0;
   z-index: 5;
 `;
 
