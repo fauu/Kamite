@@ -15,22 +15,23 @@ export class ChunkLabel {
   #rootEl: HTMLDivElement;
   #subRootEl: HTMLSpanElement;
 
-  #selectionStartMarkerEl: HTMLDivElement;
-  #selectionEndMarkerEl: HTMLDivElement;
+  #selectionMarkerEls: [HTMLDivElement, HTMLDivElement];
 
   constructor(rootEl: HTMLDivElement) {
+    // Base init
     this.#rootEl = rootEl;
     rootEl.classList.add(RootClass, ChunkTextClass);
     this.#subRootEl = document.createElement("span");
     this.#subRootEl.id = ChunkLabelId;
     this.#rootEl.prepend(this.#subRootEl);
 
-    this.#selectionStartMarkerEl = document.createElement("div");
-    this.#selectionStartMarkerEl.classList.add(SelectionStartMarkerClass);
-    this.#rootEl.append(this.#selectionStartMarkerEl);
-    this.#selectionEndMarkerEl = document.createElement("div");
-    this.#selectionEndMarkerEl.classList.add(SelectionEndMarkerClass);
-    this.#rootEl.append(this.#selectionEndMarkerEl);
+    // Selection marker init
+    const start = document.createElement("div");
+    start.classList.add(SelectionMarkerClass, SelectionStartMarkerClass);
+    const end = document.createElement("div");
+    end.classList.add(SelectionMarkerClass, SelectionEndMarkerClass);
+    this.#selectionMarkerEls = [start, end];
+    this.#rootEl.append(...this.#selectionMarkerEls);
   }
 
   setChunk(chunk: Chunk) {
@@ -89,33 +90,35 @@ export class ChunkLabel {
       const startStr = start.toString();
       const endStr = end.toString();
       let foundStart = false;
-      console.log(startStr, endStr);
       this.#forCharElement((charEl, rawCharIdx) => {
+        charEl.classList.toggle(SelectionStartCharClass, false);
+        charEl.classList.toggle(SelectionEndCharClass, false);
+        let rect: DOMRect | undefined = undefined;
         if (!foundStart && rawCharIdx === startStr) {
+          rect = charEl.getBoundingClientRect();
           foundStart = true;
-          const rect = charEl.getBoundingClientRect();
-          const [x, y, height] = [rect.left, rect.y, rect.height];
-          this.#selectionStartMarkerEl.style.left = x.toString() + "px";
-          this.#selectionStartMarkerEl.style.top = y.toString() + "px";
+          this.#selectionMarkerEls[0].style.setProperty("--x", rect.left.toString());
+          this.#selectionMarkerEls[0].style.setProperty("--y", rect.y.toString());
+          this.#selectionMarkerEls[0].style.display = "block";
+          charEl.classList.toggle(SelectionStartCharClass, true);
+
           // PERF: Should be set once
-          this.#selectionStartMarkerEl.style.height = height.toString() + "px";
-          this.#selectionStartMarkerEl.style.display = "block";
-          console.log(this.#selectionStartMarkerEl);
+          this.#rootEl.style.setProperty("--char-height", rect.height.toString());
         }
         if (foundStart && rawCharIdx === endStr) {
+          if (!rect) {
+            rect = charEl.getBoundingClientRect();
+          }
           // XXX: (DRY)
-          const rect = charEl.getBoundingClientRect();
-          const [x, y, height] = [rect.right, rect.y, rect.height];
-          this.#selectionEndMarkerEl.style.left = (x - 8).toString() + "px"; // XXX: Hardcoded
-          this.#selectionEndMarkerEl.style.top = y.toString() + "px";
-          this.#selectionEndMarkerEl.style.height = height.toString() + "px";
-          this.#selectionEndMarkerEl.style.display = "block";
+          this.#selectionMarkerEls[1].style.setProperty("--x", rect.right.toString());
+          this.#selectionMarkerEls[1].style.setProperty("--y", rect.y.toString());
+          this.#selectionMarkerEls[1].style.display = "block";
+          charEl.classList.toggle(SelectionEndCharClass, true);
           return false;
         }
       });
     } else {
-      this.#selectionStartMarkerEl.style.display = "none";
-      this.#selectionEndMarkerEl.style.display = "none";
+      this.#selectionMarkerEls.forEach(el => el.style.display = "none");
     }
   }
 
@@ -213,6 +216,7 @@ export class ChunkLabel {
 const RootClass = css`
   ${RUBY_TEXT_SCALE_PROP_NAME}: ${DEFAULT_RUBY_TEXT_SCALE.toString()};
   --ruby-text-font-size-base: calc(0.5 * var(--chunk-font-size) * var(--chunk-furigana-font-scale));
+  --selection-border-radius: 2px;
 
   box-sizing: content-box;
   margin-top: 0.3rem;
@@ -278,7 +282,15 @@ const CharClass = css`
 `;
 
 const SelectedCharClass = css`
-  background: var(--color-bg2);
+  background: linear-gradient(0, var(--color-bg3) 0%, transparent 100%);
+`;
+
+const SelectionStartCharClass = css`
+  border-bottom-left-radius: var(--selection-border-radius);
+`;
+
+const SelectionEndCharClass = css`
+  border-bottom-right-radius: var(--selection-border-radius);
 `;
 
 const HasSelectionClass = css`
@@ -298,21 +310,33 @@ const HighlightedCharClass = css`
   z-index: 5;
 `;
 
-const SelectionStartMarkerClass = css`
-  width: 8px;
+const SelectionMarkerClass = css`
+  --width: calc((var(--char-height) * 0.25) * 1px);
+  --height: calc((var(--char-height) * 0.5) * 1px);
+  --yPx: calc(var(--y) * 1px);
+  --xPx: calc(var(--x) * 1px);
+
+  width: var(--width);
+  height: var(--height);
   position: fixed;
   border: 2px solid var(--color-accB);
-  border-right: none;
   display: none;
   z-index: 10;
 `;
 
+const SelectionStartMarkerClass = css`
+  top: var(--yPx);
+  left: calc(var(--xPx));
+  border-top-left-radius: var(--selection-border-radius);
+  border-right: 0;
+  border-bottom: 0;
+`;
+
 const SelectionEndMarkerClass = css`
-  width: 8px;
-  position: fixed;
-  border: 2px solid var(--color-accB);
-  border-left: none;
-  display: none;
-  z-index: 10;
+  top: calc(var(--yPx) + var(--height));
+  left: calc(var(--xPx) - var(--width));
+  border-bottom-right-radius: var(--selection-border-radius);
+  border-top: 0;
+  border-left: 0;
 `;
 
