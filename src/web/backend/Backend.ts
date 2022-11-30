@@ -158,7 +158,9 @@ export class Backend {
       || code === WSCloseCode.NoStatusReceived
       || code === WSCloseCode.AbnormalClosue
     ) {
-      this.#setConnectionState("disconnected-wont-reconnect");
+      // if (!import.meta.env.DEV) {
+        this.#setConnectionState("disconnected-wont-reconnect");
+      // }
       return;
     }
     void this.connect();
