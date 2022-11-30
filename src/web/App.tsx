@@ -152,7 +152,7 @@ export const App: VoidComponent = () => {
     if (import.meta.env.DEV) {
       setTimeout(() =>
         void chunks.insert(
-          "電車に乗ることや店で食事をすることなどができます",
+          "電車に乗ることや店で食事をすることなどができます。氷",
           { op: "overwrite", flash: true },
         ),
         300
