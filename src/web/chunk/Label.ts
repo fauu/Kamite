@@ -174,6 +174,13 @@ const RootClass = css`
     ruby {
       line-height: 1.7;
     }
+
+    /* Fixes the underline pseudo-elements changing line-breaking rules and causing characters to
+       jump between lines */
+    /* QUAL: There still remains a glitch where if, e.g., '。' is moved to the beginning of the
+             next line, the selection underline pseudo-element doesn't display for that character
+             at all */
+    line-break: anywhere;
   }
 
   rt {
