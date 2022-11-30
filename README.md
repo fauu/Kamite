@@ -1022,7 +1022,7 @@ the replacement text. For example, the following configuration:
 chunk {
   transforms = [
     { replace: """\R""", with: "" }
-    { replace: ".+?「(.+?)」", with: "$1" }
+    { replace: ".+?「(.+?)」$", with: "$1" }
   ]
 }
 ```
