@@ -15,12 +15,22 @@ export class ChunkLabel {
   #rootEl: HTMLDivElement;
   #subRootEl: HTMLSpanElement;
 
+  #selectionStartMarkerEl: HTMLDivElement;
+  #selectionEndMarkerEl: HTMLDivElement;
+
   constructor(rootEl: HTMLDivElement) {
     this.#rootEl = rootEl;
     rootEl.classList.add(RootClass, ChunkTextClass);
     this.#subRootEl = document.createElement("span");
     this.#subRootEl.id = ChunkLabelId;
     this.#rootEl.prepend(this.#subRootEl);
+
+    this.#selectionStartMarkerEl = document.createElement("div");
+    this.#selectionStartMarkerEl.classList.add(SelectionStartMarkerClass);
+    this.#rootEl.append(this.#selectionStartMarkerEl);
+    this.#selectionEndMarkerEl = document.createElement("div");
+    this.#selectionEndMarkerEl.classList.add(SelectionEndMarkerClass);
+    this.#rootEl.append(this.#selectionEndMarkerEl);
   }
 
   setChunk(chunk: Chunk) {
@@ -72,8 +82,41 @@ export class ChunkLabel {
   }
 
   setSelection(selection: ChunkTextSelection | undefined) {
-    this.#setCharElementsClassByRange(SelectedCharClass, selection?.range);
     this.#rootEl.classList.toggle(HasSelectionClass, selection !== undefined);
+    this.#setCharElementsClassByRange(SelectedCharClass, selection?.range);
+    if (selection) {
+      const [start, end] = selection.range;
+      const startStr = start.toString();
+      const endStr = end.toString();
+      let foundStart = false;
+      console.log(startStr, endStr);
+      this.#forCharElement((charEl, rawCharIdx) => {
+        if (!foundStart && rawCharIdx === startStr) {
+          foundStart = true;
+          const rect = charEl.getBoundingClientRect();
+          const [x, y, height] = [rect.left, rect.y, rect.height];
+          this.#selectionStartMarkerEl.style.left = x.toString() + "px";
+          this.#selectionStartMarkerEl.style.top = y.toString() + "px";
+          // PERF: Should be set once
+          this.#selectionStartMarkerEl.style.height = height.toString() + "px";
+          this.#selectionStartMarkerEl.style.display = "block";
+          console.log(this.#selectionStartMarkerEl);
+        }
+        if (foundStart && rawCharIdx === endStr) {
+          // XXX: (DRY)
+          const rect = charEl.getBoundingClientRect();
+          const [x, y, height] = [rect.right, rect.y, rect.height];
+          this.#selectionEndMarkerEl.style.left = (x - 8).toString() + "px"; // XXX: Hardcoded
+          this.#selectionEndMarkerEl.style.top = y.toString() + "px";
+          this.#selectionEndMarkerEl.style.height = height.toString() + "px";
+          this.#selectionEndMarkerEl.style.display = "block";
+          return false;
+        }
+      });
+    } else {
+      this.#selectionStartMarkerEl.style.display = "none";
+      this.#selectionEndMarkerEl.style.display = "none";
+    }
   }
 
   setHighlight(highlight: [number, number] | undefined) {
@@ -109,17 +152,23 @@ export class ChunkLabel {
     return el;
   }
 
-  #forCharElement(fn: (charEl: HTMLElement, rawCharIdx: string, ...restArgs: any) => void) {
+  #forCharElement(fn: (charEl: HTMLElement, rawCharIdx: string, ...restArgs: any) => void | false) {
     for (const labelChildAbstractEl of this.#subRootEl.children) {
       const labelChildEl = labelChildAbstractEl as HTMLElement;
       const rawCharIdx = labelChildEl.dataset[ChunkCharIdxAttrName];
       if (rawCharIdx) {
-        fn(labelChildEl, rawCharIdx);
+        if (fn(labelChildEl, rawCharIdx) === false) {
+          break;
+        }
       } else {
         for (const rubyChildAbstractEl of labelChildEl.children) {
           const rubyChildEl = rubyChildAbstractEl as HTMLElement;
           const rawCharIdxRuby = rubyChildEl.dataset[ChunkCharIdxAttrName];
-          rawCharIdxRuby && fn(rubyChildEl, rawCharIdxRuby);
+          if (rawCharIdxRuby) {
+            if (fn(rubyChildEl, rawCharIdxRuby) === false) {
+              break;
+            }
+          }
         }
       }
     }
@@ -174,13 +223,6 @@ const RootClass = css`
     ruby {
       line-height: 1.7;
     }
-
-    /* Fixes the underline pseudo-elements changing line-breaking rules and causing characters to
-       jump between lines */
-    /* QUAL: There still remains a glitch where if, e.g., '。' is moved to the beginning of the
-             next line, the selection underline pseudo-element doesn't display for that character
-             at all */
-    line-break: anywhere;
   }
 
   rt {
@@ -209,26 +251,20 @@ const RubyTextConcealedClass = css`
 
   ruby:not(:hover):before {
     width: calc(100% + 0.1rem);
-    height: calc(var(--ruby-text-font-size-base) + 0.25rem);
+    height: calc(var(--ruby-text-font-size-base) + 0.3rem);
     content: "";
     position: absolute;
-    top: calc(-1 * var(--ruby-text-font-size-base) - 1px);
+    top: calc(-1 * var(--ruby-text-font-size-base) - 2px);
     left: calc(0rem - 0.05rem);
     filter: blur(1px);
     background: var(--color-bg2-hl);
     z-index: 2;
   }
-
 `;
 
 const CharClass = css`
   position: relative;
   z-index: 3;
-
-  /* Fixes chars shifting between lines due to the selection underline pseudo-element on Firefox */
-  #${RootId}:not(.${ChromeClass}) & {
-    display: inline-block;
-  }
 
   &:hover {
     .${ChromeClass} & {
@@ -242,17 +278,7 @@ const CharClass = css`
 `;
 
 const SelectedCharClass = css`
-  &:before {
-    content: "";
-    position: absolute;
-    background: var(--color-accB);
-    width: 100%;
-    height: 2px;
-    bottom: 6px;
-    .${ChromeClass} & {
-      bottom: 3px;
-    }
-  }
+  background: var(--color-bg2);
 `;
 
 const HasSelectionClass = css`
@@ -269,4 +295,24 @@ const HasSelectionClass = css`
 
 const HighlightedCharClass = css`
   background: var(--color-accB2);
+  z-index: 5;
 `;
+
+const SelectionStartMarkerClass = css`
+  width: 8px;
+  position: fixed;
+  border: 2px solid var(--color-accB);
+  border-right: none;
+  display: none;
+  z-index: 10;
+`;
+
+const SelectionEndMarkerClass = css`
+  width: 8px;
+  position: fixed;
+  border: 2px solid var(--color-accB);
+  border-left: none;
+  display: none;
+  z-index: 10;
+`;
+
