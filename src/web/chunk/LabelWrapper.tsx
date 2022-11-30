@@ -1,4 +1,4 @@
-import { createEffect, type VoidComponent } from "solid-js";
+import { Accessor, createEffect, type VoidComponent } from "solid-js";
 
 import { YomichanSentenceDelimiter } from "~/common";
 
@@ -7,6 +7,7 @@ import { ChunkLabel } from "./Label";
 
 interface ChunkLabelWrapperProps {
   chunksState: ChunksState,
+  movingMouseWhilePrimaryDown: Accessor<boolean>,
 }
 
 export const ChunkLabelWrapper: VoidComponent<ChunkLabelWrapperProps> = (props) => {
@@ -22,7 +23,7 @@ export const ChunkLabelWrapper: VoidComponent<ChunkLabelWrapperProps> = (props) 
 
   createEffect(() => label.setFlash(props.chunksState.currentFlashState()));
 
-  return <div lang="ja" ref={el => label = new ChunkLabel(el)}>
+  return <div lang="ja" ref={el => label = new ChunkLabel(el, props.movingMouseWhilePrimaryDown)}>
     <YomichanSentenceDelimiter/>
   </div>;
 };

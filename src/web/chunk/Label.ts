@@ -1,3 +1,4 @@
+import { Accessor } from "solid-js";
 import { css } from "solid-styled-components";
 
 import { ChunkCharIdxAttrName, ChunkLabelId } from "~/dom";
@@ -12,17 +13,19 @@ const RUBY_TEXT_SCALE_PROP_NAME = "--ruby-text-scale";
 const DEFAULT_RUBY_TEXT_SCALE = 1;
 
 export class ChunkLabel {
-  #rootEl: HTMLDivElement;
-  #subRootEl: HTMLSpanElement;
-  #rubyEls: HTMLElement[] = [];
+  #movingMouseWhilePrimaryDown: Accessor<boolean>;
   #rubyConcealed = false;
   #initialRubyConcealPending = false;
 
+  #rootEl: HTMLDivElement;
+  #subRootEl: HTMLSpanElement;
+  #rubyEls: HTMLElement[] = [];
   #selectionMarkerEls: [HTMLDivElement, HTMLDivElement];
 
-  constructor(rootEl: HTMLDivElement) {
+  constructor(rootEl: HTMLDivElement, movingMouseWhilePrimaryDown: Accessor<boolean>) {
     // Base init
     this.#rootEl = rootEl;
+    this.#movingMouseWhilePrimaryDown = movingMouseWhilePrimaryDown;
     rootEl.classList.add(RootClass, ChunkTextClass);
     this.#subRootEl = document.createElement("span");
     this.#subRootEl.id = ChunkLabelId;
@@ -88,17 +91,32 @@ export class ChunkLabel {
       for (const el of this.#rubyEls) {
         el.addEventListener("mouseover", event => this.#handleRubyHoverStateChange(event, true));
         el.addEventListener("mouseout",  event => this.#handleRubyHoverStateChange(event, false));
+        el.addEventListener("mouseup",   this.#handleRubyMouseUp.bind(this));
       }
     }
   }
 
   #handleRubyHoverStateChange(event: MouseEvent, hover: boolean) {
-    const targetRubyEl = event.currentTarget as HTMLElement;
+    // QUAL: Confusing name (`shouldConcealRubies`?)
     if (!this.#rubyConcealed) {
       return;
     }
+    if (hover && this.#movingMouseWhilePrimaryDown()) {
+      return;
+    }
+    this.#toggleRubyConcealedClassUntil(event.currentTarget as HTMLElement, !hover);
+  }
+
+  #handleRubyMouseUp(event: MouseEvent) {
+    if (!this.#rubyConcealed) {
+      return;
+    }
+    this.#toggleRubyConcealedClassUntil(event.currentTarget as HTMLElement, false);
+  }
+
+  #toggleRubyConcealedClassUntil(targetRubyEl: HTMLElement, on: boolean) {
     for (const el of this.#rubyEls) {
-      el.classList.toggle(RubyTextConcealedClass, !hover);
+      el.classList.toggle(RubyTextConcealedClass, on);
       if (el === targetRubyEl) {
         break;
       }

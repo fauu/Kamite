@@ -66,6 +66,8 @@ export const App: VoidComponent = () => {
     createSignal(false);
   const [middleMouseButtonLikelyDown, setMiddleMouseButtonLikelyDown] =
     createSignal(false);
+  const [movingMouseWhilePrimaryDown, setMovingMouseWhilePrimaryDown] =
+    createSignal(false);
 
   let rootEl: HTMLDivElement;
   let mainSectionEl: HTMLDivElement | undefined;
@@ -265,6 +267,7 @@ export const App: VoidComponent = () => {
     }
 
     const primaryButton = (event.buttons & 1) === 1;
+    setMovingMouseWhilePrimaryDown(primaryButton);
     if (primaryButton) {
       if (notebook.resizing()) {
         notebook.resizeTick(themeLayoutFlippedMemo(), event.movementY);
@@ -700,6 +703,7 @@ export const App: VoidComponent = () => {
           onInput={handleChunkInput}
           inputRef={el => chunkInputEl = el}
           labelAndTranslationRef={el => chunkLabelAndTranslationEl = el}
+          movingMouseWhilePrimaryDown={movingMouseWhilePrimaryDown}
         />
         <StatusPanel fade={statusPanelFader.shouldFade()} ref={el => statusPanelEl = el}>
           <Show when={characterCounter()} keyed>{ counter =>

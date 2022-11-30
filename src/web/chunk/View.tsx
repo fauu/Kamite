@@ -1,4 +1,4 @@
-import { Show, type Ref, type VoidComponent } from "solid-js";
+import { Show, type Accessor, type Ref, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
 import { Spinner } from "~/common";
@@ -14,6 +14,7 @@ interface ChunkViewProps {
   onInput: (newText: string) => void,
   inputRef: Ref<HTMLTextAreaElement>,
   labelAndTranslationRef: Ref<HTMLDivElement>,
+  movingMouseWhilePrimaryDown: Accessor<boolean>,
 }
 
 export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
@@ -26,7 +27,10 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
       when={props.chunksState.editing()}
       fallback={
         <ChunkLabelAndTranslation class={maybeWaitingClass()} ref={props.labelAndTranslationRef}>
-          <ChunkLabelWrapper chunksState={props.chunksState} />
+          <ChunkLabelWrapper
+            chunksState={props.chunksState}
+            movingMouseWhilePrimaryDown={props.movingMouseWhilePrimaryDown}
+          />
           <Show when={props.chunksState.translationWithContext()} keyed>{translations =>
             <CurrentTranslation translations={translations}/>
           }</Show>
