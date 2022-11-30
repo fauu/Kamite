@@ -219,7 +219,7 @@ const RootClass = css`
   --selection-border-radius: 2px;
 
   box-sizing: content-box;
-  margin-top: 0.3rem;
+  margin-top: var(--text-margin-top);
 
   .${ChromeClass} & {
     ruby {

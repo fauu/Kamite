@@ -45,6 +45,7 @@ const RootClass = css`
   font-family: inherit;
   flex: 1;
   margin: 0;
+  padding-top: var(--text-margin-top);
   resize: none;
   user-select: initial;
   caret-color: var(--color-accB);
