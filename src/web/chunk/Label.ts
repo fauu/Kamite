@@ -38,12 +38,18 @@ export class ChunkLabel {
           for (const ch of maybeRuby.base) {
             rubyElChildren.push(this.#makeCharElement(ch, idx++));
           }
+
           const rtEl = document.createElement("rt");
-          rtEl.textContent = maybeRuby.text;
+          // All <rt>s must have the same `font-size` so that the line height of the annotations is
+          // consistent. But we still want to have different font sizes, hence the additional inner
+          // <span>.
+          const rtProperEl = document.createElement("span");
+          rtProperEl.textContent = maybeRuby.text;
+          rtEl.append(rtProperEl);
           rubyElChildren.push(rtEl);
           rubyEl.replaceChildren(...rubyElChildren);
 
-          // Scale ruby text down if necessary to avoid overflow
+          // Scale ruby text down if necessary to avoid inconsistent letter spacing
           const rubyCharsPerBaseChar = maybeRuby.text.length / maybeRuby.base.length;
           const rubyTextScale = this.#rubyTextScale(rubyCharsPerBaseChar);
           if (rubyTextScale !== DEFAULT_RUBY_TEXT_SCALE) {
@@ -166,14 +172,21 @@ const RootClass = css`
     line-height: 1.3;
 
     ruby {
-      line-height: 1.8;
+      line-height: 1.7;
     }
   }
 
   rt {
-    font-size: calc(var(--ruby-text-font-size-base) * var(${RUBY_TEXT_SCALE_PROP_NAME}));
-    font-weight: var(--chunk-furigana-font-weight);
-    margin-bottom: -0.2em;
+    font-size: var(--ruby-text-font-size-base);
+    margin-bottom: -0.25em;
+    .${ChromeClass} & {
+      margin-bottom: -0.17em;
+    }
+
+    & > span {
+      font-size: calc(1em * var(${RUBY_TEXT_SCALE_PROP_NAME}));
+      font-weight: var(--chunk-furigana-font-weight);
+    }
   }
 
   ::selection {
