@@ -1,6 +1,6 @@
 import { css } from "solid-styled-components";
 
-import { ChunkCharIdxAttrName, ChunkLabelId, RootId } from "~/dom";
+import { ChunkCharIdxAttrName, ChunkLabelId } from "~/dom";
 import { BgFlashingClass, ChromeClass } from "~/style";
 
 import type { Chunk } from "./Chunk";
@@ -222,10 +222,8 @@ const RootClass = css`
   margin-top: 0.3rem;
 
   .${ChromeClass} & {
-    line-height: 1.3;
-
     ruby {
-      line-height: 1.7;
+      line-height: calc(var(--line-height) * 1.25);
     }
   }
 
