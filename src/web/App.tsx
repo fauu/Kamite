@@ -269,8 +269,12 @@ export const App: VoidComponent = () => {
       if (notebook.resizing()) {
         notebook.resizeTick(themeLayoutFlippedMemo(), event.movementY);
       } else {
-        const charIdxS = (event.target as HTMLElement).dataset[ChunkCharIdxAttrName];
-        if (charIdxS) { // Mouse over chunk character
+        const el = event.target as HTMLElement;
+        let charIdxStr: string | undefined;
+        if (el.dataset) {
+          charIdxStr = el.dataset[ChunkCharIdxAttrName];
+        }
+        if (charIdxStr) { // Mouse over chunk character
           // Update chunk selection
           const anchor =
             chunks.textSelection.inProgress()
@@ -278,7 +282,7 @@ export const App: VoidComponent = () => {
             : event.movementY > 0 // Moving from above chunk or from below?
               ? 0
               : chunks.current().text.length - 1;
-          const range = [parseInt(charIdxS), anchor] as [number, number];
+          const range = [parseInt(charIdxStr), anchor] as [number, number];
           range.sort((a, b) => a - b);
           chunks.textSelection.set({ range, anchor });
         } else if (chunks.textSelection.inProgress()) {
