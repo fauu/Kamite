@@ -132,9 +132,7 @@ export const App: VoidComponent = () => {
     if (!c) {
       return;
     }
-    settings.forEach((s) => {
-      handleSettingChangeRequest(s.id, s.configKey(c));
-    });
+    settings.forEach(s => handleSettingChangeRequest(s.id, s.configKey(c)));
     mainSectionEl && notebook.syncHeight(c);
     if (import.meta.env.DEV && c.dev.serveStaticInDevMode) {
       notifyUser("warning", "serveStaticInDevMode override is enabled");
@@ -144,9 +142,7 @@ export const App: VoidComponent = () => {
 
   createEffect(() => chunks.setWaiting(recognizerStatus().kind === "processing"));
 
-  createEffect(() => {
-    notebook.setTabHidden("debug", !debugMode());
-  });
+  createEffect(() => notebook.setTabHidden("debug", !debugMode()));
 
   // === ON MOUNT =================================================================================
 
