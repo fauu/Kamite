@@ -1,4 +1,4 @@
-import { Accessor, createEffect, type VoidComponent } from "solid-js";
+import { createEffect, type Accessor, type VoidComponent } from "solid-js";
 
 import { YomichanSentenceDelimiter } from "~/common";
 

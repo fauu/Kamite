@@ -1,4 +1,4 @@
-import { Accessor } from "solid-js";
+import type { Accessor } from "solid-js";
 import { css } from "solid-styled-components";
 
 import { ChunkCharIdxAttrName, ChunkLabelId } from "~/dom";
