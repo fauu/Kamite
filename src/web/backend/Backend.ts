@@ -158,9 +158,9 @@ export class Backend {
       || code === WSCloseCode.NoStatusReceived
       || code === WSCloseCode.AbnormalClosue
     ) {
-      // if (!import.meta.env.DEV) {
+      if (!import.meta.env.VITE_DEV_MULTI_CLIENT) {
         this.#setConnectionState("disconnected-wont-reconnect");
-      // }
+      }
       return;
     }
     void this.connect();
