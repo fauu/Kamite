@@ -317,15 +317,16 @@ const RubyTextConcealedClass = css`
   position: relative;
   z-index: 1;
 
+  /* Concealing rectangle */
   &:before {
-    width: calc(100% + 0.1rem);
-    height: calc(var(--ruby-text-font-size-base) + 0.3rem);
     content: "";
     position: absolute;
     top: calc(-1 * var(--ruby-text-font-size-base) - 2px);
     left: calc(0rem - 0.05rem);
-    filter: blur(1px);
+    width: calc(100% + 0.12rem /* sic */);
+    height: calc(var(--ruby-text-font-size-base) + 0.3rem);
     background: var(--color-bg2-hl);
+    filter: blur(1px);
     z-index: 2;
   }
 `;
