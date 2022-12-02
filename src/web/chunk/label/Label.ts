@@ -147,17 +147,19 @@ export class ChunkLabel {
     const [start, end] = selection.range;
     const startStr = start.toString();
     const endStr = end.toString();
-    let foundStart = false;
+    let markedStart = false;
     this.#forCharElement((charEl, rawCharIdx) => {
       let rect: DOMRect | undefined = undefined;
-      if (!foundStart && rawCharIdx === startStr) {
+      if (!markedStart && rawCharIdx === startStr) {
         rect = charEl.getBoundingClientRect();
-        foundStart = true;
         this.#selectionMarkers.showLeftMarkerAt(rect.left, rect.y);
-        // PERF: Should be set once
+
+        // PERF: Should be set once when characters are laid out for the first time
         this.#rootEl.style.setProperty("--char-height", rect.height.toString());
+
+        markedStart = true;
       }
-      if (foundStart && rawCharIdx === endStr) {
+      if (markedStart && rawCharIdx === endStr) {
         if (!rect) {
           rect = charEl.getBoundingClientRect();
         }
