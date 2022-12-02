@@ -1,8 +1,8 @@
 import { createEffect, type Accessor, type VoidComponent } from "solid-js";
 
+import type { ChunksState } from "~/chunk";
 import { YomichanSentenceDelimiter } from "~/common";
 
-import type { ChunksState } from "./ChunksState";
 import { ChunkLabel } from "./Label";
 
 interface ChunkLabelWrapperProps {

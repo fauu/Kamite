@@ -7,7 +7,7 @@ import { themeLayoutFlipped } from "~/theme";
 import type { ChunksState } from "./ChunksState";
 import { CurrentTranslation } from "./CurrentTranslation";
 import { ChunkInput } from "./Input";
-import { ChunkLabelWrapper } from "./LabelWrapper";
+import { ChunkLabelWrapper } from "./label";
 
 interface ChunkViewProps {
   chunksState: ChunksState,
