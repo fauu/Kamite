@@ -48,6 +48,7 @@ export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnless
 
       el.addEventListener("mouseenter", handleMouseEnter);
       el.addEventListener("mouseleave", handleMouseLeave);
+      // PERF: Use signle global handler + signal?
       document.addEventListener("blur", handleDocumentBlur);
     }
   });
