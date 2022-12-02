@@ -14,7 +14,7 @@ import { createChunkTextSelectionState } from "./TextSelectionState";
 import { ChunkTranslation, type ChunkTranslationSegment } from "./Translation";
 
 // Keep this many chunks
-const MAX_SIZE = 50;
+const MAX_SIZE = 100;
 
 // Keep the current translation as the new chunk's translation as long as the translation isn't
 // older than this duration
