@@ -25,9 +25,10 @@ export type NotebookState = ReturnType<typeof createNotebookState>;
 
 interface CreateNotebookStateParams {
   chunks: ChunksState,
+  settings: Setting[],
 }
 
-export function createNotebookState({ chunks }: CreateNotebookStateParams) {
+export function createNotebookState({ chunks, settings }: CreateNotebookStateParams) {
   const [tabs, setTabs] =
     createStore([...BASE_NOTEBOOK_TABS]);
   const [activeTabIdx, setActiveTabIdx] =
@@ -143,11 +144,15 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     return lookupTabs;
   }
 
-  function isCollapseAllowed(settings: Setting[]) {
+  function isCollapseAllowed(): boolean {
     return !resizing() && !collapsed() && (getSetting(settings, "notebook-collapse") || false);
   }
 
-  function maybeCollapse(isFlipped: boolean, mouseY: number, movementY?: number) {
+  function collapseIfAllowed() {
+    isCollapseAllowed() && setCollapsed(true);
+  }
+
+  function collapseIfNotHovering(isFlipped: boolean, mouseY: number, movementY?: number) {
     // If `movementY` is provided, collapse only when the cursor has just been moved outisde.
     // Otherwise, collapse simply if the cursor is currently outside.
     const previouslyInsideCondition =
@@ -214,7 +219,8 @@ export function createNotebookState({ chunks }: CreateNotebookStateParams) {
     updateLookupTabs,
     getLookupTabs,
     isCollapseAllowed,
-    maybeCollapse,
+    collapseIfAllowed,
+    collapseIfNotHovering,
     resizeMaybeStart,
     resizeTick,
   };

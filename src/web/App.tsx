@@ -107,7 +107,7 @@ export const App: VoidComponent = () => {
     onChunkAdded: handleChunkAdded,
   });
   const sessionTimer = createSessionTimerState();
-  const notebook     = createNotebookState({ chunks });
+  const notebook     = createNotebookState({ chunks, settings });
   const debug        = createDebugState();
 
   const statusPanelFader = createStatusPanelFader({
@@ -263,8 +263,8 @@ export const App: VoidComponent = () => {
   const handleRootMouseMove = (event: MouseEvent) => {
     mouseY = event.clientY;
 
-    if (notebook.isCollapseAllowed(settings)) {
-      notebook.maybeCollapse(themeLayoutFlippedMemo(), mouseY, event.movementY);
+    if (notebook.isCollapseAllowed()) {
+      notebook.collapseIfNotHovering(themeLayoutFlippedMemo(), mouseY, event.movementY);
     }
 
     const primaryButton = (event.buttons & 1) === 1;
@@ -512,7 +512,7 @@ export const App: VoidComponent = () => {
         break;
       case "notebook-collapse":
         if (value) {
-          notebook.maybeCollapse(themeLayoutFlippedMemo(), mouseY);
+          notebook.collapseIfNotHovering(themeLayoutFlippedMemo(), mouseY);
         } else if (value === false) {
           notebook.setCollapsed(false);
         }
@@ -657,7 +657,10 @@ export const App: VoidComponent = () => {
     chunks.setSelectingInTranslation(selectingInChunkTranslation ?? false);
   });
 
-  window.addEventListener("blur", () => globalTooltip.hide);
+  window.addEventListener("blur", () => {
+    globalTooltip.hide();
+    notebook.collapseIfAllowed();
+  });
 
   // ==============================================================================================
 
