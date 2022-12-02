@@ -2,7 +2,10 @@ import {
   batch, createEffect, createMemo, createSignal, on, onMount, Show, untrack, type VoidComponent
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { styled, ThemeProvider } from "solid-styled-components";
+import { css, styled, ThemeProvider } from "solid-styled-components";
+
+import { concealUnlessHovered } from "~/directives";
+const [_] = [concealUnlessHovered];
 
 import {
   ActionPalette, actionsInclude, availableActions as getAvailableActions, hiraganaToKatakana,
@@ -62,11 +65,13 @@ export const App: VoidComponent = () => {
     createSignal<BackendCharacterCounter>();
   const [chunkVariants, setChunkVariants] =
     createSignal<ChunkVariant[]>([]);
-  const [debugMode, setDebugMode] =
+  const [focusMode, setFocusMode] =
     createSignal(false);
   const [middleMouseButtonLikelyDown, setMiddleMouseButtonLikelyDown] =
     createSignal(false);
   const [movingMouseWhilePrimaryDown, setMovingMouseWhilePrimaryDown] =
+    createSignal(false);
+  const [debugMode, setDebugMode] =
     createSignal(false);
 
   let rootEl: HTMLDivElement;
@@ -499,11 +504,11 @@ export const App: VoidComponent = () => {
     // PERF: Double lookup if not disabled
     setSettings(s => s.id === id, "value", value);
     switch (id) {
-      case "enable-furigana":
-        value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
+      case "layout":
+        setTheme("layout", value as UILayout);
         break;
-      case "conceal-furigana":
-        chunks.setRubyConcealed(value as boolean);
+      case "focus-mode":
+        setFocusMode(value as boolean);
         break;
       case "notebook-collapse":
         if (value) {
@@ -512,8 +517,11 @@ export const App: VoidComponent = () => {
           notebook.setCollapsed(false);
         }
         break;
-      case "layout":
-        setTheme("layout", value as UILayout);
+      case "enable-furigana":
+        value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
+        break;
+      case "conceal-furigana":
+        chunks.setRubyConcealed(value as boolean);
         break;
     }
 
@@ -677,7 +685,7 @@ export const App: VoidComponent = () => {
         />
       </Show>
       <MainSection ref={handleMainSectionRef} id="main-section">
-        <Toolbar id="toolbar">
+        <div id="toolbar" class={ToolbarClass} use:concealUnlessHovered={{ enabled: focusMode }}>
           <Show when={availableCommands().length > 0}>
             <CommandPalette
               commands={availableCommands()}
@@ -693,7 +701,7 @@ export const App: VoidComponent = () => {
             ref={el => actionPaletteEl = el}
           />
           <YomichanSentenceDelimiter/>
-        </Toolbar>
+        </div>
         <ChunkView
           chunksState={chunks}
           onInput={handleChunkInput}
@@ -701,7 +709,11 @@ export const App: VoidComponent = () => {
           labelAndTranslationRef={el => chunkLabelAndTranslationEl = el}
           movingMouseWhilePrimaryDown={movingMouseWhilePrimaryDown}
         />
-        <StatusPanel fade={statusPanelFader.shouldFade()} ref={el => statusPanelEl = el}>
+        <StatusPanel
+          fade={statusPanelFader.shouldFade()}
+          focusMode={focusMode}
+          ref={el => statusPanelEl = el}
+        >
           <Show when={characterCounter()} keyed>{ counter =>
             <CharacterCounter
               state={counter}
@@ -739,6 +751,7 @@ export const App: VoidComponent = () => {
           <Settings store={settings} onSettingChangeRequested={handleSettingChangeRequest} />
         }
         debug={<Debug state={debug} />}
+        focusMode={focusMode}
       />
       <TooltipView state={globalTooltip} />
     </Root>
@@ -764,7 +777,8 @@ const MainSection = styled.div`
   flex-direction: ${p => !themeLayoutFlipped(p.theme) ? "column" : "column-reverse"};
 `;
 
-const Toolbar = styled.div`
+const ToolbarClass = css`
+  position: relative; /* For focus mode cover */
   display: flex;
   flex-direction: row;
   justify-content: flex-start;

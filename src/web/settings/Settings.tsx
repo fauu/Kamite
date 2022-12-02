@@ -17,6 +17,13 @@ export const DEFAULT_SETTINGS: Setting[] = [
     value: "STANDARD",
   },
   {
+    id: "focus-mode",
+    label: "Focus mode",
+    configKey: c => c.ui.focusMode,
+    kind: "toggle",
+    value: false,
+  },
+  {
     id: "notebook-collapse",
     label: "Collapse notebook",
     configKey: c => c.ui.notebook.collapse,

@@ -31,6 +31,7 @@ export interface OCRRegion {
 }
 
 interface UI {
+  focusMode: boolean,
   layout: UILayout,
   notebook: Notebook,
 }

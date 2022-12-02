@@ -1,5 +1,10 @@
-import { createEffect, For, Match, Show, Switch, type JSX, type VoidComponent } from "solid-js";
-import { css, styled } from "solid-styled-components";
+import {
+  createEffect, For, Match, Show, Switch, type Accessor, type JSX, type VoidComponent
+} from "solid-js";
+import { css, styled, useTheme, type DefaultTheme } from "solid-styled-components";
+
+import { concealUnlessHovered } from "~/directives";
+const [_] = [concealUnlessHovered];
 
 import { lookupTargetFillURL } from "~/backend";
 import { scrollToBottom } from "~/common";
@@ -18,12 +23,17 @@ interface NotebookProps {
   chunkHistory: JSX.Element,
   settings: JSX.Element,
   debug: JSX.Element,
+  focusMode: Accessor<boolean>,
 }
 
 export const Notebook: VoidComponent<NotebookProps> = (props) => {
+  const theme = useTheme();
+
   let tabBarEl!: HTMLDivElement;
   let pageViewEl!: HTMLDivElement;
   const pageEls: { [page: string]: HTMLDivElement } = {};
+
+  const doConcealUnlessHovered = () => !props.state.resizing() && props.focusMode();
 
   const effectiveLookupText = () => props.state.lookupOverride()?.text || props.lookupText;
 
@@ -79,7 +89,13 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
     props.state.setCollapsed(false);
   };
 
-  return <Root classList={{ [NotebookCollapsedClass]: props.state.collapsed() }}>
+  return <div
+    classList={{
+      [RootClass({ theme })]: true,
+      [NotebookCollapsedClass]: props.state.collapsed(),
+    }}
+    use:concealUnlessHovered={{ enabled: doConcealUnlessHovered }}
+  >
     <Show when={props.state.resizing()}>
       <NotebookHeightHud configKey="ui.notebook.height" height={props.state.height()}/>
     </Show>
@@ -123,16 +139,16 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
         </PageContainer>
       }</For>
     </PageView>
-  </Root>;
+  </div>;
 };
 
 const NotebookCollapsedClass = css("");
 
-const Root = styled.div`
+const RootClass = (p: { theme?: DefaultTheme }) => css`
+  position: relative;
   display: flex;
   flex-grow: 1;
-  position: relative;
-  flex-direction: ${p => !themeLayoutFlipped(p.theme) ? "column" : "column-reverse"};
+  flex-direction: ${!themeLayoutFlipped(p.theme) ? "column" : "column-reverse"};
 
   &:before,
   &:after {
@@ -153,12 +169,12 @@ const Root = styled.div`
 
   &:before {
     top: -3px;
-    display: ${p => !themeLayoutFlipped(p.theme) ? "block" : "none"};
+    display: ${!themeLayoutFlipped(p.theme) ? "block" : "none"};
   }
 
   &:after {
     bottom: -3px;
-    display: ${p => !themeLayoutFlipped(p.theme) ? "none" : "block"};
+    display: ${!themeLayoutFlipped(p.theme) ? "none" : "block"};
   }
 `;
 

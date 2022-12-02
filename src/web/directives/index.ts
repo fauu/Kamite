@@ -1,3 +1,4 @@
+export * from "./concealUnlessHovered";
 export * from "./holdClickEvent";
 export * from "./horizontalWheelScroll";
 export * from "./hoverEvent";
@@ -6,6 +7,7 @@ export * from "./onMount";
 export * from "./scrollToBottomOnChildListChange";
 export * from "./tooltipAnchor";
 
+import type { ConcealUnlessHoveredParams } from "./concealUnlessHovered";
 import type { HoldClickEventParams } from "./holdClickEvent";
 import type { HoverEventParams } from "./hoverEvent";
 import type {
@@ -18,6 +20,7 @@ import type { TooltipAnchorParams } from "./tooltipAnchor";
 declare module "solid-js" {
   namespace JSX {
     interface Directives {
+      concealUnlessHovered: ConcealUnlessHoveredParams,
       holdClickEvent: HoldClickEventParams,
       horizontalWheelScroll: boolean,
       hoverEvent: HoverEventParams,

@@ -11,3 +11,4 @@ export { PaletteButtonLabel } from "./PaletteButtonLabel";
 export { Spinner } from "./Spinner";
 export { StringWithNewlines } from "./StringWithNewlines";
 export { YomichanSentenceDelimiter } from "./YomichanSentenceDelimiter";
+
