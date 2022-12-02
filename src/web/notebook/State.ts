@@ -148,10 +148,6 @@ export function createNotebookState({ chunks, settings }: CreateNotebookStatePar
     return !resizing() && !collapsed() && (getSetting(settings, "notebook-collapse") || false);
   }
 
-  function collapseIfAllowed() {
-    isCollapseAllowed() && setCollapsed(true);
-  }
-
   function collapseIfNotHovering(isFlipped: boolean, mouseY: number, movementY?: number) {
     // If `movementY` is provided, collapse only when the cursor has just been moved outisde.
     // Otherwise, collapse simply if the cursor is currently outside.
@@ -219,7 +215,6 @@ export function createNotebookState({ chunks, settings }: CreateNotebookStatePar
     updateLookupTabs,
     getLookupTabs,
     isCollapseAllowed,
-    collapseIfAllowed,
     collapseIfNotHovering,
     resizeMaybeStart,
     resizeTick,

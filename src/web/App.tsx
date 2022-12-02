@@ -659,7 +659,9 @@ export const App: VoidComponent = () => {
 
   window.addEventListener("blur", () => {
     globalTooltip.hide();
-    notebook.collapseIfAllowed();
+    if (notebook.isCollapseAllowed()) {
+      notebook.setCollapsed(true);
+    }
   });
 
   // ==============================================================================================
