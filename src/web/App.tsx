@@ -533,7 +533,10 @@ export const App: VoidComponent = () => {
     backend.notify({ kind: "chunk-added", body: { chunk: chunk.text.base } });
   }
 
-  window.addEventListener("resize", () => mainSectionEl && notebook.syncHeight());
+  window.addEventListener("resize", () => {
+    mainSectionEl && notebook.syncHeight();
+    statusPanelFader.setFadeInvalidated();
+  });
 
   // DRY: Unify with action handling
   document.addEventListener("keydown", event => {

@@ -41,5 +41,8 @@ export function createStatusPanelFader(params: CreateStatusPanelFaderParams) {
     setShouldFade(overlap);
   }));
 
-  return { shouldFade };
+  return {
+    shouldFade,
+    setFadeInvalidated,
+  };
 }
