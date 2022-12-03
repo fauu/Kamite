@@ -1,5 +1,7 @@
 import { css } from "solid-styled-components";
 
+import { CharHeightProp } from "./props";
+
 enum LabelSelectionMarkerId {
   Left = 0,
   Right = 1
@@ -30,15 +32,16 @@ export class LabelSelectionMarkers {
   }
 
   #showMarkerAt(markerId: LabelSelectionMarkerId, x: number, y: number) {
-    this.#els[markerId].style.setProperty("--x", x.toString());
-    this.#els[markerId].style.setProperty("--y", y.toString());
-    this.#els[markerId].style.display = "block";
+    const style = this.#els[markerId].style;
+    style.setProperty("--x", x.toString());
+    style.setProperty("--y", y.toString());
+    style.display = "block";
   }
 }
 
 const MarkerClass = css`
-  --width: calc((var(--char-height) * 0.25) * 1px);
-  --height: calc((var(--char-height) * 0.5) * 1px);
+  --width: calc((var(${CharHeightProp}) * 0.25) * 1px);
+  --height: calc((var(${CharHeightProp}) * 0.5) * 1px);
   --yPx: calc(var(--y) * 1px);
   --xPx: calc(var(--x) * 1px);
 

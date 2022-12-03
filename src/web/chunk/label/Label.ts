@@ -4,11 +4,12 @@ import { css } from "solid-styled-components";
 import { ChunkCharIdxAttrName, ChunkLabelId } from "~/dom";
 import { BgFlashingClass, ChromeClass } from "~/style";
 
-import { type Chunk, type ChunkFlashState, type ChunkTextSelection, ChunkTextClass } from "..";
+import { ChunkTextClass, type Chunk, type ChunkFlashState, type ChunkTextSelection } from "..";
+
+import { CharHeightProp, RubyTextScaleProp } from "./props";
 
 import { LabelSelectionMarkers } from "./SelectionMarkers";
 
-const RUBY_TEXT_SCALE_PROP_NAME = "--ruby-text-scale";
 const DEFAULT_RUBY_TEXT_SCALE = 1;
 
 export class ChunkLabel {
@@ -22,7 +23,6 @@ export class ChunkLabel {
   #selectionMarkers: LabelSelectionMarkers;
 
   constructor(rootEl: HTMLDivElement, movingMouseWhilePrimaryDown: Accessor<boolean>) {
-    // Base init
     this.#rootEl = rootEl;
     this.#movingMouseWhilePrimaryDown = movingMouseWhilePrimaryDown;
     rootEl.classList.add(RootClass, ChunkTextClass);
@@ -30,25 +30,24 @@ export class ChunkLabel {
     this.#subRootEl.id = ChunkLabelId;
     this.#rootEl.prepend(this.#subRootEl);
 
-    // Selection marker init
     this.#selectionMarkers = new LabelSelectionMarkers(this.#rootEl);
   }
 
   setChunk(chunk: Chunk) {
     const newLabelChildren: HTMLElement[] = [];
     this.#rubyEls = [];
-    let idx = 0;
+    let charIdx = 0;
     if (chunk.text.hasFurigana) {
       for (const maybeRuby of chunk.text.maybeRubies!) {
         if (!maybeRuby.text) {
           for (const ch of maybeRuby.base) {
-            newLabelChildren.push(this.#makeCharElement(ch, idx++));
+            newLabelChildren.push(this.#makeCharElement(ch, charIdx++));
           }
         } else {
           const rubyEl = document.createElement("ruby");
           const rubyElChildren: HTMLElement[] = [];
           for (const ch of maybeRuby.base) {
-            rubyElChildren.push(this.#makeCharElement(ch, idx++));
+            rubyElChildren.push(this.#makeCharElement(ch, charIdx++));
           }
           this.#rubyEls.push(rubyEl);
 
@@ -66,7 +65,7 @@ export class ChunkLabel {
           const rubyCharsPerBaseChar = maybeRuby.text.length / maybeRuby.base.length;
           const rubyTextScale = this.#rubyTextScale(rubyCharsPerBaseChar);
           if (rubyTextScale !== DEFAULT_RUBY_TEXT_SCALE) {
-            rtEl.style.setProperty(RUBY_TEXT_SCALE_PROP_NAME, rubyTextScale.toString());
+            rtEl.style.setProperty(RubyTextScaleProp, rubyTextScale.toString());
           }
 
           newLabelChildren.push(rubyEl);
@@ -74,10 +73,22 @@ export class ChunkLabel {
       }
     } else {
       for (const ch of chunk.text.base) {
-        newLabelChildren.push(this.#makeCharElement(ch, idx++));
+        newLabelChildren.push(this.#makeCharElement(ch, charIdx++));
       }
     }
     this.#subRootEl.replaceChildren(...newLabelChildren);
+
+    // Get character element height for positioning and scaling the selection markers
+    if (
+      newLabelChildren.length > 0
+      && this.#rootEl.style.getPropertyValue(CharHeightProp) === ""
+    ) {
+      // ASSUMPTION: <ruby> height is equivalent to char's <span> height
+      this.#rootEl.style.setProperty(
+        CharHeightProp,
+        newLabelChildren[0].getBoundingClientRect().height.toString()
+      );
+    }
 
     if (this.#initialRubyConcealPending) {
       this.setRubyConcealed(true);
@@ -153,10 +164,6 @@ export class ChunkLabel {
       if (!markedStart && rawCharIdx === startStr) {
         rect = charEl.getBoundingClientRect();
         this.#selectionMarkers.showLeftMarkerAt(rect.left, rect.y);
-
-        // PERF: Should be set once when characters are laid out for the first time
-        this.#rootEl.style.setProperty("--char-height", rect.height.toString());
-
         markedStart = true;
       }
       if (markedStart && rawCharIdx === endStr) {
@@ -272,7 +279,7 @@ export class ChunkLabel {
 }
 
 const RootClass = css`
-  ${RUBY_TEXT_SCALE_PROP_NAME}: ${DEFAULT_RUBY_TEXT_SCALE.toString()};
+  ${RubyTextScaleProp}: ${DEFAULT_RUBY_TEXT_SCALE.toString()};
   --ruby-text-font-size-base: calc(0.5 * var(--chunk-font-size) * var(--chunk-furigana-font-scale));
   --selection-border-radius: 2px;
 
@@ -298,7 +305,7 @@ const RootClass = css`
     }
 
     & > span {
-      font-size: calc(1em * var(${RUBY_TEXT_SCALE_PROP_NAME}));
+      font-size: calc(1em * var(${RubyTextScaleProp}));
       font-weight: var(--chunk-furigana-font-weight);
     }
   }
