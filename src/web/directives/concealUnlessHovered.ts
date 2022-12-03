@@ -66,7 +66,7 @@ export const CoverClass = css`
   height: 100%;
   background: var(--color-bg);
   z-index: 50;
-  transition: opacity 75ms ease-in;
+  transition: opacity var(--fade-transition-duration-default) ease-in;
 `;
 
 export const CoverHiddenClass = css`

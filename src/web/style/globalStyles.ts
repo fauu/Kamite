@@ -60,6 +60,7 @@ export const GlobalStyles = createGlobalStyles`
     --palette-button-padding-fix: 1px; /* TODO: Try to do without this */
     --notebook-tab-size: 52px;
     --form-control-height: 32px;
+    --fade-transition-duration-default: 75ms;
   }
 
   * {
