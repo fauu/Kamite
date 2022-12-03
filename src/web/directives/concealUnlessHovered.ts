@@ -12,11 +12,28 @@ export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnless
   const { enabled } = value();
 
   let coverEl: HTMLElement | undefined;
-  let handleMouseEnter: () => void | undefined;
-  let handleMouseLeave: () => void | undefined;
-  let handleDocumentBlur: () => void | undefined;
+
+  const handleMouseEnter = () => {
+    toggleCoverVisibility(coverEl!, true);
+  };
+
+  const handleMouseLeave = (event: MouseEvent) => {
+    if (event.relatedTarget === null) {
+      // Ignore when cursor moved from Notebook's Settings page to a browser <select> dropdown
+      return;
+    }
+    toggleCoverVisibility(coverEl!, false);
+  };
+
+  const handleDocumentBlur = () => {
+    toggleCoverVisibility(coverEl!, false);
+  };
+
   const cleanup = () => {
-    coverEl && el.removeChild(coverEl);
+    if (coverEl) {
+      el.removeChild(coverEl);
+      coverEl = undefined;
+    }
     handleMouseEnter && el.removeEventListener("mouseenter", handleMouseEnter);
     handleMouseLeave && el.removeEventListener("mouseleave", handleMouseLeave);
     handleDocumentBlur && document.removeEventListener("blur", handleDocumentBlur);
@@ -30,25 +47,8 @@ export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnless
       coverEl.classList.add(CoverClass);
       el.prepend(coverEl);
 
-      const handleMouseEnter = () => {
-        toggleCoverVisibility(coverEl!, true);
-      };
-
-      const handleMouseLeave = (event: MouseEvent) => {
-        if (event.relatedTarget === null) {
-          // Ignore when cursor moved from Notebook's Settings page to a browser <select> dropdown
-          return;
-        }
-        toggleCoverVisibility(coverEl!, false);
-      };
-
-      const handleDocumentBlur = () => {
-        toggleCoverVisibility(coverEl!, false);
-      };
-
       el.addEventListener("mouseenter", handleMouseEnter);
       el.addEventListener("mouseleave", handleMouseLeave);
-      // PERF: Use signle global handler + signal?
       document.addEventListener("blur", handleDocumentBlur);
     }
   });
