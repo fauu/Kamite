@@ -1,7 +1,7 @@
 import { createEffect, createSignal, on } from "solid-js";
 
 import type { ChunksState } from "~/chunk";
-import { createEmptySignal, domRectsOverlap } from "~/common";
+import { createEmptySignal, debounce, domRectsOverlap } from "~/common";
 import type { NotebookState } from "~/notebook";
 
 interface CreateStatusPanelFaderParams {
@@ -32,14 +32,13 @@ export function createStatusPanelFader(params: CreateStatusPanelFaderParams) {
     setFadeInvalidated
   ));
 
-  createEffect(on(fadeInvalidated, () => {
-    // PERF: Could debounce
+  createEffect(on(fadeInvalidated, debounce(() => {
     const overlap = domRectsOverlap(
       params.chunkLabelAndTranslationEl().getBoundingClientRect(),
       params.statusPanelEl().getBoundingClientRect(),
     );
     setShouldFade(overlap);
-  }));
+  }, 25)));
 
   return {
     shouldFade,
