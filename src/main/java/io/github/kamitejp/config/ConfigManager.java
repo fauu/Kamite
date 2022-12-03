@@ -25,7 +25,6 @@ import com.typesafe.config.ConfigOrigin;
 import com.typesafe.config.impl.ConfigImpl;
 
 import io.github.kamitejp.Kamite;
-import io.github.kamitejp.config.ConfigManager.ReadSuccess;
 import io.github.kamitejp.util.Result;
 
 public final class ConfigManager {
