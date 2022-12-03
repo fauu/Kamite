@@ -5,6 +5,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +14,9 @@ import io.github.kamitejp.status.PlayerStatus;
 
 public abstract class BaseMPVController implements MPVController {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
+  private static final Pattern ESCAPED_NEWLINE_RE = Pattern.compile("\\\\n");
+  private static final Pattern ESCAPED_QUOTEMARK_RE = Pattern.compile("\\\\\"");
 
   static final String IPC_MEDIUM_FILENAME = "kamite-mpvsocket";
   static final int CONNECTION_RETRY_INTERVAL_MS = 2000;
@@ -102,10 +106,11 @@ public abstract class BaseMPVController implements MPVController {
     if (processedText.isEmpty()) {
       return;
     }
-    // PERF: Replace with compiled Pattern
-    processedText = subtitleTextMidTransform(processedText)
-      .replaceAll("\\\\n", "\n")
-      .replaceAll("\\\\\"", "\"");
+
+    processedText = subtitleTextMidTransform(processedText);
+    processedText = ESCAPED_NEWLINE_RE.matcher(processedText).replaceAll("\n");
+    processedText = ESCAPED_QUOTEMARK_RE.matcher(processedText).replaceAll("\"");
+
     pendingSubtitleTexts[kind.ordinal()] = processedText;
   }
 
