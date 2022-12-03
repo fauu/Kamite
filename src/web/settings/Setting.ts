@@ -53,7 +53,6 @@ export function disableSetting(
   if (!setting) {
     return;
   }
-  // PERF: Double lookup
   setSettings(s => s.id === id, {
     "disabled": { value: true, msg },
     "value": false

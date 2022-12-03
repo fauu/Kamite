@@ -501,7 +501,6 @@ export const App: VoidComponent = () => {
       return;
     }
 
-    // PERF: Double lookup if not disabled
     setSettings(s => s.id === id, "value", value);
     switch (id) {
       case "layout":
