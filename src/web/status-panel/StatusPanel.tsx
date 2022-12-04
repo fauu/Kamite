@@ -8,7 +8,8 @@ import { themeLayoutFlipped } from "~/theme";
 
 interface StatusPanelProps {
   fade: boolean,
-  focusMode: Accessor<boolean>,
+  concealUnlessHovered: Accessor<boolean>,
+  concealUnlessHoveredOverride: Accessor<boolean>,
   ref: Ref<HTMLDivElement>,
 }
 
@@ -29,7 +30,10 @@ export const StatusPanel: ParentComponent<StatusPanelProps> = (props) => {
       onMouseOver={handleMouseOver}
       onMouseOut={handleMouseOut}
       ref={props.ref}
-      use:concealUnlessHovered={{ enabled: props.focusMode }}
+      use:concealUnlessHovered={{
+        enabled: props.concealUnlessHovered,
+        override: props.concealUnlessHoveredOverride
+      }}
       id="status-panel"
     >
       {props.children}

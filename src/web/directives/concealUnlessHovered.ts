@@ -1,20 +1,27 @@
-import { type Accessor, createEffect, onCleanup } from "solid-js";
+import { type Accessor, createEffect, onCleanup, on } from "solid-js";
 import { css } from "solid-styled-components";
 
 export type ConcealUnlessHoveredParams = {
   enabled: Accessor<boolean>,
+  override?: Accessor<boolean>,
 };
 
 export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnlessHoveredParams) {
   if (!value) {
     return;
   }
-  const { enabled } = value();
+  let { enabled, override } = value();
+  if (!override) {
+    override = () => false;
+  }
 
   let coverEl: HTMLElement | undefined;
 
   const handleMouseEnter = () => toggleCoverVisibility(coverEl!, false);
   const handleMouseLeave = (event: MouseEvent) => {
+    if (override && override()) {
+      return;
+    }
     if (event.relatedTarget && !window.root.contains(event.relatedTarget as Node)) {
       // Ignore when leaving into Yomichan window etc.
       return;
@@ -48,6 +55,10 @@ export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnless
       document.documentElement.addEventListener("mouseleave", handleMouseLeave);
     }
   });
+
+  createEffect(on(override, doOverride =>
+    coverEl && toggleCoverVisibility(coverEl, !doOverride))
+  );
 
   onCleanup(cleanup);
 }

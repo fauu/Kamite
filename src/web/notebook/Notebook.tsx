@@ -23,7 +23,7 @@ interface NotebookProps {
   chunkHistory: JSX.Element,
   settings: JSX.Element,
   debug: JSX.Element,
-  focusMode: Accessor<boolean>,
+  concealUnlessHovered: Accessor<boolean>,
 }
 
 export const Notebook: VoidComponent<NotebookProps> = (props) => {
@@ -32,8 +32,6 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
   let tabBarEl!: HTMLDivElement;
   let pageViewEl!: HTMLDivElement;
   const pageEls: { [page: string]: HTMLDivElement } = {};
-
-  const doConcealUnlessHovered = () => !props.state.resizing() && props.focusMode();
 
   const effectiveLookupText = () => props.state.lookupOverride()?.text || props.lookupText;
 
@@ -94,7 +92,7 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
       [RootClass({ theme })]: true,
       [NotebookCollapsedClass]: props.state.collapsed(),
     }}
-    use:concealUnlessHovered={{ enabled: doConcealUnlessHovered }}
+    use:concealUnlessHovered={{ enabled: props.concealUnlessHovered }}
   >
     <Show when={props.state.resizing()}>
       <NotebookHeightHud configKey="ui.notebook.height" height={props.state.height()}/>

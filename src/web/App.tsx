@@ -717,7 +717,8 @@ export const App: VoidComponent = () => {
         />
         <StatusPanel
           fade={statusPanelFader.shouldFade()}
-          focusMode={focusMode}
+          concealUnlessHovered={focusMode}
+          concealUnlessHoveredOverride={chunks.editing}
           ref={el => statusPanelEl = el}
         >
           <Show when={characterCounter()} keyed>{ counter =>
@@ -757,7 +758,7 @@ export const App: VoidComponent = () => {
           <Settings store={settings} onSettingChangeRequested={handleSettingChangeRequest} />
         }
         debug={<Debug state={debug} />}
-        focusMode={focusMode}
+        concealUnlessHovered={() => !notebook.resizing() && focusMode()}
       />
       <TooltipView state={globalTooltip} />
     </Root>
