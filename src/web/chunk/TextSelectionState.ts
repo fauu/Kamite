@@ -32,13 +32,9 @@ export function createChunkTextSelectionState(
 
   const inProgress = (): boolean => value()?.anchor !== undefined;
 
-  function finish() {
-    setValue(curr => {
-      if (curr) {
-        curr.anchor = undefined;
-      }
-      return curr;
-    });
+  function length(): number {
+    const range = value()?.range;
+    return range ? (range[1] - range[0] + 1) : 0
   }
 
   function isWholeTextSelected(): boolean {
@@ -48,6 +44,20 @@ export function createChunkTextSelectionState(
     }
     const [start, end] = sel.range;
     return start === 0 && end === current().text.length - 1;
+  }
+
+  function isCharSelected(idx: number): boolean {
+    const range = value()?.range;
+    return (range || false) && (idx >= range[0] && idx <= range[1]);
+  }
+
+  function finish() {
+    setValue(curr => {
+      if (curr) {
+        curr.anchor = undefined;
+      }
+      return curr;
+    });
   }
 
   function selectAll() {
@@ -67,9 +77,10 @@ export function createChunkTextSelectionState(
     set: setValue,
 
     inProgress,
-
-    finish,
+    length,
     isWholeTextSelected,
+    isCharSelected,
+    finish,
     selectAll,
     selectHighlighted,
   };
