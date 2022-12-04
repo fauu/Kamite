@@ -658,7 +658,7 @@ export const App: VoidComponent = () => {
     chunks.setSelectingInTranslation(selectingInChunkTranslation ?? false);
   });
 
-  document.documentElement.addEventListener("mouseleave", (event) => {
+  document.documentElement.addEventListener("mouseleave", () => {
     globalTooltip.hide();
     if (notebook.isCollapseAllowed()) {
       notebook.setCollapsed(true);
