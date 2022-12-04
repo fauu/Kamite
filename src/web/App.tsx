@@ -74,7 +74,6 @@ export const App: VoidComponent = () => {
   const [debugMode, setDebugMode] =
     createSignal(false);
 
-  let rootEl: HTMLDivElement;
   let mainSectionEl: HTMLDivElement | undefined;
   let commandPaletteEl: HTMLDivElement | undefined;
   let actionPaletteEl: HTMLDivElement | undefined;
@@ -164,7 +163,7 @@ export const App: VoidComponent = () => {
 
     // Catch in capturing phase so that when we exit chunk edit mode by clicking on a lookup button
     // the editing changes are committed before the lookup button handler initiates lookup
-    rootEl.addEventListener("click", handleRootClick, { capture: true });
+    window.root.addEventListener("click", handleRootClick, { capture: true });
 
     integrateClipboardInserter(
       /* onText */ text => backend.command({ kind: "chunk_show", params: { chunk: text } })
@@ -659,7 +658,7 @@ export const App: VoidComponent = () => {
     chunks.setSelectingInTranslation(selectingInChunkTranslation ?? false);
   });
 
-  window.addEventListener("blur", () => {
+  document.documentElement.addEventListener("mouseleave", (event) => {
     globalTooltip.hide();
     if (notebook.isCollapseAllowed()) {
       notebook.setCollapsed(true);
@@ -680,7 +679,7 @@ export const App: VoidComponent = () => {
         ].map(([name, active]) => active ? name : undefined).filter(x => x).join(" ")
       }
       id={RootId}
-      ref={el => rootEl = el}
+      ref={el => window.root = el}
     >
       <GlobalStyles />
       <Show when={backend.connectionState() !== "connected"}>

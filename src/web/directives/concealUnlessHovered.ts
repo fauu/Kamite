@@ -13,30 +13,26 @@ export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnless
 
   let coverEl: HTMLElement | undefined;
 
-  const handleMouseEnter = () => {
-    toggleCoverVisibility(coverEl!, true);
-  };
-
+  const handleMouseEnter = () => toggleCoverVisibility(coverEl!, false);
   const handleMouseLeave = (event: MouseEvent) => {
-    if (event.relatedTarget === null) {
-      // Ignore when cursor moved from Notebook's Settings page to a browser <select> dropdown
+    if (event.relatedTarget && !window.root.contains(event.relatedTarget as Node)) {
+      // Ignore when leaving into Yomichan window etc.
       return;
     }
-    toggleCoverVisibility(coverEl!, false);
-  };
-
-  const handleDocumentBlur = () => {
-    toggleCoverVisibility(coverEl!, false);
-  };
+    toggleCoverVisibility(coverEl!, true);
+  }
 
   const cleanup = () => {
     if (coverEl) {
       el.removeChild(coverEl);
       coverEl = undefined;
     }
+
     handleMouseEnter && el.removeEventListener("mouseenter", handleMouseEnter);
-    handleMouseLeave && el.removeEventListener("mouseleave", handleMouseLeave);
-    handleDocumentBlur && document.removeEventListener("blur", handleDocumentBlur);
+    if (handleMouseLeave) {
+      el.removeEventListener("mouseleave", handleMouseLeave);
+      document.documentElement.removeEventListener("mouseleave", handleMouseLeave);
+    }
   };
 
   createEffect(() => {
@@ -49,7 +45,7 @@ export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnless
 
       el.addEventListener("mouseenter", handleMouseEnter);
       el.addEventListener("mouseleave", handleMouseLeave);
-      document.addEventListener("blur", handleDocumentBlur);
+      document.documentElement.addEventListener("mouseleave", handleMouseLeave);
     }
   });
 
@@ -57,7 +53,7 @@ export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnless
 }
 
 function toggleCoverVisibility(el: HTMLElement, visible: boolean) {
-  el.classList.toggle(CoverHiddenClass, visible);
+  el.classList.toggle(CoverHiddenClass, !visible);
 }
 
 export const CoverClass = css`
