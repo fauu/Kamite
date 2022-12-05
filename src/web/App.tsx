@@ -83,6 +83,7 @@ export const App: VoidComponent = () => {
   let chunkPickerEl!: HTMLDivElement;
 
   let mouseY = 0;
+  let chunkTextSelectionDisabledUntilPrimaryMouseUp = false;
 
   const chunkInputSelection = (): [number, number] | undefined =>
     (chunkInputEl && [chunkInputEl.selectionStart, chunkInputEl.selectionEnd - 1]) ?? undefined;
@@ -210,7 +211,12 @@ export const App: VoidComponent = () => {
         if (charIdxS) { // Mouse over chunk character
           // Initiate selection starting inside chunk label
           const charIdx = parseInt(charIdxS);
-          chunks.textSelection.set({ range: [charIdx, charIdx], anchor: charIdx });
+          if (chunks.textSelection.length() === 1 && chunks.textSelection.isCharSelected(charIdx)) {
+            chunks.textSelection.set(undefined);
+            chunkTextSelectionDisabledUntilPrimaryMouseUp = true;
+          } else {
+            chunks.textSelection.set({ range: [charIdx, charIdx], anchor: charIdx });
+          }
         } else {
           if (chunks.editing() && commandPaletteEl && commandPaletteEl.contains(target)) {
             // Prevent deselecting chunk input text so that the selected part can be replaced with
@@ -252,6 +258,7 @@ export const App: VoidComponent = () => {
       case 0: // Left
         chunks.textSelection.finish();
         notebook.setResizing(false);
+        chunkTextSelectionDisabledUntilPrimaryMouseUp = false;
         break;
       case 1: // Middle
         window.setTimeout(() => setMiddleMouseButtonLikelyDown(false));
@@ -271,25 +278,25 @@ export const App: VoidComponent = () => {
     if (primaryButton) {
       if (notebook.resizing()) {
         notebook.resizeTick(themeLayoutFlippedMemo(), event.movementY);
-      } else {
+      } else if (!chunkTextSelectionDisabledUntilPrimaryMouseUp) {
         const el = event.target as HTMLElement;
         let charIdxStr: string | undefined;
         if (el.dataset) {
           charIdxStr = el.dataset[ChunkCharIdxAttrName];
         }
         if (charIdxStr) { // Mouse over chunk character
-          // Update chunk selection
+          // Set the chunk selection to include the hovered character
           const anchor =
             chunks.textSelection.inProgress()
-            ? chunks.textSelection.get()!.anchor!
-            : event.movementY > 0 // Moving from above chunk or from below?
-              ? 0
-              : chunks.current().text.length - 1;
+            ? chunks.textSelection.get()!.anchor! // Use the existing anchor
+            : event.movementY > 0
+              ? 0 // New selection from above, use 1st char as anchor
+              : chunks.current().text.length - 1; // New sel. from below, use last char as anchor
           const range = [parseInt(charIdxStr), anchor] as [number, number];
           range.sort((a, b) => a - b);
           chunks.textSelection.set({ range, anchor });
         } else if (chunks.textSelection.inProgress()) {
-          // Update chunk selection
+          // Update chunk selection to include characters between the anchor and the cursor
           // QUAL: Is there a better way of passing this?
           const labelEl = document.getElementById(ChunkLabelId)!;
           const lastChunkElIdx = labelEl.childElementCount - 1;
