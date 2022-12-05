@@ -82,4 +82,5 @@ const ChunkLabelAndTranslation = styled.div`
 const ChunkInputWrapper = styled.div`
   display: flex;
   height: 100%;
+  z-index: 8; /* Above status panel, below notebook (to keep the shadow above) */
 `;

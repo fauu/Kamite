@@ -147,6 +147,7 @@ const RootClass = (p: { theme?: DefaultTheme }) => css`
   display: flex;
   flex-grow: 1;
   flex-direction: ${!themeLayoutFlipped(p.theme) ? "column" : "column-reverse"};
+  z-index: 10;
 
   &:before,
   &:after {
@@ -154,7 +155,7 @@ const RootClass = (p: { theme?: DefaultTheme }) => css`
     height: 6px;
     width: 100%;
     position: absolute;
-    z-index: 10;
+    z-index: 20;
     opacity: 0;
   }
 
