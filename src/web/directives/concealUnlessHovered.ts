@@ -1,4 +1,4 @@
-import { type Accessor, createEffect, onCleanup, on } from "solid-js";
+import { type Accessor, createEffect, onCleanup } from "solid-js";
 import { css } from "solid-styled-components";
 
 export type ConcealUnlessHoveredParams = {
@@ -8,9 +8,6 @@ export type ConcealUnlessHoveredParams = {
 // ROBUSTNESS: Conceal is mistakenly triggered when mouse moves into a browser dropdown (at least
 //             on Firefox)
 export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnlessHoveredParams) {
-  if (!value) {
-    return;
-  }
   let { enabled } = value();
 
   let coverEl: HTMLElement | undefined;
