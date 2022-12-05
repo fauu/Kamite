@@ -219,17 +219,20 @@ const PageView = styled.div`
   color: var(--color-fg);
   overflow-y: initial;
 
-  & > div {
+  & > div { /* Page content wrapper */
     display: none;
     flex: 1;
-    padding: 0.8rem 0.75rem 1rem 0.75rem;
     overflow-y: auto;
-  }
 
-  iframe {
-    flex: 1;
-    border: none;
-    overflow: hidden;
+    & > div { /* Non-iframe page content */
+      padding: 0.8rem 0.75rem 1rem 0.75rem;
+    }
+
+    & > iframe {
+      flex: 1;
+      border: none;
+      overflow: hidden;
+    }
   }
 `;
 
