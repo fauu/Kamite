@@ -13,7 +13,7 @@ import {
 } from "~/action";
 import type {
   CharacterCounter as BackendCharacterCounter, ChunkVariant, Command, Config, InMessage,
-  PlayerStatus, RecognizerStatus, UILayout
+  PlayerStatus, RecognizerStatus
 } from "~/backend";
 import {
   Backend, BackendNotConnectedScreen, parseBackendConstant, parseRecognizerStatus,
@@ -725,7 +725,6 @@ export const App: VoidComponent = () => {
         <StatusPanel
           fade={statusPanelFader.shouldFade()}
           concealUnlessHovered={focusMode}
-          concealUnlessHoveredOverride={chunks.editing}
           ref={el => statusPanelEl = el}
         >
           <Show when={characterCounter()} keyed>{ counter =>

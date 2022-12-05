@@ -3,25 +3,20 @@ import { css } from "solid-styled-components";
 
 export type ConcealUnlessHoveredParams = {
   enabled: Accessor<boolean>,
-  override?: Accessor<boolean>,
 };
 
+// ROBUSTNESS: Conceal is mistakenly triggered when mouse moves into a browser dropdown (at least
+//             on Firefox)
 export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnlessHoveredParams) {
   if (!value) {
     return;
   }
-  let { enabled, override } = value();
-  if (!override) {
-    override = () => false;
-  }
+  let { enabled } = value();
 
   let coverEl: HTMLElement | undefined;
 
   const handleMouseEnter = () => toggleCoverVisibility(coverEl!, false);
   const handleMouseLeave = (event: MouseEvent) => {
-    if (override && override()) {
-      return;
-    }
     if (event.relatedTarget && !window.root.contains(event.relatedTarget as Node)) {
       // Ignore when leaving into Yomichan window etc.
       return;
@@ -55,10 +50,6 @@ export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnless
       document.documentElement.addEventListener("mouseleave", handleMouseLeave);
     }
   });
-
-  createEffect(on(override, doOverride =>
-    coverEl && toggleCoverVisibility(coverEl, !doOverride))
-  );
 
   onCleanup(cleanup);
 }
