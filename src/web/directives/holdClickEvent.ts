@@ -14,14 +14,15 @@ export function holdClickEvent(el: HTMLElement, value: () => HoldClickEventParam
   const { durationMS, holdClickCb, regularClickCb } = val;
 
   let holdTimeout: number | undefined;
-  let handleMouseUp: () => void;
+  let handleClick: (() => void) | undefined;
+  let handleMouseUp: (() => void) | undefined;
   let handleMouseDown: (() => void) | undefined;
 
   if (!holdClickCb) {
     if (!regularClickCb) {
       return;
     }
-    handleMouseUp = () => regularClickCb(el);
+    handleClick = () => regularClickCb(el);
   } else {
     handleMouseUp = () => {
       if (holdTimeout) {
@@ -37,11 +38,13 @@ export function holdClickEvent(el: HTMLElement, value: () => HoldClickEventParam
     };
   }
 
+  handleClick && el.addEventListener("click", handleClick);
   handleMouseDown && el.addEventListener("mousedown", handleMouseDown);
-  el.addEventListener("mouseup", handleMouseUp);
+  handleMouseUp && el.addEventListener("mouseup", handleMouseUp);
 
   onCleanup(() => {
+    handleClick && el.removeEventListener("click", handleClick);
     handleMouseDown && el.removeEventListener("mousedown", handleMouseDown);
-    el.removeEventListener("mouseup", handleMouseUp);
+    handleMouseUp && el.removeEventListener("mouseup", handleMouseUp);
   });
 }
