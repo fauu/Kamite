@@ -509,8 +509,8 @@ export const App: VoidComponent = () => {
 
     setSettings(s => s.id === id, "value", value);
     switch (id) {
-      case "layout":
-        setTheme("layout", value as UILayout);
+      case "flip-layout":
+        setTheme("layout", value ? "STANDARD_FLIPPED" : "STANDARD");
         break;
       case "focus-mode":
         setFocusMode(value as boolean);

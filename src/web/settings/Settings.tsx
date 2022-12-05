@@ -6,15 +6,11 @@ import type { SelectValue, Setting } from "./Setting";
 
 export const DEFAULT_SETTINGS: Setting[] = [
   {
-    id: "layout",
-    label: "Interface layout",
-    configKey: c => c.ui.layout,
-    kind: "select",
-    options: [
-      { label: "Standard",         value: "STANDARD" },
-      { label: "Standard Flipped", value: "STANDARD_FLIPPED" }
-    ],
-    value: "STANDARD",
+    id: "flip-layout",
+    label: "Flip interface layout",
+    configKey: c => c.ui.layout === "STANDARD_FLIPPED" ? true : false,
+    kind: "toggle",
+    value: false,
   },
   {
     id: "focus-mode",

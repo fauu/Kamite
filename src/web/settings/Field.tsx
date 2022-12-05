@@ -161,6 +161,7 @@ const WarningText = styled.span`
 
 function humanizeConfigKey(s: Setting) {
   return s.configKey.toString()
+    .split("===")[0] // QUAL: Hack for UI layout flip select -> toggle transormation
     .replace(/[\s\S]*c\.(.*);[\s\S]*/, "$1")
     .replace(/.*=>.*?\./, "")
     .replaceAll("_", "-");
