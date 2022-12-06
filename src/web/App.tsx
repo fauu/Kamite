@@ -83,7 +83,6 @@ export const App: VoidComponent = () => {
   let chunkPickerEl!: HTMLDivElement;
 
   let mouseY = 0;
-  let chunkTextSelectionDisabledUntilPrimaryMouseUp = false;
 
   const chunkInputSelection = (): [number, number] | undefined =>
     (chunkInputEl && [chunkInputEl.selectionStart, chunkInputEl.selectionEnd - 1]) ?? undefined;
@@ -210,12 +209,7 @@ export const App: VoidComponent = () => {
         if (charIdxS) { // Mouse over chunk character
           // Initiate selection starting inside chunk label
           const charIdx = parseInt(charIdxS);
-          if (chunks.textSelection.length() === 1 && chunks.textSelection.isCharSelected(charIdx)) {
-            chunks.textSelection.set(undefined);
-            chunkTextSelectionDisabledUntilPrimaryMouseUp = true;
-          } else {
-            chunks.textSelection.set({ range: [charIdx, charIdx], anchor: charIdx });
-          }
+          chunks.textSelection.set({ range: [charIdx, charIdx], anchor: charIdx });
         } else {
           if (chunks.editing() && commandPaletteEl && commandPaletteEl.contains(targetEl)) {
             // Prevent deselecting chunk input text so that the selected part can be replaced with
@@ -260,7 +254,6 @@ export const App: VoidComponent = () => {
       case 0: // Left
         chunks.textSelection.finish();
         notebook.setResizing(false);
-        chunkTextSelectionDisabledUntilPrimaryMouseUp = false;
         break;
       case 1: // Middle
         window.setTimeout(() => setMiddleMouseButtonLikelyDown(false));
@@ -280,7 +273,7 @@ export const App: VoidComponent = () => {
     if (primaryButton) {
       if (notebook.resizing()) {
         notebook.resizeTick(themeLayoutFlippedMemo(), event.movementY);
-      } else if (!chunkTextSelectionDisabledUntilPrimaryMouseUp) {
+      } else {
         const el = event.target as HTMLElement;
         let charIdxStr: string | undefined;
         if (el.dataset) {

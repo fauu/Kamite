@@ -46,6 +46,7 @@ export function createChunkTextSelectionState(
     return start === 0 && end === current().text.length - 1;
   }
 
+  // QUAL: Unused
   function isCharSelected(idx: number): boolean {
     const range = value()?.range;
     return (range || false) && (idx >= range[0] && idx <= range[1]);
