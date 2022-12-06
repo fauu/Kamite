@@ -203,11 +203,10 @@ export const App: VoidComponent = () => {
   };
 
   const handleRootMouseDown = (event: MouseEvent) => {
+    const targetEl = event.target as HTMLElement;
     switch (event.button) {
       case 0: { // Left
-        const target = event.target as HTMLElement;
-
-        const charIdxS = target.dataset[ChunkCharIdxAttrName];
+        const charIdxS = targetEl.dataset[ChunkCharIdxAttrName];
         if (charIdxS) { // Mouse over chunk character
           // Initiate selection starting inside chunk label
           const charIdx = parseInt(charIdxS);
@@ -218,7 +217,7 @@ export const App: VoidComponent = () => {
             chunks.textSelection.set({ range: [charIdx, charIdx], anchor: charIdx });
           }
         } else {
-          if (chunks.editing() && commandPaletteEl && commandPaletteEl.contains(target)) {
+          if (chunks.editing() && commandPaletteEl && commandPaletteEl.contains(targetEl)) {
             // Prevent deselecting chunk input text so that the selected part can be replaced with
             // the result of an OCR command issued by command palette click
             event.preventDefault();
@@ -228,9 +227,9 @@ export const App: VoidComponent = () => {
           // Clear chunk selection
           if (chunks.textSelection.get()) {
             const insideSelectionClearningEl =
-              mainSectionEl!.contains(target)
-              && !commandPaletteEl?.contains(target)
-              && !actionPaletteEl?.contains(target);
+              mainSectionEl!.contains(targetEl)
+              && !commandPaletteEl?.contains(targetEl)
+              && !actionPaletteEl?.contains(targetEl);
             if (insideSelectionClearningEl) {
               chunks.textSelection.set(undefined);
             }
@@ -250,8 +249,11 @@ export const App: VoidComponent = () => {
       case 1: { // Middle
         setMiddleMouseButtonLikelyDown(true);
       }
+        break;
     }
   };
+
+  document.addEventListener("contextmenu", (event: Event) => event.preventDefault());
 
   const handleRootMouseUp = (event: MouseEvent) => {
     switch (event.button) {
