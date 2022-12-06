@@ -88,6 +88,12 @@ public class Server {
   }
 
   public void send(OutMessage message) {
+    if (wsPendingClientContext != null) {
+      // This is normally done in the old connecton's `onClose()`, but that doesn't always fire
+      // (e.g., browser crash)
+      this.finalizeReplacementConnection();
+    }
+
     String messageJson = null;
     try {
       messageJson = JSON.mapper().writeValueAsString(message);
@@ -135,13 +141,8 @@ public class Server {
     ws.onMessage(this::handleClientMessage);
     ws.onClose(ctx -> {
       LOG.info("Client websocket connection closed: code {}", ctx::status);
-      // We juggle the contexts like this because we want to set `wsClientContext` to null here, but
-      // only if this close event isn't the result of a new client connection replacing the old one.
-      // And the status code doesn't let us distinguish that case from, e.g., a browser crash
       if (wsPendingClientContext != null) {
-        wsClientContext = wsPendingClientContext;
-        wsPendingClientContext = null;
-        eventCb.accept(new ServerEvent.ClientConnected());
+        this.finalizeReplacementConnection();
       } else {
         wsClientContext = null;
       }
@@ -159,6 +160,12 @@ public class Server {
       wsClientContext = ctx;
       eventCb.accept(new ServerEvent.ClientConnected());
     }
+  }
+
+  private void finalizeReplacementConnection() {
+    wsClientContext = wsPendingClientContext;
+    wsPendingClientContext = null;
+    eventCb.accept(new ServerEvent.ClientConnected());
   }
 
   private void handleClientMessage(WsMessageContext ctx) {
