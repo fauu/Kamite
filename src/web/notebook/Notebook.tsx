@@ -3,8 +3,8 @@ import {
 } from "solid-js";
 import { css, styled, useTheme, type DefaultTheme } from "solid-styled-components";
 
-import { concealUnlessHovered, showIFrameAfterFirstLoad } from "~/directives";
-const [_, __] = [concealUnlessHovered, showIFrameAfterFirstLoad];
+import { concealUnlessHovered } from "~/directives";
+const [_] = [concealUnlessHovered];
 
 import { lookupTargetFillURL } from "~/backend";
 import { scrollToBottom } from "~/common";
@@ -119,7 +119,7 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
         <PageContainer ref={pageEls[tab.id]}>
           <Switch>
             <Match when={notebookTabIsEmbeddedLookup(tab)}>
-              <iframe use:showIFrameAfterFirstLoad></iframe>
+              <iframe></iframe>
             </Match>
             <Match when={tab.id === "chunk-picker"}>
               {props.chunkPicker}
@@ -232,7 +232,6 @@ const PageView = styled.div`
       flex: 1;
       border: none;
       overflow: hidden;
-      display: none;
     }
   }
 `;

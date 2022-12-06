@@ -5,7 +5,6 @@ export * from "./hoverEvent";
 export * from "./onGeneralHorizontalScrollPositionChange";
 export * from "./onMount";
 export * from "./scrollToBottomOnChildListChange";
-export * from "./showIFrameAfterFirstLoad";
 export * from "./tooltipAnchor";
 
 import type { ConcealUnlessHoveredParams } from "./concealUnlessHovered";
@@ -28,7 +27,6 @@ declare module "solid-js" {
       onGeneralHorizontalScrollPositionChange: OnGeneralHorizontalScrollPositionChangeParams,
       onMount: OnMountParams,
       scrollToBottomOnChildListChange: ScrollToBottomOnChildListChangeParams,
-      showIFrameAfterFirstLoad: boolean,
       tooltipAnchor: TooltipAnchorParams,
     }
   }
