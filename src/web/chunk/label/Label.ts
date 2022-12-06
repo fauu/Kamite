@@ -13,9 +13,9 @@ import { LabelSelectionMarkers } from "./SelectionMarkers";
 const DEFAULT_RUBY_TEXT_SCALE = 1;
 
 export class ChunkLabel {
+  #rubyConcealingEnabled = false;
+  #deferredRubiesConcealSetup = false;
   #movingMouseWhilePrimaryDown: Accessor<boolean>;
-  #rubyConcealed = false;
-  #initialRubyConcealPending = false;
 
   #rootEl: HTMLDivElement;
   #subRootEl: HTMLSpanElement;
@@ -90,22 +90,16 @@ export class ChunkLabel {
       );
     }
 
-    if (this.#initialRubyConcealPending) {
-      this.setRubyConcealed(true);
-
-      for (const el of this.#rubyEls) {
-        el.addEventListener("mouseover", event => this.#handleRubyHoverStateChange(event, true));
-        el.addEventListener("mouseout",  event => this.#handleRubyHoverStateChange(event, false));
-        el.addEventListener("mouseup",   this.#handleRubyMouseUp.bind(this));
-      }
+    if (this.#deferredRubiesConcealSetup) {
+      this.setRubiesConcealed(true);
     }
   }
 
   #handleRubyHoverStateChange(event: MouseEvent, hover: boolean) {
-    // QUAL: Confusing name (`shouldConcealRubies`?)
-    if (!this.#rubyConcealed) {
+    if (!this.#rubyConcealingEnabled) {
       return;
     }
+    // Don't unconceal while user is selecting inside chunk text to prevent unnecessary flickering
     if (hover && this.#movingMouseWhilePrimaryDown()) {
       return;
     }
@@ -113,7 +107,7 @@ export class ChunkLabel {
   }
 
   #handleRubyMouseUp(event: MouseEvent) {
-    if (!this.#rubyConcealed) {
+    if (!this.#rubyConcealingEnabled) {
       return;
     }
     this.#toggleRubyConcealedClassUntil(event.currentTarget as HTMLElement, false);
@@ -128,15 +122,24 @@ export class ChunkLabel {
     }
   }
 
-  setRubyConcealed(rubyConcealed: boolean) {
-    this.#rubyConcealed = rubyConcealed;
-    if (rubyConcealed && this.#rubyEls.length === 0) {
-      // <ruby> elements haven't been created yet. Call this function again after this has been done
-      this.#initialRubyConcealPending = true;
-      return;
+  setRubiesConcealed(rubiesConcealed: boolean) {
+    this.#rubyConcealingEnabled = rubiesConcealed;
+
+    if (rubiesConcealed) {
+      if (this.#rubyEls.length == 0) {
+        // <ruby> elements haven't been created yet. Call this func. again after this has been done
+        this.#deferredRubiesConcealSetup = true;
+        return;
+      }
+      for (const el of this.#rubyEls) {
+        el.addEventListener("mouseover", event => this.#handleRubyHoverStateChange(event, true));
+        el.addEventListener("mouseout",  event => this.#handleRubyHoverStateChange(event, false));
+        el.addEventListener("mouseup",   this.#handleRubyMouseUp.bind(this));
+      }
     }
+
     for (const el of this.#rubyEls) {
-      el.classList.toggle(RubyTextConcealedClass, rubyConcealed);
+      el.classList.toggle(RubyTextConcealedClass, rubiesConcealed);
     }
   }
 

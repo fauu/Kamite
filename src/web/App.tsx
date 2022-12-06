@@ -521,7 +521,7 @@ export const App: VoidComponent = () => {
         value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
         break;
       case "conceal-furigana":
-        chunks.setRubyConcealed(value as boolean);
+        chunks.setRubiesConcealed(value as boolean);
         break;
     }
 
@@ -712,10 +712,10 @@ export const App: VoidComponent = () => {
         </div>
         <ChunkView
           chunksState={chunks}
+          movingMouseWhilePrimaryDown={movingMouseWhilePrimaryDown}
           onInput={handleChunkInput}
           inputRef={el => chunkInputEl = el}
           labelAndTranslationRef={el => chunkLabelAndTranslationEl = el}
-          movingMouseWhilePrimaryDown={movingMouseWhilePrimaryDown}
         />
         <StatusPanel
           fade={statusPanelFader.shouldFade()}
