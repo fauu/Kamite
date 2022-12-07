@@ -386,8 +386,7 @@ const HasSelectionClass = css`
 `;
 
 const HighlightedCharClass = css`
-  background: var(--color-accB2);
-  border: 1px solid var(--color-accB2-hl2);
+  background: linear-gradient(0, var(--color-accB2) 0%, transparent 100%);
   border-left: 0;
   border-right: 0;
   z-index: 5;

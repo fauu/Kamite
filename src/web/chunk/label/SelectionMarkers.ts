@@ -68,4 +68,3 @@ const EndMarkerClass = css`
   border-top: 0;
   border-left: 0;
 `;
-
