@@ -62,7 +62,7 @@ const StartMarkerClass = css`
 `;
 
 const EndMarkerClass = css`
-  top: calc(var(--yPx) + var(--height));
+  top: calc(var(--yPx) + var(--height) + 1px);
   left: calc(var(--xPx) - var(--width));
   border-bottom-right-radius: var(--selection-border-radius);
   border-top: 0;

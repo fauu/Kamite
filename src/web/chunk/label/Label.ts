@@ -364,6 +364,7 @@ const RangeWithBgLastCharClass = css`
 
 const SelectedCharClass = css`
   background: linear-gradient(0, var(--color-bg3) 0%, transparent 100%);
+  border-bottom: 1px solid var(--color-bg3-hl);
 `;
 
 const SelectionStartCharClass = css`
@@ -387,8 +388,7 @@ const HasSelectionClass = css`
 `;
 
 const HighlightedCharClass = css`
-  background: linear-gradient(0, var(--color-accB2) 0%, transparent 100%);
-  border-left: 0;
-  border-right: 0;
+  background: linear-gradient(0, var(--color-accB2) 0%, transparent 100%) !important;
+  border-bottom: 1px solid var(--color-accB2-hl2);
   z-index: 5;
 `;
