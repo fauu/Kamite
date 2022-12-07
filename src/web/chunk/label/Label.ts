@@ -91,6 +91,7 @@ export class ChunkLabel {
     }
 
     if (this.#deferredRubiesConcealSetup) {
+      this.#deferredRubiesConcealSetup = false;
       this.setRubiesConcealed(true);
     }
   }
