@@ -380,7 +380,7 @@ public class Kamite {
 
   private void handleConfigReload(Result<Config, String> configReloadRes) {
     if (configReloadRes.isErr()) {
-      LOG.error("Could not read new conifg: {}", configReloadRes.err());
+      LOG.error("Could not read new config: {}", configReloadRes.err());
       notifyUserOfError("Could not read new config");
       return;
     }
@@ -656,7 +656,7 @@ public class Kamite {
 
   private void handleRequest(Request request) {
     switch (request.body()) { // NOPMD - misidentifies as non-exhaustive
-      case Request.Body.AddFurigana body -> {
+      case Request.Body.AddFurigana body ->
         textProcessor.addFurigana(body.text()).ifPresent(chunkWithFurigana ->
           server.send(
             new ResponseOutMessage(
@@ -665,7 +665,6 @@ public class Kamite {
             )
           )
         );
-      }
     }
     LOG.debug("Handled request: {}", () -> request.body().getClass());
   }

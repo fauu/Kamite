@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -102,11 +103,11 @@ public final class ConfigManager {
         try {
           var newConfig = reload();
           // PERF: Reject doubled config file change event before parsing the config
-          if (!Objects.equals(newConfig, config)) {
+          if (Objects.equals(newConfig, config)) {
+            LOG.debug("New config identical to previous, skipping");
+          } else {
             configReloadedCb.accept(Result.Ok(newConfig));
             config = newConfig;
-          } else {
-            LOG.debug("New config identical to previous, skipping");
           }
         } catch (ConfigException e) {
           configReloadedCb.accept(Result.Err(e.getMessage()));
@@ -214,7 +215,8 @@ public final class ConfigManager {
   private static void reportUnknownKeys(com.typesafe.config.Config tsConfig) {
     List<String> knownKeys = null;
     try (var is = ConfigManager.class.getResourceAsStream(KNOWN_KEYS_FILE_RESOURCE_PATH)) {
-      try (var reader = new BufferedReader(new InputStreamReader(is))) {
+      Objects.requireNonNull(is);
+      try (var reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
         knownKeys = reader.lines().toList();
       }
     } catch (IOException e) {
@@ -317,8 +319,8 @@ public final class ConfigManager {
   @SuppressWarnings("SameParameterValue")
   // NOTE: Uses List instead of Set because that way the error message displays the numbers in
   //       order without extra intervention
-  private static void validateIntOneOf(int intval, List<Integer> allowed, String key) {
-    if (!allowed.contains(intval)) {
+  private static void validateIntOneOf(int val, List<Integer> allowed, String key) {
+    if (!allowed.contains(val)) {
       throw new ConfigException.BadValue(key, "should be one of: %s".formatted(allowed.toString()));
     }
   }

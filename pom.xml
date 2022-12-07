@@ -160,7 +160,7 @@
         <release>${java.version}</release>
         <compilerArgs>--enable-preview</compilerArgs>
         <source>${maven.compiler.source}</source>
-        <source>${maven.compiler.target}</source>
+        <target>${maven.compiler.target}</target>
       </configuration>
     </plugin>
     <plugin>
