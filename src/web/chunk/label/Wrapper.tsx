@@ -15,15 +15,18 @@ export const ChunkLabelWrapper: VoidComponent<ChunkLabelWrapperProps> = (props) 
 
   createEffect(() => label.setChunk(props.chunksState.current()));
 
-  createEffect(() => label.setRubiesConcealed(props.chunksState.rubiesConcealed()));
-
   createEffect(() => label.setSelection(props.chunksState.textSelection.get()));
 
   createEffect(() => label.setHighlight(props.chunksState.textHighlight()));
 
   createEffect(() => label.setFlash(props.chunksState.currentFlashState()));
 
-  return <div lang="ja" ref={el => label = new ChunkLabel(el, props.movingMouseWhilePrimaryDown)}>
+  return <div
+    lang="ja"
+    ref={el =>
+      label = new ChunkLabel(el, props.chunksState.concealRubies, props.movingMouseWhilePrimaryDown)
+    }
+  >
     <YomichanSentenceDelimiter/>
   </div>;
 };

@@ -521,7 +521,7 @@ export const App: VoidComponent = () => {
         value ? void chunks.enhanceCurrent() : chunks.unenhanceCurrent();
         break;
       case "conceal-furigana":
-        chunks.setRubiesConcealed(value as boolean);
+        chunks.setConcealRubies(value as boolean);
         break;
     }
 
