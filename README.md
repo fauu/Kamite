@@ -1021,8 +1021,8 @@ the replacement text. For example, the following configuration:
 ```sh
 chunk {
   transforms = [
-    { replace: """\R""", with: "" }
-    { replace: ".+?「(.+?)」$", with: "$1" }
+    { replace =  """\R""", with = "" }
+    { replace = ".+?「(.+?)」$", with = "$1" }
   ]
 }
 ```

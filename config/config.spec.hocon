@@ -29,8 +29,8 @@ chunk {
 
   #@optional
   transforms = [{
-    replace: string
-    with: string
+    replace = string
+    with = string
   }]
 }
 
