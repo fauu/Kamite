@@ -171,7 +171,7 @@ public class RecognitionConductor {
     if (selectionRes.isErr()) {
       var errorNotification = switch (selectionRes.err()) {
         case SELECTION_CANCELLED -> null;
-        default                  -> "Could get user screen point selection";
+        default                  -> "Could not get user screen point selection";
       };
       recognitionAbandon(errorNotification, selectionRes.err());
       return;
