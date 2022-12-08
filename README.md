@@ -1015,7 +1015,7 @@ config file exists.*
 
 To enable the chunk transformer, specify chunk transform rules in the
 [config](#config) (`chunk.transforms`). The rules are objects consisting of: 1)
-a regular expression defining the replacement target, 2) a pattern specifying
+a regular expression defining the replacement target, 2) a string specifying
 the replacement text. For example, the following configuration:
 
 ```sh
@@ -1498,6 +1498,27 @@ chunk {
   # new chunk for each translation. Useful when watching media with just the
   # translation subtitles
   translationOnlyMode = false
+
+  # [RELOADABLE]
+  filter {
+    # A comma-delimited list of strings representing regular expressions.
+    # Incoming chunks will be matched against each of the expressions, and if
+    # there is at least one match, the matching chunk will be entirely rejected.
+    # See the "Filtering chunks" section of the Readme
+    rejectPatterns = […]
+  }
+
+  # [RELOADABLE] A *list* of objects describing text replacement rules for
+  # incoming chunks. See the "Transforming chunks" section of the Readme
+  transforms = [{
+    # A regular expression whose match will be replaced in incoming chunk texts.
+    # Enclose in triple quotes (""") to avoid problems with special characters
+    replace = …,
+
+    # The replacement text. Supports match groups (`$1` stands in for the 1st
+    # capture group in the `replace` regular expression, etc.)
+    with = …
+  }]
 }
 
 commands {
@@ -1508,10 +1529,9 @@ commands {
     showExtra = true
   }
 
-  # [RELOADABLE]
-  # A *list* of custom commands that allow launching system executables through
-  # buttons in Kamite's command palette. See the "Custom commands" section of
-  # the Readme
+  # [RELOADABLE] A *list* of custom commands that allow launching system
+  # executables through buttons in Kamite's command palette. See the
+  # "Custom commands" section of the Readme
   custom = [
     {
       # (1-3 characters) The symbol that will appear on the command's button
@@ -1597,10 +1617,9 @@ ocr {
     engine = 1
   }
 
-  # [RELOADABLE]
-  # A *list* of OCR regions, for each of which a region recognition command
-  # button will be displayed in the command palette. See the "OCR region"
-  # section of the Readme for details
+  # [RELOADABLE] A *list* of OCR regions, for each of which a region recognition
+  # command button will be displayed in the command palette. See the
+  # "OCR region" section of the Readme for details
   regions = [
     {
       symbol = … # (1 character) The symbol will appear on the region’s button
