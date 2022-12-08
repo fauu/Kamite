@@ -1501,10 +1501,10 @@ chunk {
 
   # [RELOADABLE]
   filter {
-    # A comma-delimited list of strings representing regular expressions.
-    # Incoming chunks will be matched against each of the expressions, and if
-    # there is at least one match, the matching chunk will be entirely rejected.
-    # See the "Filtering chunks" section of the Readme
+    # A comma-delimited list of strings representing regular expressions against
+    # which incoming chunks will be matched. If there is at least one match, the
+    # matching chunk will be rejected entirely. See the "Filtering chunks"
+    # section of the Readme
     rejectPatterns = […]
   }
 
@@ -1512,11 +1512,11 @@ chunk {
   # incoming chunks. See the "Transforming chunks" section of the Readme
   transforms = [{
     # A regular expression whose match will be replaced in incoming chunk texts.
-    # Enclose in triple quotes (""") to avoid problems with special characters
-    replace = …,
+    # Enclose in triple quotes to avoid problems with special characters
+    replace = …
 
     # The replacement text. Supports match groups (`$1` stands in for the 1st
-    # capture group in the `replace` regular expression, etc.)
+    # capture group in the `replace` regular expression, and so on)
     with = …
   }]
 }
