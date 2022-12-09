@@ -793,8 +793,11 @@ public class Kamite {
     return new PreconfigArgs(debug, profileNames, regionHelper);
   }
 
+  // QUAL: Move?
+  private static final List<String> FALSY_STRINGS = List.of("false", "no", "off");
+
   private static boolean isArgValueTruthy(String value) {
-    return value != null && !"false".equalsIgnoreCase(value) && !"0".equalsIgnoreCase(value);
+    return value != null && !FALSY_STRINGS.contains(value);
   }
 
   private enum DebugLoggingExtent { APP, EVERYTHING }
