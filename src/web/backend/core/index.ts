@@ -3,11 +3,13 @@ export {
   PARAMLESS_OCR_COMMANDS, PLAYER_COMMANDS, type Command, type CustomCommand,
   type OCRRegionCommand
 } from "./Command";
+export {
+  domEventTargetFromElement, type DOMEventTarget, type EventNotification
+} from "./EventNotification";
 export type {
   CharacterCounter, ChunkVariant, ChunkWithFurigana, ChunkWithFuriganaMessage, InMessage,
   MaybeRuby, ProgramStatus, SessionTimer
 } from "./InMessage";
-export type { Notification } from "./Notification";
 export type { CommandMessage, OutMessage, RequestMessage } from "./OutMessage";
 export { playerStatusGotConnected, type PlayerStatus } from "./PlayerStatus";
 export {

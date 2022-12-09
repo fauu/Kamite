@@ -11,8 +11,8 @@ import {
   ActionPalette, actionsInclude, availableActions as getAvailableActions, hiraganaToKatakana,
   katakanaToHiragana, type Action, type ActionInvocation
 } from "~/action";
-import type {
-  CharacterCounter as BackendCharacterCounter, ChunkVariant, Command, Config, InMessage,
+import {
+  CharacterCounter as BackendCharacterCounter, ChunkVariant, Command, Config, domEventTargetFromElement, InMessage,
   PlayerStatus, RecognizerStatus
 } from "~/backend";
 import {
@@ -530,7 +530,7 @@ export const App: VoidComponent = () => {
 
   function handleChunkAdded(chunk: Chunk) {
     // PERF: Only needed when chunk logging enabled (as of 2022-09-17)
-    backend.notify({ kind: "chunk-added", body: { chunk: chunk.text.base } });
+    backend.eventNotify({ kind: "chunk-add", data: { chunk: chunk.text.base } });
   }
 
   window.addEventListener("resize", () => {
@@ -660,6 +660,26 @@ export const App: VoidComponent = () => {
     chunks.setSelectingInTranslation(selectingInChunkTranslation ?? false);
   });
 
+  // PERF: Add only if the corresponding event has handlers?
+  const handleRootMouseEnter = (event: MouseEvent) => backend.eventNotify({
+    kind: "window-mouseenter",
+    data: {
+      // QUAL: (DRY) `handleRootMouseLeave`
+      target: domEventTargetFromElement(event.target! as HTMLElement)!,
+      relatedTarget: domEventTargetFromElement(event.relatedTarget as HTMLElement)
+    },
+  });
+
+  // PERF: Add only if the corresponding event has handlers?
+  const handleRootMouseLeave = (event: MouseEvent) => backend.eventNotify({
+    kind: "window-mouseleave",
+    data: {
+      target: domEventTargetFromElement(event.target! as HTMLElement)!,
+      relatedTarget: domEventTargetFromElement(event.relatedTarget as HTMLElement)
+    },
+  });
+
+  // QUAL: See if could use root mouse leave instead
   document.documentElement.addEventListener("mouseleave", () => {
     globalTooltip.hide();
     if (notebook.isCollapseAllowed()) {
@@ -674,6 +694,8 @@ export const App: VoidComponent = () => {
       onMouseDown={handleRootMouseDown}
       onMouseUp={handleRootMouseUp}
       onMouseMove={handleRootMouseMove}
+      onMouseEnter={handleRootMouseEnter}
+      onMouseLeave={handleRootMouseLeave}
       class={
         [ // Workaround until classList works
           [ChromeClass, assumeChrome],
@@ -727,7 +749,7 @@ export const App: VoidComponent = () => {
               state={counter}
               onClick={handleCharacterCounterClick}
               onHoldClick={handleCharacterCounterHoldClick}
-            />
+              />
           }</Show>
           <SessionTimer
             state={sessionTimer}
@@ -745,7 +767,7 @@ export const App: VoidComponent = () => {
             debug={debugMode()}
             onPick={handleChunkVariantPick}
             ref={chunkPickerEl}
-          />
+            />
         }
         chunkHistory={
           <ChunkHistory
@@ -753,14 +775,14 @@ export const App: VoidComponent = () => {
             availableSelectionActions={availableChunkHistoryActions()}
             onEntryClick={handleChunkHistoryEntryClick}
             onAction={handleChunkHistoryAction}
-          />
+            />
         }
         settings={
           <Settings store={settings} onSettingChangeRequested={handleSettingChangeRequest} />
         }
         debug={<Debug state={debug} />}
         concealUnlessHovered={() => !notebook.resizing() && focusMode()}
-      />
+        />
       <TooltipView state={globalTooltip} />
     </Root>
   </ThemeProvider>;

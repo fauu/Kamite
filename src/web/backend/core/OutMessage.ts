@@ -1,8 +1,8 @@
 import type { Command } from "./Command";
 import type { Request } from "./Request";
-import type { Notification } from "./Notification";
+import type { EventNotification } from "./EventNotification";
 
-export type OutMessage = CommandMessage | RequestMessage | NotificationMessage;
+export type OutMessage = CommandMessage | RequestMessage | EventNotificationMessage;
 
 export type CommandMessage = {
   kind: "command",
@@ -14,7 +14,7 @@ export type RequestMessage = {
   body: Request,
 };
 
-export type NotificationMessage = {
-  kind: "notification",
-  body: Notification,
+export type EventNotificationMessage = {
+  kind: "event-notification",
+  body: EventNotification,
 };

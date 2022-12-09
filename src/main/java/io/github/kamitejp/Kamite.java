@@ -31,6 +31,9 @@ import io.github.kamitejp.config.Config;
 import io.github.kamitejp.config.ConfigManager;
 import io.github.kamitejp.controlgui.ControlGUI;
 import io.github.kamitejp.dbus.DBusEvent;
+import io.github.kamitejp.event.Event;
+import io.github.kamitejp.event.EventHandler;
+import io.github.kamitejp.event.EventManager;
 import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
@@ -56,7 +59,6 @@ import io.github.kamitejp.recognition.RecognizerEvent;
 import io.github.kamitejp.recognition.RecognizerStatus;
 import io.github.kamitejp.recognition.TextOrientation;
 import io.github.kamitejp.server.InMessage;
-import io.github.kamitejp.server.Notification;
 import io.github.kamitejp.server.Server;
 import io.github.kamitejp.server.ServerEvent;
 import io.github.kamitejp.server.ServerStartException;
@@ -78,8 +80,8 @@ import io.github.kamitejp.textprocessing.TextProcessor;
 import io.github.kamitejp.textprocessing.kuromoji.KuromojiAdapter;
 import io.github.kamitejp.universalfeature.UnavailableAutoFurigana;
 import io.github.kamitejp.universalfeature.UnavailableUniversalFeature;
-import io.github.kamitejp.util.Result;
 import io.github.kamitejp.util.Executor;
+import io.github.kamitejp.util.Result;
 
 public class Kamite {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
@@ -106,6 +108,7 @@ public class Kamite {
   private ChunkFilter chunkFilter;
   private ChunkTransformer chunkTransformer;
   private ChunkLogger chunkLogger;
+  private EventManager eventManager;
   private ProgramStatus status;
 
   public void run(Map<String,String> args, BuildInfo buildInfo) {
@@ -285,6 +288,14 @@ public class Kamite {
       }
     }
 
+    eventManager = new EventManager(config.events().handlers());
+    if (chunkLogger != null) {
+      eventManager.registerHandler(
+        Event.ChunkAdd.class,
+        new EventHandler((e) -> chunkLogger.log(((Event.ChunkAdd) e).chunk()))
+      );
+    }
+
     Runtime.getRuntime().addShutdownHook(
       new Thread(() -> {
         platform.destroy();
@@ -388,13 +399,17 @@ public class Kamite {
 
     var chunkConfig = config.chunk();
     var oldChunkConfig = this.config.chunk();
-    if (chunkConfig != null) {
-      if (!Objects.equals(chunkConfig.filter(), oldChunkConfig.filter())) {
-        initOrDiscardChunkFilter(chunkConfig.filter());
-      }
-      if (!Objects.equals(chunkConfig.transforms(), oldChunkConfig.transforms())) {
-        initOrDiscardChunkTransformer(chunkConfig.transforms());
-      }
+    if (!Objects.equals(chunkConfig.filter(), oldChunkConfig.filter())) {
+      initOrDiscardChunkFilter(chunkConfig.filter());
+    }
+    if (!Objects.equals(chunkConfig.transforms(), oldChunkConfig.transforms())) {
+      initOrDiscardChunkTransformer(chunkConfig.transforms());
+    }
+
+    var eventsConfig = config.events();
+    var oldEventsConfig = this.config.events();
+    if (!Objects.equals(eventsConfig.handlers(), oldEventsConfig.handlers())) {
+      eventManager.setEventHandlers(eventsConfig.handlers());
     }
 
     var msg = "Reloaded config and possibly applied changes";
@@ -526,9 +541,12 @@ public class Kamite {
 
   private void handleInMessage(InMessage message) {
     switch (message) { // NOPMD - misidentifies as non-exhaustive
-      case InMessage.Command msg      -> handleCommand(msg.incomingCommand(), CommandSource.CLIENT);
-      case InMessage.Request msg      -> handleRequest(msg.request());
-      case InMessage.Notification msg -> handleNotification(msg.notification());
+      case InMessage.Command msg
+        -> handleCommand(msg.incomingCommand(), CommandSource.CLIENT);
+      case InMessage.Request msg
+        -> handleRequest(msg.request());
+      case InMessage.EventNotification msg
+        -> handleEventNotification(msg.event());
     }
   }
 
@@ -669,14 +687,8 @@ public class Kamite {
     LOG.debug("Handled request: {}", () -> request.body().getClass());
   }
 
-  private void handleNotification(Notification notification) {
-    switch (notification) { // NOPMD - misidentifies as non-exhaustive
-      case Notification.ChunkAdded n -> {
-        if (chunkLogger != null) {
-          chunkLogger.log(n.chunk()); // NOPMD - misidentified as logger call
-        }
-      }
-    }
+  private void handleEventNotification(Event notification) {
+    eventManager.handle(notification);
   }
 
   private void sendStatus(Class<? extends ProgramStatusOutMessage> clazz) {

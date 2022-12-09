@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.github.kamitejp.api.IncomingCommand;
+import io.github.kamitejp.event.Event;
 import io.github.kamitejp.util.JSON;
 import io.github.kamitejp.util.Result;
 
@@ -13,7 +14,7 @@ public sealed interface InMessage
           InMessage.EventNotification {
   record Command(IncomingCommand incomingCommand) implements InMessage {}
   record Request(io.github.kamitejp.api.Request request) implements InMessage {}
-  record EventNotification(io.github.kamitejp.server.EventNotification notification) // NOPMD - use of fully-qualified name necessary
+  record EventNotification(Event event)
     implements InMessage {}
 
   static Result<InMessage, String> fromJSON(String json) {
@@ -36,7 +37,7 @@ public sealed interface InMessage
         yield Result.Ok(new Request(requestParseRes.get()));
       }
       case "event-notification" -> {
-        var notificatonParseRes = io.github.kamitejp.server.EventNotification.fromJSON(bodyNode); // NOPMD - use of fully-qualified name necessary
+        var notificatonParseRes = io.github.kamitejp.event.Event.fromJSON(bodyNode); // NOPMD - use of fully-qualified name necessary
         if (notificatonParseRes.isErr()) {
           yield Result.Err("parsing event notification: %s".formatted(notificatonParseRes.err()));
         }

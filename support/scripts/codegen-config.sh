@@ -29,6 +29,7 @@ sed -i "s/Region\$Elm/RegionBinding/g" "$CONFIG_FILE_PATH"
 sed -i "s/Ocr2/OCR/g" "$CONFIG_FILE_PATH"
 sed -i "s/Ocr/GlobalKeybindingsOCR/g" "$CONFIG_FILE_PATH"
 sed -i "s/Regions\$Elm/Region/g" "$CONFIG_FILE_PATH"
+sed -i "s/Handlers\$Elm/Handler/g" "$CONFIG_FILE_PATH"
 # Make PMD ignore the generated file
 sed -ri "/^public record Config/i @SuppressWarnings(\"PMD\")" "$CONFIG_FILE_PATH"
 # Make enum value parsing case-insensitive and add default values

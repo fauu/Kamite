@@ -51,6 +51,19 @@ dev {
   serveStaticInDevMode = "boolean | false"
 }
 
+# WIP
+events {
+  #@optional
+  handlers = [{
+    on = string
+
+    #@optional
+    exec = [string]
+
+    command = "string?"
+  }]
+}
+
 keybindings {
   global {
     ocr {

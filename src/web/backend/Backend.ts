@@ -1,6 +1,8 @@
 import { createSignal, type Accessor } from "solid-js";
 
-import type { Command, InMessage, Notification, OutMessage, Request, RequestMain } from "./core";
+import type {
+  Command, InMessage, EventNotification, OutMessage, Request, RequestMain
+} from "./core";
 import { requestKindToResponseKind } from "./core";
 import { WSCloseCode } from "./ws";
 
@@ -64,9 +66,9 @@ export class Backend {
     return promise as Promise<T>; // We verify the response kind later, before resolving
   }
 
-  notify(notification: Notification) {
+  eventNotify(notification: EventNotification) {
     this.#send({
-      kind: "notification",
+      kind: "event-notification",
       body: notification,
     });
   }
