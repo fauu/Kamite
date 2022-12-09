@@ -18,14 +18,14 @@ public class EventHandler {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private List<String> execCommand;
-  private String command;
+  private Command command;
   private Consumer<Event> consumer;
 
   public EventHandler(Consumer<Event> consumer) {
     this(null, null, consumer);
   }
 
-  private EventHandler(List<String> execCommand, String command, Consumer<Event> consumer) {
+  private EventHandler(List<String> execCommand, Command command, Consumer<Event> consumer) {
     this.execCommand = execCommand;
     this.command = command;
     this.consumer = consumer;
@@ -35,7 +35,7 @@ public class EventHandler {
     return Optional.ofNullable(this.execCommand);
   }
 
-  public Optional<String> getCommand() {
+  public Optional<Command> getCommand() {
     return Optional.ofNullable(this.command);
   }
 
@@ -45,7 +45,11 @@ public class EventHandler {
 
   public static Optional<EventHandler> fromConfigDefinition(Config.Events.Handler definition) {
     if (definition.exec() != null || definition.command() != null) {
-      return Optional.of(new EventHandler(definition.exec(), definition.command(), null));
+      return Optional.of(new EventHandler(
+        definition.exec(),
+        Command.fromConfigDefinition(definition.command()),
+        null
+      ));
     }
     return Optional.empty();
   }
@@ -68,5 +72,14 @@ public class EventHandler {
       .filter(Objects::nonNull)
       .toList();
   }
+
+  record Command(String kind, String paramsJSON) {
+    static Command fromConfigDefinition(Config.Events.Handler.Command command) {
+      if (command == null) {
+        return null;
+      }
+      return new Command(command.kind(), command.params());
+    }
+  };
 }
 

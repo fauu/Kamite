@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
+import io.github.kamitejp.api.IncomingCommand;
 import io.github.kamitejp.config.Config;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.util.Executor;
@@ -12,8 +14,14 @@ import io.github.kamitejp.util.Executor;
 public class EventManager {
   private Map<Class<? extends Event>, List<EventHandler>> handlerMap;
 
-  public EventManager(List<Config.Events.Handler> handlerDefinitions) {
+  private Consumer<IncomingCommand> commandCb;
+
+  public EventManager(
+    List<Config.Events.Handler> handlerDefinitions,
+    Consumer<IncomingCommand> commandCb
+  ) {
     setEventHandlers(handlerDefinitions);
+    this.commandCb = commandCb;
   }
 
   public void setEventHandlers(List<Config.Events.Handler> handlerDefinitions) {
@@ -61,8 +69,13 @@ public class EventManager {
           ProcessHelper.run(EventHandler.fillExecCommandPlaceholders(execCommand, event))
         )
       );
-      // handler.getCommand().ifPresent(command -> {
-      // });
+      handler.getCommand().ifPresent(command -> {
+        // PERF: Could cache parsed params JSON
+        commandCb.accept(new IncomingCommand.Segmented(
+          new IncomingCommand.Kind.Joined(command.kind()),
+          new IncomingCommand.Params.RawJSON(command.paramsJSON())
+        ));
+      });
       handler.getConsumer().ifPresent(c -> c.accept(event));
     }
   }

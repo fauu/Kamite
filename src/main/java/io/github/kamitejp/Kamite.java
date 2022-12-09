@@ -288,7 +288,11 @@ public class Kamite {
       }
     }
 
-    eventManager = new EventManager(config.events().handlers());
+    eventManager = new EventManager(
+      /* handlerDefinitions */ config.events().handlers(),
+      /* commandCb */ (IncomingCommand command) ->
+        handleCommand(command, CommandSource.EVENT_HANDLER)
+    );
     if (chunkLogger != null) {
       eventManager.registerHandler(
         Event.ChunkAdd.class,
