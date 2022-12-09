@@ -319,7 +319,6 @@ const RootClass = css`
 
 const RubyTextConcealedClass = css`
   position: relative;
-  z-index: 1;
 
   /* Concealing rectangle */
   &:before {
@@ -331,13 +330,11 @@ const RubyTextConcealedClass = css`
     height: calc(var(--ruby-text-font-size-base) + 0.3rem);
     background: var(--color-bg2-hl);
     filter: blur(1px);
-    z-index: 2;
   }
 `;
 
 const CharClass = css`
   position: relative;
-  z-index: 3;
 
   &:hover {
     .${ChromeClass} & {
