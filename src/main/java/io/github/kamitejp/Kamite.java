@@ -262,7 +262,7 @@ public class Kamite {
       }
     }
 
-    if (config.chunk().log() != null && config.chunk().log().dir() != null) {
+    if (config.chunk().log().dir() != null) {
       try {
         chunkLogger = new ChunkLogger(config.chunk().log().dir());
       } catch (ChunkLoggerInitializationException e) {
