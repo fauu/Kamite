@@ -296,7 +296,7 @@ public class Kamite {
     if (chunkLogger != null) {
       eventManager.registerHandler(
         Event.ChunkAdd.class,
-        new EventHandler((e) -> chunkLogger.log(((Event.ChunkAdd) e).chunk()))
+        new EventHandler(event -> chunkLogger.log(((Event.ChunkAdd) event).chunkText()))
       );
     }
 

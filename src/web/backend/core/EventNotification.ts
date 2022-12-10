@@ -1,14 +1,18 @@
 export type EventNotification =
-  | { kind: "chunk-add", data: { chunk: string } }
-  | { kind: "window-mouseenter", data: { target: DOMEventTarget, relatedTarget?: DOMEventTarget } }
-  | { kind: "window-mouseleave", data: { target: DOMEventTarget, relatedTarget?: DOMEventTarget } };
+  | { name: "chunk-add", data: { chunkText: string } }
+  | { name: "tab-mouseenter", data: MouseEventNotificationData }
+  | { name: "tab-mouseleave", data: MouseEventNotificationData }
+  | { name: "approot-mouseenter", data: MouseEventNotificationData }
+  | { name: "approot-mouseleave", data: MouseEventNotificationData };
+
+type MouseEventNotificationData = { target: DOMEventTarget, relatedTarget?: DOMEventTarget }
 
 export type DOMEventTarget = {
   tagName: string,
   attributes: Record<string, string | null>,
 };
 
-export function domEventTargetFromElement(el?: HTMLElement): DOMEventTarget | undefined {
+function domEventTargetFromElement(el?: HTMLElement): DOMEventTarget | undefined {
   if (!el) {
     return undefined;
   }
@@ -18,4 +22,13 @@ export function domEventTargetFromElement(el?: HTMLElement): DOMEventTarget | un
       Array.from(el.attributes).map(entry => [entry.nodeName, entry.nodeValue])
     )
   };
+}
+
+export function makeMouseEventNotificationData(
+  browserEvent: MouseEvent
+): MouseEventNotificationData {
+  return {
+    target: domEventTargetFromElement(browserEvent.target! as HTMLElement)!,
+    relatedTarget: domEventTargetFromElement(browserEvent.relatedTarget as HTMLElement)
+  }
 }

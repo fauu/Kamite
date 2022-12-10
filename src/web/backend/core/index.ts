@@ -4,7 +4,7 @@ export {
   type OCRRegionCommand
 } from "./Command";
 export {
-  domEventTargetFromElement, type DOMEventTarget, type EventNotification
+  makeMouseEventNotificationData, type DOMEventTarget, type EventNotification
 } from "./EventNotification";
 export type {
   CharacterCounter, ChunkVariant, ChunkWithFurigana, ChunkWithFuriganaMessage, InMessage,

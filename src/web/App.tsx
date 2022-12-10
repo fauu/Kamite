@@ -12,12 +12,9 @@ import {
   katakanaToHiragana, type Action, type ActionInvocation
 } from "~/action";
 import {
-  CharacterCounter as BackendCharacterCounter, ChunkVariant, Command, Config, domEventTargetFromElement, InMessage,
-  PlayerStatus, RecognizerStatus
-} from "~/backend";
-import {
-  Backend, BackendNotConnectedScreen, parseBackendConstant, parseRecognizerStatus,
-  playerStatusGotConnected
+  Backend, BackendNotConnectedScreen, CharacterCounter as BackendCharacterCounter, ChunkVariant,
+  Command, Config, InMessage, makeMouseEventNotificationData, parseBackendConstant,
+  parseRecognizerStatus, PlayerStatus, playerStatusGotConnected, RecognizerStatus
 } from "~/backend";
 import {
   ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState, type Chunk
@@ -529,8 +526,7 @@ export const App: VoidComponent = () => {
   };
 
   function handleChunkAdded(chunk: Chunk) {
-    // PERF: Only needed when chunk logging enabled (as of 2022-09-17)
-    backend.eventNotify({ kind: "chunk-add", data: { chunk: chunk.text.base } });
+    backend.eventNotify({ name: "chunk-add", data: { chunkText: chunk.text.base } });
   }
 
   window.addEventListener("resize", () => {
@@ -661,30 +657,36 @@ export const App: VoidComponent = () => {
   });
 
   // PERF: Add only if the corresponding event has handlers?
-  const handleRootMouseEnter = (event: MouseEvent) => backend.eventNotify({
-    kind: "window-mouseenter",
-    data: {
-      // QUAL: (DRY) `handleRootMouseLeave`
-      target: domEventTargetFromElement(event.target! as HTMLElement)!,
-      relatedTarget: domEventTargetFromElement(event.relatedTarget as HTMLElement)
-    },
-  });
+  const handleRootMouseEnter = (event: MouseEvent) =>
+    backend.eventNotify({
+      name: "approot-mouseenter",
+      data: makeMouseEventNotificationData(event),
+    });
 
   // PERF: Add only if the corresponding event has handlers?
-  const handleRootMouseLeave = (event: MouseEvent) => backend.eventNotify({
-    kind: "window-mouseleave",
-    data: {
-      target: domEventTargetFromElement(event.target! as HTMLElement)!,
-      relatedTarget: domEventTargetFromElement(event.relatedTarget as HTMLElement)
-    },
+  const handleRootMouseLeave = (event: MouseEvent) =>
+    backend.eventNotify({
+      name: "approot-mouseleave",
+      data: makeMouseEventNotificationData(event)
+    });
+
+  document.documentElement.addEventListener("mouseenter", (event: MouseEvent) => {
+    backend.eventNotify({
+      name: "tab-mouseenter",
+      data: makeMouseEventNotificationData(event)
+    });
   });
 
-  // QUAL: See if could use root mouse leave instead
-  document.documentElement.addEventListener("mouseleave", () => {
+  document.documentElement.addEventListener("mouseleave", (event: MouseEvent) => {
     globalTooltip.hide();
     if (notebook.isCollapseAllowed()) {
       notebook.setCollapsed(true);
     }
+
+    backend.eventNotify({
+      name: "tab-mouseleave",
+      data: makeMouseEventNotificationData(event)
+    });
   });
 
   // ==============================================================================================
