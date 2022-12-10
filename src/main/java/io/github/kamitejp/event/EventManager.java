@@ -33,12 +33,12 @@ public class EventManager {
     }
     this.handlerMap.clear();
     for (var definition : handlerDefinitions) {
-      var clazz = Event.EVENT_NAME_TO_CLASS.get(definition.on());
-      if (clazz == null) {
+      var eventClass = Event.NAME_TO_CLASS.get(definition.on());
+      if (eventClass == null) {
         continue;
       }
       EventHandler.fromConfigDefinition(definition)
-        .ifPresent(h -> registerHandler(clazz, h));
+        .ifPresent(handler -> registerHandler(eventClass, handler));
     }
   }
 
@@ -76,7 +76,7 @@ public class EventManager {
           new IncomingCommand.Params.RawJSON(command.paramsJSON())
         ));
       });
-      handler.getConsumer().ifPresent(c -> c.accept(event));
+      handler.getConsumer().ifPresent(consumer -> consumer.accept(event));
     }
   }
 }

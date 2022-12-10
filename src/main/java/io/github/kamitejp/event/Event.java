@@ -14,7 +14,7 @@ public sealed interface Event
           Event.TabMouseleave,
           Event.ApprootMouseenter,
           Event.ApprootMouseleave {
-  Map<String, Class<? extends Event>> EVENT_NAME_TO_CLASS = Map.of(
+  Map<String, Class<? extends Event>> NAME_TO_CLASS = Map.of(
     "chunk-add", Event.ChunkAdd.class,
     "tab-mouseenter", Event.TabMouseenter.class,
     "tab-mouseleave", Event.TabMouseleave.class,
@@ -31,13 +31,12 @@ public sealed interface Event
     implements Event {}
 
   static Result<Event, String> fromJSON(JsonNode root) {
-    var name = root.get("name").textValue();
-    var dataNode = root.get("data");
     try {
       var m = JSON.mapper();
-      var event = switch (name) {
+      var dataNode = root.get("data");
+      var event = switch (root.get("name").textValue()) {
         case "chunk-add" ->
-          new Event.ChunkAdd(dataNode.get("chunk").textValue());
+          new Event.ChunkAdd(dataNode.get("chunkText").textValue());
 
         case "tab-mouseenter" ->
           new Event.TabMouseenter(
