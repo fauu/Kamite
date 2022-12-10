@@ -60,7 +60,6 @@ events {
     #@optional
     exec = [string]
 
-    #@optional
     command {
       kind: string
       params: "string?"
