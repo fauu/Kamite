@@ -42,28 +42,28 @@ export class LabelSelectionMarkers {
 const MarkerClass = css`
   --width: calc((var(${CharHeightProp}) * 0.25) * 1px);
   --height: calc((var(${CharHeightProp}) * 0.5) * 1px);
-  --yPx: calc(var(--y) * 1px);
-  --xPx: calc(var(--x) * 1px);
+  --y-px: calc(var(--y) * 1px);
+  --x-px: calc(var(--x) * 1px);
 
   width: var(--width);
   height: var(--height);
-  position: fixed;
+  position: absolute;
   border: 2px solid var(--color-accB);
   display: none;
   z-index: 10;
 `;
 
 const StartMarkerClass = css`
-  top: var(--yPx);
-  left: calc(var(--xPx));
+  top: var(--y-px);
+  left: calc(var(--x-px));
   border-top-left-radius: var(--selection-border-radius);
   border-right: 0;
   border-bottom: 0;
 `;
 
 const EndMarkerClass = css`
-  top: calc(var(--yPx) + var(--height) + 1px);
-  left: calc(var(--xPx) - var(--width));
+  top: calc(var(--y-px) + var(--height) + 1px);
+  left: calc(var(--x-px) - var(--width));
   border-bottom-right-radius: var(--selection-border-radius);
   border-top: 0;
   border-left: 0;

@@ -161,21 +161,46 @@ export class ChunkLabel {
     const startStr = start.toString();
     const endStr = end.toString();
     let markedStart = false;
+    let rubyCorrection: { x: number, y: number } | undefined = undefined;
     this.#forCharElement((charEl, rawCharIdx) => {
-      let rect: DOMRect | undefined = undefined;
       if (!markedStart && rawCharIdx === startStr) {
-        rect = charEl.getBoundingClientRect();
-        this.#selectionMarkers.showLeftMarkerAt(rect.left, rect.y);
+        // <ruby> elements must have `position: relative` for the purposes of positioning the ruby
+        // conceal pseudoelement. This unfortunately means that character elements will have an
+        // inconsistent offset parent: the offsets of the characters within <ruby> will be relative
+        // to the ruby element, whereas the offsets of the characters outside <ruby> will be
+        // relative to the `#rootEl`. This is why, in the case of a character within <ruby>, to
+        // calculate its offset relative to the `#rootEl`, we must not just take its own offset
+        // values, but also add to them the offsets of the parent <ruby>.
+        rubyCorrection =
+          charEl.offsetParent !== this.#rootEl
+          ? this.#offsetRubyCorrection(charEl)
+          : { x: 0, y: 0 }
+        this.#selectionMarkers.showLeftMarkerAt(
+          charEl.offsetLeft + rubyCorrection.x,
+          charEl.offsetTop + rubyCorrection.y,
+        );
         markedStart = true;
+      } else {
+        rubyCorrection = undefined;
       }
       if (markedStart && rawCharIdx === endStr) {
-        if (!rect) {
-          rect = charEl.getBoundingClientRect();
+        if (!rubyCorrection) {
+          rubyCorrection =
+            charEl.offsetParent !== this.#rootEl
+            ? this.#offsetRubyCorrection(charEl)
+            : { x: 0, y: 0 }
         }
-        this.#selectionMarkers.showRightMarkerAt(rect.right, rect.y);
+        this.#selectionMarkers.showRightMarkerAt(
+          charEl.offsetLeft + charEl.offsetWidth + rubyCorrection.x,
+          charEl.offsetTop + rubyCorrection.y,
+        );
         return false; // Stop iterating
       }
     });
+  }
+
+  #offsetRubyCorrection(charEl: HTMLElement): { x: number, y: number } {
+    return { x: charEl.parentElement!.offsetLeft, y: charEl.parentElement!.offsetTop };
   }
 
   setHighlight(highlight: [number, number] | undefined) {
@@ -285,6 +310,7 @@ const RootClass = css`
   --ruby-text-font-size-base: calc(0.5 * var(--chunk-font-size) * var(--chunk-furigana-font-scale));
   --selection-border-radius: 2px;
 
+  position: relative;
   box-sizing: content-box;
   margin-top: var(--text-margin-top);
 
