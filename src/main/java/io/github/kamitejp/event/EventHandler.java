@@ -17,25 +17,32 @@ import io.github.kamitejp.util.JSON;
 public class EventHandler {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
+  private EventHandlerSource source;
   private List<String> execCommand;
-  private Command command;
+  private EventHandlerCommand command;
   private Consumer<Event> consumer;
 
-  public EventHandler(Consumer<Event> consumer) {
-    this(null, null, consumer);
-  }
-
-  private EventHandler(List<String> execCommand, Command command, Consumer<Event> consumer) {
+  private EventHandler(
+    List<String> execCommand,
+    EventHandlerCommand command,
+    Consumer<Event> consumer,
+    EventHandlerSource source
+  ) {
     this.execCommand = execCommand;
     this.command = command;
     this.consumer = consumer;
+    this.source = source;
+  }
+
+  public EventHandlerSource getSource() {
+    return source;
   }
 
   public Optional<List<String>> getExecCommand() {
     return Optional.ofNullable(this.execCommand);
   }
 
-  public Optional<Command> getCommand() {
+  public Optional<EventHandlerCommand> getCommand() {
     return Optional.ofNullable(this.command);
   }
 
@@ -43,12 +50,17 @@ public class EventHandler {
     return Optional.ofNullable(this.consumer);
   }
 
-  public static Optional<EventHandler> fromConfigDefinition(Config.Events.Handler definition) {
+  public static EventHandler internalOfConsumer(Consumer<Event> consumer) {
+    return new EventHandler(null, null, consumer, EventHandlerSource.INTERNAL);
+  }
+
+  public static Optional<EventHandler> fromUserConfigDefinition(Config.Events.Handler definition) {
     if (definition.exec() != null || definition.command() != null) {
       return Optional.of(new EventHandler(
         definition.exec(),
-        Command.fromConfigDefinition(definition.command()),
-        null
+        EventHandlerCommand.fromConfigDefinition(definition.command()),
+        null,
+        EventHandlerSource.USER
       ));
     }
     return Optional.empty();
@@ -72,14 +84,5 @@ public class EventHandler {
       .filter(Objects::nonNull)
       .toList();
   }
-
-  record Command(String kind, String paramsJSON) {
-    static Command fromConfigDefinition(Config.Events.Handler.Command command) {
-      if (command == null) {
-        return null;
-      }
-      return new Command(command.kind(), command.params());
-    }
-  };
 }
 

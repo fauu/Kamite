@@ -96,6 +96,8 @@ public class Kamite {
     "regionHelper", "regionHelper"
   );
 
+  private static final List<String> DEFAULT_SUBSCRIBED_EVENTS = List.of("chunk-add");
+
   private Platform platform;
   private Server server;
   private ConfigManager configManager;
@@ -175,7 +177,8 @@ public class Kamite {
       new CharacterCounter(),
       unavailableUniversalFeatures,
       RecognizerStatus.Kind.INITIALIZING,
-      PlayerStatus.DISCONNECTED
+      PlayerStatus.DISCONNECTED,
+      DEFAULT_SUBSCRIBED_EVENTS
     );
 
     server = new Server(platform.getConfigDirPath().orElse(null));
@@ -291,12 +294,18 @@ public class Kamite {
     eventManager = new EventManager(
       /* handlerDefinitions */ config.events().handlers(),
       /* commandCb */ (IncomingCommand command) ->
-        handleCommand(command, CommandSource.EVENT_HANDLER)
+        handleCommand(command, CommandSource.EVENT_HANDLER),
+      /* handledEventsChangedCb */ (List<String> handledEvents) -> {
+        status.setSubscribedEvents(handledEvents);
+        sendStatus(ProgramStatusOutMessage.SubscribedEvents.class);
+      }
     );
     if (chunkLogger != null) {
-      eventManager.registerHandler(
+      eventManager.registerEventHandler(
         Event.ChunkAdd.class,
-        new EventHandler(event -> chunkLogger.log(((Event.ChunkAdd) event).chunkText()))
+        EventHandler.internalOfConsumer(
+          event -> chunkLogger.log(((Event.ChunkAdd) event).chunkText())
+        )
       );
     }
 
@@ -413,7 +422,7 @@ public class Kamite {
     var eventsConfig = config.events();
     var oldEventsConfig = this.config.events();
     if (!Objects.equals(eventsConfig.handlers(), oldEventsConfig.handlers())) {
-      eventManager.setEventHandlers(eventsConfig.handlers());
+      eventManager.setUserEventHandlers(eventsConfig.handlers());
     }
 
     var msg = "Reloaded config and possibly applied changes";

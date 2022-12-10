@@ -13,6 +13,7 @@ public final class ProgramStatus {
   private final List<UnavailableUniversalFeature> unavailableUniversalFeatures;
   private final RecognizerStatus recognizerStatus;
   private PlayerStatus playerStatus;
+  private List<String> subscribedEvents;
 
   public ProgramStatus(
     boolean debug,
@@ -21,7 +22,8 @@ public final class ProgramStatus {
     CharacterCounter characterCounter,
     List<UnavailableUniversalFeature> unavailableUniversalFeatures,
     RecognizerStatus.Kind recognizerStatusKind,
-    PlayerStatus playerStatus
+    PlayerStatus playerStatus,
+    List<String> subscribedEvents
   ) {
     this.debug = debug;
     this.profileNames = profileNames;
@@ -30,6 +32,7 @@ public final class ProgramStatus {
     this.unavailableUniversalFeatures = unavailableUniversalFeatures;
     this.recognizerStatus = new RecognizerStatus(recognizerStatusKind, null);
     this.playerStatus = playerStatus;
+    this.subscribedEvents = subscribedEvents;
   }
 
   public boolean isDebug() {
@@ -56,6 +59,14 @@ public final class ProgramStatus {
     return recognizerStatus;
   }
 
+  public PlayerStatus getPlayerStatus() {
+    return playerStatus;
+  }
+
+  public List<String> getSubscribedEvents() {
+    return subscribedEvents;
+  }
+
   public void updateRecognizerStatus(RecognizerStatus.Kind kind, List<String> availableCommands) {
     updateRecognizerStatus(kind);
     updateRecognizerStatusAvailableCommands(availableCommands);
@@ -69,11 +80,11 @@ public final class ProgramStatus {
     recognizerStatus.setAvailableCommands(availableCommands);
   }
 
-  public PlayerStatus getPlayerStatus() {
-    return playerStatus;
-  }
-
   public void setPlayerStatus(PlayerStatus playerStatus) {
     this.playerStatus = playerStatus;
+  }
+
+  public void setSubscribedEvents(List<String> subscribedEvents) {
+    this.subscribedEvents = subscribedEvents;
   }
 }

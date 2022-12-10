@@ -1,5 +1,7 @@
 package io.github.kamitejp.event;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,49 +15,48 @@ import io.github.kamitejp.util.Executor;
 
 public class EventManager {
   private Map<Class<? extends Event>, List<EventHandler>> handlerMap;
+  private List<String> handledEventNames;
 
   private Consumer<IncomingCommand> commandCb;
+  private Consumer<List<String>> handledEventsChangedCb;
 
   public EventManager(
     List<Config.Events.Handler> handlerDefinitions,
-    Consumer<IncomingCommand> commandCb
+    Consumer<IncomingCommand> commandCb,
+    Consumer<List<String>> handledEventsChangedCb
   ) {
-    setEventHandlers(handlerDefinitions);
     this.commandCb = commandCb;
+    this.handledEventsChangedCb = handledEventsChangedCb;
+    setUserEventHandlers(handlerDefinitions);
   }
 
-  public void setEventHandlers(List<Config.Events.Handler> handlerDefinitions) {
-    if (handlerDefinitions == null) {
-      return;
-    }
-    if (this.handlerMap == null) {
-      this.handlerMap = new HashMap<>();
-    }
-    this.handlerMap.clear();
-    for (var definition : handlerDefinitions) {
-      var eventClass = Event.NAME_TO_CLASS.get(definition.on());
-      if (eventClass == null) {
-        continue;
-      }
-      EventHandler.fromConfigDefinition(definition)
-        .ifPresent(handler -> registerHandler(eventClass, handler));
-    }
+  private void init() {
+    handlerMap = new HashMap<>();
+    handledEventNames = new ArrayList<>();
   }
 
-  public <T extends Event> void registerHandler(
-    Class<T> eventClass, EventHandler handler
-  ) {
-    if (this.handlerMap == null) {
-      this.handlerMap = new HashMap<>();
-    }
-    var handlerList = handlerMap.get(eventClass);
-    if (handlerList == null) {
-      var newHandlerList = new ArrayList<EventHandler>();
-      newHandlerList.add(handler);
-      handlerMap.put(eventClass, newHandlerList);
+  public void setUserEventHandlers(List<Config.Events.Handler> handlerDefinitions) {
+    if (handlerMap == null) {
+      init();
     } else {
-      handlerList.add(handler);
+      clearUserEventHandlers();
     }
+    if (handlerDefinitions != null) {
+      for (var definition : handlerDefinitions) {
+        var eventClass = Event.NAME_TO_CLASS.get(definition.on());
+        if (eventClass == null) {
+          continue;
+        }
+        EventHandler.fromUserConfigDefinition(definition)
+          .ifPresent(handler -> doRegisterEventHandler(eventClass, handler));
+      }
+    }
+    updateHandledEventNames();
+  }
+
+  public <T extends Event> void registerEventHandler(Class<T> eventClass, EventHandler handler) {
+    doRegisterEventHandler(eventClass, handler);
+    updateHandledEventNames();
   }
 
   public void handle(Event event) {
@@ -78,5 +79,40 @@ public class EventManager {
       });
       handler.getConsumer().ifPresent(consumer -> consumer.accept(event));
     }
+  }
+
+  private <T extends Event> void doRegisterEventHandler(
+    Class<T> eventClass, EventHandler handler
+  ) {
+    if (handlerMap == null) {
+      init();
+    }
+    var handlersForTheEvent = handlerMap.get(eventClass);
+    if (handlersForTheEvent == null) {
+      var newHandlerList = new ArrayList<EventHandler>();
+      newHandlerList.add(handler);
+      handlerMap.put(eventClass, newHandlerList);
+    } else {
+      handlersForTheEvent.add(handler);
+    }
+  }
+
+  private void clearUserEventHandlers() {
+    handlerMap.entrySet().removeIf(entry -> {
+      var nonUserHandlers = entry.getValue().stream()
+        .filter(handler -> handler.getSource() != EventHandlerSource.USER)
+        .collect(toList());
+      entry.setValue(nonUserHandlers);
+      return nonUserHandlers.size() == 0;
+    });
+  }
+
+  private void updateHandledEventNames() {
+    var newNames = handlerMap.keySet().stream().map(Event.CLASS_TO_NAME::get).sorted().toList();
+    if (newNames.equals(handledEventNames)) {
+      return;
+    }
+    handledEventNames = newNames;
+    handledEventsChangedCb.accept(newNames);
   }
 }

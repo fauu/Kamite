@@ -1,6 +1,9 @@
 package io.github.kamitejp.event;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,13 +17,16 @@ public sealed interface Event
           Event.TabMouseleave,
           Event.ApprootMouseenter,
           Event.ApprootMouseleave {
-  Map<String, Class<? extends Event>> NAME_TO_CLASS = Map.of(
+  static Map<String, Class<? extends Event>> NAME_TO_CLASS = Map.of(
     "chunk-add", Event.ChunkAdd.class,
     "tab-mouseenter", Event.TabMouseenter.class,
     "tab-mouseleave", Event.TabMouseleave.class,
     "approot-mouseenter", Event.ApprootMouseenter.class,
     "approot-mouseleave", Event.ApprootMouseleave.class
   );
+
+  static Map<Class<? extends Event>, String> CLASS_TO_NAME =
+    NAME_TO_CLASS.entrySet().stream().collect(toMap(Entry::getValue, Entry::getKey));
 
   record ChunkAdd(String chunkText) implements Event {}
   record TabMouseenter(EventDOMElement target, EventDOMElement relatedTarget) implements Event {}

@@ -66,6 +66,7 @@ export interface ProgramStatus {
   unavailableUniversalFeatures: UnavailableUniversalFeature[],
   recognizerStatus: InRecognizerStatus,
   playerStatus: PlayerStatus,
+  subscribedEvents: string[],
 }
 
 export type SessionTimer =

@@ -1,5 +1,7 @@
 package io.github.kamitejp.server.outmessage;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import io.github.kamitejp.status.ProgramStatus;
@@ -9,6 +11,7 @@ public sealed class ProgramStatusOutMessage extends BaseOutMessage
           ProgramStatusOutMessage.SessionTimer,
           ProgramStatusOutMessage.RecognizerStatus,
           ProgramStatusOutMessage.PlayerStatus,
+          ProgramStatusOutMessage.SubscribedEvents,
           ProgramStatusOutMessage.Full {
   private String subKind;
 
@@ -70,6 +73,19 @@ public sealed class ProgramStatusOutMessage extends BaseOutMessage
 
     public io.github.kamitejp.status.PlayerStatus getPlayerStatus() {
       return playerStatus;
+    }
+  }
+
+  public static final class SubscribedEvents extends ProgramStatusOutMessage {
+    private List<String> subscribedEvents;
+
+    public SubscribedEvents(ProgramStatus status) {
+      super("subscribed-events");
+      subscribedEvents = status.getSubscribedEvents();
+    }
+
+    public List<String> getSubscribedEvents() {
+      return subscribedEvents;
     }
   }
 
