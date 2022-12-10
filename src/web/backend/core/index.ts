@@ -4,8 +4,8 @@ export {
   type OCRRegionCommand
 } from "./Command";
 export {
-  makeMouseEventNotificationData, type DOMEventTarget, type EventNotification
-} from "./EventNotification";
+  makeMouseEventNotificationData, type DOMEventTarget, type EventNotification, type EventName
+} from "./Event";
 export type {
   CharacterCounter, ChunkVariant, ChunkWithFurigana, ChunkWithFuriganaMessage, InMessage,
   MaybeRuby, ProgramStatus, SessionTimer

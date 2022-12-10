@@ -14,7 +14,7 @@ import {
 import {
   Backend, BackendNotConnectedScreen, CharacterCounter as BackendCharacterCounter, ChunkVariant,
   Command, Config, InMessage, makeMouseEventNotificationData, parseBackendConstant,
-  parseRecognizerStatus, PlayerStatus, playerStatusGotConnected, RecognizerStatus
+  parseRecognizerStatus, PlayerStatus, playerStatusGotConnected, RecognizerStatus, type EventName
 } from "~/backend";
 import {
   ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState, type Chunk
@@ -381,6 +381,7 @@ export const App: VoidComponent = () => {
               }
             }
           }
+          msg.subscribedEvents && updateEventNotifiers(msg.subscribedEvents as EventName[]);
         });
         break;
 
@@ -398,6 +399,82 @@ export const App: VoidComponent = () => {
         notebook.setLookupOverride(undefined);
         break;
     }
+  }
+
+  let eventNotifiersActiveFor: EventName[] = [];
+
+  const notifyTabMouseenter = (event: MouseEvent) =>
+    backend.eventNotify({
+      name: "tab-mouseenter",
+      data: makeMouseEventNotificationData(event)
+    });
+
+  const notifyTabMouseleave = (event: MouseEvent) =>
+    backend.eventNotify({
+      name: "tab-mouseleave",
+      data: makeMouseEventNotificationData(event)
+    });
+
+  const notifyApprootMouseenter = (event: MouseEvent) =>
+    backend.eventNotify({
+      name: "approot-mouseenter",
+      data: makeMouseEventNotificationData(event),
+    });
+
+  const notifyApprootMouseleave = (event: MouseEvent) =>
+    backend.eventNotify({
+      name: "approot-mouseleave",
+      data: makeMouseEventNotificationData(event)
+    });
+
+  const updateEventNotifiers = (subscribedEvents: EventName[]) => {
+    for (const e of eventNotifiersActiveFor) {
+      if (!subscribedEvents.includes(e)) {
+        // Remove notifier for event
+        switch (e) {
+          case "chunk-add":
+            // Empty
+            break;
+          case "tab-mouseenter":
+            document.documentElement.removeEventListener("mouseenter", notifyTabMouseenter);
+            break;
+          case "tab-mouseleave":
+            document.documentElement.removeEventListener("mouseleave", notifyTabMouseleave);
+            break;
+          case "approot-mouseenter":
+            window.root.removeEventListener("mouseenter", notifyApprootMouseenter);
+            break;
+          case "approot-mouseleave":
+            window.root.removeEventListener("mouseleave", notifyApprootMouseleave);
+            break;
+        }
+      }
+    }
+
+    for (const e of subscribedEvents) {
+      if (!eventNotifiersActiveFor.includes(e)) {
+        // Add notifier for event
+        switch (e) {
+          case "chunk-add":
+            // Empty
+            break;
+          case "tab-mouseenter":
+            document.documentElement.addEventListener("mouseenter", notifyTabMouseenter);
+            break;
+          case "tab-mouseleave":
+            document.documentElement.addEventListener("mouseleave", notifyTabMouseleave);
+            break;
+          case "approot-mouseenter":
+            window.root.addEventListener("mouseenter", notifyApprootMouseenter);
+            break;
+          case "approot-mouseleave":
+            window.root.addEventListener("mouseleave", notifyApprootMouseleave);
+            break;
+        }
+      }
+    }
+
+    eventNotifiersActiveFor = subscribedEvents;
   }
 
   const handleCommandRequested = (command: Command) =>
@@ -526,7 +603,9 @@ export const App: VoidComponent = () => {
   };
 
   function handleChunkAdded(chunk: Chunk) {
-    backend.eventNotify({ name: "chunk-add", data: { chunkText: chunk.text.base } });
+    if (eventNotifiersActiveFor.includes("chunk-add")) {
+      backend.eventNotify({ name: "chunk-add", data: { chunkText: chunk.text.base } });
+    }
   }
 
   window.addEventListener("resize", () => {
@@ -656,37 +735,11 @@ export const App: VoidComponent = () => {
     chunks.setSelectingInTranslation(selectingInChunkTranslation ?? false);
   });
 
-  // PERF: Add only if the corresponding event has handlers?
-  const handleRootMouseEnter = (event: MouseEvent) =>
-    backend.eventNotify({
-      name: "approot-mouseenter",
-      data: makeMouseEventNotificationData(event),
-    });
-
-  // PERF: Add only if the corresponding event has handlers?
-  const handleRootMouseLeave = (event: MouseEvent) =>
-    backend.eventNotify({
-      name: "approot-mouseleave",
-      data: makeMouseEventNotificationData(event)
-    });
-
-  document.documentElement.addEventListener("mouseenter", (event: MouseEvent) => {
-    backend.eventNotify({
-      name: "tab-mouseenter",
-      data: makeMouseEventNotificationData(event)
-    });
-  });
-
-  document.documentElement.addEventListener("mouseleave", (event: MouseEvent) => {
+  document.documentElement.addEventListener("mouseleave", () => {
     globalTooltip.hide();
     if (notebook.isCollapseAllowed()) {
       notebook.setCollapsed(true);
     }
-
-    backend.eventNotify({
-      name: "tab-mouseleave",
-      data: makeMouseEventNotificationData(event)
-    });
   });
 
   // ==============================================================================================
@@ -696,8 +749,6 @@ export const App: VoidComponent = () => {
       onMouseDown={handleRootMouseDown}
       onMouseUp={handleRootMouseUp}
       onMouseMove={handleRootMouseMove}
-      onMouseEnter={handleRootMouseEnter}
-      onMouseLeave={handleRootMouseLeave}
       class={
         [ // Workaround until classList works
           [ChromeClass, assumeChrome],

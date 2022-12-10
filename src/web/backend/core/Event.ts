@@ -5,6 +5,8 @@ export type EventNotification =
   | { name: "approot-mouseenter", data: MouseEventNotificationData }
   | { name: "approot-mouseleave", data: MouseEventNotificationData };
 
+export type EventName = EventNotification["name"];
+
 type MouseEventNotificationData = { target: DOMEventTarget, relatedTarget?: DOMEventTarget }
 
 export type DOMEventTarget = {
