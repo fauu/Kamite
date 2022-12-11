@@ -1,6 +1,6 @@
 import type { Command } from "./Command";
 import type { Request } from "./Request";
-import type { EventNotification } from "./EventNotification";
+import type { EventNotification } from "./Event";
 
 export type OutMessage = CommandMessage | RequestMessage | EventNotificationMessage;
 
