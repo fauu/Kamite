@@ -13,12 +13,12 @@ import io.github.kamitejp.config.Config;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.util.Executor;
 
-public class EventManager {
+public final class EventManager {
   private Map<Class<? extends Event>, List<EventHandler>> handlerMap;
   private List<String> handledEventNames;
 
-  private Consumer<IncomingCommand> commandCb;
-  private Consumer<List<String>> handledEventsChangedCb;
+  private final Consumer<IncomingCommand> commandCb;
+  private final Consumer<List<String>> handledEventsChangedCb;
 
   public EventManager(
     List<Config.Events.Handler> handlerDefinitions,
@@ -31,8 +31,8 @@ public class EventManager {
   }
 
   private void init() {
-    handlerMap = new HashMap<>();
-    handledEventNames = new ArrayList<>();
+    handlerMap = new HashMap<>(16);
+    handledEventNames = new ArrayList<>(16);
   }
 
   public void setUserEventHandlers(List<Config.Events.Handler> handlerDefinitions) {
@@ -89,7 +89,7 @@ public class EventManager {
     }
     var handlersForTheEvent = handlerMap.get(eventClass);
     if (handlersForTheEvent == null) {
-      var newHandlerList = new ArrayList<EventHandler>();
+      var newHandlerList = new ArrayList<EventHandler>(8);
       newHandlerList.add(handler);
       handlerMap.put(eventClass, newHandlerList);
     } else {
@@ -103,7 +103,7 @@ public class EventManager {
         .filter(handler -> handler.getSource() != EventHandlerSource.USER)
         .collect(toList());
       entry.setValue(nonUserHandlers);
-      return nonUserHandlers.size() == 0;
+      return nonUserHandlers.isEmpty();
     });
   }
 
