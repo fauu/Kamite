@@ -40,7 +40,7 @@ export function createEventNotifier({ backend }: CreateEventNotifierParams) {
     notify({ name: "tab-mouseleave", data: makeMouseEventNotificationData(event) });
 
   const notifyApprootMouseenter = (event: MouseEvent) =>
-    notify({ name: "approot-mouseenter", data: makeMouseEventNotificationData(event), });
+    notify({ name: "approot-mouseenter", data: makeMouseEventNotificationData(event) });
 
   const notifyApprootMouseleave = (event: MouseEvent) =>
     notify({ name: "approot-mouseleave", data: makeMouseEventNotificationData(event) });
