@@ -13,8 +13,8 @@ import {
 } from "~/action";
 import {
   Backend, BackendNotConnectedScreen, CharacterCounter as BackendCharacterCounter, ChunkVariant,
-  Command, Config, InMessage, makeMouseEventNotificationData, parseBackendConstant,
-  parseRecognizerStatus, PlayerStatus, playerStatusGotConnected, RecognizerStatus, type EventName
+  Command, Config, InMessage, parseBackendConstant, parseRecognizerStatus, PlayerStatus,
+  playerStatusGotConnected, RecognizerStatus, type EventName
 } from "~/backend";
 import {
   ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState, type Chunk
@@ -42,6 +42,7 @@ import { ChromeClass, GlobalStyles } from "~/style";
 
 import { integrateClipboardInserter } from "./clipboardInserter";
 import { ChunkCharIdxAttrName, ChunkLabelId, RootId } from "./dom";
+import { createEventNotifier } from "./eventNotifier";
 import { SHOW_FURIGANA_DISABLED_MSG } from "./features";
 import { useGlobalTooltip } from "./GlobalTooltip";
 import { createTheme, themeLayoutFlipped } from "./theme";
@@ -102,9 +103,10 @@ export const App: VoidComponent = () => {
     allowedToFlash: () => config()?.chunk.flash || false,
     onChunkAdded: handleChunkAdded,
   });
-  const sessionTimer = createSessionTimerState();
-  const notebook     = createNotebookState({ chunks, settings });
-  const debug        = createDebugState();
+  const sessionTimer  = createSessionTimerState();
+  const notebook      = createNotebookState({ chunks, settings });
+  const debug         = createDebugState();
+  const eventNotifier = createEventNotifier({ backend });
 
   const statusPanelFader = createStatusPanelFader({
     chunkLabelAndTranslationEl: () => chunkLabelAndTranslationEl,
@@ -381,7 +383,7 @@ export const App: VoidComponent = () => {
               }
             }
           }
-          msg.subscribedEvents && updateEventNotifiers(msg.subscribedEvents as EventName[]);
+          msg.subscribedEvents && eventNotifier.update(msg.subscribedEvents as EventName[]);
         });
         break;
 
@@ -399,82 +401,6 @@ export const App: VoidComponent = () => {
         notebook.setLookupOverride(undefined);
         break;
     }
-  }
-
-  let eventNotifiersActiveFor: EventName[] = [];
-
-  const notifyTabMouseenter = (event: MouseEvent) =>
-    backend.eventNotify({
-      name: "tab-mouseenter",
-      data: makeMouseEventNotificationData(event)
-    });
-
-  const notifyTabMouseleave = (event: MouseEvent) =>
-    backend.eventNotify({
-      name: "tab-mouseleave",
-      data: makeMouseEventNotificationData(event)
-    });
-
-  const notifyApprootMouseenter = (event: MouseEvent) =>
-    backend.eventNotify({
-      name: "approot-mouseenter",
-      data: makeMouseEventNotificationData(event),
-    });
-
-  const notifyApprootMouseleave = (event: MouseEvent) =>
-    backend.eventNotify({
-      name: "approot-mouseleave",
-      data: makeMouseEventNotificationData(event)
-    });
-
-  const updateEventNotifiers = (subscribedEvents: EventName[]) => {
-    for (const e of eventNotifiersActiveFor) {
-      if (!subscribedEvents.includes(e)) {
-        // Remove notifier for event
-        switch (e) {
-          case "chunk-add":
-            // Empty
-            break;
-          case "tab-mouseenter":
-            document.documentElement.removeEventListener("mouseenter", notifyTabMouseenter);
-            break;
-          case "tab-mouseleave":
-            document.documentElement.removeEventListener("mouseleave", notifyTabMouseleave);
-            break;
-          case "approot-mouseenter":
-            window.root.removeEventListener("mouseenter", notifyApprootMouseenter);
-            break;
-          case "approot-mouseleave":
-            window.root.removeEventListener("mouseleave", notifyApprootMouseleave);
-            break;
-        }
-      }
-    }
-
-    for (const e of subscribedEvents) {
-      if (!eventNotifiersActiveFor.includes(e)) {
-        // Add notifier for event
-        switch (e) {
-          case "chunk-add":
-            // Empty
-            break;
-          case "tab-mouseenter":
-            document.documentElement.addEventListener("mouseenter", notifyTabMouseenter);
-            break;
-          case "tab-mouseleave":
-            document.documentElement.addEventListener("mouseleave", notifyTabMouseleave);
-            break;
-          case "approot-mouseenter":
-            window.root.addEventListener("mouseenter", notifyApprootMouseenter);
-            break;
-          case "approot-mouseleave":
-            window.root.addEventListener("mouseleave", notifyApprootMouseleave);
-            break;
-        }
-      }
-    }
-
-    eventNotifiersActiveFor = subscribedEvents;
   }
 
   const handleCommandRequested = (command: Command) =>
@@ -603,7 +529,8 @@ export const App: VoidComponent = () => {
   };
 
   function handleChunkAdded(chunk: Chunk) {
-    if (eventNotifiersActiveFor.includes("chunk-add")) {
+    // QUAL: Integrate into `eventNotifier`?
+    if (eventNotifier.shouldNotify("chunk-add")) {
       backend.eventNotify({ name: "chunk-add", data: { chunkText: chunk.text.base } });
     }
   }
