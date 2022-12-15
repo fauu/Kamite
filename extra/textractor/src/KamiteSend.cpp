@@ -11,7 +11,7 @@ constexpr auto CONFIG_FILENAME = "Kamite Send.txt";
 
 std::string host = "localhost:4110";
 
-BOOL WINAPI DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
+__declspec(dllexport) BOOL WINAPI DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
   LoadConfig();
 	return TRUE;
 }

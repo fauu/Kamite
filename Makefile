@@ -131,11 +131,21 @@ runtime-linux:
 textractor:
 	rm -rf target/textractor
 	mkdir -p target/textractor/x86
+	# The x86 dll produced by the Zig toolchain doesn't load on Textractor's alpha 203 build
+	# specifically in Wine (works on Windows). Use mingw-w64 for now, but it'd be preferable to return
+	# to zig later, because the toolchain is lighter and, more importantly, so is the produced dll
+	# (significantly so)
+	# TODO: Verify whether the issue still exists once https://github.com/ziglang/zig/issues/13733 is
+	# 			fixed in the latest Zig versions (the issue blocks building for x86 completely)
+	#zig c++ -shared -target i386-windows-gnu -l ws2_32 \
+  #  -o "target/textractor/x86/Kamite Send.xdll" \
+  #  extra/textractor/src/KamiteSend.cpp extra/textractor/src/KamiteSendImpl.cpp
+	i686-w64-mingw32-g++ --shared \
+		-o target/textractor/x86/Kamite\ Send.xdll \
+		extra/textractor/src/KamiteSend.cpp extra/textractor/src/KamiteSendImpl.cpp \
+		-lws2_32 -static
 	mkdir -p target/textractor/x64
-	zig c++ -shared -target i386-windows-gnu -l ws2_32 \
-    -o "target/textractor/x86/Kamite Send.xdll" \
-    extra/textractor/src/KamiteSend.cpp extra/textractor/src/KamiteSendImpl.cpp
-	zig c++ -shared -target x86_64-windows-gnu -l ws2_32 \
+	zig c++ -shared -target x86_64-windows-gnu -lws2_32 \
     -o "target/textractor/x64/Kamite Send.xdll" \
     extra/textractor/src/KamiteSend.cpp extra/textractor/src/KamiteSendImpl.cpp
 .PHONY: textractor
