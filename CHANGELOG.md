@@ -8,6 +8,61 @@
 
 ## [Unreleased]
 
+### Added
+
+* Conceal furigana: An option to hide furigana annotations behind rectangles,
+  reveal on mouse hover (`chunk.furigana.conceal`).
+* Focus mode: An option to hide client UI elements other than the current chunk
+  (toolbar, status panel, notebook) until mouse hover (`ui.focusMode`).
+* Client keyboard shortcuts: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to enter chunk
+  edit mode (+<kbd>Shift</kbd> to enter edit mode immediately clearing the text
+  in the input field).
+* `--chunk-line-height-scale` CSS variable to make current chunk text line
+  height customization easier in `custom.css`.
+
+### Changed
+
+* **BREAKING** Renamed the `chunk.showFurigana` option to
+  `chunk.furigana.enable`.
+* **BREAKING** Values of non-config launch options (`--debug`) interpreted as
+  `no` changed from `[0, false]` to `[no, off, false]`
+  to make the interpretation consistent with that of config values.
+* Redesigned chunk text selection visuals; tweaked chunk highlight (Yomichan
+  selection) and flash visuals.
+* Tweaked client settings UI.
+* Bumped chunk history size from `50` to `100`.
+* Slightly improved the client’s performance by limiting the number of status
+  panel’s fade state recalculations.
+* The UI layout setting is now an on-off toggle instead of a dropdown selection,
+  since it will only have two options for the forseeable future.
+* Removed the inner page padding of the notebook UI element for frames embedding
+  external websites.
+* Disabled the default right-click browser context menu in the client.
+
+### Fixed
+
+* The 32-bit (x86) Textractor extension no longer crashes on recent alpha builds
+  of Textractor in Wine.
+* Slightly decreased scaling of furigana in current chunk view to reduce
+  inconsistencies in base text character spacing.
+* Chunk text selection is now again cleared when switching to another chunk from
+  chunk history.
+* Current chunk character hover underline is now drawn at a roughly consistent
+  distance from the characters in all supported browsers.
+* Made text line height of current chunk more consistent across different
+  modes (furigana on and off) and different browsers.
+* Made current chunk text top padding consistent between normal mode and
+  edit mode.
+* Status panel fade state is now properly updated on browser window resize.
+* Improved notebook concealing behaviour in the case of mouse cursor leaving
+  the browser window.
+* Action palette button click no longer registers when the mouse button is
+  pressed outside the button and released inside it.
+* The backend no longer gets stuck in a state where a client cannot properly
+  connect to it in some cases after the previous connection has been terminated
+  abruptly due to a browser crash.
+* A typo in an OCR error message.
+
 ## [0.10] – 2022-11-15
 
 ### Changed
