@@ -32,7 +32,7 @@
   to make the interpretation consistent with that of config values.
 * Redesigned chunk text selection visuals; tweaked chunk highlight (Yomichan
   selection) and flash visuals. (New theme color introduced:
-  `--color-accB2-hl2`).
+  `--color-accB2-hl2`.)
 * Tweaked client settings UI.
 * Bumped chunk history size from `50` to `100`.
 * Slightly improved the client’s performance by limiting the number of status
