@@ -14,8 +14,8 @@
   reveal on mouse hover (`chunk.furigana.conceal`).
 * Focus mode: An option to hide client UI elements other than the current chunk
   (toolbar, status panel, notebook) until mouse hover (`ui.focusMode`).
-* Client keyboard shortcuts: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to enter chunk
-  edit mode (+<kbd>Shift</kbd> to enter edit mode immediately clearing the text
+* Client keyboard shortcuts: <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to enter chunk
+  edit mode (+ <kbd>Shift</kbd> to enter edit mode immediately clearing the text
   in the input field).
 * `--chunk-line-height-scale` CSS variable to make current chunk text line
   height customization easier in `custom.css`.
@@ -28,7 +28,8 @@
   `no` changed from `[0, false]` to `[no, off, false]`
   to make the interpretation consistent with that of config values.
 * Redesigned chunk text selection visuals; tweaked chunk highlight (Yomichan
-  selection) and flash visuals.
+  selection) and flash visuals. (New theme color introduced:
+  `--color-accB2-hl2`).
 * Tweaked client settings UI.
 * Bumped chunk history size from `50` to `100`.
 * Slightly improved the client’s performance by limiting the number of status
