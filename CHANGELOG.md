@@ -18,7 +18,10 @@
   edit mode (+ <kbd>Shift</kbd> to enter edit mode immediately clearing the text
   in the input field).
 * `--chunk-line-height-scale` CSS variable to make current chunk text line
-  height customization easier in `custom.css`.
+  height customization easier in `custom.css` (see
+  [„Current chunk” line height][wiki-current-chunk-line-height] in the Wiki).
+
+[wiki-current-chunk-line-height]: https://github.com/fauu/Kamite/wiki/Styling-recipes#current-chunk-line-height
 
 ### Changed
 
