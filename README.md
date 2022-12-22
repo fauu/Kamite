@@ -1098,8 +1098,8 @@ the entire current chunk. If instead there is an active text selection within
 the current chunk, it is only the selection that will be used for lookups.
 
 By default, Kamite embeds the following sites for quick lookups:
-<https://www.deepl.com/translator>, <https://ichi.moe/>, <https://jpdb.io/>. It
-also by default provides a button for Google Images lookup in a new browser tab.
+<https://www.deepl.com/>, <https://ichi.moe/>, <https://jpdb.io/>. It also by
+default provides a button for Google Images lookup in a new browser tab.
 
 Optional userscripts are provided for the embedded sites that modify their look
 when embedded into Kamite to improve their user experience. To install or update
@@ -1119,7 +1119,7 @@ for embedding.
 1. Install the SimpleModifyHeaders browser extension
 ([Firefox][modify-headers-ff], [Chrome][modify-headers-chrome])
 
-1. In the extension's configuration screen, set the field *Url Patterns* to
+1. In the extension’s configuration screen, set the field *Url Patterns* to
    `https://www.deepl.com/*;https://jpdb.io/*`
 
 1. Below that, enter the following parameters (for DeepL):
@@ -1140,6 +1140,8 @@ for embedding.
     | Apply on           | `Response`                |
 
 1. **Click *Save***.
+
+1. **Click *START*** in the top-right corner.
 
    DeepL and jpdb embeds should now work.
 
