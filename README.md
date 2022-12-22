@@ -178,7 +178,7 @@ Upon launch, Kamite will, by default: 1) navigate to the above address in the
 default web browser, 2) open an auxiliary “Control” window, which lets you
 monitor the program’s status as well as exit it. Both those behaviours can be
 disabled by setting the [config keys](#config) `launchBrowser` and
-`controlWindow`, respectively,  to `false`. Disabling the latter is useful when
+`controlWindow`, respectively,  to `no`. Disabling the latter is useful when
 Kamite is run from the command line, making the control window redundant.
 
 Multiple config profiles can be prepared for Kamite and chosen between at the
@@ -358,7 +358,7 @@ example as an area where heard words and phrases can be typed in and looked up.
 When viewing media with translated subtitles only, Kamite can be instructed to
 treat them as translations for unknown chunks and display them as such, by
 enabling “Translation-only mode” in the Settings tab or by launching with the
-config key `chunk.translationOnlyMode` set to `true`.
+config key `chunk.translationOnlyMode` set to `yes`.
 
 [mpv-ref-config]: https://mpv.io/manual/stable/#configuration-files
 [mpv-ref-json-ipc]: https://mpv.io/manual/stable/#json-ipc
@@ -764,7 +764,7 @@ REGIONS = [
     # text before OCR-ing it.
     # Note: The implementation of this function is currently very basic. It may
     #       prove unreliable in most cases.
-    autoNarrow = false
+    autoNarrow = no
   }
 ]
 
@@ -1146,7 +1146,7 @@ for embedding.
    DeepL and jpdb embeds should now work.
 
 Alternatively, you can have DeepL and jpdb lookups open in a new browser tab by
-simply adding the line `newTab = true` to the corresponding lookup [config
+simply adding the line `newTab = yes` to the corresponding lookup [config
 entries](#config).
 
 #### Custom lookups
@@ -1171,7 +1171,7 @@ main config file:
         url = "https://www.immersionkit.com/dictionary?keyword={}"
     
         # (Optional) Whether to open the lookup in a new browser tab or embedded
-        newTab = true
+        newTab = yes
       }
     }
     ```
@@ -1209,7 +1209,7 @@ that this furigana will frequently be incorrect. To enable this feature:
     * <ins>Windows</ins>: same directory as the [config file](#config) (usually
       `C:\Users\<user>\AppData\Roaming\kamite`).
 
-1. Set `chunk.showFurigana = true` in the config file and start Kamite; or, to
+1. Set `chunk.showFurigana = yes` in the config file and start Kamite; or, to
    enable temporarily, start Kamite and switch on the “Show furigana” setting in
    the Settings tab.
 
@@ -1470,17 +1470,17 @@ Below is an example config file illustrating all the possible options with their
 
 ```sh
 # Whether to launch Kamite with the control window or in console only
-controlWindow = true
+controlWindow = yes
 
 # Whether to open the client in the default web browser upon launching Kamite
-launchBrowser = true
+launchBrowser = yes
 
 chunk {
   # [RELOADABLE] Whether to add auto-generated furigana to the current chunk.
   # Note that feature requires an extra download (see the Auto-generated
   # furigana section in the README).
   # WARNING: The auto-generated furigana will frequently be incorrect.
-  showFurigana = false
+  showFurigana = no
 
   # (Milliseconds) The minimum allowed delay between successive incoming chunks
   # before they begin to be throttled
@@ -1488,16 +1488,16 @@ chunk {
 
   # [RELAODABLE] Whether to perform slight formatting corrections on incoming
   # chunks
-  correct = true
+  correct = yes
 
   # [RELOADABLE] Whether to flash backgrounds of chunk texts in the client's
   # interface on certain occasions
-  flash = true
+  flash = yes
 
   # [RELOADABLE] Whether to treat incoming chunks as translations and create a
   # new chunk for each translation. Useful when watching media with just the
   # translation subtitles
-  translationOnlyMode = false
+  translationOnlyMode = no
 
   # [RELOADABLE]
   log {
@@ -1533,7 +1533,7 @@ commands {
   player {
     # Whether to show extra media player controls (seek -+1 second, seek to the
     # start of the current subtitle)
-    showExtra = true
+    showExtra = yes
   }
 
   # [RELOADABLE] A *list* of custom commands that allow launching system
@@ -1557,7 +1557,7 @@ commands {
 
 # For development only. See the "Development" page in the Wiki
 dev {
-  serveStaticInDevMode = false
+  serveStaticInDevMode = no
 }
 
 keybindings {
@@ -1594,7 +1594,7 @@ lookup {
 
       # Whether to open the lookup in a new browser tab or embed it into
       # Kamite’s notebook
-      newTab = false
+      newTab = no
     }
   ]
 }
@@ -1644,7 +1644,7 @@ ocr {
       # text before OCR-ing it.
       # Note: The implementation of this function is currently very basic. It
       #       might not prove helpful in most use-cases
-      autoNarrow = false
+      autoNarrow = no
     }
   ]
 }
@@ -1662,7 +1662,7 @@ ui {
   notebook {
     # Whether to automatically collapse the client's notebook to just its tab
     # bar, expanding it only when it's being interacted with
-    collapse = false
+    collapse = no
 
     # (25-90) The height of the client's notebook as a percentage of the total
     # browser inner window height
@@ -1748,7 +1748,7 @@ LOOKUP_TARGETS {
     symbol = GLI
     name = Google Images
     url = "https://www.google.com/search?q={}&tbm=isch"
-    newTab = true
+    newTab = yes
   }
 }
 ```
