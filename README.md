@@ -505,12 +505,12 @@ If pipx did not install to the default path expected by Kamite, you will have to
 specify the path manually in the [config file](#config):
 
 ```sh
-ocr {
-  mangaocr {
+ocr: {
+  mangaocr: {
     # Linux default
-    pythonPath = "/home/<user>/.local/pipx/venvs/manga-ocr/bin/python"
+    pythonPath: "/home/<user>/.local/pipx/venvs/manga-ocr/bin/python"
     # Windows default
-    pythonPath = "C:\Users\<user>\.local\pipx\venvs\manga-ocr\Scripts\python.exe"
+    pythonPath: """C:\Users\<user>\.local\pipx\venvs\manga-ocr\Scripts\python.exe"""
   }
 }
 ```
@@ -544,9 +544,9 @@ globally and the system Python executable is on `PATH` under the name `python`,
 then the appropriate configuration will be simply:
 
 ```sh
-ocr {
-  mangaocr {
-    pythonPath = python
+ocr: {
+  mangaocr: {
+    pythonPath: python
   }
 }
 ```
@@ -578,8 +578,8 @@ provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
     > sensitive for this kind of storage.
 
     ```sh
-    secrets {
-      ocrspace = THE KEY GOES HERE
+    secrets: {
+      ocrspace: "THE KEY GOES HERE"
     }
     ```
 
@@ -590,9 +590,9 @@ provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
     wish to use engine “3”, specify the following configuration:
 
     ```sh
-    ocr {
-      ocrspace {
-        engine = 3
+    ocr: {
+      ocrspace: {
+        engine: 3
       }
     }
     ```
@@ -635,9 +635,9 @@ Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
    <ins>Windows</ins> (UB Mannheim installer default):
 
    ```sh
-   ocr {
-     tesseract {
-       path = """C:\Program Files\Tesseract-OCR\tesseract.exe""" # Note the triple quotes
+   ocr: {
+     tesseract: {
+       path: """C:\Program Files\Tesseract-OCR\tesseract.exe""" # Note the triple quotes
      }
    }
    ```
@@ -737,43 +737,43 @@ Textractor.
 Below is an illustration of setting up a region in the [config file](#config).
 
 ```sh
-ocr {
-  regions = [
+ocr: {
+  regions: [
     ${REGIONS.exampleGameTextbox}
     ${REGIONS.someOtherRegionOmittedBelow}
   ]
 }
 
-REGIONS = [
-  exampleGameTextbox {
+REGIONS: [
+  exampleGameTextbox: {
     # (1 character) This symbol will appear on the region’s button
-    symbol = E
+    symbol: E
 
     # This description will appear in the region’s button tooltip
-    description = "OCR Example Game's textbox"
+    description: "OCR Example Game's textbox"
 
     # The screen coordinates of the region’s top-left corner
-    x = 350
-    y = 800
+    x: 350
+    y: 800
 
     # The screen dimensions of the region
-    width = 1000
-    height = 150
+    width: 1000
+    height: 150
 
     # Whether to try to automatically narrow the region’s screenshot to just
     # text before OCR-ing it.
     # Note: The implementation of this function is currently very basic. It may
     #       prove unreliable in most cases.
-    autoNarrow = no
+    autoNarrow: no
   }
 ]
 
-keybindings {
-  global {
-    ocr {
-      region = [
+keybindings: {
+  global: {
+    ocr: {
+      region: [
         # Global keybinding for the above-defined region
-        { symbol = E, key = meta shift E }
+        { symbol: E, key: meta shift E }
       ]
     }
   }
@@ -840,9 +840,9 @@ To enable the directory watcher, specify the directory path in the [config
 file](#config):
 
 ```sh
-ocr {
-  watchDir = "/full/path/to/the/directory" # Linux variant
-  watchDir = """C:\path\to\the\directory""" # Windows variant (note the triple quotes)
+ocr: {
+  watchDir: "/full/path/to/the/directory" # Linux variant
+  watchDir: """C:\path\to\the\directory""" # Windows variant
 }
 ```
 
@@ -983,8 +983,8 @@ any of the patterns, the entire chunk will be discarded. For exmple, the
 following configuration:
 
 ```sh
-chunk {
-  filter.rejectPatterns = [
+chunk: {
+  filter.rejectPatterns: [
     "^Textractor"
     "(?s).{91}"
   ]
@@ -1019,10 +1019,10 @@ a regular expression defining the replacement target, 2) a string specifying
 the replacement text. For example, the following configuration:
 
 ```sh
-chunk {
-  transforms = [
-    { replace =  """\R""", with = "" }
-    { replace = ".+?「(.+?)」$", with = "$1" }
+chunk: {
+  transforms: [
+    { replace:  """\R""", with: "" }
+    { replace: ".+?「(.+?)」$", with: "$1" }
   ]
 }
 ```
@@ -1158,20 +1158,20 @@ using the website [Immersion Kit] as an example lookup target.
 main config file:
 
     ```sh
-    LOOKUP_TARGETS {
+    LOOKUP_TARGETS: {
       # This key can be anything
-      immersionKit {
+      immersionKit: {
         # (1-3 characters) The symbol will appear on the lookup button
-        symbol = IMK
+        symbol: IMK
     
         # The name will appear in the lookup button’s tooltip
-        name = Immersion Kit
+        name: Immersion Kit
     
         # {} is a placeholder that will be replaced with the lookup text
-        url = "https://www.immersionkit.com/dictionary?keyword={}"
+        url: "https://www.immersionkit.com/dictionary?keyword={}"
     
         # (Optional) Whether to open the lookup in a new browser tab or embedded
-        newTab = yes
+        newTab: yes
       }
     }
     ```
@@ -1179,8 +1179,8 @@ main config file:
 2. Add the above-created lookup target to the `lookup.targets` list:
 
     ```sh
-    lookup {
-      targets = [
+    lookup: {
+      targets: [
         ${LOOKUP_TARGETS.immersionKit} # Has to match the key defined above
       ]
     }
@@ -1197,7 +1197,7 @@ main config file:
 Kamite can add auto-generated [furigana] to the current chunk. Please keep in mind
 that this furigana will frequently be incorrect. To enable this feature:
 
-1. **Acquire the necessary library file** (a morphological analyzer with an
+1. **Get the necessary library file** (a morphological analyzer with an
    included dictionary).
 
    Download [kuromoji-unidic-kanaaccent-e18ff911fd.jar][kuromoji-jar] and put it
@@ -1209,7 +1209,7 @@ that this furigana will frequently be incorrect. To enable this feature:
     * <ins>Windows</ins>: same directory as the [config file](#config) (usually
       `C:\Users\<user>\AppData\Roaming\kamite`).
 
-1. Set `chunk.showFurigana = yes` in the config file and start Kamite; or, to
+1. Set `chunk.showFurigana: yes` in the config file and start Kamite; or, to
    enable temporarily, start Kamite and switch on the “Show furigana” setting in
    the Settings tab.
 
@@ -1224,9 +1224,9 @@ the texts you read). To enable chunk logging, specify the path (in the
 [config](#config)) of the directory where the text files ought to be saved:
 
 ```sh
-chunk {
-  log.dir = "/path/to/the/directory" # Linux variant
-  log.dir = """C:\path\to\the\directory""" # Windows variant (note the triple quotes)
+chunk: {
+  log.dir: "/path/to/the/directory" # Linux variant
+  log.dir: """C:\path\to\the\directory""" # Windows variant
 }
 ```
 
@@ -1249,26 +1249,26 @@ Below is an excerpt from a config file illustrating how to define a custom
 command.
 
 ```sh
-commands {
-  custom = [
+commands: {
+  custom: [
     ${CUSTOM_COMMANDS.exampleCustomCommand}
     ${CUSTOM_COMMANDS.anotherExampleCustomCommand}
   ]
 }
 
-CUSTOM_COMMANDS {
-  exampleCustomCommand {
+CUSTOM_COMMANDS: {
+  exampleCustomCommand: {
     # (1-3 characters) The symbol that will appear on the command's button
-    symbol = CMD
+    symbol: CMD
 
     # The name that will appear in the command button's tooltip
-    name = Example command
+    name: Example command
 
     # (String list) The system command to execute.
     # The first element in the list is the executable, the rest are the
     # arguments. The arguments can be specific placeholders to be filled by
     # Kamite at execution time.
-    command = ["/path/to/the/executable.sh", "some argument", "{effectiveText}"]
+    command: ["/path/to/the/executable.sh", "some argument", "{effectiveText}"]
   }
 }
 ```
@@ -1352,15 +1352,15 @@ Below is an excerpt from a [config file](#config) illustrating how to set up
 global keyboard shortcuts and what actions are available for binding.
 
 ```sh
-keybindings {
-  global {
-    ocr {
-      manualBlock = …
-      autoBlock = … # Instant detection under mouse cursor
-      autoBlockSelect = … # Must click to select a point
+keybindings: {
+  global: {
+    ocr: {
+      manualBlock: …
+      autoBlock: … # Instant detection under mouse cursor
+      autoBlockSelect: … # Must click to select a point
 
-      region = [
-        { symbol = …, key = … }
+      region: [
+        { symbol: …, key: … }
       ]
     }
   }
@@ -1470,212 +1470,214 @@ Below is an example config file illustrating all the possible options with their
 
 ```sh
 # Whether to launch Kamite with the control window or in console only
-controlWindow = yes
+controlWindow: yes
 
 # Whether to open the client in the default web browser upon launching Kamite
-launchBrowser = yes
+launchBrowser: yes
 
-chunk {
+chunk: {
   # [RELOADABLE] Whether to add auto-generated furigana to the current chunk.
   # Note that feature requires an extra download (see the Auto-generated
   # furigana section in the README).
   # WARNING: The auto-generated furigana will frequently be incorrect.
-  showFurigana = no
+  showFurigana: no
 
   # (Milliseconds) The minimum allowed delay between successive incoming chunks
   # before they begin to be throttled
-  throttleMS = 1000
+  throttleMS: 1000
 
   # [RELAODABLE] Whether to perform slight formatting corrections on incoming
   # chunks
-  correct = yes
+  correct: yes
 
   # [RELOADABLE] Whether to flash backgrounds of chunk texts in the client's
   # interface on certain occasions
-  flash = yes
+  flash: yes
 
   # [RELOADABLE] Whether to treat incoming chunks as translations and create a
   # new chunk for each translation. Useful when watching media with just the
   # translation subtitles
-  translationOnlyMode = no
+  translationOnlyMode: no
 
   # [RELOADABLE]
-  log {
+  log: {
     # A path of the directory where text files with chunks appearing in the
     # client should be saved. Chunk logging is disabled when this key is absent
-    dir = …
+    dir: …
   }
 
   # [RELOADABLE]
-  filter {
+  filter: {
     # A comma-delimited list of strings representing regular expressions against
     # which incoming chunks will be matched. If there is at least one match, the
     # matching chunk will be rejected entirely. See the "Filtering chunks"
     # section of the Readme
-    rejectPatterns = […]
+    rejectPatterns: […]
   }
 
   # [RELOADABLE] A *list* of objects describing text replacement rules for
   # incoming chunks. See the "Transforming chunks" section of the Readme
-  transforms = [{
-    # A regular expression whose match will be replaced in incoming chunk texts.
-    # Enclose in triple quotes to avoid problems with special characters
-    replace = …
+  transforms: [
+    {
+      # A regular expression whose match will be replaced in incoming chunk texts.
+      # Enclose in triple quotes to avoid problems with special characters
+      replace: …
 
-    # The replacement text. Supports match groups (`$1` stands in for the 1st
-    # capture group in the `replace` regular expression, and so on)
-    with = …
-  }]
+      # The replacement text. Supports match groups (`$1` stands in for the 1st
+      # capture group in the `replace` regular expression, and so on)
+      with: …
+    }
+  ]
 }
 
-commands {
+commands: {
   # [RELOADABLE]
-  player {
+  player: {
     # Whether to show extra media player controls (seek -+1 second, seek to the
     # start of the current subtitle)
-    showExtra = yes
+    showExtra: yes
   }
 
   # [RELOADABLE] A *list* of custom commands that allow launching system
   # executables through buttons in Kamite's command palette. See the
   # "Custom commands" section of the Readme
-  custom = [
+  custom: [
     {
       # (1-3 characters) The symbol that will appear on the command's button
-      symbol = …
+      symbol: …
 
       # The name that will appear in the command button's tooltip
-      name = …
+      name: …
 
       # (String list) The system command to execute. Can contain certain
       # placeholders which will be filled in by Kamite at the moment of the
       # command’s activation
-      command = …
+      command: …
     }
   ]
 }
 
 # For development only. See the "Development" page in the Wiki
-dev {
-  serveStaticInDevMode = no
+dev: {
+  serveStaticInDevMode: no
 }
 
-keybindings {
+keybindings: {
   # Global keybindings. See the "Keyboard shortcuts" section of the Readme.
   # WARNING: Not all platforms support global keybindings
-  global {
-    ocr {
+  global: {
+    ocr: {
       # A key combination to assign to the command. See the "Keyboard shortcuts"
       # section of the Readme for the format specification.
-      manualBlock = …
-      autoBlock = … # Instant detection under mouse cursor
-      autoBlockSelect = … # Must click to select a point
+      manualBlock: …
+      autoBlock: … # Instant detection under mouse cursor
+      autoBlockSelect: … # Must click to select a point
 
       # Bindings for user-defined OCR regions by symbol
-      region = [
-        { symbol = …, key = … }
+      region: [
+        { symbol: …, key: … }
       ]
     }
   }
 }
 
 # [RELOADABLE]
-lookup {
+lookup: {
   # A list of lookup targets that will be displayed in the notebook’s tab bar.
   # Consult the default config for further illustration of configuring lookups
-  targets = [
+  targets: [
     {
-      symbol = … # (1-3 characters) The symbol will appear on the lookup button
-      name = … # The name will appear in the lookup button's tooltip
+      symbol: … # (1-3 characters) The symbol will appear on the lookup button
+      name: … # The name will appear in the lookup button's tooltip
 
       # The lookup's URL that should contain the placeholder {} which will be
       # replaced with the lookup text by Kamite
-      url = …
+      url: …
 
       # Whether to open the lookup in a new browser tab or embed it into
       # Kamite’s notebook
-      newTab = no
+      newTab: no
     }
   ]
 }
 
-ocr {
+ocr: {
   # The OCR engine to use: none, tesseract, mangaocr, mangaocr_online, ocrspace
-  engine = none
+  engine: none
   # (Directory path) Watch the specified directory for new/modified images and
   # OCR them automatically
-  watchDir = …
+  watchDir: …
 
-  tesseract {
+  tesseract: {
     # (File path) The path to Tesseract’s executable
-    path = "tesseract"
+    path: "tesseract"
   }
   
-  mangaocr {
+  mangaocr: {
     # (File path) A path to a python executable that provides access to the
     # `manga_ocr` module. If absent, a system-dependent default is used which
     # assumes that manga-ocr was installed through pipx into the default
     # location
-    pythonPath = …
+    pythonPath: …
   }
 
-  ocrspace {
+  ocrspace: {
     # (1, 3) The OCR.space engine to use (see # https://ocr.space/OCRAPI#ocrengine)
-    engine = 1
+    engine: 1
   }
 
   # [RELOADABLE] A *list* of OCR regions, for each of which a region recognition
   # command button will be displayed in the command palette. See the
   # "OCR region" section of the Readme for details
-  regions = [
+  regions: [
     {
-      symbol = … # (1 character) The symbol will appear on the region’s button
-      description = … # The description will appear in the region’s button tooltip
+      symbol: … # (1 character) The symbol will appear on the region’s button
+      description: … # The description will appear in the region’s button tooltip
 
       # (Numbers) The screen coordinates of the regions’s top-left corner
-      x = …
-      y = …
+      x: …
+      y: …
 
       # (Numbers) The screen dimensions of the region
-      width = …
-      height = …
+      width: …
+      height: …
 
       # Whether to try to automatically narrow the region’s screenshot to just
       # text before OCR-ing it.
       # Note: The implementation of this function is currently very basic. It
       #       might not prove helpful in most use-cases
-      autoNarrow = no
+      autoNarrow: no
     }
   ]
 }
 
-server {
+server: {
   # The port on which to run the client and the API
-  port = 4110
+  port: 4110
 }
 
 # [RELOADABLE]
-ui {
+ui: {
   # The client’s user interface layout: standard, standard_flipped
-  layout = standard
+  layout: standard
 
-  notebook {
+  notebook: {
     # Whether to automatically collapse the client's notebook to just its tab
     # bar, expanding it only when it's being interacted with
-    collapse = no
+    collapse: no
 
     # (25-90) The height of the client's notebook as a percentage of the total
     # browser inner window height
-    height = 60
+    height: 60
   }
 }
 
 # Secrets used for authentication to third-party services.
 # Warning: This is unsafe plain-text storage. Do not put data here that you deem
 #          too sensitive for this kind of storage
-secrets {
+secrets: {
   # The OCR.space API key
-  ocrspace = …
+  ocrspace: …
 }
 ```
 
@@ -1686,17 +1688,17 @@ use them when specifying values for the keys read by Kamite, listed above. For
 example, the following configuration:
 
 ```sh
-chunk.log.dir = ${MY_HOME_DIRECTORY}"documents/kamite-chunk-logs"
-ocr.mangaocr.pythonPath = ${MY_HOME_DIRECTORY}".local/pipx/venvs/manga-ocr/bin/python"
+chunk.log.dir: ${MY_HOME_DIRECTORY}"documents/kamite-chunk-logs"
+ocr.mangaocr.pythonPath: ${MY_HOME_DIRECTORY}".local/pipx/venvs/manga-ocr/bin/python"
 
-MY_HOME_DIRECTORY = "/home/my-username/"
+MY_HOME_DIRECTORY: "/home/my-username/"
 ```
 
 will be resolved to:
 
 ```sh
-chunk.log.dir = "/home/my-username/documents/kamite-chunk-logs"
-ocr.mangaocr.pythonPath = "/home/my-username/.local/pipx/venvs/manga-ocr/bin/python"
+chunk.log.dir: "/home/my-username/documents/kamite-chunk-logs"
+ocr.mangaocr.pythonPath: "/home/my-username/.local/pipx/venvs/manga-ocr/bin/python"
 ```
 
 Kamite will warn you if you specify an unknown key in a config file, since
@@ -1725,30 +1727,30 @@ as expected:
 `config.hocon`
 
 ```sh
-lookup {
-  targets = [
+lookup: {
+  targets: [
     ${LOOKUP_TARGETS.deepl}
     ${LOOKUP_TARGETS.jpdb}
     ${LOOKUP_TARGETS.googleImages}
   ]
 }
 
-LOOKUP_TARGETS {
-  deepl {
-    symbol = DEP
-    name = DeepL
-    url = "https://www.deepl.com/translator#ja/en/{}"
+LOOKUP_TARGETS: {
+  deepl: {
+    symbol: DEP
+    name: DeepL
+    url: "https://www.deepl.com/translator#ja/en/{}"
   }
-  jpdb {
-    symbol = JDB
-    name = jpdb
-    url = "https://jpdb.io/search?q={}"
+  jpdb: {
+    symbol: JDB
+    name: jpdb
+    url: "https://jpdb.io/search?q={}"
   }
-  googleImages {
-    symbol = GLI
-    name = Google Images
-    url = "https://www.google.com/search?q={}&tbm=isch"
-    newTab = yes
+  googleImages: {
+    symbol: GLI
+    name: Google Images
+    url: "https://www.google.com/search?q={}&tbm=isch"
+    newTab: yes
   }
 }
 ```
@@ -1756,8 +1758,8 @@ LOOKUP_TARGETS {
 `config.no-translations.hocon`
 
 ```sh
-lookup {
-  targets = [
+lookup: {
+  targets: [
     ${LOOKUP_TARGETS.googleImages}
   ]
 }

@@ -1,21 +1,22 @@
-chunk {
-  filter.rejectPatterns = [
+chunk: {
+  filter.rejectPatterns: [
+    # This line references a value defined further below
     ${CHUNK_REJECT_PATTERNS.textractorMsg}
   ]
 }
 
-keybindings {
-  global {
-    ocr {
+keybindings: {
+  global: {
+    ocr: {
       # The lines below are commented out. Remove the leading '#' characters to make them operative.
-      # manualBlock = meta shift Q
-      # autoBlock = meta shift A
+      # manualBlock: meta shift Q
+      # autoBlock: meta shift A
     }
   }
 }
 
-lookup {
-  targets = [
+lookup: {
+  targets: [
     ${LOOKUP_TARGETS.deepl}
     ${LOOKUP_TARGETS.ichimoe}
     ${LOOKUP_TARGETS.jpdb}
@@ -23,34 +24,34 @@ lookup {
   ]
 }
 
-ocr {
-  engine = none
+ocr: {
+  engine: none
 }
 
-CHUNK_REJECT_PATTERNS {
-  textractorMsg = "^Textractor"
+CHUNK_REJECT_PATTERNS: {
+  textractorMsg: "^Textractor"
 }
 
-LOOKUP_TARGETS {
-  deepl {
-    symbol = DEP
-    name = DeepL
-    url = "https://www.deepl.com/translator#ja/en/{}"
+LOOKUP_TARGETS: {
+  deepl: {
+    symbol: DEP
+    name: DeepL
+    url: "https://www.deepl.com/translator#ja/en/{}"
   }
-  ichimoe {
-    symbol = ICH
-    name = ichi.moe
-    url = "https://ichi.moe/cl/qr/?q={}&r=kana"
+  ichimoe: {
+    symbol: ICH
+    name: ichi.moe
+    url: "https://ichi.moe/cl/qr/?q={}&r=kana"
   }
-  jpdb {
-    symbol = JDB
-    name = jpdb
-    url = "https://jpdb.io/search?q={}"
+  jpdb: {
+    symbol: JDB
+    name: jpdb
+    url: "https://jpdb.io/search?q={}"
   }
-  googleImages {
-    symbol = GLI
-    name = Google Images
-    url = "https://www.google.com/search?q={}%20site%3Ajp&tbm=isch"
-    newTab = true
+  googleImages: {
+    symbol: GLI
+    name: Google Images
+    url: "https://www.google.com/search?q={}%20site%3Ajp&tbm=isch"
+    newTab: yes
   }
 }

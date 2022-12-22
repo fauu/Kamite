@@ -1,139 +1,139 @@
 #@define enum
-UILayout = [STANDARD, STANDARD_FLIPPED]
+UILayout: [STANDARD, STANDARD_FLIPPED]
 
 #@define enum
-OCREngine = [TESSERACT, MANGAOCR, MANGAOCR_ONLINE, OCRSPACE, NONE]
+OCREngine: [TESSERACT, MANGAOCR, MANGAOCR_ONLINE, OCRSPACE, NONE]
 
-controlWindow = "boolean | true"
-launchBrowser = "boolean | true"
+controlWindow: "boolean | true"
+launchBrowser: "boolean | true"
 
-chunk {
-  correct = true
-  throttleMS = "int | 1000"
-  translationOnlyMode = false
-  flash = true
+chunk: {
+  correct: true
+  throttleMS: "int | 1000"
+  translationOnlyMode: false
+  flash: true
 
-  log {
-    dir = "string?"
+  log: {
+    dir: "string?"
   }
 
-  filter {
+  filter: {
     #@optional
-    rejectPatterns = [string]
+    rejectPatterns: [string]
   }
 
-  furigana {
-    enable = "boolean | false"
-    conceal = "boolean | false"
-  }
-
-  #@optional
-  transforms = [{
-    replace = string
-    with = string
-  }]
-}
-
-commands {
-  player {
-    showExtra = "boolean | true"
+  furigana: {
+    enable: "boolean | false"
+    conceal: "boolean | false"
   }
 
   #@optional
-  custom = [{
-    symbol = string
-    name = string
-    command = [string]
+  transforms: [{
+    replace: string
+    with: string
   }]
 }
 
-dev {
-  serveStaticInDevMode = "boolean | false"
+commands: {
+  player: {
+    showExtra: "boolean | true"
+  }
+
+  #@optional
+  custom: [{
+    symbol: string
+    name: string
+    command: [string]
+  }]
+}
+
+dev: {
+  serveStaticInDevMode: "boolean | false"
 }
 
 # WIP
-events {
+events: {
   #@optional
-  handlers = [{
-    on = string
+  handlers: [{
+    on: string
 
     #@optional
-    exec = [string]
+    exec: [string]
 
     #@optional
-    command {
+    command: {
       kind: string
       params: "string?"
     }
   }]
 }
 
-keybindings {
-  global {
-    ocr {
-      manualBlock = "string?"
-      autoBlock = "string?"
-      autoBlockSelect = "string?"
+keybindings: {
+  global: {
+    ocr: {
+      manualBlock: "string?"
+      autoBlock: "string?"
+      autoBlockSelect: "string?"
 
       #@optional
-      region = [{
-        symbol = string
-        key = string
+      region: [{
+        symbol: string
+        key: string
       }]
     }
   }
 }
 
-lookup {
-  targets = [{
-    symbol = string
-    name = string
-    url = string
-    newTab = "boolean | false"
+lookup: {
+  targets: [{
+    symbol: string
+    name: string
+    url: string
+    newTab: "boolean | false"
   }]
 }
 
-ocr {
-  engine = OCREngine
-  watchDir = "string?"
+ocr: {
+  engine: OCREngine
+  watchDir: "string?"
 
-  tesseract {
-    path = "string | tesseract"
+  tesseract: {
+    path: "string | tesseract"
   }
 
-  mangaocr {
-    pythonPath = "string?"
+  mangaocr: {
+    pythonPath: "string?"
   }
 
-  ocrspace {
-    engine = "int | 1"
+  ocrspace: {
+    engine: "int | 1"
   }
 
   #@optional
-  regions = [{
-    symbol = string
-    description = "string?"
-    x = int
-    y = int
-    width = int
-    height = int
-    autoNarrow = "boolean | false"
+  regions: [{
+    symbol: string
+    description: "string?"
+    x: int
+    y: int
+    width: int
+    height: int
+    autoNarrow: "boolean | false"
   }]
 }
 
-secrets {
-  ocrspace = "string?"
+secrets: {
+  ocrspace: "string?"
 }
 
-server {
-  port = "int | 4110"
+server: {
+  port: "int | 4110"
 }
 
-ui {
-  focusMode = "boolean | false"
-  layout = UILayout
-  notebook {
-    collapse = "boolean | false"
-    height = "int | 60"
+ui: {
+  focusMode: "boolean | false"
+  layout: UILayout
+  notebook: {
+    collapse: "boolean | false"
+    height: "int | 60"
   }
 }
