@@ -25,6 +25,11 @@
 
 ### Changed
 
+* Remade the DeepL mod userscript. Instead of trying to remold the existing
+  DeepL UI, the script now hides it and recreates a very minimal one in its
+  place.
+* Updated the jpdb mod userscript to add a top margin to compensate for a
+  removed padding in Kamite’s UI.
 * **BREAKING** Renamed the `chunk.showFurigana` option to
   `chunk.furigana.enable`.
 * **BREAKING** Values of non-config launch options (`--debug`) interpreted as
