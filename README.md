@@ -1502,6 +1502,13 @@ chunk {
   translationOnlyMode = false
 
   # [RELOADABLE]
+  log {
+    # A path of the directory where text files with chunks appearing in the
+    # client should be saved. Chunk logging is disabled when this key is absent
+    dir = …
+  }
+
+  # [RELOADABLE]
   filter {
     # A comma-delimited list of strings representing regular expressions against
     # which incoming chunks will be matched. If there is at least one match, the
