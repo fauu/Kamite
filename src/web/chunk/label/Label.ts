@@ -351,8 +351,8 @@ const RubyTextConcealedClass = css`
     content: "";
     position: absolute;
     top: calc(-1 * var(--ruby-text-font-size-base) - 2px);
-    left: calc(0rem - 0.05rem);
-    width: calc(100% + 0.2rem /* sic */);
+    left: calc(0rem - 0.1rem);
+    width: calc(100% + 0.25rem /* sic */);
     height: calc(var(--ruby-text-font-size-base) + 0.33rem);
     background: var(--color-bg2-hl);
     filter: blur(1px);
