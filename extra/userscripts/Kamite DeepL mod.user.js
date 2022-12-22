@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kamite DeepL mod
 // @description  Improves DeepL user experience when embedded into Kamite
-// @version      1.2.1
+// @version      2.0.0
 // @match        https://www.deepl.com/translator*
 // @icon         https://www.google.com/s2/favicons?domain=deepl.com
 // @grant        GM_addStyle
@@ -17,11 +17,78 @@
     if (window === window.parent) {
       return;
     }
-    document.addEventListener("DOMContentLoaded", postLoad);
+
     preLoad();
+    document.addEventListener("DOMContentLoaded", postLoad);
   }
 
   function preLoad() {
+    addCSS();
+  }
+
+  function postLoad() {
+    removeBloat();
+    setupUI();
+  }
+
+  function removeBloat() {
+    const toRemove = [
+      "#dl_cookieBanner",
+      ".dl_header",
+      ".lmt__docTrans-tab-container",
+      ".eSEOtericText",
+      "#dl_quotes_container",
+      ".lmt__textarea_placeholder_text",
+      ".rg-badge-container-DF-1962",
+      "#iosAppAdPortal",
+      "footer",
+      "#dl_translator > div[dl-attr]",
+      ".lmt__textarea_separator",
+      "#lmt_pro_ad_container",
+      ".dl_footerV2_container",
+    ];
+    toRemove.map(sel => {
+      const el = document.querySelector(sel);
+      el && el.remove();
+    });
+  }
+
+  function setupUI() {
+    document.body.className = "";
+    document.querySelector(".dl_translator_page_container").style.display = "none";
+
+    const inputContainerEl = document.createElement("div");
+    inputContainerEl.className = "input-container";
+    const inputEl = document.querySelector(".lmt__source_textarea");
+    inputEl.className = "input";
+    inputContainerEl.append(inputEl);
+    document.body.append(inputContainerEl);
+
+    const outputEl = document.createElement("div");
+    outputEl.className = "output";
+    document.body.append(outputEl);
+
+    copyOutputsTo(outputEl);
+  }
+
+  function copyOutputsTo(outputEl) {
+    const handleTargetMutation = () => {
+      outputEl.innerHTML = "";
+      for (const el of document.querySelectorAll(".lmt__translations_as_text__text_btn")) {
+        const altEl = document.createElement("div");
+        altEl.className = "output-alternative";
+        altEl.textContent = el.textContent;
+        outputEl.append(altEl);
+      }
+    };
+    const targetElObserver = new MutationObserver(handleTargetMutation);
+    targetElObserver.observe(
+      document.querySelector("#target-dummydiv"),
+      { childList: true }
+    );
+  }
+
+  function addCSS() {
     GM_addStyle(`
       :root {
         --color-bgm2: #201D1B;
@@ -53,126 +120,57 @@
         --color-error: #de382c;
         --color-error2: #c25048;
         --color-error2-hl: #cc5a52;
+
+        --font-stack: var(--font-ui), var(--font-jp), 'Noto Sans CJK JP', 'Hiragino Sans',
+              'Hiragino Kaku Gothic Pro', '游ゴシック' , '游ゴシック体', YuGothic, 'Yu Gothic',
+              'ＭＳ ゴシック' , 'MS Gothic', 'Segoe UI', Helvetica, Ubuntu, Cantarell, Arial,
+              sans-serif;
+        --border-radius-default: 2px;
+        --shadow-panel: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
       }
-      .dl_body.dl_body--redesign {
-        background-color: var(--color-bg) !important;
-        min-width: 100vw !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        overflow: hidden;
+
+      body {
+        font-family: var(--font-stack);
+        background: var(--color-bg);
+        color: var(--color-fg);
+        margin: 1rem 0.25rem;
+        letter-spacing: -0.02rem;
       }
-      .lmt__language_container {
-        background-color: var(--color-bg3) !important;
-        border-top-left-radius: 5px !important;
-        border-top-right-radius: 5px !important;
+
+      .input-container {
+        background: var(--color-bg2);
+        border: 1px solid var(--color-bg2-hl);
+        height: 10rem;
+        box-shadow: rgba(0, 0, 0, 0.04) 0px 1px 2px, rgba(0, 0, 0, 0.04) 0px 2px 4px, rgba(0, 0, 0, 0.04) 0px 4px 8px, rgba(0, 0, 0, 0.04) 0px 8px 16px, rgba(0, 0, 0, 0.04) 0px 16px 32px, rgba(0, 0, 0, 0.04) 0px 32px 64px;
       }
-      .lmt__language_select > button * {
-        color: var(--color-fg3) !important;
-        font-size: 12px !important;
-        line-height: 16px !important;
+
+      .input-container, .output {
+        width: 90vw;
+        margin: 0 auto;
+        margin-bottom: 0.2rem;
+        border-radius: var(--border-radius-default);
+        padding: 0.45rem 0.6rem;
+        line-height: 1.33;
       }
-      #dl_translator .lmt__text .lmt__sides_container {
-        flex-direction: column !important;
-        height: calc(100vh - 10px) !important;
-        border: none !important;
-        box-shadow: none !important;
+
+      .input {
+        font-size: 1.8rem;
+        width: 100%;
+        height: 100%;
+        background: var(--color-bg2);
+        resize: none;
       }
-      .dl_body.dl_body--translator #dl_translator.lmt--web .lmt__sides_container .lmt__side_container .lmt__textarea_container {
-        background-color: var(--color-bg2) !important;
-        border: none !important;
-        padding-bottom: 20px !important;
-        border-bottom-left-radius: 5px !important;
-        border-bottom-right-radius: 5px !important;
+
+      .output {
+        font-size: 1.5rem;
       }
-      .dl_body.dl_body--translator #dl_translator.lmt--web .lmt__sides_container.lmt__sides_container--focus_source .lmt__side_container.lmt__side_container--source .lmt__textarea_container {
-        border: 1px solid var(--color-accB2) !important;
-      }
-      #dl_translator .lmt__sides_container {
-        width: 100vw !important;
-        display: flex;
-        align-items: center;
-      }
-      #dl_translator .lmt__sides_container .lmt__sides_wrapper {
-        flex-direction: column;
-      }
-      #dl_translator .lmt__sides_container .lmt__side_container {
-        width: calc(100vw - 10px) !important;
-      }
-      #dl_translator .lmt__sides_container .lmt__side_container:first-child {
-        margin-bottom: 5px !important;
-      }
-      #dl_translator .lmt__sides_container .lmt__side_container,
-      .lmt--web .lmt__textarea_container {
-        min-height: 30vh !important;
-        height: 40vh !important;
-        max-height: 100% !important;
-      }
-      .lmt__textarea_container .lmt__textarea {
-        color: var(--color-fg) !important;
-      }
-      .lmt__language_container_switch {
-        background-color: var(--color-bg3) !important;
-        border: 1px solid var(--color-bg3-hl) !important;
-        margin: 0 0 40px calc(50vw - 10px - (44px / 2)) !important;
-      }
-      .lmt__language_container_switch svg path {
-        stroke: var(--color-fg3) !important;
-      }
-      .lmt__language_container_switch--disabled svg path {
-        stroke: var(--color-med2) !important;
-      }
-      .lmt__language_container {
-        height: 32px !important;
-      }
-      .dl_body--redesign .dl_top_element--wide {
-        padding: 0 10px 0 0px !important;
-      }
-      .lmt__translations_as_text::before {
-        border-top-color: var(--color-med2) !important;
-      }
-      .lmt__translations_as_text__text_btn {
-        color: var(--color-fg4) !important;
-      }
-      .lmt__source_textarea__length_marker {
-        color: var(--color-med3) !important;
-      }
-      .lmt__targetLangMenu_extensions button {
-        color: var(--color-med3) !important;
-        border: none !important;
-      }
-      .lmt__inner_textarea_container {
-        animation: none !important;
-        box-shadow: none !important;
-      }
-      .lmt__target_toolbar {
-        display: none !important;
-      }
-      .lmt__glossary_button_label {
-        color: var(--color-fg4) !important;
+
+      .output-alternative:not(:first-child) {
+        font-size: 1.2rem;
+        color: var(--color-fg5);
+        margin-top: 0.25rem;
       }
     `);
-  }
-
-  function postLoad() {
-    const toRemove = [
-      "#dl_cookieBanner",
-      ".dl_header",
-      ".lmt__docTrans-tab-container",
-      ".eSEOtericText",
-      "#dl_quotes_container",
-      ".lmt__textarea_placeholder_text",
-      ".lmt__target_toolbar__share_container",
-      ".rg-badge-container-DF-1962",
-      "#iosAppAdPortal",
-      "footer",
-      "#dl_translator > div[dl-attr]",
-      "#lmt__dict",
-      ".lmt__textarea_separator",
-      "#lmt_pro_ad_container"
-    ];
-    toRemove.map(sel => document.querySelector(sel).remove());
-
-    document.body.scrollTop = 0;
   }
 
   main();
