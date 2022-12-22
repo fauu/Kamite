@@ -1415,9 +1415,7 @@ Instructs Kamite to load the profile config files with the specified IDs. See
 Instructs Kamite to print debug messages to console as well as to enable
 certain extra features in the client that are useful for debugging purporses.\
 Setting the value to `all` will instruct Kamite to additionally display debug
-messages from the third-party dependencies.\
-The mere presence of the flag or any value different from `all`, `false` or `0`
-is interpreted as `true`.
+messages from the third-party dependencies.
 
 `--regionHelper`\
 Launches Kamite in Region Helper mode used to obtain coordinates of screen
