@@ -760,10 +760,10 @@ REGIONS: [
     width: 1000
     height: 150
 
-    # Whether to try to automatically narrow the region’s screenshot to just
-    # text before OCR-ing it.
-    # Note: The implementation of this function is currently very basic. It may
-    #       prove unreliable in most cases.
+    # Try to automatically narrow the region’s screenshot to just text before
+    # OCR-ing it.
+    # NOTE: The implementation of this function is currently very basic. It
+    #       might not prove helpful in most use-cases
     autoNarrow: no
   }
 ]
@@ -1068,8 +1068,9 @@ Characters can also be deleted by pressing <kbd>Delete</kbd> or
 <kbd>Backspace</kbd>.
 
 To enter chunk edit mode, which allows for direct insertion of typed text,
-double-click the main area. To exit it, either click away from the input field
-or press <kbd>Ctrl</kbd> + <kbd>Enter</kbd>.
+double-click the main area or press <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+(+ <kbd>Shift</kbd> to clear). To exit it, click away from the input field or
+press <kbd>Ctrl</kbd> + <kbd>Enter</kbd>.
 
 ### Pop-up dictionary
 
@@ -1146,7 +1147,7 @@ for embedding.
    DeepL and jpdb embeds should now work.
 
 Alternatively, you can have DeepL and jpdb lookups open in a new browser tab by
-simply adding the line `newTab = yes` to the corresponding lookup [config
+simply adding the line `newTab: yes` to the corresponding lookup [config
 entries](#config).
 
 #### Custom lookups
@@ -1194,8 +1195,9 @@ main config file:
 
 ### Auto-generated furigana
 
-Kamite can add auto-generated [furigana] to the current chunk. Please keep in mind
-that this furigana will frequently be incorrect. To enable this feature:
+Kamite can add auto-generated [furigana] annotations to the current chunk.
+Please keep in mind that the auto-generated annotations will frequently be
+incorrect. To enable this feature:
 
 1. **Get the necessary library file** (a morphological analyzer with an
    included dictionary).
@@ -1209,9 +1211,12 @@ that this furigana will frequently be incorrect. To enable this feature:
     * <ins>Windows</ins>: same directory as the [config file](#config) (usually
       `C:\Users\<user>\AppData\Roaming\kamite`).
 
-1. Set `chunk.showFurigana: yes` in the config file and start Kamite; or, to
-   enable temporarily, start Kamite and switch on the “Show furigana” setting in
-   the Settings tab.
+1. Set `chunk.furigana.enable: yes` in the config file and start Kamite; or, to
+   enable temporarily, start Kamite and switch on the “Enable furigana” setting
+   in the Settings tab.
+
+There is an option to hide the generated furigana annotations until the base
+text is hovered with the mouse (`chunk.furigana.conceal: yes`).
 
 [furigana]: https://en.wikipedia.org/wiki/Furigana
 [kuromoji-jar]: https://jitpack.io/com/github/atilika/kuromoji/kuromoji-unidic-kanaaccent/e18ff911fd/kuromoji-unidic-kanaaccent-e18ff911fd.jar
@@ -1322,6 +1327,12 @@ Otherwise, this acts the same as `Ctrl+c`.
 
 <kbd>Ctrl</kbd> + <kbd>V</kbd>\
 Paste text from clipboard.
+
+<kbd>Ctrl</kbd> + <kbd>Enter</kbd>\
+Enter chunk edit mode.
+
+<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Enter</kbd>\
+Enter chunk edit mode erasing the current chunk text.
 
 #### Chunk edit mode keyboard shortcuts
 
@@ -1453,7 +1464,7 @@ directory if absent on launch.
 > **Warning**
 > When providing values that containin backslashes (`\`), for example Windows
 > paths, you must enclose them within triple quote marks (`"""`). For example:
-> `ocr.tesseract.path = """C:\Program Files\Tesseract-OCR\tesseract.exe"""`.
+> `ocr.tesseract.path: """C:\Program Files\Tesseract-OCR\tesseract.exe"""`.
 
 ### Live reload
 
@@ -1476,28 +1487,33 @@ controlWindow: yes
 launchBrowser: yes
 
 chunk: {
-  # [RELOADABLE] Whether to add auto-generated furigana to the current chunk.
-  # Note that feature requires an extra download (see the Auto-generated
-  # furigana section in the README).
-  # WARNING: The auto-generated furigana will frequently be incorrect.
-  showFurigana: no
-
   # (Milliseconds) The minimum allowed delay between successive incoming chunks
   # before they begin to be throttled
   throttleMS: 1000
 
-  # [RELAODABLE] Whether to perform slight formatting corrections on incoming
-  # chunks
+  # [RELAODABLE] Perform slight formatting corrections on incoming chunks
   correct: yes
 
-  # [RELOADABLE] Whether to flash backgrounds of chunk texts in the client's
-  # interface on certain occasions
+  # [RELOADABLE] Flash backgrounds of chunk texts in the client's interface on
+  # certain occasions
   flash: yes
 
-  # [RELOADABLE] Whether to treat incoming chunks as translations and create a
-  # new chunk for each translation. Useful when watching media with just the
-  # translation subtitles
+  # [RELOADABLE] Treat incoming chunks as translations and create a new chunk
+  # for each translation. Useful when watching media with just the translation
+  # subtitles
   translationOnlyMode: no
+
+  # [RELOADABLE]
+  furigana {
+    # Add auto-generated furigana annotations to the current chunk. Note that
+    # this feature requires an extra download (see the Auto-generated furigana
+    # section in the README).
+    # WARNING: The auto-generated furigana will frequently be incorrect
+    enable: no
+
+    # Hide the furigana annotations behind rectangles, reveal on mouse hover
+    conceal: no
+  }
 
   # [RELOADABLE]
   log: {
@@ -1533,8 +1549,8 @@ chunk: {
 commands: {
   # [RELOADABLE]
   player: {
-    # Whether to show extra media player controls (seek -+1 second, seek to the
-    # start of the current subtitle)
+    # Show extra media player controls (seek -+1 second, seek to the start of
+    # the current subtitle)
     showExtra: yes
   }
 
@@ -1594,8 +1610,7 @@ lookup: {
       # replaced with the lookup text by Kamite
       url: …
 
-      # Whether to open the lookup in a new browser tab or embed it into
-      # Kamite’s notebook
+      # Open the lookup in a new browser tab or embed it into Kamite’s notebook
       newTab: no
     }
   ]
@@ -1642,9 +1657,9 @@ ocr: {
       width: …
       height: …
 
-      # Whether to try to automatically narrow the region’s screenshot to just
-      # text before OCR-ing it.
-      # Note: The implementation of this function is currently very basic. It
+      # Try to automatically narrow the region’s screenshot to just text before
+      # OCR-ing it.
+      # NOTE: The implementation of this function is currently very basic. It
       #       might not prove helpful in most use-cases
       autoNarrow: no
     }
@@ -1658,12 +1673,15 @@ server: {
 
 # [RELOADABLE]
 ui: {
-  # The client’s user interface layout: standard, standard_flipped
+  # The client's user interface layout (standard, standard_flipped)
   layout: standard
 
+  # Hide non-essential interface elements until mouse hover
+  focusMode: no
+
   notebook: {
-    # Whether to automatically collapse the client's notebook to just its tab
-    # bar, expanding it only when it's being interacted with
+    # Automatically collapse the client's notebook to just its tab bar,
+    # expanding only when it's being interacted with
     collapse: no
 
     # (25-90) The height of the client's notebook as a percentage of the total
@@ -1673,7 +1691,7 @@ ui: {
 }
 
 # Secrets used for authentication to third-party services.
-# Warning: This is unsafe plain-text storage. Do not put data here that you deem
+# WARNING: This is unsafe plain-text storage. Do not put data here that you deem
 #          too sensitive for this kind of storage
 secrets: {
   # The OCR.space API key
