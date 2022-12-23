@@ -8,15 +8,17 @@
 
 ## [Unreleased]
 
+## [0.11] – 2022-12-24
+
 ### Added
 
-* Conceal furigana: An option to hide furigana annotations behind rectangles,
+* Conceal furigana: Option to hide furigana annotations behind rectangles,
   reveal on mouse hover (`chunk.furigana.conceal`).
-* Focus mode: An option to hide client UI elements other than the current chunk
-  (toolbar, status panel, notebook) until mouse hover (`ui.focusMode`).
+* Focus mode: Option to hide client UI elements other than the current chunk
+  (i.e., toolbar, status panel, and notebook) until mouse hover
+  (`ui.focusMode`).
 * Client keyboard shortcuts: <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to enter chunk
-  edit mode (+ <kbd>Shift</kbd> to enter edit mode immediately clearing the text
-  in the input field).
+  edit mode (+ <kbd>Shift</kbd> to enter it immediately clearing the text).
 * `--chunk-line-height-scale` CSS variable to make current chunk text line
   height customization easier in `custom.css` (see
   [„Current chunk” line height][wiki-current-chunk-line-height] in the Wiki).
@@ -33,24 +35,24 @@
 * **BREAKING** Renamed the `chunk.showFurigana` option to
   `chunk.furigana.enable`.
 * **BREAKING** Values of non-config launch options (`--debug`) interpreted as
-  `no` changed from `[0, false]` to `[no, off, false]`
-  to make the interpretation consistent with that of config values.
+  `no` changed from `[0, false]` to `[no, off, false]` to make the
+  interpretation more in line with that of config values.
 * Redesigned chunk text selection visuals; tweaked chunk highlight (Yomichan
   selection) and flash visuals. (New theme color introduced:
   `--color-accB2-hl2`.)
 * Tweaked client settings UI.
 * Bumped chunk history size from `50` to `100`.
-* Slightly improved the client’s performance by limiting the number of status
+* Minimally improved the client’s performance by limiting the number of status
   panel’s fade state recalculations.
 * The UI layout setting is now an on-off toggle instead of a dropdown selection,
   since it will only have two options for the forseeable future.
 * Removed the inner page padding of the notebook UI element for frames embedding
   external websites.
-* Disabled the default right-click browser context menu in the client.
+* Disabled the right-click browser context menu in the client.
 
 ### Fixed
 
-* The 32-bit (x86) Textractor extension no longer crashes on recent alpha builds
+* The x86 (32-bit) Textractor extension no longer crashes on recent alpha builds
   of Textractor in Wine.
 * Slightly decreased scaling of furigana in current chunk view to reduce
   inconsistencies in base text character spacing.
@@ -63,14 +65,14 @@
 * Made current chunk text top padding consistent between normal mode and
   edit mode.
 * Status panel fade state is now properly updated on browser window resize.
-* Improved notebook concealing behaviour in the case of mouse cursor leaving
+* Improved notebook concealing behaviour in the case of the mouse cursor leaving
   the browser window.
-* Action palette button click no longer registers when the mouse button is
+* An action palette button click no longer registers when the mouse button is
   pressed outside the button and released inside it.
 * The backend no longer gets stuck in a state where a client cannot properly
   connect to it in some cases after the previous connection has been terminated
   abruptly due to a browser crash.
-* A typo in an OCR error message.
+* Fixed a typo in an OCR error message.
 
 ## [0.10] – 2022-11-15
 
@@ -369,7 +371,8 @@
 
 Initial release.
 
-[Unreleased]: https://github.com/fauu/Kamite/compare/v0.10...HEAD
+[Unreleased]: https://github.com/fauu/Kamite/compare/v0.11...HEAD
+[0.11]: https://github.com/fauu/Kamite/releases/tag/v0.11
 [0.10]: https://github.com/fauu/Kamite/releases/tag/v0.10
 [0.9]: https://github.com/fauu/Kamite/releases/tag/v0.9
 [0.8]: https://github.com/fauu/Kamite/releases/tag/v0.8
