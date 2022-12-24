@@ -8,7 +8,7 @@ export type ConcealUnlessHoveredParams = {
 // ROBUSTNESS: Conceal is mistakenly triggered when mouse moves into a browser dropdown (at least
 //             on Firefox)
 export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnlessHoveredParams) {
-  let { enabled } = value();
+  const { enabled } = value();
 
   let coverEl: HTMLElement | undefined;
 
@@ -19,7 +19,7 @@ export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnless
       return;
     }
     toggleCoverVisibility(coverEl!, true);
-  }
+  };
 
   const cleanup = () => {
     if (coverEl) {

@@ -1,4 +1,4 @@
-import { Backend, EventName, makeMouseEventNotificationData } from "./backend";
+import { type Backend, type EventName, makeMouseEventNotificationData } from "./backend";
 import { toggleEventListener } from "./common";
 
 export type EventNotifier = ReturnType<typeof createEventNotifier>;
@@ -8,7 +8,7 @@ interface CreateEventNotifierParams {
 }
 
 export function createEventNotifier({ backend }: CreateEventNotifierParams) {
-  let notifiersActive: Map<EventName, boolean> = new Map();
+  const notifiersActive: Map<EventName, boolean> = new Map();
 
   const notify = backend.eventNotify.bind(backend);
 
@@ -31,7 +31,7 @@ export function createEventNotifier({ backend }: CreateEventNotifierParams) {
         toggleNotificationListener(eventName, true);
       }
     }
-  }
+  };
 
   const notifyTabMouseenter = (event: MouseEvent) =>
     notify({ name: "tab-mouseenter", data: makeMouseEventNotificationData(event) });
@@ -63,7 +63,7 @@ export function createEventNotifier({ backend }: CreateEventNotifierParams) {
         toggleEventListener(window.root, "mouseleave", notifyApprootMouseleave, on);
         break;
     }
-  }
+  };
 
   return {
     shouldNotify,

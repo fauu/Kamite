@@ -34,7 +34,7 @@ export function createChunkTextSelectionState(
 
   function length(): number {
     const range = value()?.range;
-    return range ? (range[1] - range[0] + 1) : 0
+    return range ? (range[1] - range[0] + 1) : 0;
   }
 
   function isWholeTextSelected(): boolean {

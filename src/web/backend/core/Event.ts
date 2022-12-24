@@ -7,7 +7,7 @@ export type EventNotification =
 
 export type EventName = EventNotification["name"];
 
-type MouseEventNotificationData = { target: DOMEventTarget, relatedTarget?: DOMEventTarget }
+type MouseEventNotificationData = { target: DOMEventTarget, relatedTarget?: DOMEventTarget };
 
 export type DOMEventTarget = {
   tagName: string,
@@ -32,5 +32,5 @@ export function makeMouseEventNotificationData(
   return {
     target: domEventTargetFromElement(browserEvent.target! as HTMLElement)!,
     relatedTarget: domEventTargetFromElement(browserEvent.relatedTarget as HTMLElement)
-  }
+  };
 }

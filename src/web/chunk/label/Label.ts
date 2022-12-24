@@ -1,4 +1,4 @@
-import { Accessor, createEffect, untrack } from "solid-js";
+import { type Accessor, createEffect, untrack } from "solid-js";
 import { css } from "solid-styled-components";
 
 import { ChunkCharIdxAttrName, ChunkLabelId } from "~/dom";
@@ -37,7 +37,7 @@ export class ChunkLabel {
 
     createEffect(() => {
       this.#toggleRubyConcealing(concealRubies());
-    })
+    });
 
     this.#selectionMarkers = new LabelSelectionMarkers(this.#rootEl);
   }
@@ -174,7 +174,7 @@ export class ChunkLabel {
         rubyCorrection =
           charEl.offsetParent !== this.#rootEl
           ? this.#offsetRubyCorrection(charEl)
-          : { x: 0, y: 0 }
+          : { x: 0, y: 0 };
         this.#selectionMarkers.showLeftMarkerAt(
           charEl.offsetLeft + rubyCorrection.x,
           charEl.offsetTop + rubyCorrection.y,
@@ -188,7 +188,7 @@ export class ChunkLabel {
           rubyCorrection =
             charEl.offsetParent !== this.#rootEl
             ? this.#offsetRubyCorrection(charEl)
-            : { x: 0, y: 0 }
+            : { x: 0, y: 0 };
         }
         this.#selectionMarkers.showRightMarkerAt(
           charEl.offsetLeft + charEl.offsetWidth + rubyCorrection.x,

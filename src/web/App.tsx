@@ -11,10 +11,12 @@ import {
   ActionPalette, actionsInclude, availableActions as getAvailableActions, hiraganaToKatakana,
   katakanaToHiragana, type Action, type ActionInvocation
 } from "~/action";
+import type {
+  CharacterCounter as BackendCharacterCounter, ChunkVariant, Command, Config, EventName, InMessage,
+  PlayerStatus, RecognizerStatus
+} from "~/backend";
 import {
-  Backend, BackendNotConnectedScreen, CharacterCounter as BackendCharacterCounter, ChunkVariant,
-  Command, Config, InMessage, parseBackendConstant, parseRecognizerStatus, PlayerStatus,
-  playerStatusGotConnected, RecognizerStatus, type EventName
+  Backend, BackendNotConnectedScreen, parseBackendConstant, parseRecognizerStatus, playerStatusGotConnected
 } from "~/backend";
 import {
   ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState, type Chunk

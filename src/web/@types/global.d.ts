@@ -2,6 +2,6 @@ export {};
 
 declare global {
   interface Window {
-    root: HTMLDivElement;
+    root: HTMLDivElement,
   }
 }

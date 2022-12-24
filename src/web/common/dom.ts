@@ -26,5 +26,5 @@ export const toggleEventListener = <K extends keyof HTMLElementEventMap>(
 ) => {
   on ? el.addEventListener(type, listener)
      : el.removeEventListener(type, listener);
-}
+};
 
