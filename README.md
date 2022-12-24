@@ -1504,7 +1504,7 @@ chunk: {
   translationOnlyMode: no
 
   # [RELOADABLE]
-  furigana {
+  furigana: {
     # Add auto-generated furigana annotations to the current chunk. Note that
     # this feature requires an extra download (see the Auto-generated furigana
     # section in the README).
