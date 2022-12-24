@@ -57,4 +57,8 @@ const RootClass = css`
   .${ChromeClass} & {
     box-shadow: inset 0px 0px 2px var(--color-bgm1);
   }
+
+  &:hover {
+    background: linear-gradient(0, var(--color-bg-hl) 0%, transparent 100%);
+  }
 `;
