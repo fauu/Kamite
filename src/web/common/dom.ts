@@ -1,3 +1,5 @@
+export const LAYOUT_SHIFT_HANDLER_DEBOUNCE_DEFAULT_MS = 25;
+
 export function scrollToBottom(el: HTMLElement) {
   el.scrollTop = el.scrollHeight;
 }

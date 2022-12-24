@@ -1,7 +1,9 @@
 import { createEffect, type Accessor, type VoidComponent } from "solid-js";
 
 import type { ChunksState } from "~/chunk";
-import { YomichanSentenceDelimiter } from "~/common";
+import {
+  debounce, LAYOUT_SHIFT_HANDLER_DEBOUNCE_DEFAULT_MS, YomichanSentenceDelimiter
+} from "~/common";
 
 import { ChunkLabel } from "./Label";
 
@@ -21,12 +23,17 @@ export const ChunkLabelWrapper: VoidComponent<ChunkLabelWrapperProps> = (props) 
 
   createEffect(() => label.setFlash(props.chunksState.currentFlashState()));
 
-  return <div
-    lang="ja"
-    ref={el =>
-      label = new ChunkLabel(el, props.chunksState.concealRubies, props.movingMouseWhilePrimaryDown)
-    }
-  >
+  const handleRootRef = (el: HTMLDivElement) => {
+    label = new ChunkLabel(el, props.chunksState.concealRubies, props.movingMouseWhilePrimaryDown);
+
+    new ResizeObserver(debounce(() => {
+      // PERF: Selection start and end elements remain constant here, so we don't need to recreate the
+      //       entire selection UI here, just shift their positions
+      label.setSelection(props.chunksState.textSelection.get());
+    }, LAYOUT_SHIFT_HANDLER_DEBOUNCE_DEFAULT_MS)).observe(el);
+  };
+
+  return <div lang="ja" ref={handleRootRef}>
     <YomichanSentenceDelimiter/>
   </div>;
 };
