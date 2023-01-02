@@ -13,21 +13,21 @@
   },
   "devDependencies": {
     "@types/babel__core": "~7.1.20",
-    "@types/node": "~18.11.13",
-    "@typescript-eslint/eslint-plugin": "~5.46.0",
-    "@typescript-eslint/parser": "~5.46.0",
-    "eslint": "~8.29.0",
+    "@types/node": "~18.11.18",
+    "@typescript-eslint/eslint-plugin": "~5.47.1",
+    "@typescript-eslint/parser": "~5.47.1",
+    "eslint": "~8.31.0",
     "rimraf": "~3.0.2",
     "typescript": "~4.9.4",
-    "vite": "~4.0.0",
+    "vite": "~4.0.3",
     "vite-plugin-solid": "~2.5.0"
   },
   "dependencies": {
-    "@floating-ui/core": "~1.0.4",
-    "@floating-ui/dom": "~1.0.9",
+    "@floating-ui/core": "~1.1.0",
+    "@floating-ui/dom": "~1.1.0",
     "csstype": "3.0.10",
     "goober": "2.1.11",
-    "solid-js": "~1.6.4",
+    "solid-js": "~1.6.6",
     "solid-styled-components": "~0.28.5"
   },
   "private": true
