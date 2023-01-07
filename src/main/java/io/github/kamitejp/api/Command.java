@@ -75,9 +75,13 @@ public sealed interface Command
   }
 
   sealed interface SessionTimer extends Command
-    permits SessionTimer.TogglePause,
+    permits SessionTimer.Start,
+            SessionTimer.Stop,
+            SessionTimer.Toggle,
             SessionTimer.Reset {
-    record TogglePause() implements SessionTimer {}
+    record Start() implements SessionTimer {}
+    record Stop() implements SessionTimer {}
+    record Toggle() implements SessionTimer {}
     record Reset() implements SessionTimer {}
   }
 
@@ -223,8 +227,10 @@ public sealed interface Command
         };
 
         case "session-timer" -> switch (name) {
-          case "toggle-pause" -> new SessionTimer.TogglePause();
-          case "reset"        -> new SessionTimer.Reset();
+          case "start"  -> new SessionTimer.Start();
+          case "stop"   -> new SessionTimer.Stop();
+          case "toggle" -> new SessionTimer.Toggle();
+          case "reset"  -> new SessionTimer.Reset();
           default -> null;
         };
 

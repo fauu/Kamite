@@ -16,21 +16,21 @@ public final class SessionTimer {
     return res;
   }
 
-  public void pause() {
+  public void stop() {
     var elapsedSinceCurrentStart = Duration.between(currentStartTime, ZonedDateTime.now());
     currentStartTime = null;
     accumulatedTime = accumulatedTime.plus(elapsedSinceCurrentStart);
   }
 
-  public void resume() {
+  public void start() {
     currentStartTime = ZonedDateTime.now();
   }
 
-  public void togglePause() {
+  public void toggle() {
     if (isRunning()) {
-      pause();
+      stop();
     } else {
-      resume();
+      start();
     }
   }
 

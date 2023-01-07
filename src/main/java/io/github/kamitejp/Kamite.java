@@ -642,8 +642,12 @@ public class Kamite {
 
       case Command.SessionTimer cmd -> {
         switch (cmd) { // NOPMD - misidentifies as non-exhaustive
-          case Command.SessionTimer.TogglePause ignored ->
-            status.getSessionTimer().togglePause();
+          case Command.SessionTimer.Start ignored ->
+            status.getSessionTimer().start();
+          case Command.SessionTimer.Stop ignored ->
+            status.getSessionTimer().stop();
+          case Command.SessionTimer.Toggle ignored ->
+            status.getSessionTimer().toggle();
           case Command.SessionTimer.Reset ignored ->
             status.getSessionTimer().reset();
         }

@@ -9,6 +9,7 @@ export interface Config {
   keybindings: Keybindings,
   dev: Dev,
   lookup: Lookup,
+  sessionTimer: SessionTimer,
 }
 
 export type UILayout = "STANDARD" | "STANDARD_FLIPPED";
@@ -101,4 +102,8 @@ export interface LookupTarget {
 
 export function lookupTargetFillURL(t: LookupTarget, q: string) {
   return t.url.replace("{}", q);
+}
+
+interface SessionTimer {
+  autoPause: number | null,
 }

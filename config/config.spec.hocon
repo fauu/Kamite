@@ -129,6 +129,10 @@ server: {
   port: "int | 4110"
 }
 
+sessionTimer: {
+  autoPause: "duration:seconds?"
+}
+
 ui: {
   focusMode: "boolean | false"
   layout: UILayout

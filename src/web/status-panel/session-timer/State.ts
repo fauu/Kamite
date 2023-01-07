@@ -1,11 +1,9 @@
 import { batch, createSignal } from "solid-js";
 
 import type { SessionTimer } from "~/backend";
+import { MINS_IN_HOUR, MSECS_IN_SECS, SECS_IN_MIN } from "~/common/time";
 
 const UPDATE_INTERVAL_MS = 1000;
-const MSECS_IN_SECS = 1000;
-const MINS_IN_HOUR = 60;
-const SECS_IN_MIN = 60;
 
 type Time = {
   h: number,
@@ -17,6 +15,8 @@ export type SessionTimerState = ReturnType<typeof createSessionTimerState>;
 export function createSessionTimerState() {
   const [time, setTime] = createSignal<Time>({ h: 0, m: 0 });
   const [running, setRunning] = createSignal(false);
+  const [autoPauseIntervalS, setAutoPauseIntervalS] = createSignal<number | undefined>(undefined);
+  const [autoPaused, setAutoPaused] = createSignal(false);
   const [updateInterval, setUpdateInterval] = createSignal<ReturnType<typeof window.setInterval>>();
 
   function sync({ accumulatedTime, running, currentStartTime }: SessionTimer) {
@@ -49,6 +49,10 @@ export function createSessionTimerState() {
   return {
     time,
     // setTime,
+    autoPauseIntervalS,
+    setAutoPauseIntervalS,
+    autoPaused,
+    setAutoPaused,
     running,
     // setRunning,
 

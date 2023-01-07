@@ -46,7 +46,9 @@ type CharacterCounterCommand =
   | { kind: "character-counter_reset" };
 
 type SessionTimerCommand =
-  | { kind: "session-timer_toggle-pause" }
+  | { kind: "session-timer_start" }
+  | { kind: "session-timer_stop" }
+  | { kind: "session-timer_toggle" }
   | { kind: "session-timer_reset" };
 
 type ChunkCommand =

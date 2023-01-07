@@ -27,6 +27,7 @@ import {
 import { YomichanSentenceDelimiter } from "~/common";
 import { TooltipView } from "~/common/floating";
 import { notifyUser, type NotificationToastKind } from "~/common/notify";
+import { MSECS_IN_SECS } from "~/common/time";
 import {
   ChunkHistory, ChunkPicker, createDebugState, createNotebookState, Debug, Notebook
 } from "~/notebook";
@@ -83,6 +84,8 @@ export const App: VoidComponent = () => {
   let chunkPickerEl!: HTMLDivElement;
 
   let mouseY = 0;
+
+  let inactivityTimeout: NodeJS.Timeout | undefined;
 
   const chunkInputSelection = (): [number, number] | undefined =>
     (chunkInputEl && [chunkInputEl.selectionStart, chunkInputEl.selectionEnd - 1]) ?? undefined;
@@ -143,6 +146,7 @@ export const App: VoidComponent = () => {
       notifyUser("warning", "serveStaticInDevMode override is enabled");
     }
     notebook.updateLookupTabs(c.lookup?.targets ?? []);
+    sessionTimer.setAutoPauseIntervalS(c.sessionTimer.autoPause || undefined);
   }));
 
   createEffect(() => chunks.setWaiting(recognizerStatus().kind === "processing"));
@@ -169,6 +173,8 @@ export const App: VoidComponent = () => {
     integrateClipboardInserter(
       /* onText */ text => backend.command({ kind: "chunk_show", params: { chunk: text } })
     );
+
+    handleActivity();
   });
 
   function handleMainSectionRef(el: HTMLDivElement) {
@@ -203,6 +209,8 @@ export const App: VoidComponent = () => {
   };
 
   const handleRootMouseDown = (event: MouseEvent) => {
+    handleActivity();
+
     const targetEl = event.target as HTMLElement;
     switch (event.button) {
       case 0: { // Left
@@ -251,6 +259,8 @@ export const App: VoidComponent = () => {
   document.addEventListener("contextmenu", (event: Event) => event.preventDefault());
 
   const handleRootMouseUp = (event: MouseEvent) => {
+    handleActivity();
+
     switch (event.button) {
       case 0: // Left
         chunks.textSelection.finish();
@@ -263,6 +273,8 @@ export const App: VoidComponent = () => {
   };
 
   const handleRootMouseMove = (event: MouseEvent) => {
+    handleActivity();
+
     mouseY = event.clientY;
 
     if (notebook.isCollapseAllowed()) {
@@ -469,7 +481,7 @@ export const App: VoidComponent = () => {
   };
 
   const handleSessionTimerClick = () => {
-    backend.command("session-timer_toggle-pause");
+    backend.command("session-timer_toggle");
   };
 
   const handleSessionTimerHoldClick = () => {
@@ -537,6 +549,36 @@ export const App: VoidComponent = () => {
     }
   }
 
+  function handleActivity() {
+    if (sessionTimer.autoPaused()) {
+      handleReturningActivity();
+    }
+    if (inactivityTimeout) {
+      clearTimeout(inactivityTimeout);
+    }
+    const interval = sessionTimer.autoPauseIntervalS();
+    if (interval) {
+      inactivityTimeout = setTimeout(handleInactivityIntervalElapsed, interval * MSECS_IN_SECS);
+    }
+  }
+
+  function handleReturningActivity() {
+    sessionTimer.setAutoPaused(false);
+    // autoPaused is not reset when unpausing manually, so it might already be running
+    if (!sessionTimer.running()) {
+      backend.command("session-timer_start");
+      notifyUser("info", "Resumed session timer");
+    }
+  }
+
+  function handleInactivityIntervalElapsed() {
+    if (sessionTimer.running()) {
+      backend.command("session-timer_stop");
+      sessionTimer.setAutoPaused(true);
+      notifyUser("info", "Stopped session timer due to inactivity");
+    }
+  }
+
   window.addEventListener("resize", () => {
     mainSectionEl && notebook.syncHeight();
     statusPanelFader.setFadeInvalidated();
@@ -544,6 +586,8 @@ export const App: VoidComponent = () => {
 
   // DRY: Unify with action handling
   document.addEventListener("keydown", event => {
+    handleActivity();
+
     let commandToSend: Command["kind"] | undefined = undefined;
     switch (event.code) {
       case "Backspace": // Fallthrough
