@@ -2,7 +2,7 @@
 UILayout: [STANDARD, STANDARD_FLIPPED]
 
 #@define enum
-OCREngine: [TESSERACT, MANGAOCR, MANGAOCR_ONLINE, OCRSPACE, NONE]
+OCREngine: [TESSERACT, MANGAOCR, MANGAOCR_ONLINE, OCRSPACE, EASYOCR_ONLINE, NONE]
 
 controlWindow: "boolean | true"
 launchBrowser: "boolean | true"

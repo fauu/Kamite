@@ -103,6 +103,8 @@ public class Recognizer {
         engine.initialized();
       case OCREngine.OCRSpace engine ->
         engine.initialized();
+      case OCREngine.EasyOCROnline engine ->
+        engine.initialized();
       case OCREngine.None engine ->
         engine;
     };
@@ -140,6 +142,7 @@ public class Recognizer {
       case OCREngine.MangaOCR engine       -> recognizeBoxMangaOCR(engine.controller(), img);
       case OCREngine.MangaOCROnline engine -> recognizeBoxRemote(engine.adapter(), img);
       case OCREngine.OCRSpace engine       -> recognizeBoxRemote(engine.adapter(), img);
+      case OCREngine.EasyOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
       case OCREngine.None ignored          -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
     };
   }

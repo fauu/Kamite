@@ -14,6 +14,7 @@ public sealed interface OCREngine
           OCREngine.MangaOCR,
           OCREngine.MangaOCROnline,
           OCREngine.OCRSpace,
+          OCREngine.EasyOCROnline,
           OCREngine.None {
   record Tesseract(String binPath) implements OCREngine {
     @Override
@@ -92,6 +93,26 @@ public sealed interface OCREngine
     }
   }
 
+  record EasyOCROnline(EasyOCRHFAdapter adapter) implements OCREngine {
+    public static EasyOCROnline uninitialized() {
+      return new EasyOCROnline(null);
+    }
+
+    public EasyOCROnline initialized() {
+      if (adapter != null) {
+        throw new IllegalStateException(
+          "This OCREngine.EasyOCROnline instance is already initialized"
+        );
+      }
+      return new EasyOCROnline(new EasyOCRHFAdapter());
+    }
+
+    @Override
+    public String toString() {
+      return "EasyOCR Online (HF Space by tomofi)";
+    }
+  }
+
   record None() implements OCREngine {
     @Override
     public String toString() {
@@ -124,6 +145,8 @@ public sealed interface OCREngine
           config.secrets().ocrspace(), config.ocr().ocrspace().engine()
         );
       }
+      case EASYOCR_ONLINE  ->
+        OCREngine.EasyOCROnline.uninitialized();
       case NONE ->
         new OCREngine.None();
     };
