@@ -85,6 +85,7 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter {
       );
     }
 
+    // QUAL: (DRY) Same segment in BaseHFOCRAdapter
     HttpResponse<String> res;
     try {
       var resFuture = HTTP.client().sendAsync(req, HttpResponse.BodyHandlers.ofString());
