@@ -27,13 +27,6 @@ chunk: {
     conceal: "boolean | false"
   }
 
-  sources: {
-    agent: {
-      enable: "boolean | false"
-      host: "string | 127.0.0.1:9001"
-    }
-  }
-
   #@optional
   transforms: [{
     replace: string
@@ -73,6 +66,13 @@ events: {
       params: "string?"
     }
   }]
+}
+
+integrations: {
+  agent: {
+    enable: "boolean | false"
+    host: "string | 127.0.0.1:9001"
+  }
 }
 
 keybindings: {

@@ -10,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -246,13 +248,15 @@ public final class ConfigManager {
   }
 
   private static void validateExtra(Config config) {
-    validateStringNonEmptyOrNull(config.chunk().log().dir(), "chunk.log.dir");
+    validateStringNullOrNonEmpty(config.chunk().log().dir(), "chunk.log.dir");
 
     validateExtraList(config.commands().custom(), "commands.custom[%d]", (c, key) -> {
       validateSymbolLength(c.symbol(), key.apply("symbol"));
       validateStringNonEmpty(c.name(), key.apply("name"));
       validateListNonEmpty(c.command(), key.apply("command"));
     });
+
+    validateStringNullOrNonEmpty(config.integrations().agent().host(), "integrations.agent.host");
 
     validateExtraList(config.lookup().targets(), "lookup.targets[%d]", (t, key) ->{
       validateSymbolLength(t.symbol(), key.apply("symbol"));
@@ -263,16 +267,16 @@ public final class ConfigManager {
       validateStringContains(t.url(), LOOKUP_TARGET_URL_PLACEHOLDER, urlKey);
     });
 
-    validateStringNonEmptyOrNull(config.ocr().watchDir(), "ocr.watchDir");
-    validateStringNonEmptyOrNull(config.ocr().mangaocr().pythonPath(), "ocr.mangaocr.pythonPath");
+    validateStringNullOrNonEmpty(config.ocr().watchDir(), "ocr.watchDir");
+    validateStringNullOrNonEmpty(config.ocr().mangaocr().pythonPath(), "ocr.mangaocr.pythonPath");
     validateIntOneOf(config.ocr().ocrspace().engine(), List.of(1, 3), "ocr.ocrspace.engine");
 
     validateExtraList(config.ocr().regions(), "ocr.regions[%d]", (r, key) -> {
       validateSymbolLength(r.symbol(), key.apply("symbol"));
-      validateStringNonEmptyOrNull(r.description(), key.apply("description"));
+      validateStringNullOrNonEmpty(r.description(), key.apply("description"));
     });
 
-    validateStringNonEmptyOrNull(config.secrets().ocrspace(), "secrets.ocrspace");
+    validateStringNullOrNonEmpty(config.secrets().ocrspace(), "secrets.ocrspace");
 
     validateDurationNullOrNotLessThan(
       config.sessionTimer().autoPause().after(),
@@ -321,7 +325,7 @@ public final class ConfigManager {
     }
   }
 
-  private static void validateStringNonEmptyOrNull(CharSequence s, String key) {
+  private static void validateStringNullOrNonEmpty(CharSequence s, String key) {
     if (s != null) {
       validateStringNonEmpty(s, key);
     }

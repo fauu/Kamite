@@ -243,7 +243,7 @@ public class Kamite {
       platform, this::handlePlayerStatusUpdate, this::handlePlayerSubtitle
     );
 
-    initOrDiscardAgentClient(config.chunk().sources().agent());
+    initOrDiscardAgentClient(config.integrations().agent());
 
     recognitionConductor = new RecognitionConductor(
       platform,
@@ -407,25 +407,23 @@ public class Kamite {
       : null;
   }
 
-  private void initOrDiscardAgentClient(Config.Chunk.Sources.Agent agentConfig) {
-    if (agentConfig.enable()) {
-      agentClient = new AgentClient(
-        agentConfig.host(),
-        /* connectCb */ () ->
-          notifyUserOfInfo("Connected to Agent"),
-        /* disconnectCb */ () ->
-          notifyUserOfInfo("Disconnected from Agent"),
-        /* chunkCb */ (String chunk) ->
-          chunkCheckpoint.register(IncomingChunkText.of(chunk)),
-        /* chunkTranslationCb */ (String chunkTranslation) ->
-          showChunkTranslation(chunkTranslation)
-      );
-    } else {
-      if (agentClient != null) {
-        agentClient.destroy();
-      }
-      agentClient = null;
+  private void initOrDiscardAgentClient(Config.Integrations.Agent agentConfig) {
+    if (agentClient != null) {
+      agentClient.destroy();
     }
+    agentClient = agentConfig.enable()
+      ? new AgentClient(
+          agentConfig.host(),
+          /* connectCb */ () ->
+            notifyUserOfInfo("Connected to Agent"),
+          /* disconnectCb */ () ->
+            notifyUserOfInfo("Disconnected from Agent"),
+          /* chunkCb */ (String chunk) ->
+            chunkCheckpoint.register(IncomingChunkText.of(chunk)),
+          /* chunkTranslationCb */ (String chunkTranslation) ->
+            showChunkTranslation(chunkTranslation)
+        )
+      : null;
   }
 
   private void handleConfigReload(Result<Config, String> configReloadRes) {
@@ -444,14 +442,17 @@ public class Kamite {
     if (!Objects.equals(chunkConfig.transforms(), oldChunkConfig.transforms())) {
       initOrDiscardChunkTransformer(chunkConfig.transforms());
     }
-    if (!Objects.equals(chunkConfig.sources().agent(), oldChunkConfig.sources().agent())) {
-      initOrDiscardAgentClient(chunkConfig.sources().agent());
-    }
 
     var eventsConfig = config.events();
     var oldEventsConfig = this.config.events();
     if (!Objects.equals(eventsConfig.handlers(), oldEventsConfig.handlers())) {
       eventManager.setUserEventHandlers(eventsConfig.handlers());
+    }
+
+    var integrationsConfig = config.integrations();
+    var oldIntegrationsConfig = this.config.integrations();
+    if (!Objects.equals(integrationsConfig.agent(), oldIntegrationsConfig.agent())) {
+      initOrDiscardAgentClient(integrationsConfig.agent());
     }
 
     var msg = "Reloaded config and possibly applied changes";
