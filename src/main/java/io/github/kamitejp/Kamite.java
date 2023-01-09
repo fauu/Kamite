@@ -411,6 +411,10 @@ public class Kamite {
     if (agentConfig.enable()) {
       agentClient = new AgentClient(
         agentConfig.host(),
+        /* connectCb */ () ->
+          notifyUserOfInfo("Connected to Agent"),
+        /* disconnectCb */ () ->
+          notifyUserOfInfo("Disconnected from Agent"),
         /* chunkCb */ (String chunk) ->
           chunkCheckpoint.register(IncomingChunkText.of(chunk)),
         /* chunkTranslationCb */ (String chunkTranslation) ->
@@ -452,7 +456,7 @@ public class Kamite {
 
     var msg = "Reloaded config and possibly applied changes";
     LOG.info(msg);
-    server.notifyUser(UserNotificationKind.INFO, msg);
+    notifyUserOfInfo(msg);
 
     this.config = config;
     server.send(new ConfigOutMessage(config));
@@ -484,10 +488,7 @@ public class Kamite {
         sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
       }
       case RecognizerEvent.MangaOCRStartedDownloadingModel ignored ->
-        server.notifyUser(
-          UserNotificationKind.INFO,
-          "\"Manga OCR\" is downloading OCR model. This might take a while…"
-        );
+        notifyUserOfInfo("\"Manga OCR\" is downloading OCR model. This might take a while…");
       case RecognizerEvent.Crashed ignored -> {
         LOG.info("Recognizer has crashed and will not be restarted");
         notifyUserOfError("Recognizer has crashed. Text recognition will be unavailable");
@@ -511,6 +512,10 @@ public class Kamite {
   private void updateAndSendRecognizerStatus(RecognizerStatus.Kind statusKind) {
     status.updateRecognizerStatus(statusKind);
     sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
+  }
+
+  private void notifyUserOfInfo(String content) {
+    server.notifyUser(UserNotificationKind.INFO, content);
   }
 
   private void notifyUserOfError(String content) {

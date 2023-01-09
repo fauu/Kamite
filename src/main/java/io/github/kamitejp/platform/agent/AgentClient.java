@@ -20,6 +20,7 @@ import com.neovisionaries.ws.client.WebSocketFrame;
 
 import io.github.kamitejp.util.JSON;
 
+// TODO: While connected, show status panel indicator in the client
 public class AgentClient extends WebSocketAdapter {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -27,12 +28,22 @@ public class AgentClient extends WebSocketAdapter {
   private static final int CONNECTION_RETRY_INTERVAL_MS = 2000;
 
   private final URI wsServerEndpoint;
+  private final Runnable connectCb;
+  private final Runnable disconnectCb;
   private final Consumer<String> chunkCb;
   private final Consumer<String> chunkTranslationCb;
   private WebSocket ws;
 
-  public AgentClient(String host, Consumer<String> chunkCb, Consumer<String> chunkTranslationCb) {
+  public AgentClient(
+    String host,
+    Runnable connectCb,
+    Runnable disconnectCb,
+    Consumer<String> chunkCb,
+    Consumer<String> chunkTranslationCb
+  ) {
     this.wsServerEndpoint = URI.create("ws://%s".formatted(host));
+    this.connectCb = connectCb;
+    this.disconnectCb = disconnectCb;
     this.chunkCb = chunkCb;
     this.chunkTranslationCb = chunkTranslationCb;
     try {
@@ -82,12 +93,14 @@ public class AgentClient extends WebSocketAdapter {
 
   @Override
   public void onConnectError(WebSocket _websocket, WebSocketException _exception) {
+    LOG.trace("Connect error");
     wsWaitAndReconnect();
   }
 
   @Override
   public void onConnected(WebSocket _ws, Map<String, List<String>> _headers) {
     LOG.info("Connected to Agent");
+    connectCb.run();
   }
 
   @Override
@@ -98,6 +111,7 @@ public class AgentClient extends WebSocketAdapter {
     boolean _closedByServer
   ) {
     LOG.info("Disconnected from Agent");
+    disconnectCb.run();
     wsWaitAndReconnect();
   }
 
