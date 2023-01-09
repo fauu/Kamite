@@ -2,7 +2,7 @@
 UILayout: [STANDARD, STANDARD_FLIPPED]
 
 #@define enum
-OCREngine: [TESSERACT, MANGAOCR, MANGAOCR_ONLINE, OCRSPACE, EASYOCR_ONLINE, NONE]
+OCREngine: [TESSERACT, MANGAOCR, MANGAOCR_ONLINE, OCRSPACE, EASYOCR_ONLINE, HIVEOCR_ONLINE, NONE]
 
 controlWindow: "boolean | true"
 launchBrowser: "boolean | true"
@@ -25,6 +25,12 @@ chunk: {
   furigana: {
     enable: "boolean | false"
     conceal: "boolean | false"
+  }
+
+  sources: {
+    agent: {
+      enable: "boolean | false"
+    }
   }
 
   #@optional

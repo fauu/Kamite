@@ -15,6 +15,7 @@ public sealed interface OCREngine
           OCREngine.MangaOCROnline,
           OCREngine.OCRSpace,
           OCREngine.EasyOCROnline,
+          OCREngine.HiveOCROnline,
           OCREngine.None {
   record Tesseract(String binPath) implements OCREngine {
     @Override
@@ -113,6 +114,26 @@ public sealed interface OCREngine
     }
   }
 
+  record HiveOCROnline(HiveOCRHFAdapter adapter) implements OCREngine {
+    public static HiveOCROnline uninitialized() {
+      return new HiveOCROnline(null);
+    }
+
+    public HiveOCROnline initialized() {
+      if (adapter != null) {
+        throw new IllegalStateException(
+          "This OCREngine.HiveOCROnline instance is already initialized"
+        );
+      }
+      return new HiveOCROnline(new HiveOCRHFAdapter());
+    }
+
+    @Override
+    public String toString() {
+      return "Hive OCR Online (HF Space by tomofi)";
+    }
+  }
+
   record None() implements OCREngine {
     @Override
     public String toString() {
@@ -147,6 +168,8 @@ public sealed interface OCREngine
       }
       case EASYOCR_ONLINE  ->
         OCREngine.EasyOCROnline.uninitialized();
+      case HIVEOCR_ONLINE  ->
+        OCREngine.HiveOCROnline.uninitialized();
       case NONE ->
         new OCREngine.None();
     };
