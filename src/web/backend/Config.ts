@@ -105,5 +105,9 @@ export function lookupTargetFillURL(t: LookupTarget, q: string) {
 }
 
 interface SessionTimer {
-  autoPause: number | null,
+  autoPause: AutoPause,
+}
+
+interface AutoPause {
+  after: number | null,
 }

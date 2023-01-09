@@ -137,7 +137,9 @@ server: {
 }
 
 sessionTimer: {
-  autoPause: "duration:seconds?"
+  autoPause: {
+    after: "duration:seconds?"
+  }
 }
 
 ui: {

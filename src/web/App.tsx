@@ -146,7 +146,7 @@ export const App: VoidComponent = () => {
       notifyUser("warning", "serveStaticInDevMode override is enabled");
     }
     notebook.updateLookupTabs(c.lookup?.targets ?? []);
-    sessionTimer.setAutoPauseIntervalS(c.sessionTimer.autoPause || undefined);
+    sessionTimer.setAutoPauseIntervalS(c.sessionTimer.autoPause.after || undefined);
   }));
 
   createEffect(() => chunks.setWaiting(recognizerStatus().kind === "processing"));
