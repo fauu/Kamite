@@ -8,6 +8,20 @@
 
 ## [Unreleased]
 
+### Added
+
+* EasyOCR Online and Hive OCR Online engines (both good for game text; uses
+  [Hugging Face Spaces by tomofi][tomofi-hf].) (`ocr.engine: easyocr_online`,
+  `ocr:engine: hiveocr_online`)
+* Integration with [Agent][agent-gh] texthooker. (`integrations.agent.enable:
+  yes`)
+* Option to auto-pause the session timer after a period of inactivity (no mouse
+  and keyboard inputs to the client and no incoming chunks), unpausing after
+  activity is resumed. (e.g., `sessionTimer.autoPause.after: 100s`)
+
+[tomofi-hf]: https://huggingface.co/tomofi?sort_spaces=likes#spaces
+[agent-gh]: https://github.com/0xDC00/agent
+
 ## [0.11] – 2022-12-24
 
 ### Added
