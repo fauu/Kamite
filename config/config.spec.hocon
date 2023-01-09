@@ -30,6 +30,7 @@ chunk: {
   sources: {
     agent: {
       enable: "boolean | false"
+      host: "string | 127.0.0.1:9001"
     }
   }
 

@@ -43,6 +43,7 @@ import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformInitializationException;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
+import io.github.kamitejp.platform.agent.AgentClient;
 import io.github.kamitejp.platform.linux.LinuxPlatform;
 import io.github.kamitejp.platform.mpv.MPVCommand;
 import io.github.kamitejp.platform.mpv.MPVController;
@@ -106,6 +107,7 @@ public class Kamite {
   private OCRDirectoryWatcher ocrDirectoryWatcher;
   private TextProcessor textProcessor;
   private MPVController mpvController;
+  private AgentClient agentClient;
   private ChunkCheckpoint chunkCheckpoint;
   private ChunkFilter chunkFilter;
   private ChunkTransformer chunkTransformer;
@@ -232,16 +234,16 @@ public class Kamite {
     );
 
     var chunkConfig = config.chunk();
-    if (chunkConfig != null) {
-      initOrDiscardChunkFilter(chunkConfig.filter());
-      initOrDiscardChunkTransformer(chunkConfig.transforms());
-    }
+    initOrDiscardChunkFilter(chunkConfig.filter());
+    initOrDiscardChunkTransformer(chunkConfig.transforms());
 
     textProcessor = new TextProcessor(kuromojiAdapter);
 
     mpvController = MPVController.create(
       platform, this::handlePlayerStatusUpdate, this::handlePlayerSubtitle
     );
+
+    initOrDiscardAgentClient(config.chunk().sources().agent());
 
     recognitionConductor = new RecognitionConductor(
       platform,
@@ -321,6 +323,9 @@ public class Kamite {
           recognitionConductor.destroy();
         }
         mpvController.destroy();
+        if (agentClient != null) {
+          agentClient.destroy();
+        }
         if (chunkLogger != null) {
           chunkLogger.finalizeLog();
         }
@@ -402,6 +407,23 @@ public class Kamite {
       : null;
   }
 
+  private void initOrDiscardAgentClient(Config.Chunk.Sources.Agent agentConfig) {
+    if (agentConfig.enable()) {
+      agentClient = new AgentClient(
+        agentConfig.host(),
+        /* chunkCb */ (String chunk) ->
+          chunkCheckpoint.register(IncomingChunkText.of(chunk)),
+        /* chunkTranslationCb */ (String chunkTranslation) ->
+          showChunkTranslation(chunkTranslation)
+      );
+    } else {
+      if (agentClient != null) {
+        agentClient.destroy();
+      }
+      agentClient = null;
+    }
+  }
+
   private void handleConfigReload(Result<Config, String> configReloadRes) {
     if (configReloadRes.isErr()) {
       LOG.error("Could not read new config: {}", configReloadRes.err());
@@ -417,6 +439,9 @@ public class Kamite {
     }
     if (!Objects.equals(chunkConfig.transforms(), oldChunkConfig.transforms())) {
       initOrDiscardChunkTransformer(chunkConfig.transforms());
+    }
+    if (!Objects.equals(chunkConfig.sources().agent(), oldChunkConfig.sources().agent())) {
+      initOrDiscardAgentClient(chunkConfig.sources().agent());
     }
 
     var eventsConfig = config.events();
@@ -543,6 +568,10 @@ public class Kamite {
     if (!post.isEmpty()) {
       server.send(new ChunkVariantsOutMessage(post, playbackTimeS));
     }
+  }
+
+  private void showChunkTranslation(String translation) {
+    showChunkTranslation(translation, null);
   }
 
   private void showChunkTranslation(String translation, Double playbackTimeS) {
