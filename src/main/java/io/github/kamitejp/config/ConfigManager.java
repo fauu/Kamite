@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -272,6 +273,25 @@ public final class ConfigManager {
     });
 
     validateStringNonEmptyOrNull(config.secrets().ocrspace(), "secrets.ocrspace");
+
+    validateDurationNullOrNotLessThan(
+      config.sessionTimer().autoPause().after(),
+      5L,
+      ChronoUnit.SECONDS,
+      "sessionTimer.autoPause.after"
+    );
+  }
+
+  @SuppressWarnings("SameParameterValue")
+  private static void validateDurationNullOrNotLessThan(
+    Long val, long min, TemporalUnit unit, String key
+  ) {
+    if (val != null && Duration.of(val, unit).compareTo(Duration.of(min, unit)) < 0) {
+      throw new ConfigException.BadValue(
+        key,
+        "if specified, should be at least %d %s".formatted(min, unit)
+      );
+    }
   }
 
   private static <T> void validateExtraList(
