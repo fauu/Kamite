@@ -547,6 +547,7 @@ export const App: VoidComponent = () => {
     if (eventNotifier.shouldNotify("chunk-add")) {
       backend.eventNotify({ name: "chunk-add", data: { chunkText: chunk.text.base } });
     }
+    handleActivity();
   }
 
   function handleActivity() {
