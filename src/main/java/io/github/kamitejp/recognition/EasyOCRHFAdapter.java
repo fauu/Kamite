@@ -15,17 +15,17 @@ public class EasyOCRHFAdapter extends BaseHFOCRAdapter {
 
   public EasyOCRHFAdapter() {
     super(
-      /* hfSpaceID */                  "tomofi-easyocr",
-      /* requestExtraPayload */        ", [\"ja\"]",
-      /* responseExtractStartMarker */ "\"data\":[[",
-      /* responseExtractEndMarker */   "]]}]"
+      /* hfSpaceID */               "tomofi-easyocr",
+      /* requestExtraPayload */     ", [\"ja\"]",
+      /* responseTrimStartMarker */ "\"data\":[[",
+      /* responseTrimEndMarker */   "]]}]"
     );
   }
 
   @Override
-  protected Result<String, RemoteOCRRequestError> responseExtractToOCRText(String extract) {
+  protected Result<String, RemoteOCRRequestError> trimmedResponseToOCRText(String res) {
     var ocrTextBuilder = new StringBuilder();
-    var m = OCR_RESPONSE_TEXT_FRAGMENT_RE.matcher(extract);
+    var m = OCR_RESPONSE_TEXT_FRAGMENT_RE.matcher(res);
     while (m.find()) {
       ocrTextBuilder.append(m.group(1));
     }

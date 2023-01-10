@@ -27,19 +27,19 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
 
   private final URI apiEndpoint;
   private final String requestExtraPayload;
-  private final String responseExtractStartMarker;
-  private final String responseExtractEndMarker;
+  private final String responseTrimStartMarker;
+  private final String responseTrimEndMarker;
 
   public BaseHFOCRAdapter(
     String hfSpaceID,
     String requestExtraPayload,
-    String responseExtractStartMarker,
-    String responseExtractEndMarker
+    String responseTrimStartMarker,
+    String responseTrimEndMarker
   ) {
     this.apiEndpoint = URI.create(API_ENDPOINT_TPL.formatted(hfSpaceID));
     this.requestExtraPayload = requestExtraPayload;
-    this.responseExtractStartMarker = responseExtractStartMarker;
-    this.responseExtractEndMarker = responseExtractEndMarker;
+    this.responseTrimStartMarker = responseTrimStartMarker;
+    this.responseTrimEndMarker = responseTrimEndMarker;
   }
 
   @Override
@@ -71,26 +71,29 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
       return Result.Err(new RemoteOCRRequestError.UnexpectedStatusCode(code));
     }
 
-    var textStartMarkerIdx = res.body().indexOf(responseExtractStartMarker);
-    if (textStartMarkerIdx == -1) {
-      return Result.Err(
-        new RemoteOCRRequestError.Other("Response did not contain the expected text start marker")
-      );
-    }
-    var textStartIdx = textStartMarkerIdx + responseExtractStartMarker.length();
-    var textEndMarkerIdx = res.body().indexOf(responseExtractEndMarker, textStartIdx);
-    if (textEndMarkerIdx == -1) {
-      return Result.Err(
-        new RemoteOCRRequestError.Other("Response did not contain the expected text end marker")
-      );
+    String resBody = res.body();
+    if (responseTrimStartMarker != null) {
+      var textStartMarkerIdx = res.body().indexOf(responseTrimStartMarker);
+      if (textStartMarkerIdx == -1) {
+        return Result.Err(
+          new RemoteOCRRequestError.Other("Response did not contain the expected text start marker")
+        );
+      }
+      var textStartIdx = textStartMarkerIdx + responseTrimStartMarker.length();
+      var textEndMarkerIdx = res.body().indexOf(responseTrimEndMarker, textStartIdx);
+      if (textEndMarkerIdx == -1) {
+        return Result.Err(
+          new RemoteOCRRequestError.Other("Response did not contain the expected text end marker")
+        );
+      }
+
+      resBody = resBody.substring(textStartIdx, textEndMarkerIdx);
     }
 
-    var extract = res.body().substring(textStartIdx, textEndMarkerIdx);
-
-    return responseExtractToOCRText(extract);
+    return trimmedResponseToOCRText(resBody);
   }
 
-  protected Result<String, RemoteOCRRequestError> responseExtractToOCRText(String extract) {
-    return Result.Ok(extract);
+  protected Result<String, RemoteOCRRequestError> trimmedResponseToOCRText(String res) {
+    return Result.Ok(res);
   }
 }
