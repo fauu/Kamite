@@ -20,5 +20,7 @@ export function notifyUser(kind: NotificationToastKind, text: string) {
     onClick: () => toast.hideToast(),
   });
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
-  toast.showToast();
+  if (window.mainUIVisible()) { // QUAL: Move out of global state?
+    toast.showToast();
+  }
 }

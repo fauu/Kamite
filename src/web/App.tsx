@@ -120,6 +120,10 @@ export const App: VoidComponent = () => {
     chunks,
   });
 
+  const showBackendNotConnectedScreen = () => backend.connectionState() !== "connected";
+
+  const mainUIVisible = () => !showBackendNotConnectedScreen();
+
   const availableCommands =
     createMemo(() => availableCommandPaletteCommands(
       chunks,
@@ -169,6 +173,8 @@ export const App: VoidComponent = () => {
     // Catch in capturing phase so that when we exit chunk edit mode by clicking on a lookup button
     // the editing changes are committed before the lookup button handler initiates lookup
     window.root.addEventListener("click", handleRootClick, { capture: true });
+
+    window.mainUIVisible = mainUIVisible;
 
     integrateClipboardInserter(
       /* onText */ text => backend.command({ kind: "chunk_show", params: { chunk: text } })
@@ -733,7 +739,7 @@ export const App: VoidComponent = () => {
       ref={el => window.root = el}
     >
       <GlobalStyles />
-      <Show when={backend.connectionState() !== "connected"}>
+      <Show when={showBackendNotConnectedScreen()}>
         <BackendNotConnectedScreen
           connectionState={backend.connectionState()}
           contentDisplayDelayMS={1000}
