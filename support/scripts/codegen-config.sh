@@ -22,14 +22,27 @@ java -jar "$TSCFG_PATH" \
 
 # --- PATCHES --------------------------------------------------------------------------------------
 # Make list element type names prettier so that they can be used directly
-sed -i "s/Transforms\$Elm/Transform/g" "$CONFIG_FILE_PATH"
-sed -i "s/Custom\$Elm/CustomCommand/g" "$CONFIG_FILE_PATH"
-sed -i "s/Targets\$Elm/Target/g" "$CONFIG_FILE_PATH"
-sed -i "s/Region\$Elm/RegionBinding/g" "$CONFIG_FILE_PATH"
-sed -i "s/Ocr2/OCR/g" "$CONFIG_FILE_PATH"
-sed -i "s/Ocr/GlobalKeybindingsOCR/g" "$CONFIG_FILE_PATH"
-sed -i "s/Regions\$Elm/Region/g" "$CONFIG_FILE_PATH"
-sed -i "s/Handlers\$Elm/Handler/g" "$CONFIG_FILE_PATH"
+while read -r name; do
+  read -r new_name
+  sed -i "s/$name\([^a-z]\)/$new_name\1/g" "$CONFIG_FILE_PATH"
+done << '___HERE'
+Transforms\$Elm
+Transform
+Custom\$Elm
+CustomCommand
+Targets\$Elm
+Target
+Region\$Elm
+RegionBinding
+Ocr2
+OCR
+Ocr
+GlobalKeybindingsOCR
+Regions\$Elm
+Region
+Handlers\$Elm
+Handler
+___HERE
 # Make PMD ignore the generated file
 sed -ri "/^public record Config/i @SuppressWarnings(\"PMD\")" "$CONFIG_FILE_PATH"
 # Make enum value parsing case-insensitive and add default values
