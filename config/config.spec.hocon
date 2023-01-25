@@ -138,6 +138,7 @@ server: {
 
 sessionTimer: {
   autoPause: {
+    enable: "boolean | true"
     after: "duration:seconds?"
   }
 }

@@ -109,5 +109,6 @@ interface SessionTimer {
 }
 
 interface AutoPause {
+  enable: boolean,
   after: number | null,
 }
