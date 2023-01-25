@@ -929,8 +929,8 @@ host=192.0.0.10:4110
 Text can be pasted from clipboard by pressing <kbd>Ctrl</kbd> + <kbd>V</kbd> in
 Kamite’s browser tab.
 
-The Kamite browser client can automatically pick up clipboard text with the
-Clipboard Inserter browser extension ([Firefox][clipboard-inserter-ff],
+The Kamite browser client can automatically pick up clipboard text with a
+clipboard inserter browser extension ([Firefox][clipboard-inserter-ff],
 [Chrome][clipboard-inserter-chrome]) (assumes default extension settings).
 
 Clipboard can also be watched automatically without the Clipboard Inserter
@@ -944,7 +944,7 @@ content to Kamite:
 [`contrib/Kamite-Watch-Clipboard.ps1`](contrib/Kamite-Watch-Clipboard.ps1) (run
 with `Right click › Run with PowerShell`).
 
-[clipboard-inserter-ff]: https://addons.mozilla.org/en-US/firefox/addon/clipboard-inserter/
+[clipboard-inserter-ff]: https://addons.mozilla.org/en-US/firefox/addon/lap-clipboard-inserter
 [clipboard-inserter-chrome]: https://chrome.google.com/webstore/detail/clipboard-inserter/deahejllghicakhplliloeheabddjajm
 
 ### Custom source / alternative method text extraction
