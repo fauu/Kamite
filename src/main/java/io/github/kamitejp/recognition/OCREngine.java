@@ -130,7 +130,7 @@ public sealed interface OCREngine
 
     @Override
     public String toString() {
-      return "Hive OCR Online (HF Space by tomofi)";
+      return "Hive OCR Online (HF Space by seaoctopusredchicken)";
     }
   }
 
