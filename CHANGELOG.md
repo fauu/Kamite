@@ -13,8 +13,8 @@
 
 * EasyOCR Online and Hive OCR Online engines (uses Hugging Face Spaces by
   [tomofi][tomofi-hf] and [seaoctopusredchicken][seaoctopusredchicken-hf]
-  respectively.) (`ocr.engine: easyocr_online`, `ocr:engine: hiveocr_online`)
-  * Those engines <ins>don't work for vertical text, but they tend to be very
+  respectively). (`ocr.engine: easyocr_online`, `ocr:engine: hiveocr_online`)
+  * Those engines <ins>don’t work for vertical text, but they tend to be very
   good for horizontal text</ins>, Hive OCR especially.
 * Integration with the [Agent][agent-gh] texthooker. (`integrations.agent.enable:
   yes` and enable `WebSocketServer` in Agent’s `Translate` tab)
