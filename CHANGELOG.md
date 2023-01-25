@@ -1,7 +1,8 @@
 <!-- vim: set textwidth=80 colorcolumn=80: -->
 <!-- markdownlint-configure-file
 {
-  "no-duplicate-heading": { "siblings_only": true }
+  "no-duplicate-heading": { "siblings_only": true },
+  "no-inline-html": false
 }
 -->
 # Changelog — Kamite
@@ -10,17 +11,28 @@
 
 ### Added
 
-* EasyOCR Online and Hive OCR Online engines (both good for game text; uses
-  [Hugging Face Spaces by tomofi][tomofi-hf].) (`ocr.engine: easyocr_online`,
-  `ocr:engine: hiveocr_online`)
-* Integration with [Agent][agent-gh] texthooker. (`integrations.agent.enable:
-  yes`)
+* EasyOCR Online and Hive OCR Online engines (uses Hugging Face Spaces by
+  [tomofi][tomofi-hf] and [seaoctopusredchicken][seaoctopusredchicken-hf]
+  respectively.) (`ocr.engine: easyocr_online`, `ocr:engine: hiveocr_online`)
+  * Those engines <ins>don't work for vertical text, but they tend to be very
+  good for horizontal text</ins>, Hive OCR especially.
+* Integration with the [Agent][agent-gh] texthooker. (`integrations.agent.enable:
+  yes` and enable `WebSocketServer` in Agent’s `Translate` tab)
 * Option to auto-pause the session timer after a period of inactivity (no mouse
   and keyboard inputs to the client and no incoming chunks), unpausing after
   activity is resumed. (e.g., `sessionTimer.autoPause.after: 100s`)
 
 [tomofi-hf]: https://huggingface.co/tomofi?sort_spaces=likes#spaces
+[seaoctopusredchicken-hf]: https://huggingface.co/seaoctopusredchicken?sort_spaces=likes#spaces
 [agent-gh]: https://github.com/0xDC00/agent
+
+### Changed
+
+* Improved the selection of vertical OCR models for use with the Tesseract engine.
+
+  * Requires separate download. See [Setting up Tesseract OCR][readme-setting-up-tesseract].
+
+[readme-setting-up-tesseract]: https://github.com/fauu/Kamite/#setting-up-tesseract-ocr
 
 ## [0.11] – 2022-12-24
 
