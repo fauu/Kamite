@@ -293,7 +293,7 @@ public final class ConfigManager {
     if (val != null && Duration.of(val, unit).compareTo(Duration.of(min, unit)) < 0) {
       throw new ConfigException.BadValue(
         key,
-        "if specified, should be at least %d %s".formatted(min, unit)
+        "if specified, should be at least %d %s".formatted(min, unit.toString().toLowerCase())
       );
     }
   }
