@@ -18,9 +18,11 @@ Kamite is a desktop program intended to aid learning Japanese through immersion
 in native media (manga, anime, visual novels, etc.). It helps extract Japanese
 text from those media into a local web interface, enabling its lookup using
 pop-up dictionaries such as [Yomichan] and websites such as [DeepL
-Translate][deepl] or [ichi.moe]. It offers integration with [mpv] and
-[Textractor], among others. It lets you easily edit and transform the extracted
-text and can forward it to user-defined websites and external executables.
+Translate][deepl]. It can recognize text on screen visually through various
+third-party OCR solutions or receive it from programs such as [mpv] or
+[Textractor]. It lets the user edit and transform the text and can forward it
+to user-defined websites and external executables for countless custom
+integrations (e.g., [reading the text aloud using Microsoft’s text-to-speech service][wiki-linux-edge-tts]).
 
 Kamite is cost-free and licensed under the GNU AGPL v3 or later (see
 [License](#license)).
@@ -51,6 +53,8 @@ script; [waycorner][waycorner-icxes].
 [ichi.moe]: https://ichi.moe/
 [mpv]: https://mpv.io/
 [Textractor]: https://github.com/Artikash/Textractor
+[Agent]: https://github.com/0xDC00/agent
+[wiki-linux-edge-tts]: https://github.com/fauu/Kamite/wiki/Linux-recipes#read-text-from-kamite-aloud-using-microsofts-tts
 
 ## Table of contents
 
@@ -64,7 +68,7 @@ script; [waycorner][waycorner-icxes].
 5. [User interface overview](#user-interface-overview)
 6. [Text extraction](#text-extraction)
     * [Anime/video text extraction](#animevideo-text-extraction)
-    * [Manga text extraction](#manga-text-extraction)
+    * [Manga/visual text extraction](#mangavisual-text-extraction)
     * [Visual novel / game text extraction](#visual-novel--game-text-extraction)
     * [Clipboard](#clipboard)
     * [Custom source / alternative method text extraction](#custom-source--alternative-method-text-extraction)
@@ -75,6 +79,7 @@ script; [waycorner][waycorner-icxes].
     * [Lookups](#lookups)
     * [Auto-generated furigana](#auto-generated-furigana)
     * [Saving text to a file for external use](#saving-text-to-a-file-for-external-use)
+    * [Custom text use](#custom-text-use)
 8. [Custom commands (Launching external executables)](#custom-commands-launching-external-executables)
 9. [Keyboard shortcuts](#keyboard-shortcuts)
     * [Client-only keyboard shortcuts](#client-only-keyboard-shortcuts)
@@ -86,6 +91,7 @@ script; [waycorner][waycorner-icxes].
     * [Substitution (variables)](#substitution-variables)
     * [Config profiles](#config-profiles)
 12. [Style customization](#style-customization)
+    * [Styling recipes](#styling-recipes)
 13. [Command API](#command-api)
     * [Sending commands](#sending-commands)
     * [Command listing](#command-listing)
@@ -219,6 +225,10 @@ Below are some non-obvious tips regarding the interface that might come useful.
 
 * The *character counter* and the *session timer* can be frozen/paused and
   restarted by, respectively, short-clicking and long-clickng on them.
+
+* The *session timer* can be set up to pause automatically after a period of
+  inactivity. For example, add `sessionTimer.autoPause.after: 45s` to auto-pause
+  after 45 seconds of inactivity.
 
 ## Text extraction
 
@@ -372,11 +382,11 @@ config key `chunk.translationOnlyMode` set to `yes`.
 * [Mining anime/video with Anacreon’s mpv script](https://github.com/fauu/Kamite/wiki/Mining-recipes#anacreons-mpv-script)
 * [Alternative software for anime/video](https://github.com/fauu/Kamite/wiki/Alternative-software#animevideo)
 
-### Manga text extraction
+### Manga/visual text extraction
 
-Kamite integrates with four alternative OCR (Optical Character Recognition)
-providers to enable the extraction of text from manga pages displayed on screen.
-The available OCR engines are:
+Kamite integrates with several alternative OCR (Optical Character Recognition)
+solutions to enable visual extraction of text from manga pages and other
+content displayed on screen. The available OCR engines are:
 
 * “Manga OCR” Online (a Hugging Face Space by Detomo)
 
@@ -387,6 +397,20 @@ The available OCR engines are:
 
     <https://github.com/kha-white/manga-ocr>
 
+* Hive OCR Online (a Hugging Face Space by seaoctopusredchicken)
+
+    **(horizontal text only)**
+
+    <https://huggingface.co/spaces/seaoctopusredchicken/Hive-OCR-simple>\
+    <https://thehive.ai/demos?case_study=text_recognition>
+
+* EasyOCR Online (a Hugging Face Space by tomofi)
+  
+    **(horizontal text only)**
+
+    <https://huggingface.co/spaces/tomofi/EasyOCR>\
+    <https://github.com/JaidedAI/EasyOCR>
+
 * OCR.space (Online)
 
     <https://ocr.space/>
@@ -395,22 +419,23 @@ The available OCR engines are:
 
     <https://github.com/tesseract-ocr/tesseract>
 
-**“Manga OCR” in either variant is the recommended choice** as it gives superior
-results for manga. The online version is extremely simple to set up, but
-requires sending screenshots of portions of your screen to a third party. The
-local version, on the other hand, requires a more involved setup and extra
-system resources.
+**“Manga OCR” in either variant is the recommended choice for manga**.
+The online version requires practically no special setup, but involves
+screenshots of portions of your screen being sent to a third party. The local
+version, on the other hand, requires a somewhat involved setup and extra system
+resources.
 
 **By default, OCR is disabled.** The necessary setup steps are:
 
-1. Set the [config](#config) key
-`ocr.engine` to one of: `mangaocr_online`, `mangaocr`, `ocrspace`, or
-`tesseract`.
+1. Set the [config](#config) key `ocr.engine` to one of: `mangaocr_online`,
+   `mangaocr`, `hiveocr_online`, `easyocr_online`, `ocrspace`, or `tesseract`.
 
 1. Set up the selected engine:
 
     * [Setting up “Manga OCR” Online](#setting-up-manga-ocr-online)
     * [Setting up “Manga OCR”](#setting-up-manga-ocr-local)
+    * [Setting up Hive OCR Online](#setting-up-hive-ocr-online)
+    * [Setting up EasyOCR Online](#setting-up-easyocr-online)
     * [Setting up OCR.space](#setting-up-ocrspace)
     * [Setting up Tesseract OCR](#setting-up-tesseract-ocr)
 
@@ -421,23 +446,21 @@ system resources.
 
 > **Warning**
 > The “Manga OCR” Online engine depends on a third-party online service
-> ([a Hugging Face Space by Detomo][manga-ocr-hf]), so using it involves sending
-> screenshots of portions of your screen to a third-party. Here is
-> [the stated privacy policy of Hugging Face][huggingface-privacy-policy].
+> ([a Hugging Face Space by Detomo][manga-ocr-hf])—using it involves sending
+> screenshots of portions of your screen to third parties. (See
+> [Privacy](#privacy))
 
-The online API used by the “Manga OCR” Online engine is freely accessible and
-consequently *does not* require any setup.
+The “Manga OCR” Online does not require any extra setup.
 
 Remember to [set up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
-and to launch Kamite with the config key `ocr.engine` set to `mangaocr_online`.
-
-[huggingface-privacy-policy]: https://huggingface.co/privacy
+if necessary, and to launch Kamite with the config key `ocr.engine` set to
+`mangaocr_online`.
 
 #### Setting up “Manga OCR” (Local)
 
 > **Note**
 > “Manga OCR” will use up to 2.5 GB of disk space. During launch, it will use up
-> to 1 GB of additional memory.
+> to 1 GB of additional RAM.
 
 ##### Recommended option: installation using pipx
 
@@ -556,12 +579,37 @@ ocr: {
 > (<ins>Linux</ins>) `~/.cache/huggingface/transformers/`, (<ins>Windows</ins>)
 > `C:\Users\<user>\.cache\huggingface\transformers`.
 
+#### Setting up Hive OCR Online
+
+> **Warning**
+> The Hive OCR Online engine depends on a third-party online service ([a Hugging
+> Face Space by seaoctopusredchicken][hiveocr-hf])—using it involves sending
+> screenshots of portions of your screen to third parties. (See
+> [Privacy](#privacy))
+
+The Hive OCR Online engine does not require any extra setup.
+
+Remember to [set up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
+if necessary, and to launch Kamite with the config key `ocr.engine` set to `hiveocr_online`.
+
+#### Setting up EasyOCR Online
+
+> **Warning**
+> The EasyOCR Online engine depends on a third-party online service ([a Hugging
+> Face Space by tomofi][easyocr-hf])—using it involves sending screenshots
+> of portions of your screen to third parties. (See [Privacy](#privacy))
+
+The EasyOCR Online engine does not require any extra setup.
+
+Remember to [set up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
+if necessary, and to launch Kamite with the config key `ocr.engine` set to
+`easyocr_online`.
+
 #### Setting up OCR.space
 
 > **Warning**
-> OCR.space is an online service, so using it involves sending screenshots of
-> portions of your screen to a third-party. Here is [the stated privacy policy
-> of OCR.space][ocrspace-privacy-policy].
+> OCR.space is an online service—using it involves sending screenshots of
+> portions of your screen to a third party. (See [Privacy](#privacy))
 
 The usage of the [OCR.space] free API is limited. The limits are defined by the
 provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
@@ -600,7 +648,9 @@ provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
     Engine “3” is useless for manga and slower than engine “1”, but it may be
     more accurate for, e.g., particular games.
 
-Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
+Remember to [set up extra OCR dependencies](#setting-up-extra-ocr-dependencies)
+if necessary, and to launch Kamite with the config key `ocr.engine` set to
+`ocrspace`.
 
 [ocrspace-privacy-policy]: https://ocr.space/privacypolicy
 
@@ -615,10 +665,10 @@ Remember to launch Kamite with the config key `ocr.engine` set to `ocrspace`.
     <ins>Windows</ins>: It is recommended to use [the installer provided by
     UB Mannheim][tesseract-ub-mannheim].
 
-1. Install Tesseract models prepared and verified for use with Kamite
+1. Install Tesseract models selected for use with Kamite
 
     Download
-    [`tesseract_traineddata_jpn_Kamite.zip`](https://mega.nz/file/9SsQBYTT#SDUSPerJ3iDsgSf08FlOWlVgbu7UICC_Oc7vg4D_YdQ)
+    [`tesseract_traineddata_jpn_Kamite.zip`](https://mega.nz/file/1TMXxApD#zHdgnXmbuMc5TRTcBlT7a5_8t2E1ziSxnhf9c2PbtP4)
     and extract the `.traineddata` files from the archive *directly* into
     Tesseract’s `tessdata` directory:
 
@@ -667,7 +717,7 @@ tasks. You need to install them on your own.
   <dt><a href="https://sr.ht/~emersion/grim/">grim</a></dt>
   <dd>Used for taking screenshots for OCR.</dd>
   <dt><a href="https://git.sr.ht/%7Ebrocellous/wlrctl">wlrctl</a></dt>
-  <dd>(Optional) Used to trigger a mouse click for OCR Auto Block Instant
+  <dd>(Optional) Necessary to trigger a mouse click for OCR Auto Block Instant
   mode.</dd>
 </dl>
 
@@ -725,14 +775,16 @@ block detection algorithm has a lot of room for improvement.*
 
 ![OCR region button](media/docs/ocr_region.png)
 
-Define a screen area in the config file and Kamite will OCR it as is.
+Define a screen area in the config file and Kamite will OCR it as is [using the
+configured OCR engine](#mangavisual-text-extraction).
 
-This is intended as an alternative for games that do not work well with
-Textractor.
+This is intended as an alternative for games that do not work with
+[Textractor](#textractor-integration) or [Agent](#agent-integration).
 
-> **Note**
->The feature is experimental and might currently not be usable in many use
-> cases.
+Here it is recommended to try OCR engines in the following order: Hive OCR,
+EasyOCR, OCR.space, and “Manga OCR” (in terms of the likelihood that they are
+going to be up to the task). (For OCR.space, be sure to try
+[OCR.space engine “3”](#setting-up-ocrspace) specifically).
 
 Below is an illustration of setting up a region in the [config file](#config).
 
@@ -793,15 +845,13 @@ console output.
 
 ###### Region OCR quality
 
-OCR.space and “Manga OCR” engines should be viable here in at least some cases.
-(Be sure to try [OCR.space engine “3”](#setting-up-ocrspace) specifically).
-
-The above engines, however, work best when the screenshot they are provided with
-is narrowed to just the text. And since the current auto-narrowing algorithm is
-not very reliable, for now it might be best to create separate regions for each
-possible line count of the target text box (i.e., first region encompassing just
-one line of text, second region encompassing the first and the second line, and
-so on) and choose between them on the fly.
+Some of the engines that can potentially handle this specific task work much more
+reliably when the screenshot they are provided with is narrowed to just the text.
+And since the current auto-narrowing algorithm is poor, for now it might be
+best—when necessary—to create separate regions for each possible line count of
+the target text box (i.e., first region encompassing just one line of text,
+second region encompassing the first and the second line, and so on) and choose
+between them on the fly.
 
 See also: [Config](#config), [Visual novel / game text extraction](#visual-novel--game-text-extraction),
 [Alternative software for visual novels / games](https://github.com/fauu/Kamite/wiki/Alternative-software#visual-novels--games).
@@ -877,11 +927,21 @@ The integration must be enabled in Gomics-v under `Preferences › Kamite`.
 
 ### Visual novel / game text extraction
 
-Kamite provides an extension for **[Textractor]** that sends lines of text
-extracted by it from other programs to Kamite.
+As far as built-in integrations are concerned, Kamite can receive text extracted
+from other programs through **[Textractor]** and **[Agent]** text extractor
+programs:
 
-> For games that do not work with Textractor, the experimental
-[Region recognition](#region-ocr) feature might prove an alternative.
+* [Textractor integration](#textractor-integration)
+* [Agent integration](#agent-integration)
+
+> **Note**
+> For games that do not work with Textractor or Agent, the [Region OCR](#region-ocr)
+> feature might prove an alternative.
+
+#### Textractor integration
+
+An extension for [Textractor] is available that sends lines of text
+extracted by it from other programs to Kamite.
 
 To install the *Kamite Send* Textractor extension:
 
@@ -904,7 +964,7 @@ them on the extensions list.
 > Want to prevent Textractor from inserting unnecessary hooks? Check out
 > [Textractor-HookAllowlist](https://github.com/fauu/Textractor-HookAllowlist/).
 
-#### Changing the default Textractor extension endpoint
+##### Changing the default Textractor extension endpoint
 
 By default, the extension expects Kamite to listen for commands at the address
 `localhost:4110`. If it is running on a different address (e.g., because you
@@ -916,6 +976,22 @@ network address from the perspective of the machine running Textractor, e.g.:
 ```txt
 host=192.0.0.10:4110
 ```
+
+#### Agent integration
+
+To receive text (and, optionally, machine translations) from the [Agent] text
+extractor:
+
+1. Add `integrations.agent.enable: yes` to [config](#config).
+
+2. In Agent, go to `Translate` tab and enable the option `WebSocketServer` (you
+   can then browse to <http://127.0.0.1:9001/> to confirm that it is enabled).
+
+With this setup, Kamite should receive text from Agent.
+
+> **Note**
+> (Linux) To hook Wine games, you can run the Windows version of Agent through
+> Wine (you might need an older version of Wine, such as 6.14).
 
 ---
 
@@ -1243,6 +1319,13 @@ so that actual line break characters demarcate chunks).
 
 To disable logging, either remove the `log.dir` definition before starting
 Kamite or simply comment it out by putting the `#` character in front of it.
+
+### Custom text use
+
+Text from Kamite can be forwarded to external programs using Custom commands
+(see below). Example uses:
+
+* [Read text from Kamite aloud using Microsoft’s TTS (Linux recipe)][wiki-linux-edge-tts]
 
 ## Custom commands (Launching external executables)
 
@@ -1578,6 +1661,20 @@ dev: {
   serveStaticInDevMode: no
 }
 
+integrations: {
+  # [RELOADABLE]
+  agent: {
+    # Whether to receive text from a running instance of Agent (the option
+    # `WebSocketServer` must be enabled in Agent)
+    enable: no
+
+    # The address of the Agent's WebSocket server through which text is
+    # received by Kamite. (There should be no need to override the default
+    # value unless you run Agent and Kamite on different network hosts)
+    host: "127.0.0.1:9001"
+  }
+}
+
 keybindings: {
   # Global keybindings. See the "Keyboard shortcuts" section of the Readme.
   # WARNING: Not all platforms support global keybindings
@@ -1617,7 +1714,8 @@ lookup: {
 }
 
 ocr: {
-  # The OCR engine to use: none, tesseract, mangaocr, mangaocr_online, ocrspace
+  # The OCR engine to use: none, tesseract, mangaocr, mangaocr_online, ocrspace,
+  #                        easyocr_online, hiveocr_online
   engine: none
   # (Directory path) Watch the specified directory for new/modified images and
   # OCR them automatically
@@ -1669,6 +1767,22 @@ ocr: {
 server: {
   # The port on which to run the client and the API
   port: 4110
+}
+
+# [RELOADABLE]
+sessionTimer: {
+  autoPause: {
+    # Whether to enable auto-pausing the session timer after a period of
+    # inactivity. (Overriding this particular option is only useful for
+    # disabling auto-pausing from a profile config or from the command-line in
+    # case the `after` option has been set in an earlier config)
+    enable: yes
+
+    # (Time duration) The inactivity time interval after which to pause the
+    # session timer. Example valid values: `30s`, `5m`. (If this option is set,
+    # auto-pausing can still be disabled by setting `enable` to `no`)
+    after: …
+  }
 }
 
 # [RELOADABLE]
@@ -1910,10 +2024,22 @@ Kamite never saves your data to disk.
 Kamite never sends your data through the network, with the following exceptions:
 
 * When `ocr.engine` is set to `mangaocr_online`, screenshots of portions of your
-  screen are sent to a [Hugging Face Space][manga-ocr-hf] for text recognition.
+  screen are sent to [a Hugging Face Space by detomo][manga-ocr-hf] for text
+  recognition.
+
+* When `ocr.engine` is set to `hiveocr_online`, screenshots of portions of your
+  screen are sent to a [Hugging Face Space by seaoctopusredchicken][hiveocr-hf]
+  for text recognition.
+
+* When `ocr.engine` is set to `easyocr_online`, screenshots of portions of your
+  screen are sent to a [Hugging Face Space by tomofi][easyocr-hf] for text
+  recognition.
 
 * When `ocr.engine` is set to `ocrspace`, screenshots of portions of your screen
   are sent to [OCR.space] for text recognition.
+
+Sceenshots sent to third parties can be inspected in the client’s Debug tab (see
+[Troubleshooting](#troubleshooting)). They are labelled as “remote OCR”.
 
 ## Development
 
@@ -1987,4 +2113,6 @@ the original license notices.
 [Sway]: https://swaywm.org/
 [manga-ocr]: https://github.com/kha-white/manga-ocr
 [manga-ocr-hf]: https://huggingface.co/spaces/Detomo/Japanese-OCR
+[easyocr-hf]: https://huggingface.co/spaces/tomofi/EasyOCR
+[hiveocr-hf]: https://huggingface.co/spaces/seaoctopusredchicken/Hive-OCR-simple
 [OCR.space]: https://ocr.space/

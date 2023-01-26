@@ -9,15 +9,18 @@
 
 ## [Unreleased]
 
+## [0.12] – 2023-01-26
+
 ### Added
 
-* EasyOCR Online and Hive OCR Online engines (uses Hugging Face Spaces by
+* EasyOCR Online and Hive OCR Online engines (using Hugging Face Spaces by
   [tomofi][tomofi-hf] and [seaoctopusredchicken][seaoctopusredchicken-hf]
   respectively). (`ocr.engine: easyocr_online`, `ocr:engine: hiveocr_online`)
   * Those engines <ins>don’t work for vertical text, but they tend to be very
   good for horizontal text</ins>, Hive OCR especially.
-* Integration with the [Agent][agent-gh] texthooker. (`integrations.agent.enable:
-  yes` and enable `WebSocketServer` in Agent’s `Translate` tab)
+* Ability to receive text (and machine translations) from the [Agent][agent-gh]
+  texthooker. (`integrations.agent.enable: yes` and enable `WebSocketServer` in
+  Agent’s `Translate` tab)
 * Option to auto-pause the session timer after a period of inactivity (no mouse
   and keyboard inputs to the client and no incoming chunks), unpausing after
   activity is resumed. (e.g., `sessionTimer.autoPause.after: 100s`)
@@ -29,7 +32,6 @@
 ### Changed
 
 * Improved the selection of vertical OCR models for use with the Tesseract engine.
-
   * Requires separate download. See [Setting up Tesseract OCR][readme-setting-up-tesseract].
 
 [readme-setting-up-tesseract]: https://github.com/fauu/Kamite/#setting-up-tesseract-ocr
@@ -397,7 +399,8 @@
 
 Initial release.
 
-[Unreleased]: https://github.com/fauu/Kamite/compare/v0.11...HEAD
+[Unreleased]: https://github.com/fauu/Kamite/compare/v0.12...HEAD
+[0.12]: https://github.com/fauu/Kamite/releases/tag/v0.12
 [0.11]: https://github.com/fauu/Kamite/releases/tag/v0.11
 [0.10]: https://github.com/fauu/Kamite/releases/tag/v0.10
 [0.9]: https://github.com/fauu/Kamite/releases/tag/v0.9
