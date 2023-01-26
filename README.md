@@ -2038,8 +2038,8 @@ Kamite never sends your data through the network, with the following exceptions:
 * When `ocr.engine` is set to `ocrspace`, screenshots of portions of your screen
   are sent to [OCR.space] for text recognition.
 
-Sceenshots sent to third parties can be inspected in the client’s Debug tab (see
-[Troubleshooting](#troubleshooting)). They are labelled as “remote OCR”.
+Screenshots sent to third parties can be inspected in the client’s Debug tab
+(see [Troubleshooting](#troubleshooting)). They are labelled as “remote OCR”.
 
 ## Development
 
