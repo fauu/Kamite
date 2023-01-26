@@ -33,7 +33,11 @@ dist-prepare-generic: jar runtime-linux textractor dist-write-version
 	cp -r ../lib/generic dist-base/lib
 	cp java/"$(BUILD_JAR_NAME)" dist-base/lib/generic/"$(DIST_JAR_NAME)"
 	mkdir dist-base/extra
-	cp -r textractor dist-base/extra/textractor
+	mkdir dist-base/extra/textractor
+	mkdir dist-base/extra/textractor/x86
+	mkdir dist-base/extra/textractor/x64
+	cp "textractor/x86/Kamite Send.xdll" dist-base/extra/textractor/x86
+	cp "textractor/x64/Kamite Send.xdll" dist-base/extra/textractor/x64
 	cp ../README.md ../COPYING.md ../CHANGELOG.md dist-base
 .PHONY: dist-prepare-generic
 
