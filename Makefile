@@ -131,12 +131,10 @@ runtime-linux:
 textractor:
 	rm -rf target/textractor
 	mkdir -p target/textractor/x86
-	# The x86 dll produced by the Zig toolchain doesn't load on Textractor's alpha 203 build
+	# The x86 dll produced by the Zig toolchain (0.10.1) doesn't load on Textractor's alpha 203 build
 	# specifically in Wine (works on Windows). Use mingw-w64 for now, but it'd be preferable to return
 	# to zig later, because the toolchain is lighter and, more importantly, so is the produced dll
-	# (significantly so)
-	# TODO: Verify whether the issue still exists once https://github.com/ziglang/zig/issues/13733 is
-	# 			fixed in the latest Zig versions (the issue blocks building for x86 completely)
+	# (significantly).
 	#zig c++ -shared -target i386-windows-gnu -l ws2_32 \
   #  -o "target/textractor/x86/Kamite Send.xdll" \
   #  extra/textractor/src/KamiteSend.cpp extra/textractor/src/KamiteSendImpl.cpp
