@@ -136,7 +136,9 @@ public class Recognizer {
       return Result.Err(RecognitionOpError.INPUT_TOO_SMALL);
     }
 
-    sendDebugImage(img, "recognizeBox input");
+    if (debug) {
+      sendDebugImage(img, "%s OCR".formatted(engine.isRemote() ? "remote" : "local"));
+    }
 
     LOG.debug("Starting box recognition");
     return switch (engine) {

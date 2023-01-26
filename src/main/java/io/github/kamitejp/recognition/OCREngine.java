@@ -22,6 +22,11 @@ public sealed interface OCREngine
     public String toString() {
       return "Tesseract OCR";
     }
+
+    @Override
+    public boolean isRemote() {
+      return false;
+    }
   }
 
   record MangaOCR(
@@ -41,6 +46,11 @@ public sealed interface OCREngine
         customPythonPath,
         new MangaOCRController(platform, customPythonPath, eventCb)
       );
+    }
+
+    @Override
+    public boolean isRemote() {
+      return false;
     }
 
     @Override
@@ -69,6 +79,11 @@ public sealed interface OCREngine
     }
 
     @Override
+    public boolean isRemote() {
+      return true;
+    }
+
+    @Override
     public String toString() {
       return "\"Manga OCR\" Online (HF Space by Detomo)";
     }
@@ -86,6 +101,11 @@ public sealed interface OCREngine
         throw new IllegalStateException("This OCREngine.OCRSpace instance is already initialized");
       }
       return new OCRSpace(apiKey, subengine, new OCRSpaceAdapter(apiKey, subengine));
+    }
+
+    @Override
+    public boolean isRemote() {
+      return true;
     }
 
     @Override
@@ -109,6 +129,11 @@ public sealed interface OCREngine
     }
 
     @Override
+    public boolean isRemote() {
+      return true;
+    }
+
+    @Override
     public String toString() {
       return "EasyOCR Online (HF Space by tomofi)";
     }
@@ -129,6 +154,11 @@ public sealed interface OCREngine
     }
 
     @Override
+    public boolean isRemote() {
+      return true;
+    }
+
+    @Override
     public String toString() {
       return "Hive OCR Online (HF Space by seaoctopusredchicken)";
     }
@@ -139,7 +169,14 @@ public sealed interface OCREngine
     public String toString() {
       return "None";
     }
+
+    @Override
+    public boolean isRemote() {
+      return false;
+    }
   }
+
+  boolean isRemote();
 
   default void destroy() {
     // Do nothing
