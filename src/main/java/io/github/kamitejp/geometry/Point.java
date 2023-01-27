@@ -8,6 +8,24 @@ public record Point(int x, int y) {
     );
   }
 
+  public double distanceFromLine(Point lineA, Point lineB) {
+    var a = x - lineA.x;
+    var b = y - lineA.y;
+    var c = lineB.x - lineA.x;
+    var d = lineB.y - lineA.y;
+    var e = -d;
+    var f = c;
+
+    var dot = a * e + b * f;
+    var lenSq = e * e + f * f;
+
+    return Math.abs(dot) / Math.sqrt(lenSq);
+  }
+
+  public double angleWith(Point other) {
+    return (float) Math.atan2(other.y - y, other.x - x);
+  }
+
   public java.awt.Point toAWT() {
     return new java.awt.Point(x, y);
   }

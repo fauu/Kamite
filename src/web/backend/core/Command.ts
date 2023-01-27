@@ -8,7 +8,8 @@ type OCRCommand =
 export const PARAMLESS_OCR_COMMANDS = [
   { kind: "ocr_manual-block" },
   { kind: "ocr_manual-block-vertical" },
-  { kind: "ocr_manual-block-horizontal" }
+  { kind: "ocr_manual-block-horizontal" },
+  { kind: "ocr_manual-block-rotated" },
 ] as const;
 
 export type OCRAutoBlockCommand = {

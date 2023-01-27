@@ -286,7 +286,7 @@ public class Kamite {
       try {
         ocrDirectoryWatcher = new OCRDirectoryWatcher(
           ocrWatchDir,
-          /* recognizeImageFn */ recognitionConductor::recognizeImageProvided
+          /* recognizeImageFn */ recognitionConductor::recognizeGivenImage
         );
       } catch (OCRDirectoryWatcherCreationException e) {
         LOG.error("Failed to create OCR directory watcher: {}", e::toString);
@@ -644,6 +644,8 @@ public class Kamite {
             recognitionConductor.recognizeManualBlock(TextOrientation.VERTICAL);
           case Command.OCR.ManualBlockHorizontal ignored ->
             recognitionConductor.recognizeManualBlock(TextOrientation.HORIZONTAL);
+          case Command.OCR.ManualBlockRotated ignored ->
+            recognitionConductor.recognizeManualBlockRotated();
           case Command.OCR.AutoBlock cm ->
             recognitionConductor.recognizeAutoBlockDefault(cm.mode());
           case Command.OCR.AutoColumn cm ->
@@ -713,7 +715,7 @@ public class Kamite {
   private void handleOCRImageCommand(String bytesB64, Dimension size) {
     var bytes = Base64.getDecoder().decode(bytesB64);
     var img = ImageOps.arrayToBufferedImage(bytes, size.width(), size.height());
-    recognitionConductor.recognizeAutoBlockImageProvided(
+    recognitionConductor.recognizeAutoBlockGivenImage(
       img, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_FULL
     );
   }

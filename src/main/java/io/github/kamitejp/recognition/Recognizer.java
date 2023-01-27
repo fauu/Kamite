@@ -559,7 +559,12 @@ public class Recognizer {
         "ocr_region"
       );
     } else if (!(engine instanceof OCREngine.None)) {
-      return List.of("ocr_manual-block", "ocr_auto-block", "ocr_region");
+      return List.of(
+        "ocr_manual-block",
+        "ocr_manual-block-rotated",
+        "ocr_auto-block",
+        "ocr_region"
+      );
     } else {
       return List.of();
     }

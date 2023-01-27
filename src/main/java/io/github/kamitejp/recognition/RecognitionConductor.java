@@ -8,7 +8,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.config.Config;
+import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
+import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
 import io.github.kamitejp.status.ProgramStatus;
@@ -106,14 +108,14 @@ public class RecognitionConductor {
     if (screenshotRes.isErr()) {
       var errorNotification = switch (screenshotRes.err()) {
         case SELECTION_CANCELLED -> null;
-        default                  -> "Could not take a screenshot";
+        default -> "Could not take a screenshot";
       };
       recognitionAbandon(errorNotification, screenshotRes.err());
       return;
     }
 
     if (autoBlockHeuristic != null) {
-      doRecognizeAutoBlockImageProvided(screenshotRes.get(), textOrientation, autoBlockHeuristic);
+      doRecognizeAutoBlockGivenImage(screenshotRes.get(), textOrientation, autoBlockHeuristic);
     } else {
       doRecognizeBox(screenshotRes.get(), textOrientation);
     }
@@ -131,7 +133,7 @@ public class RecognitionConductor {
     if (areaRes.isErr()) {
       var errorNotification = switch (areaRes.err()) {
         case SELECTION_CANCELLED -> null;
-        default                  -> "Could not get user screen area selection";
+        default -> "Could not get user screen area selection";
       };
       recognitionAbandon(errorNotification, areaRes.err());
       return;
@@ -143,6 +145,76 @@ public class RecognitionConductor {
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
+  public void recognizeManualBlockRotated() {
+    LOG.debug("Handling manual rotated block recognition request");
+    updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.AWAITING_USER_INPUT);
+
+    var points = new Point[3];
+    for (var i = 0; i < 3; i++) {
+      var selectionRes = platform.getUserSelectedPoint(PointSelectionMode.SELECT);
+      if (selectionRes.isErr()) {
+        var errorNotification = switch (selectionRes.err()) {
+          case SELECTION_CANCELLED -> null;
+          default -> "Could not get user screen point selection";
+        };
+        recognitionAbandon(errorNotification, selectionRes.err());
+        return;
+      }
+      points[i] = selectionRes.get();
+    }
+
+    updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
+
+    var a = points[0];
+    var b = points[1];
+
+    var theta = a.angleWith(b);
+
+    var startToEndEdgeDist = points[2].distanceFromLine(a, b);
+    var startDeltaX = startToEndEdgeDist * Math.sin(theta);
+    var startDeltaY = startToEndEdgeDist * Math.cos(theta);
+    var d = new Point((int) (a.x() - startDeltaX), (int) (a.y() + startDeltaY));
+
+    var boundingStartX = d.x();
+    var boundingStartY = a.y();
+
+    var ssAreaRect = Rectangle.ofStartAndDimensions(
+      boundingStartX - 10,
+      boundingStartY - 10,
+      (int) (d.distanceFrom(b) / Math.sqrt(2)) + 20,
+      (int) (a.distanceFrom(b) * Math.sin(theta)) + 20
+    );
+
+    var screenshotRes = platform.takeAreaScreenshot(ssAreaRect);
+    if (screenshotRes.isErr()) {
+      var errorNotification = switch (screenshotRes.err()) {
+        case SELECTION_CANCELLED -> null;
+        default -> "Could not take a screenshot";
+      };
+      recognitionAbandon(errorNotification, screenshotRes.err());
+      return;
+    }
+
+    var rotated = ImageOps.rotated(screenshotRes.get(), Math.toRadians(90) - theta);
+
+    // var ox = ssAreaRect.getWidth() / 2;
+    // var oy = ssAreaRect.getHeight() / 2;
+    // var rx = (ox * Math.cos(theta)) - (oy * Math.sin(theta));
+    // var ry = (ox * Math.sin(theta)) + (oy * Math.cos(theta));
+    //
+    // var cropRect = Rectangle.ofStartAndDimensions(
+    //   (int) rx,
+    //   (int) ry,
+    //   (int) (startToEndEdgeDist / Math.sqrt(2)),
+    //   (int) (a.distanceFrom(b) * Math.sin(theta))
+    // );
+    //
+    // var cropped = ImageOps.cropped(rotated, cropRect);
+
+    doRecognizeBox(rotated, TextOrientation.UNKNOWN);
+    updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
+  }
+
   public void recognizeAutoBlockDefault(PointSelectionMode mode) {
     recognizeAutoBlock(mode, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_FULL);
   }
@@ -151,8 +223,8 @@ public class RecognitionConductor {
     recognizeAutoBlock(mode, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_SINGLE_COLUMN);
   }
 
-  public void recognizeImageProvided(BufferedImage img) {
-    LOG.debug("Handling image provided recognition request");
+  public void recognizeGivenImage(BufferedImage img) {
+    LOG.debug("Handling image given recognition request");
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
     doRecognizeBox(img, TextOrientation.UNKNOWN);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
@@ -171,7 +243,7 @@ public class RecognitionConductor {
     if (selectionRes.isErr()) {
       var errorNotification = switch (selectionRes.err()) {
         case SELECTION_CANCELLED -> null;
-        default                  -> "Could not get user screen point selection";
+        default -> "Could not get user screen point selection";
       };
       recognitionAbandon(errorNotification, selectionRes.err());
       return;
@@ -186,27 +258,27 @@ public class RecognitionConductor {
     if (screenshotRes.isErr()) {
       var errorNotification = switch (screenshotRes.err()) {
         case SELECTION_CANCELLED -> null;
-        default                  -> "Could not take a screenshot";
+        default -> "Could not take a screenshot";
       };
       recognitionAbandon(errorNotification, screenshotRes.err());
       return;
     }
 
-    doRecognizeAutoBlockImageProvided(screenshotRes.get(), textOrientation, heuristic);
+    doRecognizeAutoBlockGivenImage(screenshotRes.get(), textOrientation, heuristic);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
   @SuppressWarnings("SameParameterValue")
-  public void recognizeAutoBlockImageProvided(
+  public void recognizeAutoBlockGivenImage(
     BufferedImage img, TextOrientation textOrientation, AutoBlockHeuristic mode
   ) {
     LOG.debug("Handling auto block image recognition request (mode = {})", mode);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeAutoBlockImageProvided(img, textOrientation, mode);
+    doRecognizeAutoBlockGivenImage(img, textOrientation, mode);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
-  private void doRecognizeAutoBlockImageProvided(
+  private void doRecognizeAutoBlockGivenImage(
     BufferedImage img, TextOrientation textOrientation, AutoBlockHeuristic heuristic
   ) {
     var maybeBlockImg = recognizer.autoNarrowToTextBlock(img, heuristic);

@@ -23,6 +23,7 @@ public sealed interface Command
     permits OCR.ManualBlock,
             OCR.ManualBlockVertical,
             OCR.ManualBlockHorizontal,
+            OCR.ManualBlockRotated,
             OCR.AutoBlock,
             OCR.AutoColumn,
             OCR.Region,
@@ -32,6 +33,8 @@ public sealed interface Command
     record ManualBlockVertical() implements OCR {}
 
     record ManualBlockHorizontal() implements OCR {}
+
+    record ManualBlockRotated() implements OCR {}
 
     record AutoBlock(PointSelectionMode mode) implements OCR {}
 
@@ -169,6 +172,7 @@ public sealed interface Command
           case "manual-block"            -> new OCR.ManualBlock();
           case "manual-block-vertical"   -> new OCR.ManualBlockVertical();
           case "manual-block-horizontal" -> new OCR.ManualBlockHorizontal();
+          case "manual-block-rotated"    -> new OCR.ManualBlockRotated();
 
           case "auto-block"              -> {
             var p = JSON.mapper().treeToValue(paramsNode, CommandParams.OCR.AutoBlock.class);

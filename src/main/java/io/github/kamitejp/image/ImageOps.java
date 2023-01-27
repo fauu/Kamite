@@ -2,6 +2,8 @@ package io.github.kamitejp.image;
 
 import java.awt.Color;
 import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.ByteArrayInputStream;
@@ -57,12 +59,12 @@ public final class ImageOps {
   }
 
   public static BufferedImage cropped(BufferedImage img, Rectangle rect) {
-    var res = new BufferedImage(
+    var ret = new BufferedImage(
       rect.getWidth(),
       rect.getHeight(),
       BufferedImage.TYPE_INT_RGB
     );
-    var croppedGfx = res.getGraphics();
+    var croppedGfx = ret.getGraphics();
     croppedGfx.drawImage(
       img,
       0, 0, rect.getWidth(), rect.getHeight(),
@@ -70,7 +72,27 @@ public final class ImageOps {
       null
     );
     croppedGfx.dispose();
-    return res;
+    return ret;
+  }
+
+  public static BufferedImage rotated(BufferedImage img, double theta) {
+    var sin = Math.abs(Math.sin(theta));
+    var cos = Math.abs(Math.cos(theta));
+    var w = (int) ((img.getWidth() * cos) + (img.getHeight() * sin));
+    var h = (int) ((img.getWidth() * sin) + (img.getHeight() * cos));
+
+    var ret = new BufferedImage(w, h, img.getType());
+    var gfx = ret.createGraphics();
+    gfx.setColor(DEFAULT_BG_COLOR);
+    gfx.fillRect(0, 0, ret.getWidth(), ret.getHeight());
+    gfx.dispose();
+
+    var at = new AffineTransform();
+    at.rotate(theta, img.getWidth() / 2, img.getHeight() / 2);
+    var op = new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
+    op.filter(img, ret);
+
+    return ret;
   }
 
   public static BufferedImage withBorder(BufferedImage img, Color color, int w) {

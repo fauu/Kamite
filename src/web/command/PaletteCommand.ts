@@ -80,11 +80,13 @@ function paletteCommand(
 function description(command: Command): string | undefined {
   switch (command.kind) {
     case "ocr_manual-block":
-      return "OCR manually selected area";
+      return "OCR manually-selected area";
     case "ocr_manual-block-vertical":
-      return "OCR manually selected area assuming vertical text";
+      return "OCR manually-selected area assuming vertical text";
     case "ocr_manual-block-horizontal":
-      return "OCR manually selected area assuming horizontal text";
+      return "OCR manually-selected area assuming horizontal text";
+    case "ocr_manual-block-rotated":
+      return "OCR manually-selected rotated area";
     case "ocr_auto-block":
       return "OCR autodetected text block";
     case "player_seek-start-sub":
