@@ -170,20 +170,31 @@ public class RecognitionConductor {
 
     var theta = a.angleWith(b);
 
+    // XXX: Cleanup
+
     var startToEndEdgeDist = points[2].distanceFromLine(a, b);
     var startDeltaX = startToEndEdgeDist * Math.sin(theta);
     var startDeltaY = startToEndEdgeDist * Math.cos(theta);
+    var c = new Point((int) (b.x() - startDeltaX), (int) (b.y() + startDeltaY));
     var d = new Point((int) (a.x() - startDeltaX), (int) (a.y() + startDeltaY));
 
-    var boundingStartX = d.x();
-    var boundingStartY = a.y();
+    int boundingMinX;
+    int boundingMaxX;
+    int boundingMinY;
+    int boundingMaxY;
+    if (theta <= Math.toRadians(90)) {
+      boundingMinX = d.x();
+      boundingMaxX = b.x();
+      boundingMinY = a.y();
+      boundingMaxY = c.y();
+    } else {
+      boundingMinX = c.x();
+      boundingMaxX = a.x();
+      boundingMinY = d.y();
+      boundingMaxY = b.y();
+    }
 
-    var ssAreaRect = Rectangle.ofStartAndDimensions(
-      boundingStartX - 10,
-      boundingStartY - 10,
-      (int) (d.distanceFrom(b) / Math.sqrt(2)) + 20,
-      (int) (a.distanceFrom(b) * Math.sin(theta)) + 20
-    );
+    var ssAreaRect = Rectangle.ofEdges(boundingMinX, boundingMinY, boundingMaxX, boundingMaxY);
 
     var screenshotRes = platform.takeAreaScreenshot(ssAreaRect);
     if (screenshotRes.isErr()) {
@@ -197,21 +208,15 @@ public class RecognitionConductor {
 
     var rotated = ImageOps.rotated(screenshotRes.get(), Math.toRadians(90) - theta);
 
-    // var ox = ssAreaRect.getWidth() / 2;
-    // var oy = ssAreaRect.getHeight() / 2;
-    // var rx = (ox * Math.cos(theta)) - (oy * Math.sin(theta));
-    // var ry = (ox * Math.sin(theta)) + (oy * Math.cos(theta));
-    //
-    // var cropRect = Rectangle.ofStartAndDimensions(
-    //   (int) rx,
-    //   (int) ry,
-    //   (int) (startToEndEdgeDist / Math.sqrt(2)),
-    //   (int) (a.distanceFrom(b) * Math.sin(theta))
-    // );
-    //
-    // var cropped = ImageOps.cropped(rotated, cropRect);
+    var cropRect = Rectangle.around(
+      new Point((ssAreaRect.getWidth() / 2), (ssAreaRect.getHeight() / 2)),
+      (int) startToEndEdgeDist,
+      (int) a.distanceFrom(b)
+    );
 
-    doRecognizeBox(rotated, TextOrientation.UNKNOWN);
+    var cropped = ImageOps.cropped(rotated, cropRect);
+
+    doRecognizeBox(cropped, TextOrientation.UNKNOWN);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
