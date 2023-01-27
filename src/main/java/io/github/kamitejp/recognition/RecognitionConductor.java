@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.config.Config;
+import io.github.kamitejp.geometry.Direction;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
@@ -149,7 +150,7 @@ public class RecognitionConductor {
     LOG.debug("Handling manual rotated block recognition request");
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.AWAITING_USER_INPUT);
 
-    var points = new Point[3];
+    var selectedPoints = new Point[3];
     for (var i = 0; i < 3; i++) {
       var selectionRes = platform.getUserSelectedPoint(PointSelectionMode.SELECT);
       if (selectionRes.isErr()) {
@@ -160,41 +161,67 @@ public class RecognitionConductor {
         recognitionAbandon(errorNotification, selectionRes.err());
         return;
       }
-      points[i] = selectionRes.get();
+      selectedPoints[i] = selectionRes.get();
     }
 
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
 
-    var a = points[0];
-    var b = points[1];
+    // (Points in screen coordinates)
+    // Beginning of starting edge of text block (top-left of first possible character)
+    var a = selectedPoints[0];
+    // End of starting edge of text block (bottom-right or top-right of first possible character)
+    var b = selectedPoints[1];
+    // Somewhere on the ending edge of text block (e.g. bottom-right of last character)
+    var z = selectedPoints[2];
 
+
+    // Rotation of the text block (rotation of its starting, i.e. top or right, edge).
+    // 0 - perfectly horizontal, π/2 rad - perfecly vertical
     var theta = a.angleWith(b);
 
-    // XXX: Cleanup
-
-    var startToEndEdgeDist = points[2].distanceFromLine(a, b);
-    var startDeltaX = startToEndEdgeDist * Math.sin(theta);
-    var startDeltaY = startToEndEdgeDist * Math.cos(theta);
-    var c = new Point((int) (b.x() - startDeltaX), (int) (b.y() + startDeltaY));
-    var d = new Point((int) (a.x() - startDeltaX), (int) (a.y() + startDeltaY));
-
-    int boundingMinX;
-    int boundingMaxX;
-    int boundingMinY;
-    int boundingMaxY;
-    if (theta <= Math.toRadians(90)) {
-      boundingMinX = d.x();
-      boundingMaxX = b.x();
-      boundingMinY = a.y();
-      boundingMaxY = c.y();
-    } else {
-      boundingMinX = c.x();
-      boundingMaxX = a.x();
-      boundingMinY = d.y();
-      boundingMaxY = b.y();
+    Direction textDirection = Direction.VERTICAL;
+    if (theta < Math.toRadians(45) || theta > Math.toRadians(135)) { // XXX
+      textDirection = Direction.HORIZONTAL;
     }
 
-    var ssAreaRect = Rectangle.ofEdges(boundingMinX, boundingMinY, boundingMaxX, boundingMaxY);
+    // Cross section of the text block, perpendicular to the real orientation of the block
+    var crossSection = z.distanceFromLine(a, b);
+    // x-distance and y-distances from the starting to the ending edge of the block
+    var endDeltaX = crossSection;
+    var endDeltaY = crossSection;
+    var sinTheta = Math.sin(theta);
+    var cosTheta = Math.cos(theta);
+    switch (textDirection) {
+      case VERTICAL -> {
+        endDeltaX *= sinTheta;
+        endDeltaY *= cosTheta;
+      }
+      case HORIZONTAL -> {
+        endDeltaX *= cosTheta;
+        endDeltaY *= sinTheta;
+      }
+    }
+    // End of ending edge of text block (bottom-right of last possible character)
+    var c = new Point((int) (b.x() - endDeltaX), (int) (b.y() + endDeltaY));
+    // Start of ending edge of text block (top-left or bottom-left of first possible character of
+    // last line)
+    var d = new Point((int) (a.x() - endDeltaX), (int) (a.y() + endDeltaY));
+
+    // Made up of min. and max. x and y coordinates of points a, b, c, d
+    Rectangle ssAreaRect;
+    try {
+      if (theta <= Math.toRadians(90)) {
+        ssAreaRect = Rectangle.ofEdges(d.x(), a.y(), b.x(), c.y());
+      } else {
+        ssAreaRect = switch (textDirection) {
+          case VERTICAL   -> Rectangle.ofEdges(c.x(), d.y(), a.x(), b.y());
+          case HORIZONTAL -> Rectangle.ofEdges(a.x(), b.y(), c.x(), d.y());
+        };
+      }
+    } catch (IllegalArgumentException e) {
+      recognitionAbandon("Selection incorrect", RecognitionOpError.SELECTION_INCORRECT);
+      return;
+    }
 
     var screenshotRes = platform.takeAreaScreenshot(ssAreaRect);
     if (screenshotRes.isErr()) {
@@ -206,13 +233,24 @@ public class RecognitionConductor {
       return;
     }
 
-    var rotated = ImageOps.rotated(screenshotRes.get(), Math.toRadians(90) - theta);
+    var rotation = -theta;
+    if (textDirection == Direction.VERTICAL) {
+      rotation += Math.toRadians(90);
+    }
 
-    var cropRect = Rectangle.around(
-      new Point((ssAreaRect.getWidth() / 2), (ssAreaRect.getHeight() / 2)),
-      (int) startToEndEdgeDist,
-      (int) a.distanceFrom(b)
-    );
+    var rotated = ImageOps.rotated(screenshotRes.get(), rotation);
+
+    var cropW = crossSection;
+    var cropH = a.distanceFrom(b);
+    if (textDirection == Direction.HORIZONTAL) {
+      var temp = cropW;
+      cropW = cropH;
+      cropH = temp;
+    }
+
+    var ssAreaCenterOwnCoords =
+      new Point((ssAreaRect.getWidth() / 2), (ssAreaRect.getHeight() / 2));
+    var cropRect = Rectangle.around(ssAreaCenterOwnCoords, (int) cropW, (int) cropH);
 
     var cropped = ImageOps.cropped(rotated, cropRect);
 
@@ -330,7 +368,9 @@ public class RecognitionConductor {
       case SELECTION_CANCELLED ->
         LOG.debug("Screen area/point selection was cancelled by the user");
       case SELECTION_FAILED ->
-        LOG.error("Failed to perform screen area selection");
+        LOG.error("Failed to perform screen area/point selection");
+      case SELECTION_INCORRECT ->
+        LOG.error("User's screen area/point selection is incorrect");
       case SCREENSHOT_FAILED ->
         LOG.error("Failed to take a screenshot");
       case INPUT_TOO_SMALL ->
