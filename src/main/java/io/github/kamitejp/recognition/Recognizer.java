@@ -190,7 +190,7 @@ public class Recognizer {
     Rectangle boundingRectangle
   ) {}
 
-  public static Optional<RotatedBlockInfo> detectRotatedBlock(Point[] selectedPoints) {
+  public static Optional<RotatedBlockInfo> computeRotatedBlock(Point[] selectedPoints) {
     // (Points in screen coordinates)
     // Beginning of starting edge of text block (top-left of first possible character)
     var a = selectedPoints[0];
@@ -206,13 +206,22 @@ public class Recognizer {
     //   > π/2 rad - rotated right
     var theta = a.angleWith(b);
 
+    var edgesDirectedDistance = z.directedDistanceFromLine(a, b);
+    if (edgesDirectedDistance < 0) {
+      LOG.debug("The specified rotated block is mirrored: not supported");
+      return Optional.empty();
+    }
+
     BlockRotation blockRotation;
-    if (theta < 0) {
-     blockRotation = BlockRotation.BELOW_HORIZONTAL;
-    } else if (theta < Math.toRadians(90)) {
-     blockRotation = BlockRotation.BELOW_VERTICAL;
+    if (theta < -Maths.DEGREES_90_IN_RADIANS) {
+      LOG.debug("The specified rotated block is upside down: not supported");
+      return Optional.empty();
+    } else if (theta < 0) {
+      blockRotation = BlockRotation.BELOW_HORIZONTAL;
+    } else if (theta < Maths.DEGREES_90_IN_RADIANS) {
+      blockRotation = BlockRotation.BELOW_VERTICAL;
     } else {
-     blockRotation = BlockRotation.ABOVE_VERTICAL;
+      blockRotation = BlockRotation.ABOVE_VERTICAL;
     }
 
     TextOrientation textOrientation = TextOrientation.VERTICAL;
@@ -221,7 +230,7 @@ public class Recognizer {
     }
 
     // Cross section of the text block, perpendicular to the real orientation of the block
-    var crossSection = z.distanceFromLine(a, b);
+    var crossSection = Math.abs(edgesDirectedDistance);
 
     // x-distance and y-distances from the starting to the ending edge of the block
     var endDeltaX = crossSection;
@@ -232,12 +241,12 @@ public class Recognizer {
         endDeltaY *= Math.cos(-theta);
       }
       case BELOW_VERTICAL -> {
-        endDeltaX *= -Math.cos(Math.toRadians(90) - theta);
-        endDeltaY *= Math.sin(Math.toRadians(90) - theta);
+        endDeltaX *= -Math.cos(Maths.DEGREES_90_IN_RADIANS - theta);
+        endDeltaY *= Math.sin(Maths.DEGREES_90_IN_RADIANS - theta);
       }
       case ABOVE_VERTICAL -> {
-        endDeltaX *= -Math.cos(theta - Math.toRadians(90));
-        endDeltaY *= -Math.sin(theta - Math.toRadians(90));
+        endDeltaX *= -Math.cos(theta - Maths.DEGREES_90_IN_RADIANS);
+        endDeltaY *= -Math.sin(theta - Maths.DEGREES_90_IN_RADIANS);
       }
     }
 
@@ -262,7 +271,8 @@ public class Recognizer {
         boundingRectangle
       ));
     } catch (IllegalArgumentException e) {
-      // QUAL: Check for incorrect selection earlier instead of catching it here
+      // Just in case. Should've been caught earlier when checking invariants
+      LOG.error("Undetected incorrect rotated block selection");
       return Optional.empty();
     }
   }
@@ -272,7 +282,7 @@ public class Recognizer {
   ) {
     var rotation = -block.theta;
     if (block.textOrientation == TextOrientation.VERTICAL) {
-      rotation += 2 * Maths.DEGREES_45_IN_RADIANS;
+      rotation += Maths.DEGREES_90_IN_RADIANS;
     }
 
     var rotated = ImageOps.rotated(img, rotation);

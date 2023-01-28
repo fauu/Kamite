@@ -164,7 +164,7 @@ public class RecognitionConductor {
 
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
 
-    var maybeRotatedBlock = Recognizer.detectRotatedBlock(selectedPoints);
+    var maybeRotatedBlock = Recognizer.computeRotatedBlock(selectedPoints);
     if (maybeRotatedBlock.isEmpty()) {
       recognitionAbandon("Selection incorrect", RecognitionOpError.SELECTION_INCORRECT);
       return;
