@@ -64,14 +64,16 @@ public final class ImageOps {
       rect.getHeight(),
       BufferedImage.TYPE_INT_RGB
     );
-    var croppedGfx = ret.getGraphics();
-    croppedGfx.drawImage(
+    var gfx = ret.getGraphics();
+    gfx.setColor(DEFAULT_BG_COLOR);
+    gfx.fillRect(0, 0, ret.getWidth(), ret.getHeight());
+    gfx.drawImage(
       img,
       0, 0, rect.getWidth(), rect.getHeight(),
       rect.getLeft(), rect.getTop(), rect.getRight(), rect.getBottom(),
       null
     );
-    croppedGfx.dispose();
+    gfx.dispose();
     return ret;
   }
 

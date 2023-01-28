@@ -41,6 +41,7 @@ import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
 import io.github.kamitejp.util.Executor;
+import io.github.kamitejp.util.Maths;
 import io.github.kamitejp.util.Result;
 
 public class Recognizer {
@@ -63,6 +64,14 @@ public class Recognizer {
   // Parameters for the flood fill operation used in some cases for background removal
   private static final int BG_REMOVAL_FLOODFILL_NUM_EDGE_FLOOD_POINTS = 24;
   private static final int BG_REMOVAL_FLOODFILL_THRESHOLD = 90;
+
+  // Values of text block starting edge rotation in radians between which the text block is assumed
+  // to be of vertical, rather than horizontal orientation
+  private static double ROTATED_TEXT_VERTICAL_THETA_MIN = Maths.DEGREES_45_IN_RADIANS;
+  private static double ROTATED_TEXT_VERTICAL_THETA_MAX = 3 * Maths.DEGREES_45_IN_RADIANS;
+  // Size of the margin preserved when cropping a derotated text block. Necessary because the user
+  // selection tends to not perfectly correspond to the actual angle of the rotated text block
+  private static final int DEROTATED_CROP_SAFETY_MARGIN = 10;
 
   private static final Point DEBUG_IMAGE_LABEL_ORIGIN = new Point(3, 3);
   private static final Color DEBUG_IMAGE_LABEL_OUTLINE_COLOR = Color.BLACK;
@@ -165,6 +174,123 @@ public class Recognizer {
     }
     var block = detector.detect(img, debug, this::sendDebugImage);
     return block.map(b -> ImageOps.cropped(img, b));
+  }
+
+  private enum BlockRotation {
+    BELOW_HORIZONTAL, // Edge start below and to the left of edge end
+    BELOW_VERTICAL, // Edge start above and to the left of edge end
+    ABOVE_VERTICAL // Edge start above and to the right of edge end
+  }
+
+  public record RotatedBlockInfo(
+    double theta,
+    double edgeLength,
+    double crossSection,
+    TextOrientation textOrientation,
+    Rectangle boundingRectangle
+  ) {}
+
+  public static Optional<RotatedBlockInfo> detectRotatedBlock(Point[] selectedPoints) {
+    // (Points in screen coordinates)
+    // Beginning of starting edge of text block (top-left of first possible character)
+    var a = selectedPoints[0];
+    // End of starting edge of text block (bottom-right or top-right of first possible character)
+    var b = selectedPoints[1];
+    // Somewhere on the ending edge of text block (e.g. bottom-right of last character)
+    var z = selectedPoints[2];
+
+    // Angle of the text block (of its starting, i.e. top or right, edge):
+    //   < 0       - block rotated left
+    //   0         - perfectly horizontal
+    //   π/2 rad   - perfecly vertical
+    //   > π/2 rad - rotated right
+    var theta = a.angleWith(b);
+
+    BlockRotation blockRotation;
+    if (theta < 0) {
+     blockRotation = BlockRotation.BELOW_HORIZONTAL;
+    } else if (theta < Math.toRadians(90)) {
+     blockRotation = BlockRotation.BELOW_VERTICAL;
+    } else {
+     blockRotation = BlockRotation.ABOVE_VERTICAL;
+    }
+
+    TextOrientation textOrientation = TextOrientation.VERTICAL;
+    if (theta < ROTATED_TEXT_VERTICAL_THETA_MIN || theta > ROTATED_TEXT_VERTICAL_THETA_MAX) {
+      textOrientation = TextOrientation.HORIZONTAL;
+    }
+
+    // Cross section of the text block, perpendicular to the real orientation of the block
+    var crossSection = z.distanceFromLine(a, b);
+
+    // x-distance and y-distances from the starting to the ending edge of the block
+    var endDeltaX = crossSection;
+    var endDeltaY = crossSection;
+    switch (blockRotation) {
+      case BELOW_HORIZONTAL -> {
+        endDeltaX *= -Math.sin(-theta);
+        endDeltaY *= Math.cos(-theta);
+      }
+      case BELOW_VERTICAL -> {
+        endDeltaX *= -Math.cos(Math.toRadians(90) - theta);
+        endDeltaY *= Math.sin(Math.toRadians(90) - theta);
+      }
+      case ABOVE_VERTICAL -> {
+        endDeltaX *= -Math.cos(theta - Math.toRadians(90));
+        endDeltaY *= -Math.sin(theta - Math.toRadians(90));
+      }
+    }
+
+    // End of ending edge of text block (bottom-right of last possible character)
+    var c = new Point((int) (b.x() + endDeltaX), (int) (b.y() + endDeltaY));
+    // Start of ending edge of text block (top-left or bottom-left of first possible character of
+    // last line)
+    var d = new Point((int) (a.x() + endDeltaX), (int) (a.y() + endDeltaY));
+
+    try {
+      // Made up of min. and max. x and y coordinates of points a, b, c, d
+      var boundingRectangle = switch (blockRotation) {
+        case BELOW_HORIZONTAL -> Rectangle.ofEdges(a.x(), b.y(), c.x(), d.y());
+        case BELOW_VERTICAL   -> Rectangle.ofEdges(d.x(), a.y(), b.x(), c.y());
+        case ABOVE_VERTICAL   -> Rectangle.ofEdges(c.x(), d.y(), a.x(), b.y());
+      };
+      return Optional.of(new RotatedBlockInfo(
+        theta,
+        /* edgeLength */ a.distanceFrom(b),
+        crossSection,
+        textOrientation,
+        boundingRectangle
+      ));
+    } catch (IllegalArgumentException e) {
+      // QUAL: Check for incorrect selection earlier instead of catching it here
+      return Optional.empty();
+    }
+  }
+
+  public static BufferedImage straightenRotatedBlockImage(
+    RotatedBlockInfo block, BufferedImage img
+  ) {
+    var rotation = -block.theta;
+    if (block.textOrientation == TextOrientation.VERTICAL) {
+      rotation += 2 * Maths.DEGREES_45_IN_RADIANS;
+    }
+
+    var rotated = ImageOps.rotated(img, rotation);
+
+    var cropW = block.crossSection + DEROTATED_CROP_SAFETY_MARGIN;
+    var cropH = block.edgeLength + DEROTATED_CROP_SAFETY_MARGIN;
+    if (block.textOrientation == TextOrientation.HORIZONTAL) {
+      var temp = cropW;
+      cropW = cropH;
+      cropH = temp;
+    }
+
+    var r = block.boundingRectangle();
+    var boundingRectangleCenterOwnCoords = new Point((r.getWidth() / 2), (r.getHeight() / 2));
+    var cropRect = Rectangle.around(boundingRectangleCenterOwnCoords, (int) cropW, (int) cropH);
+
+    // PERF: Rotate and crop in one go?
+    return ImageOps.cropped(rotated, cropRect);
   }
 
   private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxMangaOCR(
@@ -555,6 +681,7 @@ public class Recognizer {
       return List.of(
         "ocr_manual-block-vertical",
         "ocr_manual-block-horizontal",
+        "ocr_manual-block-rotated",
         "ocr_auto-block",
         "ocr_region"
       );

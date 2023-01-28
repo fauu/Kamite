@@ -8,10 +8,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.config.Config;
-import io.github.kamitejp.geometry.Direction;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
-import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
 import io.github.kamitejp.status.ProgramStatus;
@@ -166,64 +164,14 @@ public class RecognitionConductor {
 
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
 
-    // (Points in screen coordinates)
-    // Beginning of starting edge of text block (top-left of first possible character)
-    var a = selectedPoints[0];
-    // End of starting edge of text block (bottom-right or top-right of first possible character)
-    var b = selectedPoints[1];
-    // Somewhere on the ending edge of text block (e.g. bottom-right of last character)
-    var z = selectedPoints[2];
-
-
-    // Rotation of the text block (rotation of its starting, i.e. top or right, edge).
-    // 0 - perfectly horizontal, π/2 rad - perfecly vertical
-    var theta = a.angleWith(b);
-
-    Direction textDirection = Direction.VERTICAL;
-    if (theta < Math.toRadians(45) || theta > Math.toRadians(135)) { // XXX
-      textDirection = Direction.HORIZONTAL;
-    }
-
-    // Cross section of the text block, perpendicular to the real orientation of the block
-    var crossSection = z.distanceFromLine(a, b);
-    // x-distance and y-distances from the starting to the ending edge of the block
-    var endDeltaX = crossSection;
-    var endDeltaY = crossSection;
-    var sinTheta = Math.sin(theta);
-    var cosTheta = Math.cos(theta);
-    switch (textDirection) {
-      case VERTICAL -> {
-        endDeltaX *= sinTheta;
-        endDeltaY *= cosTheta;
-      }
-      case HORIZONTAL -> {
-        endDeltaX *= cosTheta;
-        endDeltaY *= sinTheta;
-      }
-    }
-    // End of ending edge of text block (bottom-right of last possible character)
-    var c = new Point((int) (b.x() - endDeltaX), (int) (b.y() + endDeltaY));
-    // Start of ending edge of text block (top-left or bottom-left of first possible character of
-    // last line)
-    var d = new Point((int) (a.x() - endDeltaX), (int) (a.y() + endDeltaY));
-
-    // Made up of min. and max. x and y coordinates of points a, b, c, d
-    Rectangle ssAreaRect;
-    try {
-      if (theta <= Math.toRadians(90)) {
-        ssAreaRect = Rectangle.ofEdges(d.x(), a.y(), b.x(), c.y());
-      } else {
-        ssAreaRect = switch (textDirection) {
-          case VERTICAL   -> Rectangle.ofEdges(c.x(), d.y(), a.x(), b.y());
-          case HORIZONTAL -> Rectangle.ofEdges(a.x(), b.y(), c.x(), d.y());
-        };
-      }
-    } catch (IllegalArgumentException e) {
+    var maybeRotatedBlock = Recognizer.detectRotatedBlock(selectedPoints);
+    if (maybeRotatedBlock.isEmpty()) {
       recognitionAbandon("Selection incorrect", RecognitionOpError.SELECTION_INCORRECT);
       return;
     }
+    var rotatedBlock = maybeRotatedBlock.get();
 
-    var screenshotRes = platform.takeAreaScreenshot(ssAreaRect);
+    var screenshotRes = platform.takeAreaScreenshot(rotatedBlock.boundingRectangle());
     if (screenshotRes.isErr()) {
       var errorNotification = switch (screenshotRes.err()) {
         case SELECTION_CANCELLED -> null;
@@ -233,28 +181,8 @@ public class RecognitionConductor {
       return;
     }
 
-    var rotation = -theta;
-    if (textDirection == Direction.VERTICAL) {
-      rotation += Math.toRadians(90);
-    }
-
-    var rotated = ImageOps.rotated(screenshotRes.get(), rotation);
-
-    var cropW = crossSection;
-    var cropH = a.distanceFrom(b);
-    if (textDirection == Direction.HORIZONTAL) {
-      var temp = cropW;
-      cropW = cropH;
-      cropH = temp;
-    }
-
-    var ssAreaCenterOwnCoords =
-      new Point((ssAreaRect.getWidth() / 2), (ssAreaRect.getHeight() / 2));
-    var cropRect = Rectangle.around(ssAreaCenterOwnCoords, (int) cropW, (int) cropH);
-
-    var cropped = ImageOps.cropped(rotated, cropRect);
-
-    doRecognizeBox(cropped, TextOrientation.UNKNOWN);
+    var straightened = Recognizer.straightenRotatedBlockImage(rotatedBlock, screenshotRes.get());
+    doRecognizeBox(straightened, rotatedBlock.textOrientation());
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
