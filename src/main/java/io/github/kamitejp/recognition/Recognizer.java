@@ -137,7 +137,7 @@ public class Recognizer {
     }
 
     if (debug) {
-      sendDebugImage(img, "%s OCR".formatted(engine.isRemote() ? "remote" : "local"));
+      sendDebugImage(img, "%s OCR".formatted(engine.isRemote() ? "Remote" : "Local"));
     }
 
     LOG.debug("Starting box recognition");

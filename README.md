@@ -2039,7 +2039,7 @@ Kamite never sends your data through the network, with the following exceptions:
   are sent to [OCR.space] for text recognition.
 
 Screenshots sent to third parties can be inspected in the client’s Debug tab
-(see [Troubleshooting](#troubleshooting)). They are labelled as “remote OCR”.
+(see [Troubleshooting](#troubleshooting)). They are labelled as “Remote OCR”.
 
 ## Development
 
