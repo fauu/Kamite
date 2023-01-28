@@ -191,23 +191,39 @@ public class Recognizer {
   ) {}
 
   public static Optional<RotatedBlockInfo> computeRotatedBlock(Point[] selectedPoints) {
-    // (Points in screen coordinates)
-    // Beginning of starting edge of text block (top-left of first possible character)
+   /*
+    *  ~~ - text in the block
+    *  a, b, c, d, z - points defined below
+    *  s - the starting edge of the block
+    *  e - the ending edge of the block
+    *
+    *      d     a
+    *      e~~ ~~s
+    *     e~~ ~~s
+    *    e~~ ~~s
+    *   ez  ~~s
+    *  e   ~~s
+    *  c     b
+    */
+
+    // Beginning of starting edge of text block in screen coordinates (top-right [vertical text] or
+    // top-left [horizontal text] of first possible character)
     var a = selectedPoints[0];
     // End of starting edge of text block (bottom-right or top-right of first possible character)
     var b = selectedPoints[1];
-    // Somewhere on the ending edge of text block (e.g. bottom-right of last character)
+    // Somewhere on the ending edge of text block (e.g. bottom-left or bottom-right of last
+    // character)
     var z = selectedPoints[2];
 
-    // Angle of the text block (of its starting, i.e. top or right, edge):
-    //   < 0       - block rotated left
+    // Angle of the text block (of its starting, i.e. top or right, edge) to the x axis:
+    //   < 0       - slanting left towards top
     //   0         - perfectly horizontal
     //   π/2 rad   - perfecly vertical
-    //   > π/2 rad - rotated right
+    //   > π/2 rad - slanted right
     var theta = a.angleWith(b);
 
     var edgesDirectedDistance = z.directedDistanceFromLine(a, b);
-    if (edgesDirectedDistance < 0) {
+    if (edgesDirectedDistance <= 0) {
       LOG.debug("The specified rotated block is mirrored: not supported");
       return Optional.empty();
     }
@@ -229,28 +245,29 @@ public class Recognizer {
       textOrientation = TextOrientation.HORIZONTAL;
     }
 
-    // Cross section of the text block, perpendicular to the real orientation of the block
-    var crossSection = Math.abs(edgesDirectedDistance);
-
     // x-distance and y-distances from the starting to the ending edge of the block
-    var endDeltaX = crossSection;
-    var endDeltaY = crossSection;
+    var endDeltaX = edgesDirectedDistance;
+    var endDeltaY = edgesDirectedDistance;
     switch (blockRotation) {
       case BELOW_HORIZONTAL -> {
-        endDeltaX *= -Math.sin(-theta);
-        endDeltaY *= Math.cos(-theta);
+        var t = -theta;
+        endDeltaX *= -Math.sin(t);
+        endDeltaY *= Math.cos(t);
       }
       case BELOW_VERTICAL -> {
-        endDeltaX *= -Math.cos(Maths.DEGREES_90_IN_RADIANS - theta);
-        endDeltaY *= Math.sin(Maths.DEGREES_90_IN_RADIANS - theta);
+        var t = Maths.DEGREES_90_IN_RADIANS - theta;
+        endDeltaX *= -Math.cos(t);
+        endDeltaY *= Math.sin(t);
       }
       case ABOVE_VERTICAL -> {
-        endDeltaX *= -Math.cos(theta - Maths.DEGREES_90_IN_RADIANS);
-        endDeltaY *= -Math.sin(theta - Maths.DEGREES_90_IN_RADIANS);
+        var t = theta - Maths.DEGREES_90_IN_RADIANS;
+        endDeltaX *= -Math.cos(t);
+        endDeltaY *= -Math.sin(t);
       }
     }
 
-    // End of ending edge of text block (bottom-right of last possible character)
+    // End of ending edge of text block (bottom-left or bottom-right right of last possible
+    // character)
     var c = new Point((int) (b.x() + endDeltaX), (int) (b.y() + endDeltaY));
     // Start of ending edge of text block (top-left or bottom-left of first possible character of
     // last line)
@@ -265,8 +282,8 @@ public class Recognizer {
       };
       return Optional.of(new RotatedBlockInfo(
         theta,
-        /* edgeLength */ a.distanceFrom(b),
-        crossSection,
+        /* edgeLength */   a.distanceFrom(b),
+        /* crossSection */ edgesDirectedDistance,
         textOrientation,
         boundingRectangle
       ));
