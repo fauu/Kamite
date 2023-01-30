@@ -50,8 +50,11 @@ public final class ScreenSelector extends JFrame {
   private CompletableFuture<Optional<Point>> futurePoint;
   private CompletableFuture<Optional<Rectangle>> futureArea;
 
-  // NOTE: Works on Xorg if the secondary display is below the first. However, if it's above,
-  //       the frame only covers the primary one.
+  // NOTE: Works on Xorg with a compositor if the secondary display is below the first. If it's
+  //       above, however, the frame only covers the primary one.
+  //       Without a compositor, we can't even draw a transparent window (JNA WindowUtils doesn't
+  //       help). slop handles this without transparency by creating a custom-shaped window using
+  //       the Xorg SHAPE extension.
   public ScreenSelector() {
     // First selection can break without this warmup
     MouseListener.getWindowsVirtualScreenCursorPosition();
