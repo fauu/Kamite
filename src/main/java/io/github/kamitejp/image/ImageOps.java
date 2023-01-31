@@ -32,7 +32,8 @@ public final class ImageOps {
   public static final String DEFAULT_IMAGE_FORMAT_MIMETYPE = "image/png";
 
   private static final double GAMMA = 2.2;
-  private static final Color DEFAULT_BG_COLOR = Color.WHITE;
+  private static final Color DEFAULT_FILL_COLOR = Color.WHITE;
+  private static final int EDGE_SIZE = 3;
 
   private ImageOps() {}
 
@@ -51,7 +52,7 @@ public final class ImageOps {
   public static BufferedImage withoutAlphaChannel(BufferedImage img) {
     var ret = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
     var gfx = ret.createGraphics();
-    gfx.setColor(DEFAULT_BG_COLOR);
+    gfx.setColor(DEFAULT_FILL_COLOR);
     gfx.fillRect(0, 0, ret.getWidth(), ret.getHeight());
     gfx.drawImage(img, 0, 0, ret.getWidth(), ret.getHeight(), null);
     gfx.dispose();
@@ -59,13 +60,17 @@ public final class ImageOps {
   }
 
   public static BufferedImage cropped(BufferedImage img, Rectangle rect) {
+    return cropped(img, rect, DEFAULT_FILL_COLOR);
+  }
+
+  public static BufferedImage cropped(BufferedImage img, Rectangle rect, Color bgColor) {
     var ret = new BufferedImage(
       rect.getWidth(),
       rect.getHeight(),
       BufferedImage.TYPE_INT_RGB
     );
     var gfx = ret.getGraphics();
-    gfx.setColor(DEFAULT_BG_COLOR);
+    gfx.setColor(bgColor);
     gfx.fillRect(0, 0, ret.getWidth(), ret.getHeight());
     gfx.drawImage(
       img,
@@ -78,19 +83,25 @@ public final class ImageOps {
   }
 
   public static BufferedImage rotated(BufferedImage img, double theta) {
-    var sin = Math.abs(Math.sin(theta));
-    var cos = Math.abs(Math.cos(theta));
-    var w = (int) ((img.getWidth() * cos) + (img.getHeight() * sin));
-    var h = (int) ((img.getWidth() * sin) + (img.getHeight() * cos));
+    return rotated(img, theta, DEFAULT_FILL_COLOR);
+  }
 
-    var ret = new BufferedImage(w, h, img.getType());
+  public static BufferedImage rotated(BufferedImage img, double theta, Color fillColor) {
+    var w = img.getWidth();
+    var h = img.getHeight();
+    var sinTheta = Math.abs(Math.sin(theta));
+    var cosTheta = Math.abs(Math.cos(theta));
+
+    var newW = (int) (w * cosTheta + h * sinTheta);
+    var newH = (int) (w * sinTheta + h * cosTheta);
+    var ret = new BufferedImage(newW, newH, img.getType());
     var gfx = ret.createGraphics();
-    gfx.setColor(DEFAULT_BG_COLOR);
+    gfx.setColor(fillColor);
     gfx.fillRect(0, 0, ret.getWidth(), ret.getHeight());
     gfx.dispose();
 
     var at = new AffineTransform();
-    at.rotate(theta, img.getWidth() / 2, img.getHeight() / 2);
+    at.rotate(theta, w / 2, h / 2);
     var op = new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
     op.filter(img, ret);
 
@@ -284,18 +295,44 @@ public final class ImageOps {
     return darkBalance > 0;
   }
 
+  public static Color averageEdgeColor(BufferedImage img) {
+    var numPixelsCounted = 0;
+    var w = img.getWidth();
+    var h = img.getHeight();
+    var sumR = 0L;
+    var sumG = 0L;
+    var sumB = 0L;
+    for (int y = 0; y < h; y++, numPixelsCounted++) {
+      var skip = y >= EDGE_SIZE && y < h - EDGE_SIZE;
+      for (int x = 0; x < w; x++, numPixelsCounted++) {
+        if (x >= EDGE_SIZE && skip) {
+          x = w - EDGE_SIZE;
+          skip = false;
+        }
+        int px = img.getRGB(x, y);
+        sumR += r(px);
+        sumG += g(px);
+        sumB += b(px);
+      }
+    }
+    return new Color(
+      (int) (sumR / numPixelsCounted),
+      (int) (sumG / numPixelsCounted),
+      (int) (sumB / numPixelsCounted)
+    );
+  }
+
   public static boolean hasBusyEdges(BufferedImage img) {
-    final var edgeWidth = 3;
     var numNotBWPixels = 0;
     var numPixelsCounted = 0;
     var w = img.getWidth();
     var h = img.getHeight();
     var imgArr = toArray(img);
     for (int y = 0; y < h; y++, numPixelsCounted++) {
-      var skip = y >= edgeWidth && y < h - edgeWidth;
+      var skip = y >= EDGE_SIZE && y < h - EDGE_SIZE;
       for (int x = 0; x < w; x++, numPixelsCounted++) {
-        if (x >= edgeWidth && skip) {
-          x = w - edgeWidth;
+        if (x >= EDGE_SIZE && skip) {
+          x = w - EDGE_SIZE;
           skip = false;
         }
         int px = arrayPixelAt(imgArr, w, x, y);
@@ -399,10 +436,10 @@ public final class ImageOps {
     while (!queue.isEmpty()) {
       var p = queue.remove();
       if (doFloodFill(img, w, h, hits, p.x() , p.y(), srcColor, color.getRGB(), threshold)) {
-        queue.add(new Point(p.x(),     p.y() - 1)); 
-        queue.add(new Point(p.x(),     p.y() + 1)); 
-        queue.add(new Point(p.x() - 1, p.y())); 
-        queue.add(new Point(p.x() + 1, p.y())); 
+        queue.add(new Point(p.x(),     p.y() - 1));
+        queue.add(new Point(p.x(),     p.y() + 1));
+        queue.add(new Point(p.x() - 1, p.y()));
+        queue.add(new Point(p.x() + 1, p.y()));
       }
     }
   }

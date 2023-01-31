@@ -302,7 +302,9 @@ public class Recognizer {
       rotation += Maths.DEGREES_90_IN_RADIANS;
     }
 
-    var rotated = ImageOps.rotated(img, rotation);
+    var fillColor = ImageOps.averageEdgeColor(img);
+
+    var rotated = ImageOps.rotated(img, rotation, fillColor);
 
     var cropW = block.crossSection + DEROTATED_CROP_SAFETY_MARGIN;
     var cropH = block.edgeLength + DEROTATED_CROP_SAFETY_MARGIN;
@@ -317,7 +319,7 @@ public class Recognizer {
     var cropRect = Rectangle.around(boundingRectangleCenterOwnCoords, (int) cropW, (int) cropH);
 
     // PERF: Rotate and crop in one go?
-    return ImageOps.cropped(rotated, cropRect);
+    return ImageOps.cropped(rotated, cropRect, fillColor);
   }
 
   private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxMangaOCR(
