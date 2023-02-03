@@ -119,6 +119,8 @@ export const App: VoidComponent = () => {
     notebook,
     chunks,
   });
+  const statusPanelUrgent = () => characterCounter()!.frozen || !sessionTimer.running()
+  const concealStatusPanelUnlessHovered = () => focusMode() && !statusPanelUrgent();
 
   const showBackendNotConnectedScreen = () => backend.connectionState() !== "connected";
 
@@ -776,10 +778,10 @@ export const App: VoidComponent = () => {
         />
         <StatusPanel
           fade={statusPanelFader.shouldFade()}
-          concealUnlessHovered={focusMode}
+          concealUnlessHovered={concealStatusPanelUnlessHovered}
           ref={el => statusPanelEl = el}
         >
-          <Show when={characterCounter()} keyed>{ counter =>
+          <Show when={characterCounter()} keyed>{counter =>
             <CharacterCounter
               state={counter}
               onClick={handleCharacterCounterClick}
