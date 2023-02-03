@@ -143,7 +143,7 @@ export class Backend {
       if (inner.kind !== expectedResponseKind) {
         console.error(
           "Received request response of unexpected kind."
-          + ` Got '${inner.kind}', expected ${expectedResponseKind}`
+          + ` Got '${inner.kind}', expected '${expectedResponseKind}'`
         );
         return;
       }

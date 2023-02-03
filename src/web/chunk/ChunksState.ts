@@ -1,7 +1,7 @@
 import { batch, createEffect, createMemo, createSignal, on } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 
-import type { Backend, ChunkWithFuriganaMessage, MaybeRuby } from "~/backend";
+import type { Backend, ChunkEnhancementsInMessage, MaybeRuby } from "~/backend";
 import { notifyUser } from "~/common/notify";
 import { getSetting, type Setting } from "~/settings";
 import { BG_FLASH_DURATION_MS } from "~/style";
@@ -189,7 +189,9 @@ export function createChunksState(
   createEffect(on(pointer, () => {
     textSelection.set(undefined);
     selectOnlyCurrent();
-    getSetting(settings, "enable-furigana") ? void enhanceCurrent() : void unenhanceCurrent();
+    getSetting(settings, "enable-furigana")
+      ? void enhanceCurrentWithFurigana()
+      : void unenhanceCurrentWithFurigana();
   }));
 
   // Make those two mutually exclusive: 1) text selection within the current chunk, and 2) selection
@@ -304,18 +306,18 @@ export function createChunksState(
       }
     }
 
-    let shouldEnhance =
+    let shouldFetchFurigana =
       params.mayRequestEnhancement
       && getSetting(settings, "enable-furigana") === true
-      && typeof transformedInput === "string" // Otherwise this is was already enhanced text
+      && typeof transformedInput === "string" // Otherwise this is already text with furigana
       && transformedInput !== "";
     let newRawText;
-    if (shouldEnhance && !waiting()) {
-      newRawText = await fetchEnhanced(transformedInput as string);
-      shouldEnhance = false; // No need to enhance at the end of this function
+    if (shouldFetchFurigana && !waiting()) {
+      newRawText = await fetchFuriganaMaybeRubies(transformedInput as string);
+      shouldFetchFurigana = false; // No need to fetch again at the end of this function
     } else {
-      // If `waiting`, we will enhance as a separate step at the end of this function to avoid
-      // flashing old content
+      // If `waiting`, we will fetch furigana as a separate step at the end of this function to
+      // avoid flashing old content
       newRawText = transformedInput;
     }
     const newText = ChunkText.of(newRawText);
@@ -409,17 +411,17 @@ export function createChunksState(
       }
     }
 
-    if (shouldEnhance) {
-      void enhanceCurrent();
+    if (shouldFetchFurigana) {
+      void enhanceCurrentWithFurigana();
     }
   }
 
-  async function enhanceCurrent() {
+  async function enhanceCurrentWithFurigana() {
     if (current().text.hasFurigana) {
       return;
     }
     void insert(
-      await fetchEnhanced(current().text.base),
+      await fetchFuriganaMaybeRubies(current().text.base),
       {
         op: "overwrite",
         inPlace: true,
@@ -428,7 +430,7 @@ export function createChunksState(
     );
   }
 
-  function unenhanceCurrent() {
+  function unenhanceCurrentWithFurigana() {
     if (!current().text.hasFurigana) {
       return;
     }
@@ -508,7 +510,7 @@ export function createChunksState(
     });
     if (getSetting(settings, "enable-furigana") === true) {
       // Enhance separately to avoid flashing old content when waiting for enhance response
-      void enhanceCurrent();
+      void enhanceCurrentWithFurigana();
     }
     setEditing(false);
   }
@@ -614,14 +616,14 @@ export function createChunksState(
     }
   }
 
-  async function fetchEnhanced(t: string): Promise<MaybeRuby[]> {
+  async function fetchFuriganaMaybeRubies(t: string): Promise<MaybeRuby[]> {
     if (t === "") {
       return [];
     }
-    const res = await backend.request<ChunkWithFuriganaMessage>(
-      { kind: "add-furigana", body: { text: t } }
+    const res = await backend.request<ChunkEnhancementsInMessage>(
+      { kind: "get-chunk-enhancements", body: { text: t, enhancements: ["furigana"] } }
     );
-    return res.chunkWithFurigana.maybeRubies;
+    return res.chunkEnhancements.furiganaMaybeRubies;
   }
 
   type NewPointerResult = {
@@ -718,8 +720,8 @@ export function createChunksState(
     selectionInfo,
 
     insert,
-    enhanceCurrent,
-    unenhanceCurrent,
+    enhanceCurrent: enhanceCurrentWithFurigana,
+    unenhanceCurrent: unenhanceCurrentWithFurigana,
     handleIncomingTranslation,
     startEditing,
     finishEditing,

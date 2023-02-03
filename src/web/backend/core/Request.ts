@@ -5,10 +5,13 @@ export type Request = ReuqestBase & RequestMain;
 type ReuqestBase = { timestamp: number };
 
 export type RequestMain = {
-  kind: "add-furigana",
-  body: { text: string },
+  kind: "get-chunk-enhancements",
+  body: { text: string, enhancements: ChunkEnhancement[] },
 };
 
+// QUAL: Move?
+type ChunkEnhancement = "furigana";
+
 export const requestKindToResponseKind: { [Key in Request["kind"]]: InMessage["kind"] } = {
-  "add-furigana": "chunk-with-furigana",
+  "get-chunk-enhancements": "chunk-enhancements",
 };

@@ -21,7 +21,7 @@ export type InMessage =
   translation: string,
   playbackTimeS: number | null,
 }
-| ChunkWithFuriganaMessage
+| ChunkEnhancementsInMessage
 | {
   kind: "program-status",
   subKind: "full",
@@ -44,10 +44,9 @@ export type InMessage =
   customText: string | null,
 };
 
-// XXX
-export type ChunkWithFuriganaMessage = {
-  kind: "chunk-with-furigana",
-  chunkWithFurigana: ChunkWithFurigana,
+export type ChunkEnhancementsInMessage = {
+  kind: "chunk-enhancements",
+  chunkEnhancements: ChunkEnhancements,
 };
 
 type UserNotificationKind = "INFO" | "ERROR";
@@ -62,7 +61,7 @@ export interface ChunkVariant {
 
 export type ChunkEnhancements = {
   interVariantUniqueCharacterIndices: number[] | null,
-  maybeRubies: MaybeRuby[],
+  furiganaMaybeRubies: MaybeRuby[],
 }
 
 export interface ProgramStatus {
@@ -105,6 +104,4 @@ export type InRecognizerStatusKind =
 
 type PlayerStatus = "CONNECTED" | "DISCONNECTED" | "PAUSED" | "UNPAUSED";
 
-// XXX
-export type ChunkWithFurigana = { maybeRubies: MaybeRuby[] };
 export type MaybeRuby = { base: string, text: string | null };

@@ -23,11 +23,13 @@ import io.github.kamitejp.api.IncomingCommand;
 import io.github.kamitejp.api.Request;
 import io.github.kamitejp.chunk.ChunkCheckpoint;
 import io.github.kamitejp.chunk.ChunkCorrectionPolicy;
+import io.github.kamitejp.chunk.ChunkEnhancements;
 import io.github.kamitejp.chunk.ChunkFilter;
 import io.github.kamitejp.chunk.ChunkLogger;
 import io.github.kamitejp.chunk.ChunkLoggerInitializationException;
 import io.github.kamitejp.chunk.ChunkTransformer;
 import io.github.kamitejp.chunk.IncomingChunkText;
+import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.config.Config;
 import io.github.kamitejp.config.ConfigManager;
 import io.github.kamitejp.controlgui.ControlGUI;
@@ -51,7 +53,6 @@ import io.github.kamitejp.platform.mpv.MPVController;
 import io.github.kamitejp.platform.mpv.Subtitle;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.recognition.AutoBlockHeuristic;
-import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.recognition.OCRDirectoryWatcher;
 import io.github.kamitejp.recognition.OCRDirectoryWatcherCreationException;
 import io.github.kamitejp.recognition.OCREngine;
@@ -65,12 +66,13 @@ import io.github.kamitejp.server.Server;
 import io.github.kamitejp.server.ServerEvent;
 import io.github.kamitejp.server.ServerStartException;
 import io.github.kamitejp.server.UserNotificationKind;
+import io.github.kamitejp.server.outmessage.ChunkEnhancementsOutMessage;
 import io.github.kamitejp.server.outmessage.ChunkTranslationOutMessage;
 import io.github.kamitejp.server.outmessage.ChunkVariantsOutMessage;
-import io.github.kamitejp.server.outmessage.ChunkWithFuriganaOutMessage;
 import io.github.kamitejp.server.outmessage.ConfigOutMessage;
 import io.github.kamitejp.server.outmessage.DebugImageOutMessage;
 import io.github.kamitejp.server.outmessage.LookupRequestOutMessage;
+import io.github.kamitejp.server.outmessage.OutMessage;
 import io.github.kamitejp.server.outmessage.ProgramStatusOutMessage;
 import io.github.kamitejp.server.outmessage.ResponseOutMessage;
 import io.github.kamitejp.server.outmessage.UserNotificationOutMessage;
@@ -734,17 +736,37 @@ public class Kamite {
   }
 
   private void handleRequest(Request request) {
+    OutMessage response = null;
+
     switch (request.body()) { // NOPMD - misidentifies as non-exhaustive
-      case Request.Body.AddFurigana body ->
-        textProcessor.addFurigana(body.text()).ifPresent(chunkWithFurigana ->
-          server.send(
-            new ResponseOutMessage(
-              request.timestamp(),
-              new ChunkWithFuriganaOutMessage(chunkWithFurigana)
-            )
-          )
-        );
+      case Request.Body.GetChunkEnhancements body -> {
+        ChunkEnhancements enhancements = null;
+
+        switch (body.enhancements().size()) {
+          case 0 ->
+            LOG.warn("Received an empty chunk enhancements request");
+          case 1 -> {
+            enhancements = switch (body.enhancements().get(0)) {
+              case FURIGANA ->
+                textProcessor.addFurigana(body.text())
+                  .map(maybeRubies -> ChunkEnhancements.ofFuriganaMaybeRubies(maybeRubies))
+                  .orElse(null);
+            };
+          }
+          default ->
+            LOG.error("Requested multiple chunk enhancements, which is not yet implemented");
+        }
+
+        if (enhancements != null) {
+          response = new ChunkEnhancementsOutMessage(enhancements);
+        }
+      }
     }
+
+    if (response != null) {
+      server.send(new ResponseOutMessage(request.timestamp(), response));
+    }
+
     LOG.debug("Handled request: {}", () -> request.body().getClass());
   }
 

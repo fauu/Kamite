@@ -73,7 +73,7 @@ public class TextProcessor {
     return corrected;
   }
 
-  public Optional<ChunkWithFurigana> addFurigana(String s) {
+  public Optional<List<MaybeRuby>> addFurigana(String s) {
     List<MinimalKuromojiToken> kuromojiTokens = null;
     try {
       kuromojiTokens = kuromoji.tokenize(s);
@@ -146,7 +146,7 @@ public class TextProcessor {
 
     patchNotations(notations);
 
-    return Optional.of(new ChunkWithFurigana(
+    return Optional.of(
       notations.stream()
         .map(n ->
           n.baseType() == NotationBaseType.KANJI
@@ -154,7 +154,7 @@ public class TextProcessor {
             : MaybeRuby.notRuby(n.base())
         )
         .toList()
-    ));
+    );
   }
 
   private static TextClassification classify(String s) {

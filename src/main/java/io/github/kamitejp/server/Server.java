@@ -172,8 +172,9 @@ public class Server {
     var messageParseRes = InMessage.fromJSON(ctx.message());
     if (messageParseRes.isErr()) {
       LOG.warn("Error parsing client message: {}", messageParseRes::err);
+    } else {
+      eventCb.accept(new ServerEvent.MessageReceived(messageParseRes.get()));
     }
-    eventCb.accept(new ServerEvent.MessageReceived(messageParseRes.get()));
   }
 
   private void handleCommandPost(Context ctx) {
