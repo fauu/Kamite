@@ -19,8 +19,8 @@ export function notifyUser(kind: NotificationToastKind, text: string) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
     onClick: () => toast.hideToast(),
   });
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
   if (window.mainUIVisible()) { // QUAL: Move out of global state?
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
     toast.showToast();
   }
 }
