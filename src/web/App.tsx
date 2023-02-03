@@ -347,15 +347,14 @@ export const App: VoidComponent = () => {
 
       case "chunk-variants": {
         const defaultVariant = msg.variants[0];
-        const defaultVariantContent = defaultVariant.content.replaceAll("@", "");
 
         if (getSetting(settings, "translation-only-mode")) {
-          chunks.handleIncomingTranslation(defaultVariantContent, msg.playbackTimeS);
+          chunks.handleIncomingTranslation(defaultVariant.content, msg.playbackTimeS);
           break;
         }
 
         void chunks.insert(
-          defaultVariantContent,
+          defaultVariant.content,
           {
             op: "overwrite-or-replace-selected-in-edit-mode",
             original: defaultVariant.originalContent ?? undefined,

@@ -2,23 +2,23 @@ package io.github.kamitejp.server.outmessage;
 
 import java.util.List;
 
-import io.github.kamitejp.recognition.PostprocessedChunk;
+import io.github.kamitejp.chunk.ProcessedChunk;
 
 public class ChunkVariantsOutMessage extends BaseOutMessage {
-  private final List<PostprocessedChunk> variants;
+  private final List<ProcessedChunk> variants;
   private final Double playbackTimeS;
 
-  public ChunkVariantsOutMessage(List<PostprocessedChunk> variants, Double playbackTimeS) {
+  public ChunkVariantsOutMessage(List<ProcessedChunk> variants, Double playbackTimeS) {
     super("chunk-variants");
     this.variants = variants;
     this.playbackTimeS = playbackTimeS;
   }
 
-  public ChunkVariantsOutMessage(List<PostprocessedChunk> variants) {
+  public ChunkVariantsOutMessage(List<ProcessedChunk> variants) {
     this(variants, null);
   }
 
-  public List<PostprocessedChunk> getVariants() {
+  public List<ProcessedChunk> getVariants() {
     return this.variants;
   }
 

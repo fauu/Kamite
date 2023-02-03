@@ -22,6 +22,7 @@ import io.github.kamitejp.api.Command;
 import io.github.kamitejp.api.IncomingCommand;
 import io.github.kamitejp.api.Request;
 import io.github.kamitejp.chunk.ChunkCheckpoint;
+import io.github.kamitejp.chunk.ChunkCorrectionPolicy;
 import io.github.kamitejp.chunk.ChunkFilter;
 import io.github.kamitejp.chunk.ChunkLogger;
 import io.github.kamitejp.chunk.ChunkLoggerInitializationException;
@@ -50,7 +51,7 @@ import io.github.kamitejp.platform.mpv.MPVController;
 import io.github.kamitejp.platform.mpv.Subtitle;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.recognition.AutoBlockHeuristic;
-import io.github.kamitejp.recognition.ChunkVariants;
+import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.recognition.OCRDirectoryWatcher;
 import io.github.kamitejp.recognition.OCRDirectoryWatcherCreationException;
 import io.github.kamitejp.recognition.OCREngine;
@@ -475,10 +476,13 @@ public class Kamite {
     }
   }
 
-  private void handleChunkVariants(ChunkVariants variants) {
-    var post = variants.getPostprocessedChunks(config.chunk().correct(), chunkTransformer);
-    if (!post.isEmpty()) {
-      server.send(new ChunkVariantsOutMessage(post));
+  private void handleChunkVariants(UnprocessedChunkVariants variants) {
+    var processedChunks = variants.process(
+      ChunkCorrectionPolicy.fromChunkConfig(config.chunk()),
+      chunkTransformer
+    );
+    if (!processedChunks.isEmpty()) {
+      server.send(new ChunkVariantsOutMessage(processedChunks));
     }
   }
 
@@ -569,10 +573,13 @@ public class Kamite {
       LOG.debug("Rejected chunk: {}", text);
       return;
     }
-    var post = ChunkVariants.singleFromString(text)
-      .getPostprocessedChunks(config.chunk().correct(), chunkTransformer);
-    if (!post.isEmpty()) {
-      server.send(new ChunkVariantsOutMessage(post, playbackTimeS));
+    var processedChunks = UnprocessedChunkVariants.singleFromString(text)
+      .process(
+        ChunkCorrectionPolicy.fromChunkConfig(config.chunk()),
+        chunkTransformer
+      );
+    if (!processedChunks.isEmpty()) {
+      server.send(new ChunkVariantsOutMessage(processedChunks, playbackTimeS));
     }
   }
 

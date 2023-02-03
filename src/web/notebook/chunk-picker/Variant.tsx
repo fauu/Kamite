@@ -17,9 +17,9 @@ interface ChunkPickerVariantProps {
   onPick: () => void,
 }
 
-export const ChunkPickerVariant: VoidComponent<ChunkPickerVariantProps> = (props) =>
+export const ChunkPickerVariant: VoidComponent<ChunkPickerVariantProps> = props =>
   <Root data-variant-idx={props.idx}>
-    <ChunkPickerVariantContent value={props.variant.content}/>
+    <ChunkPickerVariantContent variant={props.variant}/>
     <Show when={props.debug}>
       <ChunkPickerVariantDebug labels={props.variant.labels} score={props.variant.score}/>
     </Show>

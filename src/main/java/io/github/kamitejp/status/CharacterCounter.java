@@ -2,7 +2,7 @@ package io.github.kamitejp.status;
 
 import java.util.regex.Pattern;
 
-import io.github.kamitejp.recognition.PostprocessedChunk;
+import io.github.kamitejp.chunk.ProcessedChunk;
 
 public final class CharacterCounter {
   private static final Pattern COUNTED_CHARACTER_RE = Pattern.compile("\\p{L}|\\p{N}|\\p{S}");
@@ -11,7 +11,7 @@ public final class CharacterCounter {
   private boolean frozen;
   private String lastCountedContent;
 
-  public void register(PostprocessedChunk c) {
+  public void register(ProcessedChunk c) {
     if (isFrozen()) {
       return;
     }

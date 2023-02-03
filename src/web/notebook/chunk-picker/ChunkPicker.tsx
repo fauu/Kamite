@@ -26,7 +26,7 @@ export const ChunkPicker: VoidComponent<ChunkPickerProps> = (props) => {
     const toPick =
       variantBeingSelectedInIdx() === variantIdx && selectionText()
       ? selectionText()!
-      : props.variants[variantIdx].content.replaceAll("@", "");
+      : props.variants[variantIdx].content;
     props.onPick(toPick);
     selectionText() && document.getSelection()?.removeAllRanges();
   };

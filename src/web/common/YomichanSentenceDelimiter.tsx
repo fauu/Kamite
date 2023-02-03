@@ -1,4 +1,4 @@
-import { type VoidComponent } from "solid-js";
+import type { VoidComponent } from "solid-js";
 import { styled } from "solid-styled-components";
 
 // A hack to keep irrelevant UI text out of the Sentence field when mining with Yomichan

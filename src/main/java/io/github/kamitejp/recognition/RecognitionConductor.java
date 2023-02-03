@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.util.function.Consumer;
 
+import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +21,7 @@ public class RecognitionConductor {
   private final Platform platform;
   private final ProgramStatus status;
   private final Consumer<RecognizerEvent> recognizerEventCb;
-  private final Consumer<ChunkVariants> chunkVariantsCb;
+  private final Consumer<UnprocessedChunkVariants> chunkVariantsCb;
   private final Consumer<String> notifyUserOfErrorFn;
   private final Consumer<RecognizerStatus.Kind> updateAndSendRecognizerStatusFn;
   private Recognizer recognizer;
@@ -29,7 +30,7 @@ public class RecognitionConductor {
     Platform platform,
     ProgramStatus status,
     Consumer<RecognizerEvent> recognizerEventCb,
-    Consumer<ChunkVariants> chunkVariantsCb,
+    Consumer<UnprocessedChunkVariants> chunkVariantsCb,
     Consumer<String> notifyUserOfErrorFn,
     Consumer<RecognizerStatus.Kind> updateAndSendRecognizerStatusFn
   ) {

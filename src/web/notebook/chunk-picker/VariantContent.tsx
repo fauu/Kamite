@@ -1,20 +1,19 @@
 import { Index, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
+import { ChunkVariant } from "~/backend";
 import { CharMaybeNewline, Newline } from "~/common";
 
 interface ChunkPickerVariantContentProps {
-  value: string,
+  variant: ChunkVariant,
 }
 
-export const ChunkPickerVariantContent
-  : VoidComponent<ChunkPickerVariantContentProps> = (props) => {
-  return <Root lang="ja">{() => {
-    const chars = props.value.replaceAll("@", "").split("");
-    const uniqueCharIndices = getUniqueCharIndices(props.value);
+export const ChunkPickerVariantContent : VoidComponent<ChunkPickerVariantContentProps> = props => {
+  const uniqueCharIndices = props.variant.enhancements.interVariantUniqueCharacterIndices || [];
 
-    return <Index each={chars}>{(c, i) =>
-      <span 
+  return <Root lang="ja">{() => {
+    return <Index each={props.variant.content.split("")}>{(c, i) =>
+      <span
         class={CharClass}
         classList={{ [UniqueCharClass]: uniqueCharIndices.includes(i) }}
       >
@@ -36,9 +35,3 @@ const CharClass = css`
 const UniqueCharClass = css`
   color: var(--color-accB);
 `;
-
-function getUniqueCharIndices(content: string): number[] {
-  const res: number[] = [];
-  Array.from(content).forEach((c, i) => c === "@" && res.push(i + res.length));
-  return res;
-}

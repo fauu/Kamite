@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -132,7 +133,7 @@ public class Recognizer {
 
   public record LabelledTesseractHOCROutput(String label, String hocr) {}
 
-  public record BoxRecognitionOutput(ChunkVariants chunkVariants) {}
+  public record BoxRecognitionOutput(UnprocessedChunkVariants chunkVariants) {}
 
   public Result<BoxRecognitionOutput, RecognitionOpError> recognizeBox(
     BufferedImage img,
@@ -334,7 +335,7 @@ public class Recognizer {
     if (text.isBlank()) {
       return Result.Err(RecognitionOpError.ZERO_VARIANTS);
     }
-    return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
+    return Result.Ok(new BoxRecognitionOutput(UnprocessedChunkVariants.singleFromString(text)));
   }
 
   private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxRemote(
@@ -383,7 +384,7 @@ public class Recognizer {
       return Result.Err(RecognitionOpError.ZERO_VARIANTS);
     }
 
-    return Result.Ok(new BoxRecognitionOutput(ChunkVariants.singleFromString(text)));
+    return Result.Ok(new BoxRecognitionOutput(UnprocessedChunkVariants.singleFromString(text)));
   }
 
   private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxTesseract(
@@ -563,7 +564,7 @@ public class Recognizer {
       return Result.Err(RecognitionOpError.OCR_ERROR);
     }
 
-    var parsedVariants = ChunkVariants.fromLabelledTesseractHOCROutputs(variants);
+    var parsedVariants = UnprocessedChunkVariants.fromLabelledTesseractHOCROutputs(variants);
     if (parsedVariants.isEmpty()) {
       return Result.Err(RecognitionOpError.ZERO_VARIANTS);
     }

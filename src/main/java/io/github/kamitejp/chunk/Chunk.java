@@ -1,9 +1,10 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.chunk;
 
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -16,16 +17,21 @@ import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.textprocessing.TextProcessor;
 
 public class Chunk {
-  private static final String WORD_TITLE_CONF_RE_RAW = "x_wconf (?<conf>\\d+)";
-  private static final Pattern WORD_TITLE_CONF_RE = Pattern.compile(WORD_TITLE_CONF_RE_RAW);
-  private static final Pattern WORD_TITLE_FULL_RE = Pattern.compile(
-    "bbox (?<x0>\\d+) (?<y0>\\d+) (?<x1>\\d+) (?<y1>\\d+); %s".formatted(WORD_TITLE_CONF_RE_RAW)
+  private static final String HOCR_WORD_TITLE_CONF_RE_RAW = "x_wconf (?<conf>\\d+)";
+  private static final Pattern HOCR_WORD_TITLE_CONF_RE =
+    Pattern.compile(HOCR_WORD_TITLE_CONF_RE_RAW);
+  private static final Pattern HOCR_WORD_TITLE_FULL_RE = Pattern.compile(
+    "bbox (?<x0>\\d+) (?<y0>\\d+) (?<x1>\\d+) (?<y1>\\d+); %s"
+      .formatted(HOCR_WORD_TITLE_CONF_RE_RAW)
   );
+  private static final Pattern HOCR_GARBAGE_CHARS_RE =
+    Pattern.compile("[^A-Z!?\\-–—ーｦ-ﾟァ-ヶぁ-ゞＡ-ｚ０-９ｧ-ﾝﾞﾟァ-ンぁ-ん一-龯]+");
 
   private String content;
-  private List<String> labels;
+  private String originalContent;
+  private final List<String> labels;
   private int score;
-  private Rectangle firstWordBox;
+  private final Rectangle firstWordBox;
 
   private Chunk(String content, List<String> labels, int score, Rectangle firstWordBox) {
     this.content = content;
@@ -62,7 +68,7 @@ public class Chunk {
         var title = wordEl.attr("title");
         Matcher m;
         if (firstWordBox.value == null) {
-          m = WORD_TITLE_FULL_RE.matcher(title);
+          m = HOCR_WORD_TITLE_FULL_RE.matcher(title);
           m.find();
           var left = Integer.parseInt(m.group("x0"));
           var right = Integer.parseInt(m.group("x1"));
@@ -70,7 +76,7 @@ public class Chunk {
           var bottom = Integer.parseInt(m.group("y1"));
           firstWordBox.value = Rectangle.ofEdges(left, top, right, bottom);
         } else {
-          m = WORD_TITLE_CONF_RE.matcher(title);
+          m = HOCR_WORD_TITLE_CONF_RE.matcher(title);
           m.find();
         }
         var confidence = Integer.parseInt(m.group("conf"));
@@ -85,13 +91,27 @@ public class Chunk {
       .collect(toList());
 
     var avgConfidence = (float) avgConfidenceCounter.sum / avgConfidenceCounter.n;
-    return lines.size() > 0
-      ? Optional.of(new Chunk(lines, label, avgConfidence, firstWordBox.value))
-      : Optional.empty();
+    return lines.isEmpty()
+      ? Optional.empty()
+      : Optional.of(new Chunk(lines, label, avgConfidence, firstWordBox.value));
   }
 
   public String getContent() {
     return content;
+  }
+
+  public void modifyContent(String content) {
+    if (content.equals(this.content)) {
+      return;
+    }
+    if (originalContent == null) {
+      originalContent = this.content;
+    }
+    this.content = content;
+  }
+
+  public String getOriginalContent() {
+    return originalContent;
   }
 
   public String getCorrectedContent() {
@@ -99,7 +119,7 @@ public class Chunk {
   }
 
   public List<String> getLabels() {
-    return labels;
+    return Collections.unmodifiableList(labels);
   }
 
   public int getScore() {
@@ -114,11 +134,11 @@ public class Chunk {
     return firstWordBox;
   }
 
-  private int calculateScore(float avgConfidence) {
-    return (int) Math.round(avgConfidence);
+  private static int calculateScore(float avgConfidence) {
+    return Math.round(avgConfidence);
   }
 
   private static String hocrPreprocessContentLine(String l) {
-    return l.replaceAll("[^A-Z!?\\-–—ーｦ-ﾟァ-ヶぁ-ゞＡ-ｚ０-９ｧ-ﾝﾞﾟァ-ンぁ-ん一-龯]+", "");
+    return HOCR_GARBAGE_CHARS_RE.matcher(l).replaceAll("");
   }
 }
