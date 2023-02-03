@@ -39,7 +39,7 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
     >
       <ChunkInputWrapper class={maybeWaitingClass()}>
         <ChunkInput
-          text={props.chunksState.editText()}
+          text={props.chunksState.editText}
           onInput={props.onInput}
           ref={props.inputRef}
         />

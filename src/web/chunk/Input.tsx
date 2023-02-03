@@ -1,4 +1,4 @@
-import type { Ref, VoidComponent } from "solid-js";
+import { createEffect, type Accessor, type Ref, type VoidComponent } from "solid-js";
 import { css } from "solid-styled-components";
 
 import { ChunkTextClass } from "./TextClass";
@@ -7,23 +7,32 @@ import { onMount } from "~/directives";
 const [_] = [onMount];
 
 interface ChunkInputProps {
-  text: string,
+  text: Accessor<string>,
   onInput: (newText: string) => void,
   ref: Ref<HTMLTextAreaElement>,
 }
 
 export const ChunkInput: VoidComponent<ChunkInputProps> = (props) => {
+  let textareaEl: HTMLTextAreaElement;
+
   const handleInput = ({ target }: InputEvent) =>
     props.onInput((target as HTMLTextAreaElement).value);
 
   const handleTextareaMount = {
     run: (el: HTMLElement) => {
-      el.focus();
-
-      const taEl = el as HTMLTextAreaElement;
-      taEl.selectionStart = taEl.value.length;
+      textareaEl = el as HTMLTextAreaElement;
+      textareaEl.focus();
+      textareaEl.selectionStart = textareaEl.value.length;
     },
   };
+
+  createEffect(() => {
+    // NOTE: Keep access outside the if
+    const text = props.text();
+    if (textareaEl) {
+      textareaEl.value = text;
+    }
+  });
 
   return <textarea
       lang="ja"
@@ -34,7 +43,7 @@ export const ChunkInput: VoidComponent<ChunkInputProps> = (props) => {
       ref={props.ref}
       id="chunk-input"
     >
-      {props.text}
+      {props.text()}
     </textarea>;
 };
 
