@@ -249,7 +249,7 @@ public class Recognizer {
     // x-distance and y-distances from the starting to the ending edge of the block
     var endDeltaX = edgesDirectedDistance;
     var endDeltaY = edgesDirectedDistance;
-    switch (blockRotation) {
+    switch (blockRotation) { // NOPMD - misidentifies as non-exhaustive
       case BELOW_HORIZONTAL -> {
         var t = -theta;
         endDeltaX *= -Math.sin(t);
@@ -316,7 +316,7 @@ public class Recognizer {
     }
 
     var r = block.boundingRectangle();
-    var boundingRectangleCenterOwnCoords = new Point((r.getWidth() / 2), (r.getHeight() / 2));
+    var boundingRectangleCenterOwnCoords = new Point(r.getWidth() / 2, r.getHeight() / 2);
     var cropRect = Rectangle.around(boundingRectangleCenterOwnCoords, (int) cropW, (int) cropH);
 
     // PERF: Rotate and crop in one go?

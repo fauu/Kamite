@@ -9,4 +9,4 @@ record EventHandlerCommand(String kind, String paramsJSON) {
     }
     return new EventHandlerCommand(command.kind(), command.params());
   }
-};
+}

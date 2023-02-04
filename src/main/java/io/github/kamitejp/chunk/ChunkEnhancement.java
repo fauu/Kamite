@@ -1,5 +1,7 @@
 package io.github.kamitejp.chunk;
 
+import java.util.Locale;
+
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ChunkEnhancement {
@@ -7,6 +9,6 @@ public enum ChunkEnhancement {
 
   @JsonValue
   public String jsonValue() {
-    return name().toLowerCase().replace('_', '-');
+    return name().toLowerCase(Locale.ENGLISH).replace('_', '-');
   }
 }

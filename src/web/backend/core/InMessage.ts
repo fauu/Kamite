@@ -62,7 +62,7 @@ export interface ChunkVariant {
 export type ChunkEnhancements = {
   interVariantUniqueCharacterIndices: number[] | null,
   furiganaMaybeRubies: MaybeRuby[],
-}
+};
 
 export interface ProgramStatus {
   debug: boolean,

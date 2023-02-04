@@ -11,10 +11,13 @@ import {
   ActionPalette, actionsInclude, availableActions as getAvailableActions, hiraganaToKatakana,
   katakanaToHiragana, type Action, type ActionInvocation
 } from "~/action";
+import type {
+  CharacterCounter as BackendCharacterCounter, ChunkVariant, Command, Config, EventName, InMessage,
+  PlayerStatus, RecognizerStatus
+} from "~/backend";
 import {
-  Backend, BackendNotConnectedScreen, CharacterCounter as BackendCharacterCounter, ChunkVariant,
-  Command, Config, defaultCharacterCounter, EventName, InMessage, parseBackendConstant,
-  parseRecognizerStatus, PlayerStatus, playerStatusGotConnected, RecognizerStatus
+  Backend, BackendNotConnectedScreen, defaultCharacterCounter, parseBackendConstant,
+  parseRecognizerStatus, playerStatusGotConnected
 } from "~/backend";
 import {
   ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState, type Chunk
@@ -117,7 +120,7 @@ export const App: VoidComponent = () => {
     notebook,
     chunks,
   });
-  const statusPanelUrgent = () => characterCounter().frozen || !sessionTimer.running()
+  const statusPanelUrgent = () => characterCounter().frozen || !sessionTimer.running();
   const concealStatusPanelUnlessHovered = () => focusMode() && !statusPanelUrgent();
 
   const showBackendNotConnectedScreen = () => backend.connectionState() !== "connected";

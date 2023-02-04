@@ -14,6 +14,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -293,7 +294,10 @@ public final class ConfigManager {
     if (val != null && Duration.of(val, unit).compareTo(Duration.of(min, unit)) < 0) {
       throw new ConfigException.BadValue(
         key,
-        "if specified, should be at least %d %s".formatted(min, unit.toString().toLowerCase())
+        "if specified, should be at least %d %s".formatted(
+          min,
+          unit.toString().toLowerCase(Locale.ENGLISH)
+        )
       );
     }
   }

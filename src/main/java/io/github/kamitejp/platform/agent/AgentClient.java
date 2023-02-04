@@ -27,7 +27,6 @@ public class AgentClient extends WebSocketAdapter {
   private static final int CONNECTION_TIMEOUT_MS = 2000;
   private static final int CONNECTION_RETRY_INTERVAL_MS = 2000;
 
-  private final URI wsServerEndpoint;
   private final Runnable connectCb;
   private final Runnable disconnectCb;
   private final Consumer<String> chunkCb;
@@ -41,15 +40,16 @@ public class AgentClient extends WebSocketAdapter {
     Consumer<String> chunkCb,
     Consumer<String> chunkTranslationCb
   ) {
-    this.wsServerEndpoint = URI.create("ws://%s".formatted(host));
     this.connectCb = connectCb;
     this.disconnectCb = disconnectCb;
     this.chunkCb = chunkCb;
     this.chunkTranslationCb = chunkTranslationCb;
+
+    var wsServerEndpoint = URI.create("ws://%s".formatted(host));
     try {
       this.ws = new WebSocketFactory().createSocket(wsServerEndpoint, CONNECTION_TIMEOUT_MS);
       ws.addListener(this);
-      LOG.debug("Starting Agent client (endpoint = {})", wsServerEndpoint.toString());
+      LOG.debug("Starting Agent client (endpoint = {})", wsServerEndpoint);
       ws.connectAsynchronously();
     } catch (IOException e) {
       LOG.error("Exception while creating web socket", e);
@@ -79,12 +79,13 @@ public class AgentClient extends WebSocketAdapter {
   }
 
   @Override
-  public void onTextMessage(WebSocket _ws, String msgJSON) {
+  public void onTextMessage(WebSocket unusedWS, String msgJSON) {
     try {
       var msg = JSON.mapper().readValue(msgJSON, AgentSentenceMessage.class);
       switch (msg.type()) {
         case "copyText"  -> chunkCb.accept(msg.sentence());
         case "translate" -> chunkTranslationCb.accept(msg.sentence());
+        default -> LOG.debug("Received Agent message of unhandled type: {}", msg.type());
       }
     } catch (JsonProcessingException e) {
       LOG.error("Exception while parsing message from Agent", e);
@@ -92,23 +93,23 @@ public class AgentClient extends WebSocketAdapter {
   }
 
   @Override
-  public void onConnectError(WebSocket _websocket, WebSocketException _exception) {
+  public void onConnectError(WebSocket unusedWS, WebSocketException unusedException) {
     LOG.trace("Connect error");
     wsWaitAndReconnect();
   }
 
   @Override
-  public void onConnected(WebSocket _ws, Map<String, List<String>> _headers) {
+  public void onConnected(WebSocket unusedWS, Map<String, List<String>> unusedHeaders) {
     LOG.info("Connected to Agent");
     connectCb.run();
   }
 
   @Override
   public void onDisconnected(
-    WebSocket _websocket,
-    WebSocketFrame _serverCloseFrame,
-    WebSocketFrame _clientCloseFrame,
-    boolean _closedByServer
+    WebSocket unusedWS,
+    WebSocketFrame unusedServerCloseFrame,
+    WebSocketFrame unusedClientCloseFrame,
+    boolean unusedClosedByServer
   ) {
     LOG.info("Disconnected from Agent");
     disconnectCb.run();
@@ -116,7 +117,7 @@ public class AgentClient extends WebSocketAdapter {
   }
 
   @Override
-  public void onError(WebSocket _websocket, WebSocketException cause) {
+  public void onError(WebSocket unusedWebsocket, WebSocketException cause) {
     if (cause.getError() == WebSocketError.SOCKET_CONNECT_ERROR) {
       LOG.trace("Socket connect error");
       return;

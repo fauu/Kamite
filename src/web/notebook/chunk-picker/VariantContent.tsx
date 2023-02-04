@@ -1,7 +1,7 @@
 import { Index, type VoidComponent } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
-import { ChunkVariant } from "~/backend";
+import type { ChunkVariant } from "~/backend";
 import { CharMaybeNewline, Newline } from "~/common";
 
 interface ChunkPickerVariantContentProps {

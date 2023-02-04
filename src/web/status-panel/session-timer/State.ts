@@ -11,7 +11,7 @@ type Time = {
 };
 
 function defaultTime(): Time {
-  return { h: 0, m: 0};
+  return { h: 0, m: 0 };
 }
 
 export type SessionTimerState = ReturnType<typeof createSessionTimerState>;
