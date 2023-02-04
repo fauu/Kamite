@@ -10,10 +10,14 @@ type Time = {
   m: number,
 };
 
+function defaultTime(): Time {
+  return { h: 0, m: 0};
+}
+
 export type SessionTimerState = ReturnType<typeof createSessionTimerState>;
 
 export function createSessionTimerState() {
-  const [time, setTime] = createSignal<Time>({ h: 0, m: 0 });
+  const [time, setTime] = createSignal<Time>(defaultTime());
   const [running, setRunning] = createSignal(false);
   const [autoPauseIntervalS, setAutoPauseIntervalS] = createSignal<number | undefined>(undefined);
   const [autoPaused, setAutoPaused] = createSignal(false);

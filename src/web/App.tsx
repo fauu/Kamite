@@ -11,12 +11,10 @@ import {
   ActionPalette, actionsInclude, availableActions as getAvailableActions, hiraganaToKatakana,
   katakanaToHiragana, type Action, type ActionInvocation
 } from "~/action";
-import type {
-  CharacterCounter as BackendCharacterCounter, ChunkVariant, Command, Config, EventName, InMessage,
-  PlayerStatus, RecognizerStatus
-} from "~/backend";
 import {
-  Backend, BackendNotConnectedScreen, parseBackendConstant, parseRecognizerStatus, playerStatusGotConnected
+  Backend, BackendNotConnectedScreen, CharacterCounter as BackendCharacterCounter, ChunkVariant,
+  Command, Config, defaultCharacterCounter, EventName, InMessage, parseBackendConstant,
+  parseRecognizerStatus, PlayerStatus, playerStatusGotConnected, RecognizerStatus
 } from "~/backend";
 import {
   ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState, type Chunk
@@ -63,7 +61,7 @@ export const App: VoidComponent = () => {
   const [playerStatus, setPlayerStatus] =
     createSignal<PlayerStatus>("disconnected");
   const [characterCounter, setCharacterCounter] =
-    createSignal<BackendCharacterCounter>({ count: 0, frozen: false });
+    createSignal<BackendCharacterCounter>(defaultCharacterCounter());
   const [chunkVariants, setChunkVariants] =
     createSignal<ChunkVariant[]>([]);
   const [focusMode, setFocusMode] =

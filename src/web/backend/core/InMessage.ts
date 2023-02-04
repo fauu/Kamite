@@ -87,6 +87,11 @@ export type CharacterCounter = {
   frozen: boolean,
 };
 
+// QUAL: Move?
+export function defaultCharacterCounter(): CharacterCounter {
+  return { count: 0, frozen: false };
+}
+
 export type UnavailableUniversalFeature =
   | { id: "auto-furigana", reason: "KUROMOJI_UNAVAILABLE" };
 

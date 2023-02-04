@@ -10,6 +10,7 @@ export type {
   CharacterCounter, ChunkEnhancementsInMessage, ChunkVariant, InMessage,
   MaybeRuby, ProgramStatus, SessionTimer
 } from "./InMessage";
+export { defaultCharacterCounter } from "./InMessage";
 export type { CommandMessage, OutMessage, RequestMessage } from "./OutMessage";
 export { playerStatusGotConnected, type PlayerStatus } from "./PlayerStatus";
 export {
