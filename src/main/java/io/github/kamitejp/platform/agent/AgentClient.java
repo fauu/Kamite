@@ -47,7 +47,8 @@ public class AgentClient extends WebSocketAdapter {
 
     var wsServerEndpoint = URI.create("ws://%s".formatted(host));
     try {
-      this.ws = new WebSocketFactory().createSocket(wsServerEndpoint, CONNECTION_TIMEOUT_MS);
+      ws = new WebSocketFactory().createSocket(wsServerEndpoint, CONNECTION_TIMEOUT_MS);
+      //noinspection ThisEscapedInObjectConstruction
       ws.addListener(this);
       LOG.debug("Starting Agent client (endpoint = {})", wsServerEndpoint);
       ws.connectAsynchronously();

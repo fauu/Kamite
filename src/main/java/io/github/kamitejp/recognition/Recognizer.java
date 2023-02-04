@@ -343,8 +343,8 @@ public class Recognizer {
     BufferedImage img
   ) {
     Result<String, RemoteOCRRequestError> res = null;
-    var mightTry = true;
-    for (var attemptNo = 0; mightTry && attemptNo < REMOTE_OCR_MAX_ATTEMPTS; attemptNo++) {
+    var mightAttempt = true;
+    for (var attemptNo = 0; mightAttempt && attemptNo < REMOTE_OCR_MAX_ATTEMPTS; attemptNo++) {
       if (attemptNo > 0) {
         try {
           Thread.sleep(REMOTE_OCR_RETRY_INTERVALS_MS.get(attemptNo - 1));
@@ -354,15 +354,15 @@ public class Recognizer {
         LOG.info("Retrying remote OCR request");
       }
       res = adapter.ocr(img);
-      mightTry = false;
+      mightAttempt = false;
       if (res.isErr()) {
         var msg = switch (res.err()) {
           case RemoteOCRRequestError.Timeout ignored -> {
-            mightTry = true;
+            mightAttempt = true;
             yield "HTTP request timed out";
           }
           case RemoteOCRRequestError.SendFailed err -> {
-            mightTry = true;
+            mightAttempt = true;
             yield "HTTP client send execution has failed: %s".formatted(err.exceptionMessage());
           }
           case RemoteOCRRequestError.Unauthorized ignored ->

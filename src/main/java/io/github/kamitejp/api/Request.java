@@ -34,7 +34,7 @@ public record Request(long timestamp, Body body) {
             .readValue(bodyNode.get("enhancements"));
           yield new Request.Body.GetChunkEnhancements(text, enhancements);
         } catch (IOException e) {
-          LOG.debug("Exception while parsing requested chunk enhancements: {}", e);
+          LOG.debug("Exception while parsing requested chunk enhancements", e);
           yield null;
         }
       }

@@ -15,7 +15,13 @@
       </option>
       <option name="nonThreadSafeTypes" value="" />
     </inspection_tool>
-    <inspection_tool class="AccessToStaticFieldLockedOnInstance" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="AccessToStaticFieldLockedOnInstance" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredClasses">
+        <set>
+          <option value="org.apache.logging.log4j.Logger" />
+        </set>
+      </option>
+    </inspection_tool>
     <inspection_tool class="ActionIsNotPreviewFriendly" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="AddOperatorModifier" enabled="false" level="INFORMATION" enabled_by_default="false" />
     <inspection_tool class="AddVarianceModifier" enabled="false" level="INFORMATION" enabled_by_default="false" />
@@ -1093,7 +1099,7 @@
       <option name="m_ignoreInvisibleFields" value="true" />
       <option name="m_ignoreStaticMethodParametersHidingInstanceFields" value="true" />
       <option name="m_ignoreForConstructors" value="true" />
-      <option name="m_ignoreForPropertySetters" value="false" />
+      <option name="m_ignoreForPropertySetters" value="true" />
       <option name="m_ignoreForAbstractMethods" value="false" />
     </inspection_tool>
     <inspection_tool class="ParameterNameDiffersFromOverriddenParameter" enabled="true" level="WARNING" enabled_by_default="true">
@@ -1288,7 +1294,6 @@
     <inspection_tool class="SimplifyNestedEachInScopeFunction" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="SimplifyWhenWithBooleanConstantCondition" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="SingleCharacterStartsWith" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="Singleton" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="SingletonConstructor" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="SizeReplaceableByIsEmpty" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="SleepWhileHoldingLock" enabled="true" level="WARNING" enabled_by_default="true" />
@@ -1483,7 +1488,7 @@
     <inspection_tool class="WaitNotifyNotInSynchronizedContext" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="WaitOrAwaitWithoutTimeout" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="WaitWithoutCorrespondingNotify" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="WeakerAccess" enabled="true" level="WARNING" enabled_by_default="true">
+    <inspection_tool class="WeakerAccess" enabled="true" level="WEAK WARNING" enabled_by_default="true" editorAttributes="INFO_ATTRIBUTES">
       <option name="SUGGEST_PACKAGE_LOCAL_FOR_MEMBERS" value="true" />
       <option name="SUGGEST_PACKAGE_LOCAL_FOR_TOP_CLASSES" value="true" />
       <option name="SUGGEST_PRIVATE_FOR_INNERS" value="false" />

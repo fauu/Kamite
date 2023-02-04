@@ -55,33 +55,38 @@ public class Chunk {
       /*        score */ 0,
       /* firstWordBox */ firstWordBox
     );
-    this.score = calculateScore(avgConfidence);
+    score = calculateScore(avgConfidence);
   }
 
   public static Optional<Chunk> fromHOCRWithLabel(String s, String label) {
-    var firstWordBox = new Object() { Rectangle value = null; };
-    var avgConfidenceCounter = new Object() { int sum = 0; int n = 0; };
+    final var firstWordBox = new Rectangle[1];
+    final var sumConfidences = new int[]{0};
+    final var numConfidences = new int[]{0};
 
     var doc = Jsoup.parse(s);
     var lines = doc.select(".ocr_line").stream().map(lineEl ->
       lineEl.select(".ocrx_word").stream().map(wordEl -> {
         var title = wordEl.attr("title");
         Matcher m;
-        if (firstWordBox.value == null) {
+        if (firstWordBox[0] == null) {
           m = HOCR_WORD_TITLE_FULL_RE.matcher(title);
-          m.find();
+          if (!m.find()) {
+            throw new IllegalArgumentException("Failed to match `.ocrx_word` title (full)");
+          }
           var left = Integer.parseInt(m.group("x0"));
           var right = Integer.parseInt(m.group("x1"));
           var top = Integer.parseInt(m.group("y0"));
           var bottom = Integer.parseInt(m.group("y1"));
-          firstWordBox.value = Rectangle.ofEdges(left, top, right, bottom);
+          firstWordBox[0] = Rectangle.ofEdges(left, top, right, bottom);
         } else {
           m = HOCR_WORD_TITLE_CONF_RE.matcher(title);
-          m.find();
+          if (!m.find()) {
+            throw new IllegalArgumentException("Failed to match `.ocrx_word` title (conf.)");
+          }
         }
         var confidence = Integer.parseInt(m.group("conf"));
-        avgConfidenceCounter.n++;
-        avgConfidenceCounter.sum += confidence;
+        numConfidences[0]++;
+        sumConfidences[0] += confidence;
         return wordEl.text();
       })
         .collect(joining())
@@ -90,24 +95,24 @@ public class Chunk {
       .filter(not(String::isBlank))
       .collect(toList());
 
-    var avgConfidence = (float) avgConfidenceCounter.sum / avgConfidenceCounter.n;
+    var avgConfidence = (float) sumConfidences[0] / numConfidences[0];
     return lines.isEmpty()
       ? Optional.empty()
-      : Optional.of(new Chunk(lines, label, avgConfidence, firstWordBox.value));
+      : Optional.of(new Chunk(lines, label, avgConfidence, firstWordBox[0]));
   }
 
   public String getContent() {
     return content;
   }
 
-  public void modifyContent(String content) {
-    if (content.equals(this.content)) {
+  public void modifyContent(String newContent) {
+    if (newContent.equals(content)) {
       return;
     }
     if (originalContent == null) {
-      originalContent = this.content;
+      originalContent = content;
     }
-    this.content = content;
+    content = newContent;
   }
 
   public String getOriginalContent() {

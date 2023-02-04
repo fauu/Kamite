@@ -10,28 +10,35 @@ public enum Dev {
 
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final Object lock = new Object();
+  @SuppressWarnings("NonSerializableFieldInSerializableClass")
+  private final Object lock = new Object();
 
-  private String name;
+  private String measurementName;
   private Long startTime;
 
+  @SuppressWarnings("unused")
   public void measureStart(String name) {
     synchronized (lock) {
       if (startTime != null) {
         LOG.debug("measureStart() called twice");
       } else {
-        this.name = name;
+        measurementName = name;
         startTime = System.currentTimeMillis();
       }
     }
   }
 
+  @SuppressWarnings("unused")
   public void measureEnd() {
     synchronized (lock) {
       if (startTime == null) {
         LOG.debug("measureEnd() called before measureStart()");
       } else {
-        LOG.debug("Measurement `{}`: {} ms", name, System.currentTimeMillis() - startTime);
+        LOG.debug(
+          "Measurement `{}`: {} ms",
+          measurementName,
+          System.currentTimeMillis() - startTime
+        );
         startTime = null;
       }
     }
