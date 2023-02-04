@@ -37,7 +37,7 @@ export function concealUnlessHovered(el: HTMLElement, value: () => ConcealUnless
   createEffect(() => {
     if (!enabled()) {
       cleanup();
-    } else {
+    } else if (!coverEl) {
       coverEl = document.createElement("div");
       coverEl.classList.add(CoverClass);
       el.prepend(coverEl);

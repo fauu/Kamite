@@ -63,7 +63,7 @@ export const App: VoidComponent = () => {
   const [playerStatus, setPlayerStatus] =
     createSignal<PlayerStatus>("disconnected");
   const [characterCounter, setCharacterCounter] =
-    createSignal<BackendCharacterCounter>();
+    createSignal<BackendCharacterCounter>({ count: 0, frozen: false });
   const [chunkVariants, setChunkVariants] =
     createSignal<ChunkVariant[]>([]);
   const [focusMode, setFocusMode] =
@@ -119,7 +119,7 @@ export const App: VoidComponent = () => {
     notebook,
     chunks,
   });
-  const statusPanelUrgent = () => characterCounter()!.frozen || !sessionTimer.running()
+  const statusPanelUrgent = () => characterCounter().frozen || !sessionTimer.running()
   const concealStatusPanelUnlessHovered = () => focusMode() && !statusPanelUrgent();
 
   const showBackendNotConnectedScreen = () => backend.connectionState() !== "connected";
