@@ -252,7 +252,7 @@ public class Recognizer {
     switch (blockRotation) { // NOPMD - misidentifies as non-exhaustive
       case BELOW_HORIZONTAL -> {
         var t = -theta;
-        endDeltaX *= -Math.sin(t);
+        endDeltaX *= Math.sin(t);
         endDeltaY *= Math.cos(t);
       }
       case BELOW_VERTICAL -> {
