@@ -54,6 +54,8 @@ fn main() {
     let jvm_options = vec![
         "--enable-preview".into(),
         format!("-Djava.class.path={}", jar_path.display()),
+        // Fix for https://github.com/fauu/Kamite/issues/9
+        "-Djavax.accessibility.assistive_technologies=".into(),
     ];
     let mut jvm: *mut JavaVM = ptr::null_mut();
     must_create_jvm(jni, jvm_options, &mut jvm);
