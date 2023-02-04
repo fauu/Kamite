@@ -113,9 +113,9 @@ lint-docs:
 .PHONY: lint-docs
 
 lint-java:
-	PMD_JAVA_OPTS=--enable-preview \
-    pmd -language java -version 19-preview -d src/main/java -f text \
-      -R support/definitions/pmd-ruleset.xml
+	export PMD_JAVA_OPTS=--enable-preview
+	pmd --use-version java-19-preview -d src/main/java -f text \
+		-R support/definitions/pmd-ruleset.xml
 .PHONY: lint-java
 
 lint-ts:
