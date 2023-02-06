@@ -40,6 +40,8 @@ Ocr
 GlobalKeybindingsOCR
 Regions\$Elm
 Region
+Configurations\$Elm
+Configuration
 Handlers\$Elm
 Handler
 ___HERE
