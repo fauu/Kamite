@@ -20,7 +20,6 @@ import io.github.kamitejp.platform.RobotScreenshoterUnavailableException;
 import io.github.kamitejp.platform.linux.LinuxPlatform;
 import io.github.kamitejp.platform.linux.xorg.dependencies.slop.Slop;
 import io.github.kamitejp.platform.linux.xorg.dependencies.slop.SlopResult;
-import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;
@@ -42,9 +41,7 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
   }
 
   @Override
-  public void initOCR(OCREngine engine) throws PlatformOCRInitializationException {
-    super.initOCR(engine);
-
+  public void initOCR() throws PlatformOCRInitializationException {
     slop = new Slop();
     var res = checkIfDependenciesAvailable(List.of(slop));
     if (res.isErr()) {

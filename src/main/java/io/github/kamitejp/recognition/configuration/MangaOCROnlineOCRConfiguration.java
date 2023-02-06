@@ -2,17 +2,22 @@ package io.github.kamitejp.recognition.configuration;
 
 import io.github.kamitejp.config.Config.OCR;
 import io.github.kamitejp.recognition.OCREngine;
+import io.github.kamitejp.recognition.OCREngineParams;
 
 public final class MangaOCROnlineOCRConfiguration extends OCRConfiguration {
-  private final OCREngine.MangaOCROnline engine;
+  private OCREngine.MangaOCROnline engine;
 
   public MangaOCROnlineOCRConfiguration(OCR.Configuration config) {
     super(config);
-    engine = OCREngine.MangaOCROnline.uninitialized();
   }
 
-  public OCREngine.MangaOCROnline getEngine() {
-    return engine;
+  @Override
+  public OCREngineParams getEngineParams() {
+    return null;
+  }
+
+  public void setEngine(OCREngine.MangaOCROnline engine) {
+    this.engine = engine;
   }
 }
 

@@ -12,15 +12,12 @@ import org.apache.logging.log4j.Logger;
 import io.github.kamitejp.Env;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
-import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
-import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
 import io.github.kamitejp.platform.linux.gnome.GnomePlatform;
 import io.github.kamitejp.platform.linux.kde.PlasmaPlatform;
 import io.github.kamitejp.platform.linux.wlroots.WlrootsPlatform;
 import io.github.kamitejp.platform.linux.xorg.XorgPlatform;
 import io.github.kamitejp.platform.macos.MacOSPlatform;
 import io.github.kamitejp.platform.windows.WindowsPlatform;
-import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;
@@ -55,9 +52,7 @@ public interface Platform {
     return !getUnsupportedFeatures().contains(feature);
   }
 
-  void initOCR(OCREngine engine) throws PlatformOCRInitializationException;
-
-  TesseractResult tesseractOCR(BufferedImage img, TesseractModel model);
+  void initOCR() throws PlatformOCRInitializationException;
 
   Path getGenericLibDirPath();
 
