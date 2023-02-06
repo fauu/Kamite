@@ -24,10 +24,10 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
@@ -39,6 +39,7 @@ import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
+import io.github.kamitejp.recognition.configuration.OCRConfiguration;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
 import io.github.kamitejp.util.Executor;
@@ -81,14 +82,14 @@ public class Recognizer {
     new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
   private final Platform platform;
-  private final OCREngine engine;
+  private final List<OCRConfiguration> configurations;
   private final boolean debug;
   private final Consumer<RecognizerEvent> eventCb;
   private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
 
   public Recognizer(
     Platform platform,
-    OCREngine uninitializedEngine,
+    List<OCRConfiguration> configurations,
     boolean debug,
     Consumer<RecognizerEvent> eventCb
   ) throws RecognizerInitializationException {
@@ -97,38 +98,43 @@ public class Recognizer {
     this.eventCb = eventCb;
     this.autoBlockDetectors = new HashMap<>();
 
-    this.engine = switch (uninitializedEngine) {
-      case OCREngine.Tesseract engine ->
-        engine;
-      case OCREngine.MangaOCR engine -> {
-        try {
-          yield engine.initialized(platform, this::handleMangaOCREvent);
-        } catch (MangaOCRInitializationException e) {
-          throw new RecognizerInitializationException( // NOPMD
-            "Could not initialize \"Manga OCR\": %s".formatted(e.getMessage())
-          );
-        }
-      }
-      case OCREngine.MangaOCROnline engine ->
-        engine.initialized();
-      case OCREngine.OCRSpace engine ->
-        engine.initialized();
-      case OCREngine.EasyOCROnline engine ->
-        engine.initialized();
-      case OCREngine.HiveOCROnline engine ->
-        engine.initialized();
-      case OCREngine.GLens engine ->
-        engine.initialized();
-      case OCREngine.None engine ->
-        engine;
-    };
+    // XXX Kept for reference
+    //this.engine = switch (uninitializedEngine) {
+    //  case OCREngine.Tesseract engine ->
+    //    engine;
+    //  case OCREngine.MangaOCR engine -> {
+    //    try {
+    //      yield engine.initialized(platform, this::handleMangaOCREvent);
+    //    } catch (MangaOCRInitializationException e) {
+    //      throw new RecognizerInitializationException( // NOPMD
+    //        "Could not initialize \"Manga OCR\": %s".formatted(e.getMessage())
+    //      );
+    //    }
+    //  }
+    //  case OCREngine.MangaOCROnline engine ->
+    //    engine.initialized();
+    //  case OCREngine.OCRSpace engine ->
+    //    engine.initialized();
+    //  case OCREngine.EasyOCROnline engine ->
+    //    engine.initialized();
+    //  case OCREngine.HiveOCROnline engine ->
+    //    engine.initialized();
+    //  case OCREngine.GLens engine ->
+    //    engine.initialized();
+    //  case OCREngine.None engine ->
+    //    engine;
+    //};
+    for (var c : configurations) {
+    }
 
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
-    LOG.info("Initialized recognizer. Engine: {}", uninitializedEngine::toString);
+    LOG.info("Initialized recognizer");
+    // XXX: List configurations?
   }
 
   public void destroy() {
-    engine.destroy();
+    // XXX
+    // engine.destroy();
   }
 
   private record LabelledTesseractResult(String label, TesseractResult result) {}

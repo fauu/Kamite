@@ -2,6 +2,8 @@ package io.github.kamitejp.recognition;
 
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
+import java.util.HashMap;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
@@ -12,7 +14,9 @@ import io.github.kamitejp.config.Config;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.Platform;
+import io.github.kamitejp.platform.PlatformOCRInitializationException;
 import io.github.kamitejp.recognition.configuration.MangaOCROnlineOCRConfiguration;
+import io.github.kamitejp.recognition.configuration.OCRConfiguration;
 import io.github.kamitejp.recognition.configuration.TesseractOCRConfiguration;
 import io.github.kamitejp.status.ProgramStatus;
 
@@ -44,7 +48,7 @@ public class RecognitionConductor {
   }
 
   public void initRecognizer(Config config) {
-    var cofigurations = config.ocr().configurations().stream().map(c ->
+    var configurations = config.ocr().configurations().stream().map(c ->
       switch (c.engine()) {
         case TESSERACT       -> new TesseractOCRConfiguration(c);
         case MANGAOCR_ONLINE -> new MangaOCROnlineOCRConfiguration(c);
@@ -53,43 +57,76 @@ public class RecognitionConductor {
     )
       .toList();
 
-    // var unavailable = true;
-    // try {
-    //   var engineRes = OCREngine.uninitializedFromConfig(config);
-    //   if (engineRes.isErr()) {
-    //     LOG.error("Error setting up OCR engine for initialization: {}", engineRes.err());
-    //   } else {
-    //     var engine = engineRes.get();
-    //     if (!(engine instanceof OCREngine.None)) {
-    //       platform.initOCR(engine);
-    //       recognizer = new Recognizer(
-    //         platform,
-    //         engine,
-    //         status.isDebug(),
-    //         recognizerEventCb
-    //       );
-    //       unavailable = false;
-    //     }
-    //   }
-    // } catch (PlatformOCRInitializationException.MissingDependencies e) {
-    //   LOG.error(
-    //     "Text recognition will not be available due to missing dependencies: {}",
-    //     () -> String.join(", ", e.getDependencies())
-    //   );
-    // } catch (PlatformOCRInitializationException e) {
-    //   throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
-    // } catch (RecognizerInitializationException e) {
-    //   var message = e.getMessage();
-    //   if (message != null) {
-    //     LOG.error(message);
-    //   } else {
-    //     LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
-    //     e.printStackTrace();
-    //   }
-    // }
-    // if (unavailable) {
-    //   updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
-    // }
+    var engines = new HashMap<OCREngine, List<OCRConfiguration>>();
+
+    // IMPROVEMENT: Share a single engine instance between multiple configurations as long as the
+    //              params are the same.
+    // NOTE: This is done in a roundabout way in order to better accomodate the above later
+    for (var configuration : configurations) {
+      switch (configuration) {
+        case TesseractOCRConfiguration c -> {
+          var engine = OCREngine.Tesseract.uninitialized(c.getEngineParams());
+          engines.put(engine, List.of(c));
+          c.setEngine(engine);
+        }
+        case MangaOCROnlineOCRConfiguration c -> {
+          var engine = OCREngine.MangaOCROnline.uninitialized();
+          engines.put(engine, List.of(c));
+          c.setEngine(engine);
+        }
+        default -> throw new IllegalStateException("XXX Unimplemented");
+      };
+    }
+
+    // XXX: Abort here when no configurations with validated engine params
+
+    var unavailable = true;
+    try {
+      platform.initOCR();
+
+      for (var entry : engines.entrySet()) {
+        var engine = entry.getKey();
+        var initializedEngine = switch (engine) {
+          case OCREngine.Tesseract      e -> e.initialized();
+          case OCREngine.MangaOCROnline e -> e.initialized();
+          // case OCREngine.MangaOCR engine -> {
+          //   try {
+          //     yield engine.initialized(platform, this::handleMangaOCREvent);
+          //   } catch (MangaOCRInitializationException e) {
+          //     throw new RecognizerInitializationException( // NOPMD
+          //       "Could not initialize \"Manga OCR\": %s".formatted(e.getMessage())
+          //     );
+          //   }
+          // }
+          default -> throw new IllegalStateException("XXX Unimplemented");
+        };
+        for (var configuration : entry.getValue()) {
+          // XXX: Won't do. Turn engine into a stateful class and initialize in place?
+          configuration.setEngine(initializedEngine);
+        }
+      }
+
+      recognizer = new Recognizer(platform, configurations, status.isDebug(), recognizerEventCb);
+      unavailable = false;
+    } catch (PlatformOCRInitializationException.MissingDependencies e) {
+      LOG.error(
+        "Text recognition will not be available due to missing dependencies: {}",
+        () -> String.join(", ", e.getDependencies())
+      );
+    } catch (PlatformOCRInitializationException e) {
+      throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
+    } catch (RecognizerInitializationException e) {
+      var message = e.getMessage();
+      if (message != null) {
+        LOG.error(message);
+      } else {
+        LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
+        e.printStackTrace();
+      }
+    }
+    if (unavailable) {
+      updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
+    }
   }
 
   public void destroy() {

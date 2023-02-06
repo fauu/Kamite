@@ -19,10 +19,6 @@ import javax.imageio.ImageIO;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.kamitejp.platform.dependencies.tesseract.Tesseract;
-import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
-import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
-import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.util.Result;
 
 public abstract class GenericPlatform {
@@ -42,8 +38,6 @@ public abstract class GenericPlatform {
   private String binName;
   private OS os;
   private Path programPath;
-
-  private Tesseract tesseract;
 
   protected GenericPlatform(String binName) {
     this.binName = binName;
@@ -121,20 +115,6 @@ public abstract class GenericPlatform {
       return false;
     }
     return true;
-  }
-
-  @SuppressWarnings("OverlyBroadThrowsClause")
-  public void initOCR(OCREngine engine) throws PlatformOCRInitializationException {
-    if (engine instanceof OCREngine.Tesseract tesseractEngine) {
-      tesseract = new Tesseract(tesseractEngine.binPath());
-      if (!tesseract.checkIsAvailable()) {
-        throw new PlatformOCRInitializationException.MissingDependencies(tesseract.NAME);
-      }
-    }
-  }
-
-  public TesseractResult tesseractOCR(BufferedImage img, TesseractModel model) {
-    return tesseract.ocr(img, model);
   }
 
   public Path getGenericLibDirPath() {

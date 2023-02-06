@@ -2,12 +2,10 @@ package io.github.kamitejp.recognition;
 
 import java.util.function.Consumer;
 
-import io.github.kamitejp.config.Config;
 import io.github.kamitejp.platform.MangaOCRController;
 import io.github.kamitejp.platform.MangaOCREvent;
 import io.github.kamitejp.platform.MangaOCRInitializationException;
 import io.github.kamitejp.platform.Platform;
-import io.github.kamitejp.util.Result;
 
 public sealed interface OCREngine
   permits OCREngine.Tesseract,
@@ -18,7 +16,18 @@ public sealed interface OCREngine
           OCREngine.HiveOCROnline,
           OCREngine.GLens,
           OCREngine.None {
-  record Tesseract(String binPath) implements OCREngine {
+  record Tesseract(String binPath, TesseractAdapter adapter) implements OCREngine {
+    public static Tesseract uninitialized(OCREngineParams.Tesseract params) {
+      return new Tesseract(params.binPath(), null);
+    }
+
+    public Tesseract initialized() {
+      if (adapter != null) {
+        throw new IllegalStateException("This OCREngine.Tesseract instance is already initialized");
+      }
+      return new Tesseract(binPath, new TesseractAdapter());
+    }
+
     @Override
     public String toString() {
       return "Tesseract OCR";
@@ -208,37 +217,42 @@ public sealed interface OCREngine
     // Do nothing
   }
 
-  static Result<OCREngine, String> uninitializedFromConfig(Config config) {
-    OCREngine engine;
-    String errorMessage = null;
-
-    engine = switch (config.ocr().engine()) {
-      case TESSERACT ->
-        new OCREngine.Tesseract(config.ocr().tesseract().path());
-      case MANGAOCR  ->
-        OCREngine.MangaOCR.uninitialized(config.ocr().mangaocr().pythonPath());
-      case MANGAOCR_ONLINE  ->
-        OCREngine.MangaOCROnline.uninitialized();
-      case OCRSPACE  -> {
-        var apiKey = config.secrets().ocrspace();
-        if (apiKey == null) {
-          errorMessage = "Please provide the API key for OCR.space ('secrets.ocrspace')";
-          yield null;
-        }
-        yield OCREngine.OCRSpace.uninitialized(
-          config.secrets().ocrspace(), config.ocr().ocrspace().engine()
-        );
-      }
-      case EASYOCR_ONLINE  ->
-        OCREngine.EasyOCROnline.uninitialized();
-      case HIVEOCR_ONLINE  ->
-        OCREngine.HiveOCROnline.uninitialized();
-      case GLENS  ->
-        OCREngine.GLens.uninitialized();
-      case NONE ->
-        new OCREngine.None();
-    };
-
-    return engine == null ? Result.Err(errorMessage) : Result.Ok(engine);
-  }
+  // XXX
+  // static Result<OCREngine, String> uninitializedFromConfig(
+  //   Config.OCREngine configEngine, Config.OCR.Configuration config
+  // ) {
+  //   OCREngine engine;
+  //   String errorMessage = null;
+  //
+  //   engine = switch (configEngine) {
+  //     case TESSERACT ->
+  //       OCREngine.Tesseract.uninitialized(config.path());
+      // case MANGAOCR  ->
+      //   OCREngine.MangaOCR.uninitialized(config.ocr().mangaocr().pythonPath());
+      // case MANGAOCR_ONLINE  ->
+      //   OCREngine.MangaOCROnline.uninitialized();
+      // case OCRSPACE  -> {
+      //   var apiKey = config.secrets().ocrspace();
+      //   if (apiKey == null) {
+      //     errorMessage = "Please provide the API key for OCR.space ('secrets.ocrspace')";
+      //     yield null;
+      //   }
+      //   yield OCREngine.OCRSpace.uninitialized(
+      //     config.secrets().ocrspace(), config.ocr().ocrspace().engine()
+      //   );
+      // }
+      // case EASYOCR_ONLINE  ->
+      //   OCREngine.EasyOCROnline.uninitialized();
+      // case HIVEOCR_ONLINE  ->
+      //   OCREngine.HiveOCROnline.uninitialized();
+      //  case GLENS  ->
+      //    OCREngine.GLens.uninitialized();
+  //     case NONE ->
+  //       new OCREngine.None();
+  //     default ->
+  //       throw new IllegalStateException("XXX Unimplemented");
+  //   };
+  //
+  //   return engine == null ? Result.Err(errorMessage) : Result.Ok(engine);
+  // }
 }

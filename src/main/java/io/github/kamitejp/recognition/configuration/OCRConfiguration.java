@@ -1,7 +1,8 @@
 package io.github.kamitejp.recognition.configuration;
 
 import io.github.kamitejp.config.Config.OCR;
-import io.github.kamitejp.recognition.OCREngine;
+import io.github.kamitejp.recognition.OCREngineParams;
+import io.github.kamitejp.util.Result;
 
 public abstract class OCRConfiguration {
   private String name;
@@ -10,6 +11,8 @@ public abstract class OCRConfiguration {
     name = config.name();
   }
 
-  protected abstract OCREngine getEngine();
+  public abstract OCREngineParams getEngineParams();
+
+  public abstract Result<Void, String> initEngine();
 }
 

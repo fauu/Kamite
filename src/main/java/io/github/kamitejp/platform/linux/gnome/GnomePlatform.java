@@ -19,7 +19,6 @@ import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
 import io.github.kamitejp.platform.linux.WaylandPlatform;
-import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;
@@ -47,9 +46,7 @@ public class GnomePlatform extends WaylandPlatform {
   }
 
   @Override
-  public void initOCR(OCREngine engine) throws PlatformOCRInitializationException {
-    super.initOCR(engine);
-
+  public void initOCR() throws PlatformOCRInitializationException {
     if (dbusClient == null) {
       throw new PlatformOCRInitializationException.ScreenshotAPICommunicationFailure(
         "DBusClient is null"

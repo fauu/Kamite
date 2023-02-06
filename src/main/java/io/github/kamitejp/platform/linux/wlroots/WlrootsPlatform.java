@@ -25,7 +25,6 @@ import io.github.kamitejp.platform.linux.wlroots.dependencies.slurp.SlurpMode;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.slurp.SlurpResult;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.wlrctl.Wlrctl;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.wlrctl.WlrctlResult;
-import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;
@@ -52,9 +51,7 @@ public class WlrootsPlatform extends WaylandPlatform {
 
   @SuppressWarnings("OverlyBroadThrowsClause")
   @Override
-  public void initOCR(OCREngine engine) throws PlatformOCRInitializationException {
-    super.initOCR(engine);
-
+  public void initOCR() throws PlatformOCRInitializationException {
     slurp = new Slurp();
     grim = new Grim();
     wlrctl = new Wlrctl();
