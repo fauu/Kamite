@@ -113,8 +113,10 @@ ocr: {
 
     # Tesseract options
     path: "string?" # Generalizable
-    tesseractModel: "string?"
+    tesseractModel: "string"
+    tesseractPSM: "int"
     tesseractModelAlt: "string?"
+    tesseractPSMAlt: "int?"
 
     # "MangaOCR" (Local)
     pythonPath: "string?" # Generalizable

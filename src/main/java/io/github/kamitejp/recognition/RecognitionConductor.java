@@ -4,15 +4,16 @@ import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.util.function.Consumer;
 
-import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.config.Config;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.Platform;
-import io.github.kamitejp.platform.PlatformOCRInitializationException;
+import io.github.kamitejp.recognition.configuration.MangaOCROnlineOCRConfiguration;
+import io.github.kamitejp.recognition.configuration.TesseractOCRConfiguration;
 import io.github.kamitejp.status.ProgramStatus;
 
 public class RecognitionConductor {
@@ -43,43 +44,52 @@ public class RecognitionConductor {
   }
 
   public void initRecognizer(Config config) {
-    var unavailable = true;
-    try {
-      var engineRes = OCREngine.uninitializedFromConfig(config);
-      if (engineRes.isErr()) {
-        LOG.error("Error setting up OCR engine for initialization: {}", engineRes.err());
-      } else {
-        var engine = engineRes.get();
-        if (!(engine instanceof OCREngine.None)) {
-          platform.initOCR(engine);
-          recognizer = new Recognizer(
-            platform,
-            engine,
-            status.isDebug(),
-            recognizerEventCb
-          );
-          unavailable = false;
-        }
+    var cofigurations = config.ocr().configurations().stream().map(c ->
+      switch (c.engine()) {
+        case TESSERACT       -> new TesseractOCRConfiguration(c);
+        case MANGAOCR_ONLINE -> new MangaOCROnlineOCRConfiguration(c);
+        default -> throw new IllegalStateException("XXX Unimplemented");
       }
-    } catch (PlatformOCRInitializationException.MissingDependencies e) {
-      LOG.error(
-        "Text recognition will not be available due to missing dependencies: {}",
-        () -> String.join(", ", e.getDependencies())
-      );
-    } catch (PlatformOCRInitializationException e) {
-      throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
-    } catch (RecognizerInitializationException e) {
-      var message = e.getMessage();
-      if (message != null) {
-        LOG.error(message);
-      } else {
-        LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
-        e.printStackTrace();
-      }
-    }
-    if (unavailable) {
-      updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
-    }
+    )
+      .toList();
+
+    // var unavailable = true;
+    // try {
+    //   var engineRes = OCREngine.uninitializedFromConfig(config);
+    //   if (engineRes.isErr()) {
+    //     LOG.error("Error setting up OCR engine for initialization: {}", engineRes.err());
+    //   } else {
+    //     var engine = engineRes.get();
+    //     if (!(engine instanceof OCREngine.None)) {
+    //       platform.initOCR(engine);
+    //       recognizer = new Recognizer(
+    //         platform,
+    //         engine,
+    //         status.isDebug(),
+    //         recognizerEventCb
+    //       );
+    //       unavailable = false;
+    //     }
+    //   }
+    // } catch (PlatformOCRInitializationException.MissingDependencies e) {
+    //   LOG.error(
+    //     "Text recognition will not be available due to missing dependencies: {}",
+    //     () -> String.join(", ", e.getDependencies())
+    //   );
+    // } catch (PlatformOCRInitializationException e) {
+    //   throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
+    // } catch (RecognizerInitializationException e) {
+    //   var message = e.getMessage();
+    //   if (message != null) {
+    //     LOG.error(message);
+    //   } else {
+    //     LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
+    //     e.printStackTrace();
+    //   }
+    // }
+    // if (unavailable) {
+    //   updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
+    // }
   }
 
   public void destroy() {
