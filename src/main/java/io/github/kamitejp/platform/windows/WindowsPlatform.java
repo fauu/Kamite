@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import com.sun.jna.Memory;
 import com.sun.jna.platform.win32.GDI32;
 import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinGDI;
 import com.tulskiy.keymaster.common.Provider;
 
@@ -27,6 +28,7 @@ import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.OS;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformCreationException;
+import io.github.kamitejp.platform.ScreenSelector;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;
@@ -50,6 +52,9 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
     if (getOS() != OS.WINDOWS) {
       throw new PlatformCreationException("Detected OS is not Windows");
     }
+
+    // First selection can break without this warmup
+    getVirtualScreenCursorPosition();
   }
 
   @Override
@@ -65,7 +70,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
       case INSTANT -> Result.Ok(Point.from(MouseInfo.getPointerInfo().getLocation()));
       case SELECT -> {
         if (selector == null) {
-          selector = new ScreenSelector();
+          selector = new ScreenSelector(WindowsPlatform::getVirtualScreenCursorPosition);
         }
         yield selector.getFuturePoint().join()
           .<Result<Point, RecognitionOpError>>map(Result::Ok)
@@ -77,11 +82,17 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
   @Override
   public Result<Rectangle, RecognitionOpError> getUserSelectedArea() {
     if (selector == null) {
-      selector = new ScreenSelector();
+      selector = new ScreenSelector(WindowsPlatform::getVirtualScreenCursorPosition);
     }
     return selector.getFutureArea().join()
       .<Result<Rectangle, RecognitionOpError>>map(Result::Ok)
       .orElseGet(() -> Result.Err(RecognitionOpError.SELECTION_CANCELLED));
+  }
+
+  private static Point getVirtualScreenCursorPosition() {
+    var cursorPos = new WinDef.POINT();
+    User32.INSTANCE.GetCursorPos(cursorPos);
+    return new Point(cursorPos.x, cursorPos.y);
   }
 
   @SuppressWarnings("LocalVariableNamingConvention")

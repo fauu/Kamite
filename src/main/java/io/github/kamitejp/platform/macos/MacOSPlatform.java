@@ -21,7 +21,7 @@ import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.RobotScreenshoter;
 import io.github.kamitejp.platform.RobotScreenshoterUnavailableException;
-import io.github.kamitejp.platform.windows.ScreenSelector; // XXX (DEV): Move to another package
+import io.github.kamitejp.platform.ScreenSelector;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;

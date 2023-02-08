@@ -1,4 +1,4 @@
-package io.github.kamitejp.platform.windows;
+package io.github.kamitejp.platform;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -16,14 +16,12 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 import javax.swing.JFrame;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.sun.jna.platform.win32.User32;
-import com.sun.jna.platform.win32.WinDef;
 
 import io.github.kamitejp.Kamite;
 import io.github.kamitejp.controlgui.ControlGUI;
@@ -39,6 +37,8 @@ public final class ScreenSelector extends JFrame {
   private static final Stroke SELECTION_BORDER_STROKE = new BasicStroke(2);
   private static final Color SELECTION_BORDER_COLOR = Color.BLACK;
 
+  private Supplier<Point> customVirtualScreenCursorPositionSupplier;
+
   // Selection start and end point in frame coordinates (for drawing area rectangle)
   private Point frameStart;
   private Point frameEnd;
@@ -50,14 +50,17 @@ public final class ScreenSelector extends JFrame {
   private CompletableFuture<Optional<Point>> futurePoint;
   private CompletableFuture<Optional<Rectangle>> futureArea;
 
+  public ScreenSelector() {
+    this(/* customVirtualScreenCursorPositionSupplier */ null);
+  }
+
   // NOTE: Works on Xorg with a compositor if the secondary display is below the first. If it's
   //       above, however, the frame only covers the primary one.
   //       Without a compositor, we can't even draw a transparent window (JNA WindowUtils doesn't
   //       help). slop handles this without transparency by creating a custom-shaped window using
   //       the Xorg SHAPE extension.
-  public ScreenSelector() {
-    // First selection can break without this warmup
-    MouseListener.getWindowsVirtualScreenCursorPosition();
+  public ScreenSelector(Supplier<Point> customVirtualScreenCursorPositionSupplier) {
+    this.customVirtualScreenCursorPositionSupplier = customVirtualScreenCursorPositionSupplier;
 
     setTitle("%s OCR area selector".formatted(Kamite.APP_NAME_DISPLAY));
     setAlwaysOnTop(true);
@@ -196,24 +199,30 @@ public final class ScreenSelector extends JFrame {
     screenEnd = screen;
   }
 
+  private Point getVirtualScreenCursorPosition(MouseEvent e) {
+    return customVirtualScreenCursorPositionSupplier != null
+      ? customVirtualScreenCursorPositionSupplier.get()
+      : Point.from(e.getLocationOnScreen());
+  }
+
   private class MouseListener extends MouseAdapter {
     public void mousePressed(MouseEvent e) {
       if (futurePoint != null) {
         deactivate();
         reset();
-        futurePoint.complete(Optional.of(Point.from(getWindowsVirtualScreenCursorPosition())));
+        futurePoint.complete(Optional.of(getVirtualScreenCursorPosition(e)));
         return;
       }
-      setStartPoint(e.getPoint(), getWindowsVirtualScreenCursorPosition());
+      setStartPoint(e.getPoint(), getVirtualScreenCursorPosition(e));
     }
 
     public void mouseDragged(MouseEvent e) {
-      setEndPoint(e.getPoint(), getWindowsVirtualScreenCursorPosition());
+      setEndPoint(e.getPoint(), getVirtualScreenCursorPosition(e));
       repaint();
     }
 
     public void mouseReleased(MouseEvent e) {
-      setEndPoint(e.getPoint(), getWindowsVirtualScreenCursorPosition());
+      setEndPoint(e.getPoint(), getVirtualScreenCursorPosition(e));
       repaint();
 
       if (futureArea == null) {
@@ -230,12 +239,6 @@ public final class ScreenSelector extends JFrame {
       deactivate();
       reset();
       futureArea.complete(Optional.of(Rectangle.ofStartAndDimensions(x, y, w, h)));
-    }
-
-    private static Point getWindowsVirtualScreenCursorPosition() {
-      var cursorPos = new WinDef.POINT();
-      User32.INSTANCE.GetCursorPos(cursorPos);
-      return new Point(cursorPos.x, cursorPos.y);
     }
   }
 
