@@ -5,6 +5,8 @@ import static java.util.stream.Collectors.toMap;
 import java.util.Arrays;
 import java.util.Map;
 
+import io.github.kamitejp.meta.BuildInfo;
+
 public final class Main {
   private Main() {}
 

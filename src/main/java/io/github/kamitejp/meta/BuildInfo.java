@@ -1,44 +1,28 @@
-package io.github.kamitejp;
+package io.github.kamitejp.meta;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
 
+import io.github.kamitejp.util.Strings;
+
 public final class BuildInfo {
-  private static final char VERSION_PREFIX = 'v';
   private static final String GIT_PROPERTIES_RESOURCE_PATH = "/git.properties";
+  private static final String MAIN_BRANCH_NAME = "master";
+  private static final char RELEASE_VERSION_PREFIX = 'v';
 
   private final String branch;
   private final String commitIDAbbr;
   private final String[] tags;
-  private String version;
+  private Version version;
 
   private BuildInfo(String branch, String commitIDAbbr, String tags) {
-    // TODO: Introduce an utility function to check for null or empty string
-    if (
-      branch == null || branch.isEmpty()
-      || commitIDAbbr == null || commitIDAbbr.isEmpty()
-      || tags == null
-    ) {
-      throw new IllegalArgumentException(
-        "Tried to create a BuildInfo object with a null or empty required parameter"
-      );
+    if (Strings.isNullOrEmpty(branch) || Strings.isNullOrEmpty(commitIDAbbr) || tags == null) {
+      throw new IllegalArgumentException("BuildInfo: required parameter null or empty");
     }
     this.branch = branch;
     this.commitIDAbbr = commitIDAbbr;
     this.tags = tags.split(",");
-  }
-
-  private String generateVersion() {
-    if ("master".equals(branch)) {
-      var maybeVersionTag = Arrays.stream(tags)
-        .filter(t -> !t.isEmpty() && t.charAt(0) == VERSION_PREFIX)
-        .findFirst();
-      if (maybeVersionTag.isPresent()) {
-        return maybeVersionTag.get().substring(1);
-      }
-    }
-    return "git-%s".formatted(commitIDAbbr);
   }
 
   public static BuildInfo read() {
@@ -60,10 +44,23 @@ public final class BuildInfo {
     }
   }
 
-  public String getVersion() {
+  public Version getVersion() {
     if (version == null) {
       version = generateVersion();
     }
     return version;
+
+  }
+
+  private Version generateVersion() {
+    if (MAIN_BRANCH_NAME.equals(branch)) {
+      var maybeVersionTag = Arrays.stream(tags)
+        .filter(t -> !t.isEmpty() && t.charAt(0) == RELEASE_VERSION_PREFIX)
+        .findFirst();
+      if (maybeVersionTag.isPresent()) {
+        return Version.Release.fromMajorMinorString(maybeVersionTag.get().substring(1));
+      }
+    }
+    return new Version.Dev(commitIDAbbr);
   }
 }
