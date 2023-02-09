@@ -122,7 +122,7 @@ public class Kamite {
   private ProgramStatus status;
 
   public void run(Map<String,String> args, BuildInfo buildInfo) {
-    LOG.info("Starting Kamite (version {})", buildInfo::getVersion);
+    LOG.info("Starting {} (version {})", () -> APP_NAME_DISPLAY, buildInfo::getVersion);
 
     var preconfigArgs = processPreconfigArgs(args);
 
@@ -203,7 +203,11 @@ public class Kamite {
 
     if (config.controlWindow()) {
       createControlGUI();
-      LOG.info("Created control window (Kamite version {})", buildInfo::getVersion);
+      LOG.info(
+        "Created control window ({} version {})",
+        () -> APP_NAME_DISPLAY,
+        buildInfo::getVersion
+      );
     }
 
     // Unsupported platform features message deferred until control GUI potentially present
@@ -317,27 +321,42 @@ public class Kamite {
       );
     }
 
-    Runtime.getRuntime().addShutdownHook(
-      new Thread(() -> {
-        platform.destroy();
-        configManager.destroy();
-        server.destroy();
-        if (ocrDirectoryWatcher != null) {
-          ocrDirectoryWatcher.destroy();
-        }
-        if (recognitionConductor != null) {
-          recognitionConductor.destroy();
-        }
-        mpvController.destroy();
-        if (agentClient != null) {
-          agentClient.destroy();
-        }
-        if (chunkLogger != null) {
-          chunkLogger.finalizeLog();
-        }
-        Executor.destroy();
-      })
-    );
+    Executor.get().execute(() -> notifyIfNewerVersionAvailable(buildInfo));
+
+    Runtime.getRuntime().addShutdownHook(new Thread(this::destroy));
+  }
+
+  private void destroy() {
+    platform.destroy();
+    configManager.destroy();
+    server.destroy();
+    if (ocrDirectoryWatcher != null) {
+      ocrDirectoryWatcher.destroy();
+    }
+    if (recognitionConductor != null) {
+      recognitionConductor.destroy();
+    }
+    mpvController.destroy();
+    if (agentClient != null) {
+      agentClient.destroy();
+    }
+    if (chunkLogger != null) {
+      chunkLogger.finalizeLog();
+    }
+    Executor.destroy();
+  }
+
+  private void notifyIfNewerVersionAvailable(BuildInfo buildInfo) {
+    if (
+      buildInfo.getVersion() instanceof Version.Release ver
+      && Releases.checkNewAvailable(ver) == Releases.NewCheckResult.AVAILABLE
+    ) {
+      LOG.info(
+        "There is a newer version of {} available at {}",
+        APP_NAME_DISPLAY,
+        Releases.PAGE_URL
+      );
+    }
   }
 
   private void runRegionHelperMode() {
@@ -867,7 +886,11 @@ public class Kamite {
     LOG.info("Registered global keybinding: {}", binding);
   }
 
-  private record PreconfigArgs(boolean debug, List<String> profileNames, boolean regionHelper) {}
+  private static record PreconfigArgs(
+    boolean debug,
+    List<String> profileNames,
+    boolean regionHelper
+  ) {}
 
   private static PreconfigArgs processPreconfigArgs(Map<String, String> args) {
     var rawDebug = args.get(PRECONFIG_ARGS.get("debug"));
@@ -898,7 +921,7 @@ public class Kamite {
     return value != null && !FALSY_STRINGS.contains(value);
   }
 
-  private enum DebugLoggingExtent { APP, EVERYTHING }
+  private static enum DebugLoggingExtent { APP, EVERYTHING }
 
   private static void enableDebugLogging(DebugLoggingExtent extent) {
     var loggerCtx = (LoggerContext) LogManager.getContext(false);

@@ -15,41 +15,41 @@ import io.github.kamitejp.util.HTTP;
 public class Releases {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final URI LATEST_RELASE_GITHUB_API_ENPOINT =
-    URI.create("https://api.github.com/repos/fauu/kamite/releases/latest");
+  public static final String PAGE_URL = "https://github.com/fauu/Kamite/releases";
+
+  private static final URI MATEST_RELEASE_API_ENPOINT =
+    URI.create("https://api.github.com/repos/fauu/Kamite/releases/latest");
   private static final Pattern RESPONSE_VERSION_RE =
     Pattern.compile("\"tag_name\": *?\"v(\\d+\\.\\d+)\"");
 
-  static enum NewReleaseCheckResult {
+  public static enum NewCheckResult {
     AVAILABLE,
     NOT_AVAILABLE,
     FAILED;
   }
 
-  public static NewReleaseCheckResult checkNewAvailable(Version.Release presentVersion) {
+  public static NewCheckResult checkNewAvailable(Version.Release presentVersion) {
     var req = HttpRequest.newBuilder()
-      .uri(LATEST_RELASE_GITHUB_API_ENPOINT)
+      .uri(MATEST_RELEASE_API_ENPOINT)
       .GET()
       .build();
 
     try {
-      // XXX: Blocking
       var res = HTTP.client().send(req, BodyHandlers.ofString());
       var m = RESPONSE_VERSION_RE.matcher(res.body());
       if (!m.find()) {
-        throw new IllegalArgumentException("Could not find version string in Github response");
+        throw new IllegalArgumentException("Could not find version string in network response");
       }
       var latestVersion = Version.Release.fromMajorMinorString(m.group(1));
       return latestVersion.compareTo(presentVersion) == 1
-        ? NewReleaseCheckResult.AVAILABLE
-        : NewReleaseCheckResult.NOT_AVAILABLE;
+        ? NewCheckResult.AVAILABLE
+        : NewCheckResult.NOT_AVAILABLE;
     } catch (IOException e) {
       LOG.debug("Exception while getting latest release information", e);
     } catch (InterruptedException e) {
-      // XXX
-      e.printStackTrace();
+      LOG.debug("Interrupted while getting latest release information", e);
     }
 
-    return NewReleaseCheckResult.FAILED;
+    return NewCheckResult.FAILED;
   }
 }
