@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -85,16 +86,17 @@ public class ControlGUI extends JFrame {
     var appNameLabel = new JLabel(Kamite.APP_NAME_DISPLAY);
     appNameLabel.setFont(APP_NAME_LABEL_FONT);
 
-    var msgArea = new JTextArea(8, 0);
-    msgArea.setLineWrap(true);
-    msgArea.setWrapStyleWord(true);
-    msgArea.setEditable(false);
-    msgArea.setFont(MSG_AREA_FONT);
-    JTextAreaAppender.addLog4j2TextAreaAppender(msgArea);
+    var msgContainer = new JPanel();
+    msgContainer.setLayout(new BoxLayout(msgContainer, BoxLayout.Y_AXIS));
+    MessageAppender.setTargetContainer(msgContainer);
+    msgContainer.setPreferredSize(msgContainer.getPreferredSize());
 
-    var msgAreaScrollPane = new JScrollPane(msgArea);
+    var msgAreaScrollPane = new JScrollPane(msgContainer);
     msgAreaScrollPane.setBorder(
       BorderFactory.createLineBorder(UIManager.getDefaults().getColor("Table.background"))
+    );
+    msgAreaScrollPane.setHorizontalScrollBarPolicy(
+      ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
     );
     msgAreaScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 

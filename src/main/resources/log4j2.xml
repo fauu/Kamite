@@ -7,11 +7,11 @@
     <Console name="for-console" target="SYSTEM_OUT">
       <PatternLayout pattern="[%-5level] %d{HH:mm:ss} [%t] %c{1} - %msg%n"/>
     </Console>
-    <JTextAreaAppender name="for-controlgui" maxLines="100">
+    <MessageAppender name="for-controlgui" maxMessages="100">
       <PatternLayout>
-        <pattern>[%-5level] %d{HH:mm:ss} %msg%n</pattern>
+        <pattern>%d{HH:mm:ss}@@@%msg</pattern>
       </PatternLayout>
-    </JTextAreaAppender>
+    </MessageAppender>
   </Appenders>
   <Loggers>
     <Root level="error" additivity="false">

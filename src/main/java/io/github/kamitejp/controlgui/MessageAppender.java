@@ -1,0 +1,98 @@
+package io.github.kamitejp.controlgui;
+
+import static javax.swing.SwingUtilities.invokeLater;
+import static org.apache.logging.log4j.core.layout.PatternLayout.createDefaultLayout;
+
+import java.awt.Container;
+
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Core;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Property;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
+import org.apache.logging.log4j.core.config.plugins.PluginElement;
+import org.apache.logging.log4j.core.config.plugins.PluginFactory;
+
+@Plugin(
+  name = "MessageAppender",
+  category = Core.CATEGORY_NAME,
+  elementType = Appender.ELEMENT_TYPE,
+  printObject = true // XXX
+)
+public final class MessageAppender extends AbstractAppender {
+  private static final String MESSAGE_SEGMENT_SEPARATOR = "@@@";
+
+  private static Container targetContainer;
+
+  private final int maxMessages;
+
+  private MessageAppender(
+    String name,
+    Layout<?> layout,
+    Filter filter,
+    int maxLines,
+    boolean ignoreExceptions
+  ) {
+    super(name, filter, layout, ignoreExceptions, Property.EMPTY_ARRAY);
+    this.maxMessages = maxLines;
+  }
+
+  @SuppressWarnings("unused")
+  @PluginFactory
+  public static MessageAppender createAppender(
+    @PluginAttribute("name") String name,
+    @PluginAttribute("maxMessages") int maxMessages,
+    @PluginAttribute("ignoreExceptions") boolean ignoreExceptions,
+    @PluginElement("Layout") Layout<?> layout,
+    @PluginElement("Filters") Filter filter
+  ) {
+    if (name == null) {
+      LOGGER.error("No name provided for MessageAppender");
+      return null;
+    }
+    if (layout == null) {
+      layout = createDefaultLayout();
+    }
+    return new MessageAppender(name, layout, filter, maxMessages, ignoreExceptions);
+  }
+
+  public static void setTargetContainer(Container container) {
+    MessageAppender.targetContainer = container;
+  }
+
+  @Override
+  public void append(LogEvent event) {
+    var message = new String(getLayout().toByteArray(event));
+
+    invokeLater(() -> {
+      if (targetContainer == null) {
+        return;
+      }
+      var segs = message.split(MESSAGE_SEGMENT_SEPARATOR);
+
+      if (segs.length != 2) {
+        return;
+      }
+      var timeString = segs[0];
+      var content = segs[1];
+
+      var type = switch (event.getLevel().getStandardLevel()) {
+        case INFO  -> Message.Type.INFO;
+        case WARN  -> Message.Type.WARNING;
+        case ERROR -> Message.Type.ERROR;
+        default -> null;
+      };
+
+      if (type == null) {
+        return;
+      }
+
+      var messageComponent = new Message(timeString, type, content);
+      targetContainer.add(messageComponent);
+    });
+  }
+}
