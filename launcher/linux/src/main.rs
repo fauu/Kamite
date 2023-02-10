@@ -17,7 +17,12 @@ fn main() {
 
     let mut cmd = Command::new(java_exe_path);
     cmd.arg("--enable-preview")
-        .args(&["--add-opens", "java.desktop/sun.awt.X11=ALL-UNNAMED"])
+        .args(&[
+            "--add-opens",
+            "java.desktop/sun.awt.X11=ALL-UNNAMED",
+            "--add-opens",
+            "java.desktop/sun.swing=ALL-UNNAMED", // DarculaLaf
+        ])
         .arg("-jar")
         .arg(jar_path)
         .args(env::args().skip(1))
