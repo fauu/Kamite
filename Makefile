@@ -112,11 +112,19 @@ lint-docs:
 	markdownlint CHANGELOG.md
 .PHONY: lint-docs
 
-lint-java:
+lint-java: lint-spotbugs lint-pmd
+.PHONY: lint-java
+
+lint-spotbugs:
+	mvn compile site
+	xdg-open target/java/site/spotbugs.html
+.PHONY: lint-spotbugs
+
+lint-pmd:
 	export PMD_JAVA_OPTS=--enable-preview
 	pmd --use-version java-19-preview -d src/main/java -f text \
 		-R support/definitions/pmd-ruleset.xml
-.PHONY: lint-java
+.PHONY: lint-pmd
 
 lint-ts:
 	pnpm typecheck
