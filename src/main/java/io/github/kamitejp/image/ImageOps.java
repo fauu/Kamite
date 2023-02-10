@@ -10,6 +10,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.LinkedList;
@@ -554,7 +555,7 @@ public final class ImageOps {
     var imgOS = new ByteArrayOutputStream();
     try (var b64OS = Base64.getEncoder().wrap(imgOS)) {
       ImageIO.write(img, DEFAULT_IMAGE_FORMAT, b64OS);
-      return imgOS.toString();
+      return imgOS.toString(StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new RuntimeException("Expection while encoding an image as base64", e);
     }
