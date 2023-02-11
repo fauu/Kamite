@@ -101,9 +101,9 @@
     <version>e18ff911fd</version>
   </dependency>
   <dependency>
-    <groupId>com.bulenkov</groupId>
-    <artifactId>darcula</artifactId>
-    <version>0.0.0</version>
+    <groupId>com.github.weisj</groupId>
+    <artifactId>darklaf-core</artifactId>
+    <version>3.0.2</version>
   </dependency>
 </dependencies>
 
@@ -147,7 +147,7 @@
           <configuration>
             <rules>
               <requireMavenVersion>
-                <version>3.2.5</version>
+                <version>3.3.1</version>
               </requireMavenVersion>
             </rules>
           </configuration>

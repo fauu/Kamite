@@ -399,7 +399,7 @@ public class Kamite {
   }
 
   private void createControlGUI() {
-    (new ControlGUI()).init(platform);
+    new ControlGUI(platform);
   }
 
   private void createControlGUIAndShowFatalError(String message) {
