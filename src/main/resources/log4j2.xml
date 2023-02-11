@@ -7,7 +7,7 @@
     <Console name="for-console" target="SYSTEM_OUT">
       <PatternLayout pattern="[%-5level] %d{HH:mm:ss} [%t] %c{1} - %msg%n"/>
     </Console>
-    <MessageAppender name="for-controlgui" maxMessages="100">
+    <MessageAppender name="for-controlgui">
       <PatternLayout>
         <pattern>%d{HH:mm:ss}@@@%msg</pattern>
       </PatternLayout>

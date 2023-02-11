@@ -18,6 +18,7 @@ import com.github.weisj.darklaf.theme.spec.AccentColorRule;
 import com.github.weisj.darklaf.theme.spec.FontPrototype;
 import com.github.weisj.darklaf.theme.spec.FontSizeRule;
 
+import io.github.kamitejp.controlgui.ui.ControlGUIFrame;
 import io.github.kamitejp.platform.Platform;
 
 public class ControlGUI {

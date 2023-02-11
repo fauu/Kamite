@@ -1,11 +1,12 @@
-package io.github.kamitejp.controlgui;
-
-import java.awt.Color;
+package io.github.kamitejp.controlgui.ui;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import io.github.kamitejp.controlgui.ControlGUI;
+import io.github.kamitejp.controlgui.MessageType;
 
 public class Message extends JPanel {
   private static final String MAIN_LABEL_FORMAT = "<html>%s%s</html>";
@@ -15,7 +16,7 @@ public class Message extends JPanel {
   private static final int PREF = GroupLayout.PREFERRED_SIZE;
   private static final int MAX = Short.MAX_VALUE;
 
-  public Message(String timeString, Type type, String content) {
+  public Message(String timeString, MessageType type, String content) {
     var layout = new GroupLayout(this);
     setLayout(layout);
     setBackground(ControlGUI.COLOR_BG2);
@@ -39,38 +40,10 @@ public class Message extends JPanel {
     );
   }
 
-  private String mainLabelTypePart(Type type) {
-    if (type == Type.INFO) {
+  private String mainLabelTypePart(MessageType type) {
+    if (type == MessageType.INFO) {
       return "";
     }
     return MAIN_LABEL_TYPE_PART_FORMAT.formatted(type.getColorHex(), type.toString());
-  }
-
-  public static enum Type {
-    INFO("Info", ""),
-    WARNING("Warning", colorToHexString(ControlGUI.COLOR_WARNING)),
-    ERROR("Error", colorToHexString(ControlGUI.COLOR_ERROR2));
-
-    private String displayString;
-    private String colorHex;
-
-    private Type(String displayString, String colorHex) {
-      this.displayString = displayString;
-      this.colorHex = colorHex;
-    }
-
-    public String getColorHex() {
-      return this.colorHex;
-    }
-
-    @Override
-    public String toString() {
-      return displayString;
-    }
-
-    // QUAL: Doesn't belong here
-    private static String colorToHexString(Color color) {
-      return "#%s".formatted(Integer.toHexString(color.getRGB()).substring(2));
-    }
   }
 }

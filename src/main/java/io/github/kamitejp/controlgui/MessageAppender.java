@@ -17,6 +17,8 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 
+import io.github.kamitejp.controlgui.ui.Message;
+
 @Plugin(
   name = "MessageAppender",
   category = Core.CATEGORY_NAME,
@@ -28,24 +30,14 @@ public final class MessageAppender extends AbstractAppender {
 
   private static Container targetContainer;
 
-  private final int maxMessages;
-
-  private MessageAppender(
-    String name,
-    Layout<?> layout,
-    Filter filter,
-    int maxLines,
-    boolean ignoreExceptions
-  ) {
+  private MessageAppender(String name, Layout<?> layout, Filter filter, boolean ignoreExceptions) {
     super(name, filter, layout, ignoreExceptions, Property.EMPTY_ARRAY);
-    this.maxMessages = maxLines;
   }
 
   @SuppressWarnings("unused")
   @PluginFactory
   public static MessageAppender createAppender(
     @PluginAttribute("name") String name,
-    @PluginAttribute("maxMessages") int maxMessages,
     @PluginAttribute("ignoreExceptions") boolean ignoreExceptions,
     @PluginElement("Layout") Layout<?> layout,
     @PluginElement("Filters") Filter filter
@@ -57,7 +49,7 @@ public final class MessageAppender extends AbstractAppender {
     if (layout == null) {
       layout = createDefaultLayout();
     }
-    return new MessageAppender(name, layout, filter, maxMessages, ignoreExceptions);
+    return new MessageAppender(name, layout, filter, ignoreExceptions);
   }
 
   public static void setTargetContainer(Container container) {
@@ -80,19 +72,12 @@ public final class MessageAppender extends AbstractAppender {
       var timeString = segs[0];
       var content = segs[1];
 
-      var type = switch (event.getLevel().getStandardLevel()) {
-        case INFO  -> Message.Type.INFO;
-        case WARN  -> Message.Type.WARNING;
-        case ERROR -> Message.Type.ERROR;
-        default -> null;
-      };
-
-      if (type == null) {
-        return;
-      }
-
-      var messageComponent = new Message(timeString, type, content);
-      targetContainer.add(messageComponent);
+      var messageType = MessageType.fromLog4jStandardLevel(event.getLevel().getStandardLevel());
+      messageType.ifPresent(type -> {
+        var messageComponent = new Message(timeString, type, content);
+        targetContainer.add(messageComponent);
+        targetContainer.validate();
+      });
     });
   }
 }

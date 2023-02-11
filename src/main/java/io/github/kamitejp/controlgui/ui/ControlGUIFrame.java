@@ -1,4 +1,4 @@
-package io.github.kamitejp.controlgui;
+package io.github.kamitejp.controlgui.ui;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -12,12 +12,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.Kamite;
+import io.github.kamitejp.controlgui.ControlGUI;
+import io.github.kamitejp.controlgui.MessageAppender;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.linux.gnome.GnomePlatform;
 import io.github.kamitejp.platform.linux.xorg.XorgDesktop;
 import io.github.kamitejp.platform.linux.xorg.XorgPlatform;
 
-class ControlGUIFrame extends JFrame {
+public class ControlGUIFrame extends JFrame {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(750, 600);
