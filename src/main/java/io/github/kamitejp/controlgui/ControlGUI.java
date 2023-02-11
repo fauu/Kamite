@@ -18,7 +18,7 @@ import com.github.weisj.darklaf.theme.spec.AccentColorRule;
 import com.github.weisj.darklaf.theme.spec.FontPrototype;
 import com.github.weisj.darklaf.theme.spec.FontSizeRule;
 
-import io.github.kamitejp.controlgui.ui.ControlGUIFrame;
+import io.github.kamitejp.controlgui.ui.Frame;
 import io.github.kamitejp.platform.Platform;
 
 public class ControlGUI {
@@ -69,7 +69,7 @@ public class ControlGUI {
       UIManager.getDefaults().getFont("Label.font").getSize()
     );
 
-    SwingUtilities.invokeLater(() -> (new ControlGUIFrame()).init(platform));
+    SwingUtilities.invokeLater(() -> (new Frame()).init(platform));
   }
 
   public static Font getFontMonospacedDefault() {

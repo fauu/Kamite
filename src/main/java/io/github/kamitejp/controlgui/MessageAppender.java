@@ -76,7 +76,7 @@ public final class MessageAppender extends AbstractAppender {
       messageType.ifPresent(type -> {
         var messageComponent = new Message(timeString, type, content);
         targetContainer.add(messageComponent);
-        targetContainer.validate();
+        targetContainer.revalidate();
       });
     });
   }
