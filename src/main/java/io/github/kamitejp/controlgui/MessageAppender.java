@@ -23,7 +23,7 @@ import io.github.kamitejp.controlgui.ui.Message;
   name = "MessageAppender",
   category = Core.CATEGORY_NAME,
   elementType = Appender.ELEMENT_TYPE,
-  printObject = true // XXX
+  printObject = false
 )
 public final class MessageAppender extends AbstractAppender {
   private static final String MESSAGE_SEGMENT_SEPARATOR = "@@@";
