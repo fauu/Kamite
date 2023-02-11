@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public final class SessionTimer {
   private ZonedDateTime currentStartTime;
-  private Duration accumulatedTime;
+  private Duration accumulatedTime = Duration.ZERO;
 
   private SessionTimer() {}
 
@@ -14,6 +14,10 @@ public final class SessionTimer {
     var res = new SessionTimer();
     res.reset();
     return res;
+  }
+
+  public static SessionTimer pausedAtZero() {
+    return new SessionTimer();
   }
 
   public void stop() {

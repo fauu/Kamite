@@ -141,6 +141,7 @@ sessionTimer: {
     enable: "boolean | true"
     after: "duration:seconds?"
   }
+  startPaused: "boolean | false"
 }
 
 ui: {

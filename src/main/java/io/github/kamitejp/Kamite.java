@@ -181,7 +181,9 @@ public class Kamite {
     status = new ProgramStatus(
       preconfigArgs.debug(),
       preconfigArgs.profileNames(),
-      SessionTimer.startingNow(),
+      config.sessionTimer().startPaused()
+        ? SessionTimer.pausedAtZero()
+        : SessionTimer.startingNow(),
       new CharacterCounter(),
       unavailableUniversalFeatures,
       RecognizerStatus.Kind.INITIALIZING,
