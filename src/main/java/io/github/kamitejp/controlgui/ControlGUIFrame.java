@@ -47,7 +47,7 @@ class ControlGUIFrame extends JFrame {
     var msgArea = new MessageArea();
     MessageAppender.setTargetContainer(msgArea);
 
-    var quitButton = new JButton("Quit");
+    var quitButton = new JButton("Close Kamite");
     quitButton.addActionListener(e -> System.exit(0));
 
     layout.setHorizontalGroup(
