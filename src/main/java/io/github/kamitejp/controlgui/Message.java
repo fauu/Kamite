@@ -8,61 +8,69 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class Message extends JPanel {
-  private static final int HORIZONTAL_GAP = 10;
-  private static final int VERTICAL_GAP = 20;
+  private static final String MAIN_LABEL_FORMAT = "<html>%s%s</html>";
+  private static final String MAIN_LABEL_TYPE_PART_FORMAT = "<font color='%s'><b>%s</b></font> ";
 
-  private static Integer typeLabelWidth;
+  private static final int DEF = GroupLayout.DEFAULT_SIZE;
+  private static final int PREF = GroupLayout.PREFERRED_SIZE;
+  private static final int MAX = Short.MAX_VALUE;
 
   public Message(String timeString, Type type, String content) {
     var layout = new GroupLayout(this);
     setLayout(layout);
-    setBackground(new Color(0x484542)); // XXX: Constant in ControlGUI
-
-    if (typeLabelWidth == null) {
-      // QUAL: Better to use getStringBounds() or something of the sort?
-      typeLabelWidth = (int) new JLabel(Type.WARNING.toString()).getPreferredSize().getWidth();
-    }
+    setBackground(ControlGUI.COLOR_BG2);
 
     var timeLabel = new JLabel(timeString);
-    var typeLabel = new JLabel(type.toString());
-    var contentLabel = new JLabel("<html>%s</html>".formatted(content));
+    timeLabel.setFont(ControlGUI.getFontMonospacedDefault());
+    var mainLabel = new JLabel(MAIN_LABEL_FORMAT.formatted(mainLabelTypePart(type), content));
 
-    var def = GroupLayout.DEFAULT_SIZE;
-    var pref = GroupLayout.PREFERRED_SIZE;
-    var max = Short.MAX_VALUE;
     layout.setHorizontalGroup(
       layout.createSequentialGroup()
-        .addComponent(timeLabel, pref, pref, pref)
-        .addGap(HORIZONTAL_GAP)
-        .addComponent(typeLabel, typeLabelWidth, typeLabelWidth, typeLabelWidth)
-        .addGap(HORIZONTAL_GAP)
-        .addComponent(contentLabel, def, def, max)
+        .addComponent(timeLabel, PREF, PREF, PREF)
+        .addGap(ControlGUI.MESSAGE_HORIZONTAL_GAP)
+        .addComponent(mainLabel, DEF, DEF, MAX)
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(Alignment.LEADING, false)
-        .addComponent(timeLabel, pref, pref, pref)
-        .addGap(VERTICAL_GAP)
-        .addComponent(typeLabel, pref, pref, pref)
-        .addGap(VERTICAL_GAP)
-        .addComponent(contentLabel, pref, pref, max)
-        .addGap(VERTICAL_GAP)
+        .addComponent(timeLabel, PREF, PREF, PREF)
+        .addGap(ControlGUI.MESSAGE_VERTICAL_GAP)
+        .addComponent(mainLabel, PREF, PREF, MAX)
+        .addGap(ControlGUI.MESSAGE_VERTICAL_GAP)
     );
   }
 
+  private String mainLabelTypePart(Type type) {
+    if (type == Type.INFO) {
+      return "";
+    }
+    return MAIN_LABEL_TYPE_PART_FORMAT.formatted(type.getColorHex(), type.toString());
+  }
+
   public static enum Type {
-    INFO("Info"),
-    WARNING("Warning"),
-    ERROR("Error");
+    INFO("Info", ""),
+    WARNING("Warning", colorToHexString(ControlGUI.COLOR_WARNING)),
+    ERROR("Error", colorToHexString(ControlGUI.COLOR_ERROR2));
 
     private String displayString;
+    private String colorHex;
 
-    private Type(String displayString) {
+    private Type(String displayString, String colorHex) {
       this.displayString = displayString;
+      this.colorHex = colorHex;
+    }
+
+    public String getColorHex() {
+      return this.colorHex;
     }
 
     @Override
     public String toString() {
       return displayString;
+    }
+
+    // QUAL: Doesn't belong here
+    private static String colorToHexString(Color color) {
+      return "#%s".formatted(Integer.toHexString(color.getRGB()).substring(2));
     }
   }
 }

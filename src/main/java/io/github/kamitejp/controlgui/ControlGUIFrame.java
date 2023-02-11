@@ -22,6 +22,9 @@ class ControlGUIFrame extends JFrame {
 
   private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(750, 600);
 
+  private static final int DEF = GroupLayout.DEFAULT_SIZE;
+  private static final int MAX = Short.MAX_VALUE;
+
   public void init(Platform platform) {
     var toolkit = Toolkit.getDefaultToolkit();
 
@@ -47,12 +50,10 @@ class ControlGUIFrame extends JFrame {
     var quitButton = new JButton("Quit");
     quitButton.addActionListener(e -> System.exit(0));
 
-    var def = GroupLayout.DEFAULT_SIZE;
-    var max = Short.MAX_VALUE;
     layout.setHorizontalGroup(
       layout.createParallelGroup()
-        .addComponent(msgArea.getScrollPane(), 200, def, max)
-        .addComponent(quitButton, def, def, max)
+        .addComponent(msgArea.getScrollPane(), 200, DEF, MAX)
+        .addComponent(quitButton, DEF, DEF, MAX)
     );
     layout.setVerticalGroup(
       layout.createSequentialGroup()
