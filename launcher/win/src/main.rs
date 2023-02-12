@@ -53,7 +53,6 @@ fn main() {
 
     let jvm_options = vec![
         "--enable-preview".into(),
-        // "--add-opens java.desktop/sun.swing=ALL-UNNAMED".into(), // DarculaLaf XXX (DEV)
         format!("-Djava.class.path={}", jar_path.display()),
         // Fix for https://github.com/fauu/Kamite/issues/9
         "-Djavax.accessibility.assistive_technologies=".into(),
