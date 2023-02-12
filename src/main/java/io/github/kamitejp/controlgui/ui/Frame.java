@@ -22,7 +22,7 @@ import io.github.kamitejp.platform.linux.xorg.XorgPlatform;
 public class Frame extends JFrame {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(750, 100);
+  private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(750, 600);
 
   private static final int DEF = GroupLayout.DEFAULT_SIZE;
   private static final int MAX = Short.MAX_VALUE;
