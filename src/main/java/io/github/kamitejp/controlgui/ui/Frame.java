@@ -48,6 +48,8 @@ public class Frame extends JFrame {
 
     var msgArea = new MessageArea();
     MessageAppender.setTargetContainer(msgArea);
+    // QUAL: Hacky
+    Message.platform = platform;
 
     var quitButton = new JButton("Close Kamite");
     quitButton.addActionListener(e -> System.exit(0));
