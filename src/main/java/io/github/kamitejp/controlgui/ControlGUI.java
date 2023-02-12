@@ -20,6 +20,7 @@ import com.github.weisj.darklaf.theme.spec.FontSizeRule;
 
 import io.github.kamitejp.controlgui.ui.Frame;
 import io.github.kamitejp.platform.Platform;
+import io.github.kamitejp.platform.windows.WindowsPlatform;
 
 public class ControlGUI {
   public static final Color COLOR_FG = new Color(0xFFFFFF);
@@ -59,6 +60,11 @@ public class ControlGUI {
       FontPrototype.getDefault(),
       AccentColorRule.fromColor(COLOR_ACCA, COLOR_ACCB)
     );
+
+    if (platform instanceof WindowsPlatform) {
+      // The program icon is distorted in the custom Windows titlebar
+      LafManager.setDecorationsEnabled(false);
+    }
 
     LafManager.install(theme);
 
