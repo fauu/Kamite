@@ -27,6 +27,7 @@ public class ControlGUI {
   public static final Color COLOR_BG = new Color(0x383532);
   public static final Color COLOR_BG2 = new Color(0x484542);
   public static final Color COLOR_BG2_HL = new Color(0x504D4A);
+  public static final Color COLOR_BG3 = new Color(0x585552);
   public static final Color COLOR_ACCA = new Color(0xFFFD96);
   public static final Color COLOR_ACCB = new Color(0xF5C4E4);
   public static final Color COLOR_WARNING = new Color(0xC29F48);
@@ -55,6 +56,10 @@ public class ControlGUI {
       p.put("Button.background", COLOR_BG2);
     });
 
+    LafManager.registerInitTask((theme, d) -> {
+      d.put("Button.activeFillColorClick", COLOR_BG3);
+    });
+
     var theme = (new DarculaTheme()).derive(
       FontSizeRule.relativeAdjustment(DEFAULT_FONT_SIZE_RELATIVE),
       FontPrototype.getDefault(),
@@ -62,7 +67,7 @@ public class ControlGUI {
     );
 
     if (platform instanceof WindowsPlatform) {
-      // The program icon is distorted in the custom Windows titlebar
+      // The program icon is distorted in the custom Windows titlebar, so we disable it
       LafManager.setDecorationsEnabled(false);
     }
 
