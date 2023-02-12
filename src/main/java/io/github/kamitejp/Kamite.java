@@ -816,6 +816,9 @@ public class Kamite {
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().manualBlock(),
       () -> recognitionConductor::recognizeManualBlockDefault,
 
+      (Config.Keybindings.Global keybindings) -> keybindings.ocr().manualBlockRotated(),
+      () -> recognitionConductor::recognizeManualBlockRotated,
+
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().autoBlock(),
       () -> () -> recognitionConductor.recognizeAutoBlockDefault(PointSelectionMode.INSTANT),
 

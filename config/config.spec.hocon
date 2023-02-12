@@ -79,6 +79,7 @@ keybindings: {
   global: {
     ocr: {
       manualBlock: "string?"
+      manualBlockRotated: "string?"
       autoBlock: "string?"
       autoBlockSelect: "string?"
 

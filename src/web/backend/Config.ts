@@ -57,12 +57,14 @@ interface Keybindings {
 }
 
 interface Global {
-  recognize: Recognize,
+  ocr: KeybindingsOCR,
 }
 
-interface Recognize {
-  autoBlock: string | null,
+interface KeybindingsOCR {
   manualBlock: string | null,
+  manualBlockRotated: string | null,
+  autoBlock: string | null,
+  autoBlockSelect: string | null,
 }
 
 interface Commands {
