@@ -954,7 +954,7 @@ in the browser):
 To install the script, first install a userscript browser extension such as
 [Violentmonkey] or [Tampermonkey], and then follow this link: [Kamite One-Click OCR.user.js][oneclick-ocr-userscript].
 
-**Then you need to specify on which websites the script will be active**:
+Then **you need to specify on which websites the script will be active**:
 
 1. Open your userscript browser extension.
 
@@ -1239,8 +1239,8 @@ only partially. The examples of such extensions are [Yomichan], [rikaikun], and
 [10ten Japanese Reader][10ten].
 
 For Yomichan, [its website][Yomichan] contains a basic installation and usage
-guide. Additional dictionaries and setup tips for Yomichan can be found in other
-places, such as [Animecards: Setting up Yomichan][animecards-yomichan],
+guide. Additional dictionaries and setup tips for can be found in other places,
+such as [Animecards: Setting up Yomichan][animecards-yomichan],
 [TheMoeWay: Yomichan Setup Tutorial][themoeway-yomichan], or [Anacreon DJT:
 Yomichan Frequency Dictionaries][anacreon-yomichan-freq].
 
