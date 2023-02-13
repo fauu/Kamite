@@ -14,46 +14,80 @@
 > **Note**
 > This is alpha software.
 
-Kamite is a desktop program intended to aid learning Japanese through immersion
-in native media (manga, anime, visual novels, etc.). It helps extract Japanese
-text from those media into a local web interface, enabling its lookup using
-pop-up dictionaries such as [Yomichan] and websites such as [DeepL
-Translate][deepl]. It can recognize text on screen visually through various
-third-party OCR solutions or receive it from programs such as [mpv] or
-[Textractor]. It lets the user edit and transform the text and can forward it
-to user-defined websites and external executables for countless custom
-integrations (e.g., [reading the text aloud using Microsoft’s text-to-speech service][wiki-linux-edge-tts]).
-
-Kamite is cost-free and licensed under the GNU AGPL v3 or later (see
-[License](#license)).
-
-**Currently supported platforms: Linux (Xorg, wlroots, GNOME Wayland\*, Plasma
-Wayland\*), Windows.**\
-(Planned for the beta release: macOS).\
-\* OCR-ing arbitrary screen areas not supported on GNOME and Plasma on Wayland.
+Kamite is desktop software to aid learning Japanese through immersion in native
+media. It brings Japanese text from those media into a web browser interface,
+enabling lookup with pop-up dictionaries (such as [Yomichan](#pop-up-dictionary))
+and websites (such as [DeepL Translate](#lookups)), and more.
 
 <!-- markdownlint-capture --><!-- markdownlint-disable -->
 https://user-images.githubusercontent.com/4130634/178029301-075cb207-a154-42d2-adb5-ce8fdbcd722f.mp4
 <!-- markdownlint-restore -->
 
-Featured in the above demo video:
+*(Featured in the above demo video: [All shots] Firefox, [Sway]. [Shot 1] [Gomics-v]
+manga reader (Kaguya-sama wa Kokurasetai, ch. 140); [Yomichan] (dictionaries:
+JMDict, Kanjium Pitch Accents, Narou Freq, VN Freq). [Shot 2] [mpv]
+(Suzumiya Haruhi no Yuuutsu (2006), ep. 9). [Shot 3] Summer Pockets;
+[Textractor];
+[`contrib/kamite-toggle-visibility.sh`](contrib/kamite-toggle-visibility.sh)
+script; [waycorner][waycorner-icxes].)*
 
-* (All shots) Firefox, [Sway].
+## Highlights
 
-* (Shot 1) [Gomics-v] manga reader (*Kaguya-sama wa Kokurasetai*, ch. 140);
-[Yomichan] (dictionaries: *JMDict*, *Kanjium Pitch Accents*, *Narou
-Freq*, *VN Freq*).
+* Use your existing installation of your favourite [pop-up dictionary
+  extension](#pop-up-dictionary) (e.g., Yomichan, rikaikun,
+  10ten Japanese Reader).
 
-* (Shot 2) [mpv] (*Suzumiya Haruhi no Yuuutsu (2006)*, ep. 9).
+* [Extract text from images on screen](#mangavisual-text-extraction)
+  (e.g., manga) with several third-party online and offline OCR solutions
+  (e.g., “MangaOCR”, EasyOCR, Tesseract).
 
-* (Shot 3) *Summer Pockets*; [Textractor]; [`contrib/kamite-toggle-visibility.sh`](contrib/kamite-toggle-visibility.sh)
-script; [waycorner][waycorner-icxes].
+* Extract text from video subtitles as it is playing ([mpv player integration](#animevideo-text-extraction)).
+
+* Extract text from games, visual novels, and other programs as they are running
+  ([Textractor and Agent texthookers integration](#visual-novel--game-text-extraction)).
+
+* Have the text [filtered and transformed using custom rules](#filtering-and-transforming-incoming-text)
+  before it is displayed in the program.
+
+* Freely [edit and transform the text manually](#editing-and-transforming-the-text)
+  once it is displayed.
+
+* Use the text for lookups on external websites (e.g., DeepL Translate, Google
+  Images).
+
+  You can have the websites embedded directly into Kamite’s UI, so that
+    lookups do not require constant clicking around and switching windows/tabs.
+
+* Easily [run external programs and scripts](#custom-commands-launching-external-executables),
+  providing them the text as input.
+
+  This enables countless custom integrations, e.g., [reading the text aloud
+  using Microsoft’s text-to-speech service][wiki-linux-edge-tts].
+
+* Send text and commands to Kamite from the oustide using [the provided
+  API](#command-api).
+
+  This enables still more custom integrations, e.g.:
+
+  * [Gomics-v](#linux-manga-viewer-with-kamite-integration): A Linux manga
+    reader able to send images to Kamite for OCR through a convenient
+    one-mouse-key shortuct.
+
+  * [kamite-watch-clipboard](#watcher-script): A system script that
+    automatically sends clipboard contents as text to Kamite.
+
+Kamite supports Linux\* and Windows (macOS support planned for the beta release).
+
+*(\*Linux: Xorg, wlroots, GNOME Wayland, Plasma Wayland. OCR-ing arbitrary screen
+areas not supported on GNOME Wayland and Plasma Wayland.)*
+
+Kamite is cost-free and is licensed under the GNU AGPL v3 or later.
 
 [deepl]: https://deepl.com/
-[ichi.moe]: https://ichi.moe/
 [mpv]: https://mpv.io/
 [Textractor]: https://github.com/Artikash/Textractor
 [Agent]: https://github.com/0xDC00/agent
+[waycorner-icxes]: https://github.com/icxes/waycorner
 [wiki-linux-edge-tts]: https://github.com/fauu/Kamite/wiki/Linux-recipes#read-text-from-kamite-aloud-using-microsofts-tts
 
 ## Table of contents
@@ -61,43 +95,43 @@ script; [waycorner][waycorner-icxes].
 1. [Installing Kamite](#installing-kamite)
     * [Linux](#linux)
     * [Windows](#windows)
-2. [Updating Kamite](#updating-kamite)
+1. [Updating Kamite](#updating-kamite)
     * [Linux Generic and Windows](#linux-generic-and-windows)
-3. [Launching Kamite](#launching-kamite)
-4. [Troubleshooting](#troubleshooting)
-5. [User interface overview](#user-interface-overview)
-6. [Text extraction](#text-extraction)
+1. [Launching Kamite](#launching-kamite)
+1. [Troubleshooting](#troubleshooting)
+1. [User interface overview](#user-interface-overview)
+1. [Text extraction](#text-extraction)
     * [Anime/video text extraction](#animevideo-text-extraction)
     * [Manga/visual text extraction](#mangavisual-text-extraction)
     * [Visual novel / game text extraction](#visual-novel--game-text-extraction)
     * [Clipboard](#clipboard)
     * [Custom source / alternative method text extraction](#custom-source--alternative-method-text-extraction)
     * [Filtering and transforming incoming text](#filtering-and-transforming-incoming-text)
-7. [Text use](#text-use)
+1. [Text use](#text-use)
     * [Editing and transforming the text](#editing-and-transforming-the-text)
     * [Pop-up dictionary](#pop-up-dictionary)
     * [Lookups](#lookups)
     * [Auto-generated furigana](#auto-generated-furigana)
     * [Saving text to a file for external use](#saving-text-to-a-file-for-external-use)
     * [Custom text use](#custom-text-use)
-8. [Custom commands (Launching external executables)](#custom-commands-launching-external-executables)
-9. [Keyboard shortcuts](#keyboard-shortcuts)
+1. [Custom commands (Launching external executables)](#custom-commands-launching-external-executables)
+1. [Keyboard shortcuts](#keyboard-shortcuts)
     * [Client-only keyboard shortcuts](#client-only-keyboard-shortcuts)
     * [Global keyboard shortcuts](#global-keyboard-shortcuts)
-10. [Launch options](#launch-options)
-11. [Config](#config)
+1. [Launch options](#launch-options)
+1. [Config](#config)
     * [Live reload](#live-reload)
     * [Full config example](#full-config-example)
     * [Substitution (variables)](#substitution-variables)
     * [Config profiles](#config-profiles)
-12. [Style customization](#style-customization)
+1. [Style customization](#style-customization)
     * [Styling recipes](#styling-recipes)
-13. [Command API](#command-api)
+1. [Command API](#command-api)
     * [Sending commands](#sending-commands)
     * [Command listing](#command-listing)
-14. [Privacy](#privacy)
-15. [Development](#development)
-16. [License](#license)
+1. [Privacy](#privacy)
+1. [Development](#development)
+1. [License](#license)
     * [Third-party components](#third-party-components)
 
 ## Installing Kamite
@@ -906,14 +940,61 @@ text block to be recognized—not the entire screen or application window.
 [GNOME Screenshot]: https://en.wikipedia.org/wiki/GNOME_Screenshot
 [Spectacle]: https://apps.kde.org/spectacle/
 
-#### Recommended Linux manga viewer
+#### Web browser userscript for convenient OCR
 
-[Gomics-v] is the recommended manga viewer for Linux, as it includes simple
-Kamite integration:
+*Kamite One-Click OCR* is a simple browser userscript that enables convenient
+shortcuts for issuing OCR commands to Kamite (useful when reading manga directly
+in the browser):
+
+* *Middle-click* on a text block to automatically recognize it.
+
+* *Middle-hold-click* anywhere within the webpage to initiate a manual block
+  recognition selection.
+
+To install the script, first install a userscript browser extension such as
+[Violentmonkey] or [Tampermonkey], and then follow this link: [Kamite One-Click OCR.user.js][oneclick-ocr-userscript].
+
+**Then you need to specify on which websites the script will be active**:
+
+1. Open your userscript browser extension.
+
+1. Click on the cog icon (“Open dashboard”).
+
+1. Find *Kamite One-Click OCR* and edit it:
+
+    Tampermonkey: Click on the script name.\
+    Violentmonkey: Click the `</>` (“Edit”) icon below the script name.
+
+1. Switch to the `Settings` tab.
+
+1. Add user match rules for desired websites.
+
+    Example configuration enabling the script on two specific websites:
+
+    Enter under `User matches` (Tampermonkey) or `@match rules` (Violentmonkey):
+
+    ```txt
+    https://twitter.com/*
+    https://metaurl.app/*
+    ```
+
+On first use, you might be prompted to confirm that you allow the script to make
+web requests to Kamite’s backend server.
+
+You can switch to using the right mouse button instead of the middle by going to
+the `Code` tab and changing `const MOUSE_BUTTON = 1` to say `= 2`. Note that
+this will disable the browser context menu that normally opens on right-click.
+
+[oneclick-ocr-userscript]: https://github.com/fauu/Kamite/raw/master/extra/userscripts/Kamite%20One-Click%20OCR.user.js
+
+#### Linux manga viewer with Kamite integration
+
+[Gomics-v] is a manga viewer for Linux that includes simple Kamite integration:
 
 * *Right-click* on a text block to automatically recognize it.
 
-* *Right-hold-click* on the image area to initiate a manual block recognition.
+* *Right-hold-click* anywhere in the area where images are displayed to
+  initiate a manual block recognition selection.
 
 The integration must be enabled in Gomics-v under `Preferences › Kamite`.
 
@@ -1008,6 +1089,8 @@ Kamite’s browser tab.
 The Kamite browser client can automatically pick up clipboard text with a
 clipboard inserter browser extension ([Firefox][clipboard-inserter-ff],
 [Chrome][clipboard-inserter-chrome]) (assumes default extension settings).
+
+#### Watcher script
 
 Clipboard can also be watched automatically without the Clipboard Inserter
 extension, but with a clipboard watcher script that sends changed clipboard
@@ -1150,14 +1233,13 @@ press <kbd>Ctrl</kbd> + <kbd>Enter</kbd>.
 
 ### Pop-up dictionary
 
-The basic task around which Kamite is designed is using a pop-up dictionary
-browser extension to help you decipher the text you understand only partially.
-The recommended such extension is **Yomichan**, which, as can be read on its
-website, “stands apart in its goal of being an all-encompassing learning tool as
-opposed to a mere browser-based dictionary”.
+The basic task around which Kamite is designed is using a third-party pop-up
+dictionary browser extension to learn through deciphering text you understand
+only partially. The examples of such extensions are [Yomichan], [rikaikun], and
+[10ten Japanese Reader][10ten].
 
-[Yomichan’s website][Yomichan] contains a basic installation and usage guide.
-Additional dictionaries and setup tips for Yomichan can be found in other
+For Yomichan, [its website][Yomichan] contains a basic installation and usage
+guide. Additional dictionaries and setup tips for Yomichan can be found in other
 places, such as [Animecards: Setting up Yomichan][animecards-yomichan],
 [TheMoeWay: Yomichan Setup Tutorial][themoeway-yomichan], or [Anacreon DJT:
 Yomichan Frequency Dictionaries][anacreon-yomichan-freq].
@@ -1180,8 +1262,8 @@ default provides a button for Google Images lookup in a new browser tab.
 
 Optional userscripts are provided for the embedded sites that modify their look
 when embedded into Kamite to improve their user experience. To install or update
-the scripts, install a userscript browser extension such as [Violentmonkey] or
-[Tampermonkey], then open the links below and follow the prompt.
+the scripts, first install a userscript browser extension such as [Violentmonkey]
+or [Tampermonkey], and then open the links below and follow the prompt.
 
 * [Kamite DeepL mod](https://github.com/fauu/Kamite/raw/master/extra/userscripts/Kamite%20DeepL%20mod.user.js)
 
@@ -2109,6 +2191,8 @@ the original license notices.
 [Noto Sans Japanese]: https://fonts.google.com/noto/specimen/Noto+Sans+JP
 
 [Yomichan]: https://foosoft.net/projects/yomichan/
+[rikaikun]: https://github.com/melink14/rikaikun
+[10ten]: https://github.com/birchill/10ten-ja-reader
 [Gomics-v]: https://github.com/fauu/gomicsv
 [Sway]: https://swaywm.org/
 [manga-ocr]: https://github.com/kha-white/manga-ocr
