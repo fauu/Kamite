@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Kamite One-Click OCR
-// @version      0.1.0
+// @version      0.1.1
 // @description  Send OCR requests to Kamite with a single mouse click
 // @icon         https://raw.githubusercontent.com/fauu/Kamite/master/src/web/res/favicon/favicon-192.png
 // @grant        GM_xmlhttpRequest
@@ -51,7 +51,7 @@
     }
 
     function sendKamiteCMD(name, data) {
-      GM.xmlHttpRequest({
+      GM_xmlhttpRequest({
         method: "POST",
         url: `${CMD_ENDPOINT}/${name}`,
         data: data,
