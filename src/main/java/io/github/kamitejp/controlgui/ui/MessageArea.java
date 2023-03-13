@@ -26,8 +26,7 @@ public class MessageArea extends JPanel implements Scrollable {
 
     scrollPane = new JScrollPane(this);
     scrollPane.setBorder(BorderFactory.createLineBorder(ControlGUI.COLOR_BG2_HL));
-    // QUAL: This is a hack to ide the fact that MessageArea doesn't fill the height of the
-    //       scrollPane
+    // QUAL: A hack to hide the fact that MessageArea doesn't fill the height of the scrollPane
     scrollPane.getViewport().setBackground(getBackground());
   }
 

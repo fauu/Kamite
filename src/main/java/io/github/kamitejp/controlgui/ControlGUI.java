@@ -67,7 +67,8 @@ public class ControlGUI {
     );
 
     if (platform instanceof WindowsPlatform) {
-      // The program icon is distorted in the custom Windows titlebar, so we disable it
+      // The program icon is distorted in the custom Windows titlebar, so we disable the custom
+      // titlebar
       LafManager.setDecorationsEnabled(false);
     }
 
