@@ -229,29 +229,13 @@ export function createChunksState(
     input: RawChunkText | ((currText: string) => string),
     params: InsertRestParams
   ) {
-    // Default values
-    // QUAL: There should be a better way to express this
-    if (!params.altOp) {
-      params.altOp = "overwrite";
-    }
-    if (params.allowUnchangedText === undefined) {
-      params.allowUnchangedText = false;
-    }
-    if (params.flash === undefined) {
-      params.flash = false;
-    }
-    if (params.mayRequestEnhancement === undefined) {
-      params.mayRequestEnhancement = true;
-    }
-    if (params.ignoreEditing === undefined) {
-      params.ignoreEditing = false;
-    }
-    if (params.inPlace === undefined) {
-      params.inPlace = false;
-    }
-    if (params.forceKeepTranslation === undefined) {
-      params.forceKeepTranslation = false;
-    }
+    params.altOp ??= "overwrite";
+    params.allowUnchangedText ??= false;
+    params.flash ??= false;
+    params.mayRequestEnhancement ??= true;
+    params.ignoreEditing ??= false;
+    params.inPlace ??= false;
+    params.forceKeepTranslation ??= false;
 
     // Reject a likely repeat from the media player (e.g., when replaying from the start of the
     // subtitle)
