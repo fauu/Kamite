@@ -9,6 +9,25 @@
 
 ## [Unreleased]
 
+### Added
+
+* OCR for rotated text: the text screenshot is derotated before being forwarded
+  to an OCR solution.
+* New version notification in Control GUI / console output.
+
+### Changed
+
+* Improved the look of the Control GUI.
+* The status panel (character counter and session timer) is no longer concealed
+  in Focus mode if one of its counters is paused. (Prevents forgetting to resume
+  session timer when you return after a break.)
+
+### Fixed
+
+* Crashing with “Assistive technology not found error” in certain circumstances.
+* Chunk text not being displayed accurately in certain circumstances when in
+  edit mode.
+
 ## [0.12] – 2023-01-26
 
 ### Added
