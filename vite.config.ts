@@ -4,15 +4,11 @@
 import path from "path";
 
 import { defineConfig } from "vite";
-import solidDevtools from 'solid-devtools/vite'
 import solidPlugin from "vite-plugin-solid";
 
 export default defineConfig({
   root: "src/web",
   plugins: [
-    solidDevtools({
-      autoname: true
-    }),
     solidPlugin()
   ],
   build: {
