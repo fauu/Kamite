@@ -14,6 +14,8 @@
 * OCR for rotated text: the text screenshot is derotated before being forwarded
   to an OCR solution.
 * New version notification in Control GUI / console output.
+* Option to launch the program with the Session timer paused.
+  (`sessionTimer.startPaused: yes`)
 
 ### Changed
 
