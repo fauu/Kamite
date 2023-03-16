@@ -44,7 +44,7 @@ public class ListKnownConfigKeys {
       return;
     }
 
-    System.out.printf("Wrote %d keys to: %s", keyCount, outPath);
+    System.out.printf("Wrote %d keys to: %s\n", keyCount, outPath);
   }
 
   private static List<String> ownConfigEntryKeys(Config config) {
