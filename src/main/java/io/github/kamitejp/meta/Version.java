@@ -26,7 +26,7 @@ public sealed interface Version
         var minor = Integer.parseInt(segs[1]);
         return new Release(major, minor);
       } catch (NumberFormatException e) {
-        throw new IllegalArgumentException("Major-minor version string segments must be integers");
+        throw new IllegalArgumentException("Major-minor version string segments must be integers"); // NOPMD - don't need the NFE stacktrace
       }
     }
 

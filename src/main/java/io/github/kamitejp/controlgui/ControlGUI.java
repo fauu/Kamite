@@ -22,6 +22,7 @@ import io.github.kamitejp.controlgui.ui.Frame;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.windows.WindowsPlatform;
 
+@SuppressWarnings("PMD.UseUtilityClass")
 public class ControlGUI {
   public static final Color COLOR_FG = new Color(0xFFFFFF);
   public static final Color COLOR_BG = new Color(0x383532);
@@ -40,12 +41,10 @@ public class ControlGUI {
 
   private static Font fontMonospacedDefault;
 
-  public static final List<Image> ICON_IMAGES =
-    Stream.of(16, 32, 48, 128).map(size ->
-      Toolkit.getDefaultToolkit().getImage(
-        ControlGUI.class.getResource("/icon-%d.png".formatted(size))
-      )
-    ).toList();
+  public static final List<Image> ICON_IMAGES = Stream.of(16, 32, 48, 128)
+      .map(size -> Toolkit.getDefaultToolkit().getImage(
+          ControlGUI.class.getResource("/icon-%d.png".formatted(size))))
+      .toList();
 
   public ControlGUI(Platform platform) {
     LafManager.registerDefaultsAdjustmentTask((theme, p) -> {
@@ -60,28 +59,26 @@ public class ControlGUI {
       d.put("Button.activeFillColorClick", COLOR_BG3);
     });
 
-    var theme = (new DarculaTheme()).derive(
-      FontSizeRule.relativeAdjustment(DEFAULT_FONT_SIZE_RELATIVE),
-      FontPrototype.getDefault(),
-      AccentColorRule.fromColor(COLOR_ACCA, COLOR_ACCB)
-    );
+    var theme = new DarculaTheme().derive(
+        FontSizeRule.relativeAdjustment(DEFAULT_FONT_SIZE_RELATIVE),
+        FontPrototype.getDefault(),
+        AccentColorRule.fromColor(COLOR_ACCA, COLOR_ACCB));
 
     if (platform instanceof WindowsPlatform) {
-      // The program icon is distorted in the custom Windows titlebar, so we disable the custom
-      // titlebar
+      // The program icon is distorted in the custom Windows titlebar, so we disable
+      // the custom titlebar
       LafManager.setDecorationsEnabled(false);
     }
 
     LafManager.install(theme);
 
     // QUAL: There's likely a way to handle this better
-    fontMonospacedDefault = new Font(
-      "Monospaced",
-      Font.PLAIN,
-      UIManager.getDefaults().getFont("Label.font").getSize()
-    );
+    fontMonospacedDefault = new Font( // NOPMD (assignment to non-final static)
+        "Monospaced",
+        Font.PLAIN,
+        UIManager.getDefaults().getFont("Label.font").getSize());
 
-    SwingUtilities.invokeLater(() -> (new Frame()).init(platform));
+    SwingUtilities.invokeLater(() -> new Frame().init(platform));
   }
 
   public static Font getFontMonospacedDefault() {

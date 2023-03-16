@@ -891,7 +891,7 @@ public class Kamite {
     LOG.info("Registered global keybinding: {}", binding);
   }
 
-  private static record PreconfigArgs(
+  private record PreconfigArgs(
     boolean debug,
     List<String> profileNames,
     boolean regionHelper
@@ -926,7 +926,7 @@ public class Kamite {
     return value != null && !FALSY_STRINGS.contains(value);
   }
 
-  private static enum DebugLoggingExtent { APP, EVERYTHING }
+  private enum DebugLoggingExtent { APP, EVERYTHING }
 
   private static void enableDebugLogging(DebugLoggingExtent extent) {
     var loggerCtx = (LoggerContext) LogManager.getContext(false);

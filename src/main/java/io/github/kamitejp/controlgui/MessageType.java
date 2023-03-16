@@ -13,7 +13,7 @@ public enum MessageType {
   private String displayString;
   private String colorHex;
 
-  private MessageType(String displayString, String colorHex) {
+  MessageType(String displayString, String colorHex) {
     this.displayString = displayString;
     this.colorHex = colorHex;
   }

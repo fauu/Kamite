@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.util.HTTP;
 
-public class Releases {
+public final class Releases {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public static final String PAGE_URL = "https://github.com/fauu/Kamite/releases";
@@ -22,7 +22,9 @@ public class Releases {
   private static final Pattern RESPONSE_VERSION_RE =
     Pattern.compile("\"tag_name\": *?\"v(\\d+\\.\\d+)\"");
 
-  public static enum NewCheckResult {
+  private Releases() {}
+
+  public enum NewCheckResult {
     AVAILABLE,
     NOT_AVAILABLE,
     FAILED;
