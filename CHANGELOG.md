@@ -13,6 +13,8 @@
 
 * OCR for rotated text: the text screenshot is derotated before being forwarded
   to an OCR solution.
+  * See [Manual rotated block OCR in the Readme](https://github.com/fauu/Kamite#manual-rotated-block-ocr))
+  for usage instructions.
 * New version notification in Control GUI / console output.
 * Option to launch the program with the Session timer paused.
   (`sessionTimer.startPaused: yes`)
@@ -22,13 +24,16 @@
 * Improved the look of the Control GUI.
 * The status panel (character counter and session timer) is no longer concealed
   in Focus mode if one of its counters is paused. (Prevents forgetting to resume
-  session timer when you return after a break.)
+  the session timer when you return after a break.)
 
 ### Fixed
 
-* Crashing with “Assistive technology not found error” in certain circumstances.
-* Chunk text not being displayed accurately in certain circumstances when in
-  edit mode.
+* No longer crashes with “Assistive technology not found” error in certain
+  circumstances.
+* Chunk text is no longer displayed inaccurately in certain circumstances when
+  in edit mode.
+* Spurious websocket connection error messages are no longer shown when shutting
+  down the backend with an active client connection.
 
 ## [0.12] – 2023-01-26
 
