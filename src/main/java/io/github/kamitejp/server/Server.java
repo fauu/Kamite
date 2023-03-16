@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.websocket.core.CloseStatus;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -49,7 +50,7 @@ public class Server {
     this.eventCb = eventCb;
 
     javalinInstance = Javalin.create(config -> {
-      config.http.maxRequestSize = 10_000_000L; // Bumped for image recognition requests
+      config.http.maxRequestSize = 10_000_000L; // Bump for image recognition requests
       if (Env.isDevMode()) {
         config.plugins.enableDevLogging();
       }
@@ -118,6 +119,15 @@ public class Server {
 
   public void destroy() {
     if (javalinInstance != null) {
+      if (wsPendingClientContext != null) {
+        wsPendingClientContext.closeSession(CloseStatus.SHUTDOWN, null);
+        LOG.debug("Closed pending websocket client connection");
+      }
+      if (wsClientContext != null) {
+        wsClientContext.closeSession(CloseStatus.SHUTDOWN, null);
+        LOG.debug("Closed websocket client connection");
+      }
+
       javalinInstance.stop();
       LOG.debug("Stopped Javalin instance");
     }
@@ -147,7 +157,7 @@ public class Server {
         wsClientContext = null;
       }
     });
-    ws.onError(ctx -> LOG.info("Client websocket connection error: {}", ctx.error().toString()));
+    ws.onError(ctx -> LOG.error("Client websocket connection error: {}", ctx.error().toString()));
   }
 
   private void handleClientConnect(WsConnectContext ctx) {
