@@ -14,17 +14,17 @@
   "devDependencies": {
     "@solid-devtools/logger": "~0.6.1",
     "@types/babel__core": "~7.20.0",
-    "@types/node": "~18.15.1",
-    "@typescript-eslint/eslint-plugin": "~5.54.1",
+    "@types/node": "~18.15.3",
+    "@typescript-eslint/eslint-plugin": "~5.55.0",
     "@typescript-eslint/parser": "~5.54.1",
     "eslint": "~8.36.0",
     "rimraf": "~4.4.0",
     "typescript": "~4.9.5",
-    "vite": "~4.1.4",
+    "vite": "~4.2.0",
     "vite-plugin-solid": "~2.6.1"
   },
   "dependencies": {
-    "@floating-ui/core": "~1.2.3",
+    "@floating-ui/core": "~1.2.4",
     "@floating-ui/dom": "~1.2.4",
     "csstype": "3.1.1",
     "goober": "2.1.12",
