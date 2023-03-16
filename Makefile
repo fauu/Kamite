@@ -131,6 +131,13 @@ lint-ts:
 	pnpm lint
 .PHONY: lint-ts
 
+outdated:
+	set +e
+	pnpm outdated
+	set -e
+	mvn versions:display-dependency-updates
+.PHONY: outdated
+
 runtime-linux:
 	rm -rf target/runtime-linux
 	jlink --no-header-files --no-man-pages --compress=2 --strip-debug \
