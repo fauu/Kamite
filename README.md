@@ -185,8 +185,8 @@ Kamite using `Kamite.exe` inside the extracted directory.
 
 ## Updating Kamite
 
-**When updating, please check [the Changelog](CHANGELOG.md) for breaking chages in
-the newer versions.**
+**When updating, please check [the Changelog](CHANGELOG.md) for breaking chages
+in the newer versions.**
 
 ### Linux Generic and Windows
 
@@ -263,6 +263,9 @@ Below are some non-obvious tips regarding the interface that might come useful.
 * The *session timer* can be set up to pause automatically after a period of
   inactivity. For example, add `sessionTimer.autoPause.after: 45s` to auto-pause
   after 45 seconds of inactivity.
+
+* The *session timer* can be set to be paused initially after launching the
+  program (`sessionTimer.startPaused: yes` to enable).
 
 ## Text extraction
 
@@ -783,7 +786,7 @@ The OCR commands directly available to the user are the following:
 ![OCR manual block button](media/docs/ocr_manual-block.png) ![OCR manual block vertical button](media/docs/ocr_manual-block-vertical.png) ![OCR manual block horizontal button](media/docs/ocr_manual-block-horizontal.png)
 <!-- markdownlint-restore -->
 
-Select area around a block of text and Kamite will OCR the area as is.
+Select an area around a block of text and Kamite will OCR the area as is.
 
 For the `tesseract` engine, this command has separate vertical and horizontal
 variants that must be chosen manually depending on the orientation of the text
@@ -804,6 +807,31 @@ block detection algorithm has a lot of room for improvement.*
 > just a point, meaning that when the mouse is pressed and dragged, a rectangle
 > area will be selected instead of a point. If this happens, Kamite will
 > consider the center of this area as the selected point.
+
+##### Manual rotated block OCR
+
+![OCR manual block rotated button](media/docs/ocr_manual-block-rotated.png)
+
+Delimit a rotated block of text; Kamite will de-rotate the resulting area
+selection and OCR it.
+
+The delimitation of a rotated block is made with three mouse clicks in
+determined spots, as shown in the following illustrations:
+
+![OCR rotated block reference](media/docs/rotated-ocr-reference.png)
+
+Clicks 1 and 2 must be made at the start and end of the initial edge of the text
+respectively. Click 3 can be anywhere along the closing edge (pictured as green
+above).
+
+> **Note**
+> The current implementation of rotated block OCR guesses the text orientation
+> based on the rotation. This means the feature will fail in unusual cases, such
+> as a block of horizontal text positioned vertically. The current assumption is
+> that those cases are extremely rare, but if you find use-cases where they are
+> not, please [create a GitHub Issue](https://github.com/fauu/Kamite/issues/new)
+> so that the assumption can be updated and the implementation reconsidered.
+
 
 ##### Region OCR
 
@@ -1532,6 +1560,7 @@ keybindings: {
   global: {
     ocr: {
       manualBlock: …
+      manualBlockRotated: …
       autoBlock: … # Instant detection under mouse cursor
       autoBlockSelect: … # Must click to select a point
 
@@ -1659,8 +1688,8 @@ chunk: {
   # [RELAODABLE] Perform slight formatting corrections on incoming chunks
   correct: yes
 
-  # [RELOADABLE] Flash backgrounds of chunk texts in the client's interface on
-  # certain occasions
+  # [RELOADABLE] Allow flashing backgrounds of chunk texts in the client's
+  # interface when they are changed or copied
   flash: yes
 
   # [RELOADABLE] Treat incoming chunks as translations and create a new chunk
@@ -1765,6 +1794,7 @@ keybindings: {
       # A key combination to assign to the command. See the "Keyboard shortcuts"
       # section of the Readme for the format specification.
       manualBlock: …
+      manualBlockRotated: …
       autoBlock: … # Instant detection under mouse cursor
       autoBlockSelect: … # Must click to select a point
 
@@ -1865,6 +1895,9 @@ sessionTimer: {
     # auto-pausing can still be disabled by setting `enable` to `no`)
     after: …
   }
+
+  # Whether to pause the session timer initially at program launch
+  startPaused: no
 }
 
 # [RELOADABLE]
@@ -2103,7 +2136,11 @@ page in the Wiki.
 
 Kamite never saves your data to disk.
 
-Kamite never sends your data through the network, with the following exceptions:
+Kamite only sends data through the internet in the following circumstances:
+
+* When `update.check` **is not** set to `no`, a connection to github.com is made
+  on every launch in order to check for the availability of a newer version of
+  Kamite.
 
 * When `ocr.engine` is set to `mangaocr_online`, screenshots of portions of your
   screen are sent to [a Hugging Face Space by detomo][manga-ocr-hf] for text

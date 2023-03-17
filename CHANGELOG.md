@@ -9,13 +9,16 @@
 
 ## [Unreleased]
 
+## [0.13] – 2023-03-17
+
 ### Added
 
 * OCR for rotated text: the text screenshot is derotated before being forwarded
   to an OCR solution.
-  * See [Manual rotated block OCR in the Readme](https://github.com/fauu/Kamite#manual-rotated-block-ocr))
+  * See [Manual rotated block OCR in the Readme](https://github.com/fauu/Kamite#manual-rotated-block-ocr)
   for usage instructions.
-* New version notification in Control GUI / console output.
+* New version notification in Control GUI / console output. (To opt out of the
+  check, set `update.check: no`)
 * Option to launch the program with the Session timer paused.
   (`sessionTimer.startPaused: yes`)
 
@@ -33,7 +36,7 @@
 * Chunk text is no longer displayed inaccurately in certain circumstances when
   in edit mode.
 * Spurious websocket connection error messages are no longer shown when shutting
-  down the backend with an active client connection.
+  down the program with an active client connection.
 
 ## [0.12] – 2023-01-26
 
@@ -425,7 +428,8 @@
 
 Initial release.
 
-[Unreleased]: https://github.com/fauu/Kamite/compare/v0.12...HEAD
+[Unreleased]: https://github.com/fauu/Kamite/compare/v0.13...HEAD
+[0.13]: https://github.com/fauu/Kamite/releases/tag/v0.13
 [0.12]: https://github.com/fauu/Kamite/releases/tag/v0.12
 [0.11]: https://github.com/fauu/Kamite/releases/tag/v0.11
 [0.10]: https://github.com/fauu/Kamite/releases/tag/v0.10
