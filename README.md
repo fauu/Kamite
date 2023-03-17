@@ -1922,6 +1922,12 @@ ui: {
   }
 }
 
+update: {
+  # Whether to check for updates on program launch and, if one is available,
+  # print a notification to the Control GUI and the console
+  check: yes
+}
+
 # Secrets used for authentication to third-party services.
 # WARNING: This is unsafe plain-text storage. Do not put data here that you deem
 #          too sensitive for this kind of storage
