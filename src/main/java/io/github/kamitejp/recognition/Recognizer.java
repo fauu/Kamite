@@ -711,15 +711,15 @@ public class Recognizer {
       return List.of(
         "ocr_manual-block-vertical",
         "ocr_manual-block-horizontal",
-        "ocr_manual-block-rotated",
         "ocr_auto-block",
+        "ocr_manual-block-rotated",
         "ocr_region"
       );
     } else if (!(engine instanceof OCREngine.None)) {
       return List.of(
         "ocr_manual-block",
-        "ocr_manual-block-rotated",
         "ocr_auto-block",
+        "ocr_manual-block-rotated",
         "ocr_region"
       );
     } else {
