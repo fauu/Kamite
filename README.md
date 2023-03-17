@@ -41,6 +41,9 @@ script; [waycorner][waycorner-icxes].)*
   (e.g., manga) with several third-party online and offline OCR solutions
   (e.g., “MangaOCR”, EasyOCR, Tesseract).
 
+  Includes advanced features such as automatic text block detection and
+  derotation of rotated text before further processing.
+
 * Extract text from video subtitles as it is playing ([mpv player integration](#animevideo-text-extraction)).
 
 * Extract text from games, visual novels, and other programs as they are running
@@ -812,7 +815,7 @@ block detection algorithm has a lot of room for improvement.*
 
 ![OCR manual block rotated button](media/docs/ocr_manual-block-rotated.png)
 
-Delimit a rotated block of text; Kamite will de-rotate the resulting area
+Delimit a rotated block of text; Kamite will derotate the resulting area
 selection and OCR it.
 
 The delimitation of a rotated block is made with three mouse clicks in
@@ -826,10 +829,10 @@ above).
 
 > **Note**
 > The current implementation of rotated block OCR guesses the text orientation
-> based on the rotation. This means the feature will fail in unusual cases, such
-> as a block of horizontal text positioned vertically. The current assumption is
-> that those cases are extremely rare, but if you find use-cases where they are
-> not, please [create a GitHub Issue](https://github.com/fauu/Kamite/issues/new)
+> based on the rotation angle. This means the feature will fail in unusual cases,
+> such as a block of horizontal text positioned vertically. The current
+> assumption is that those cases are very rare, but if you find use-cases where
+> they are not, please [create a GitHub Issue](https://github.com/fauu/Kamite/issues/new)
 > so that the assumption can be updated and the implementation reconsidered.
 
 
@@ -2138,9 +2141,9 @@ Kamite never saves your data to disk.
 
 Kamite only sends data through the internet in the following circumstances:
 
-* When `update.check` **is not** set to `no`, a connection to github.com is made
-  on every launch in order to check for the availability of a newer version of
-  Kamite.
+* When `update.check` **is not** set to `no`, a connection to `github.com` is
+  made on every launch in order to check for the availability of a newer version
+  of Kamite.
 
 * When `ocr.engine` is set to `mangaocr_online`, screenshots of portions of your
   screen are sent to [a Hugging Face Space by detomo][manga-ocr-hf] for text
