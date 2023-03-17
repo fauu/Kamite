@@ -323,7 +323,9 @@ public class Kamite {
       );
     }
 
-    Executor.get().execute(() -> notifyIfNewerVersionAvailable(buildInfo));
+    if (config.update().check()) {
+      Executor.get().execute(() -> notifyIfNewerVersionAvailable(buildInfo));
+    }
 
     Runtime.getRuntime().addShutdownHook(new Thread(this::destroy));
   }

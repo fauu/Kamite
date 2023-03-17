@@ -153,3 +153,7 @@ ui: {
     height: "int | 60"
   }
 }
+
+update: {
+  check: "boolean | true"
+}
