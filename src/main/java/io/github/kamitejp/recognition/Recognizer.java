@@ -34,12 +34,13 @@ import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.MangaOCRController;
 import io.github.kamitejp.platform.MangaOCREvent;
-import io.github.kamitejp.platform.MangaOCRInitializationException;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractModel;
 import io.github.kamitejp.platform.dependencies.tesseract.TesseractResult;
+import io.github.kamitejp.recognition.configuration.MangaOCROnlineOCRConfiguration;
 import io.github.kamitejp.recognition.configuration.OCRConfiguration;
+import io.github.kamitejp.recognition.configuration.TesseractOCRConfiguration;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
 import io.github.kamitejp.util.Executor;
@@ -87,7 +88,10 @@ public class Recognizer {
   private final Consumer<RecognizerEvent> eventCb;
   private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
 
-  private final OCREngine engine;
+  // XXX
+  private OCRConfiguration getCurrentOCRConfiguration() {
+    return configurations.get(0);
+  }
 
   public Recognizer(
     Platform platform,
@@ -147,10 +151,7 @@ public class Recognizer {
 
   public record BoxRecognitionOutput(UnprocessedChunkVariants chunkVariants) {}
 
-  public Result<BoxRecognitionOutput, RecognitionOpError> recognizeBox(
-    BufferedImage img,
-    TextOrientation textOrientation
-  ) {
+  public Result<BoxRecognitionOutput, RecognitionOpError> recognizeBox(BufferedImage img) {
     if (
       img.getWidth() < BOX_RECOGNITION_INPUT_MIN_DIMENSION
       || img.getHeight() < BOX_RECOGNITION_INPUT_MIN_DIMENSION
@@ -159,14 +160,15 @@ public class Recognizer {
     }
 
     if (debug) {
-      sendDebugImage(img, "%s OCR".formatted(engine.isRemote() ? "Remote" : "Local"));
+      sendDebugImage(img, "%s OCR".formatted(getCurrentOCRConfiguration().getEngine().isRemote() ? "Remote" : "Local"));
     }
 
     LOG.debug("Starting box recognition");
-    return switch (engine) {
-      case OCREngine.Tesseract _           -> recognizeBoxTesseract(img, textOrientation);
+    // XXX: Switch by configuration?
+    return switch (getCurrentOCRConfiguration()) {
+      case TesseractOCRConfiguration conf      -> recognizeBoxTesseract(conf, img);
       // case OCREngine.MangaOCR engine       -> recognizeBoxMangaOCR(engine.controller(), img);
-      case OCREngine.MangaOCROnline engine -> recognizeBoxRemote(engine.getAdapter(), img);
+      case MangaOCROnlineOCRConfiguration conf -> recognizeBoxRemote(conf.getEngine().getAdapter(), img);
       // case OCREngine.OCRSpace engine       -> recognizeBoxRemote(engine.adapter(), img);
       // case OCREngine.EasyOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
       // case OCREngine.HiveOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
@@ -401,8 +403,9 @@ public class Recognizer {
     return Result.Ok(new BoxRecognitionOutput(UnprocessedChunkVariants.singleFromString(text)));
   }
 
+  // XXX: Move this to OCRConfiguration?
   private Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxTesseract(
-    BufferedImage img, TextOrientation textOrientation
+    TesseractOCRConfiguration conf, BufferedImage img
   ) {
     // Remove alpha channel
     if (img.getType() != BufferedImage.TYPE_INT_RGB) {
@@ -426,32 +429,18 @@ public class Recognizer {
       }
     }
 
-    // Determine which tesseract models to use
-    TesseractModel tmpModel = null;
-    TesseractModel tmpAltModel = null;
-    switch (textOrientation) { // NOPMD - misidentifies as non-exhaustive
-      case VERTICAL, UNKNOWN -> {
-        tmpModel = TesseractModel.VERTICAL;
-        tmpAltModel = TesseractModel.VERTICAL_ALT;
-      }
-      case HORIZONTAL ->
-        tmpModel = TesseractModel.HORIZONTAL;
-    }
-    final var model = tmpModel;
-    final var altModel = tmpAltModel;
-
     var tesseractCallables = new ArrayList<Callable<LabelledTesseractResult>>();
 
     // Queue OCR on the initial screenshot
     final var initial = img;
     tesseractCallables.add(() ->
-      new LabelledTesseractResult("initial", platform.tesseractOCR(initial, model))
+      new LabelledTesseractResult("initial", conf.ocr(initial, TesseractModelType.DEFAULT))
     );
 
     // Queue OCR on the initial screenshot using the alternative model
-    if (altModel != null) {
+    if (conf.hasAltModel()) {
       tesseractCallables.add(() ->
-        new LabelledTesseractResult("initial-alt", platform.tesseractOCR(initial, altModel))
+        new LabelledTesseractResult("initial-alt", conf.ocr(initial, TesseractModelType.ALT))
       );
     }
 
@@ -460,12 +449,12 @@ public class Recognizer {
       ImageOps.negate(img);
       final var negated = img;
       tesseractCallables.add(() ->
-        new LabelledTesseractResult("inverted", platform.tesseractOCR(negated, model))
+        new LabelledTesseractResult("inverted", conf.ocr(negated, TesseractModelType.DEFAULT))
       );
 
-      if (altModel != null) {
+      if (conf.hasAltModel()) {
         tesseractCallables.add(() ->
-          new LabelledTesseractResult("inverted-alt", platform.tesseractOCR(negated, altModel))
+          new LabelledTesseractResult("inverted-alt", conf.ocr(negated, TesseractModelType.ALT))
         );
       }
     }
@@ -482,33 +471,33 @@ public class Recognizer {
       WITH_BORDER_VARIANT_WHITE_BORDER_SIZE
     );
     tesseractCallables.add(() ->
-      new LabelledTesseractResult("white-border", platform.tesseractOCR(withBorder, model))
+      new LabelledTesseractResult("white-border", conf.ocr(withBorder, TesseractModelType.DEFAULT))
     );
 
     // Queue OCR on a downscaled version
     final var downscaled = ImageOps.scaled(img, 0.75f);
     tesseractCallables.add(() ->
-      new LabelledTesseractResult("downscaled", platform.tesseractOCR(downscaled, model))
+      new LabelledTesseractResult("downscaled", conf.ocr(downscaled, TesseractModelType.DEFAULT))
     );
 
     // Queue OCR on a version with thinner lines
     final var thinLines = ImageOps.copied(img);
     ImageOps.threshold(thinLines, 70, 150);
     tesseractCallables.add(() ->
-      new LabelledTesseractResult("thin-lines", platform.tesseractOCR(thinLines, model))
+      new LabelledTesseractResult("thin-lines", conf.ocr(thinLines, TesseractModelType.DEFAULT))
     );
 
     // Queue OCR on a blurred version
     final var blurred = ImageOps.blurred(ImageOps.copied(img), /* blurFactor */ 2);
     tesseractCallables.add(() ->
-      new LabelledTesseractResult("blurred", platform.tesseractOCR(blurred, model))
+      new LabelledTesseractResult("blurred", conf.ocr(blurred, TesseractModelType.DEFAULT))
     );
 
     // Queue OCR on a sharpened version
     final var sharpened = ImageOps.copied(img);
     ImageOps.sharpen(sharpened, /* amount */ 2f, /* threshold */ 0, /* blurFactor */ 3);
     tesseractCallables.add(() ->
-      new LabelledTesseractResult("sharpened", platform.tesseractOCR(sharpened, model))
+      new LabelledTesseractResult("sharpened", conf.ocr(sharpened, TesseractModelType.DEFAULT))
     );
 
     List<Future<LabelledTesseractResult>> tesseractResultFutures = null;
