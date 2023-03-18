@@ -57,6 +57,7 @@ public class RecognitionConductor {
     )
       .toList();
 
+    @SuppressWarnings("rawtypes")
     var engines = new HashMap<OCREngine, List<OCRConfiguration>>();
 
     // IMPROVEMENT: Share a single engine instance between multiple configurations as long as the
@@ -65,12 +66,12 @@ public class RecognitionConductor {
     for (var configuration : configurations) {
       switch (configuration) {
         case TesseractOCRConfiguration c -> {
-          var engine = OCREngine.Tesseract.uninitialized(c.getEngineParams());
+          var engine = new OCREngine.Tesseract(c.getEngineParams());
           engines.put(engine, List.of(c));
           c.setEngine(engine);
         }
         case MangaOCROnlineOCRConfiguration c -> {
-          var engine = OCREngine.MangaOCROnline.uninitialized();
+          var engine = new OCREngine.MangaOCROnline();
           engines.put(engine, List.of(c));
           c.setEngine(engine);
         }
@@ -84,25 +85,11 @@ public class RecognitionConductor {
     try {
       platform.initOCR();
 
-      for (var entry : engines.entrySet()) {
-        var engine = entry.getKey();
-        var initializedEngine = switch (engine) {
-          case OCREngine.Tesseract      e -> e.initialized();
-          case OCREngine.MangaOCROnline e -> e.initialized();
-          // case OCREngine.MangaOCR engine -> {
-          //   try {
-          //     yield engine.initialized(platform, this::handleMangaOCREvent);
-          //   } catch (MangaOCRInitializationException e) {
-          //     throw new RecognizerInitializationException( // NOPMD
-          //       "Could not initialize \"Manga OCR\": %s".formatted(e.getMessage())
-          //     );
-          //   }
-          // }
-          default -> throw new IllegalStateException("XXX Unimplemented");
-        };
-        for (var configuration : entry.getValue()) {
-          // XXX: Won't do. Turn engine into a stateful class and initialize in place?
-          configuration.setEngine(initializedEngine);
+      for (var entry : engines.values()) {
+        var res = entry.get(0).getEngine().init();
+        if (res.isErr()) {
+          LOG.error("Could not initialize Recognizer: {}", res.err());
+          return;
         }
       }
 

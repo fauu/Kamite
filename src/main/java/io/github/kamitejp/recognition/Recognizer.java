@@ -87,6 +87,8 @@ public class Recognizer {
   private final Consumer<RecognizerEvent> eventCb;
   private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
 
+  private final OCREngine engine;
+
   public Recognizer(
     Platform platform,
     List<OCRConfiguration> configurations,
@@ -94,12 +96,13 @@ public class Recognizer {
     Consumer<RecognizerEvent> eventCb
   ) throws RecognizerInitializationException {
     this.platform = platform;
+    this.configurations = configurations;
     this.debug = debug;
     this.eventCb = eventCb;
     this.autoBlockDetectors = new HashMap<>();
 
-    for (var c : configurations) {
-    }
+    // XXX
+    engine = configurations.get(0).getEngine();
 
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
     LOG.info("Initialized recognizer");
@@ -135,12 +138,13 @@ public class Recognizer {
     LOG.debug("Starting box recognition");
     return switch (engine) {
       case OCREngine.Tesseract ignored     -> recognizeBoxTesseract(img, textOrientation);
-      case OCREngine.MangaOCR engine       -> recognizeBoxMangaOCR(engine.controller(), img);
-      case OCREngine.MangaOCROnline engine -> recognizeBoxRemote(engine.adapter(), img);
-      case OCREngine.OCRSpace engine       -> recognizeBoxRemote(engine.adapter(), img);
-      case OCREngine.EasyOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
-      case OCREngine.HiveOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
-      case OCREngine.None ignored          -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+      // case OCREngine.MangaOCR engine       -> recognizeBoxMangaOCR(engine.controller(), img);
+      case OCREngine.MangaOCROnline engine -> recognizeBoxRemote(engine.getAdapter(), img);
+      // case OCREngine.OCRSpace engine       -> recognizeBoxRemote(engine.adapter(), img);
+      // case OCREngine.EasyOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
+      // case OCREngine.HiveOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
+      // case OCREngine.None ignored          -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+      default -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE); // XXX
     };
   }
 
