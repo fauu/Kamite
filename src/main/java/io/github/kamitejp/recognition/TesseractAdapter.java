@@ -14,7 +14,8 @@ public class TesseractAdapter {
   private static final Map<String, String> ENV = Map.of("OMP_THREAD_LIMIT", "1");
   private static final int PROCESS_TIMEOUT_MS = 5000;
 
-  public Result<String, Void> ocr(BufferedImage img, String binPath, String lang, int psm) {
+  // XXX
+  public Result<String, String> ocr(BufferedImage img, String binPath, String lang, int psm) {
     var imgOS = ImageOps.encodeIntoByteArrayOutputStream(img);
     var res = ProcessHelper.run(
       ProcessRunParams.ofCmd(

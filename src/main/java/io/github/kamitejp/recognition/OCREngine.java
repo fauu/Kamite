@@ -17,7 +17,7 @@ public sealed interface OCREngine
           // OCREngine.HiveOCROnline,
           // OCREngine.None {
   final class Tesseract implements OCREngine {
-    private final String binPath;
+    public final String binPath; // XXX: public
     private TesseractAdapter adapter;
 
     public Tesseract(OCREngineParams.Tesseract params) {
@@ -40,6 +40,10 @@ public sealed interface OCREngine
     @Override
     public boolean isRemote() {
       return false;
+    }
+
+    public TesseractAdapter getAdapter() {
+      return adapter;
     }
   }
 
@@ -179,7 +183,7 @@ public sealed interface OCREngine
   //   }
   // }
 
-  public abstract Result<Void, String> init();
+  public Result<Void, String> init();
 
   boolean isRemote();
 
