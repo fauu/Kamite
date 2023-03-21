@@ -9,16 +9,27 @@
 #   if necessary ($PICTURE_RESIZE_GEOMETRY).
 #
 # Optional arguments:
-#   -s <sentence>  Set the card's "Sentence" field ($SENTENCE_FIELD_NAME) to the specified value.
-#   -g <geometry>  Instead of prompting for selection, take a screenshot of the specified area.
-#                  The geometry format is "X,Y WxH" (e.g., "20,-100 1000x600").
+#   -s <sentence> Set the card's "Sentence" field ($SENTENCE_FIELD_NAME) to the specified value.
+#   -g <geometry> Instead of prompting for selection, take a screenshot of the specified area.
+#                 The geometry format is "X,Y WxH" (e.g. "20,-100 1000x600").
+#   -w <window_name> [Currently Sway only] Instead of prompting for selection, take a screenshot of
+#                    a first window with the provided name. The window must already be visible on
+#                    the screen.
+#                    The window name specifier is treated as a regular expression.
+#   -r <ratio>    [Only with -w] Crop the screenshot area to a rectangle of a specified ratio
+#                 centered inside the given window. Useful for games with a fixed aspect ratio.
+#                 The ratio format is "W:H" (e.g. "16:9").
+#   -o <offsets>  [Only with -w] Shrink the window screenshot area by the specified pixel offsets.
+#                 Applies before -r. Useful for games with a menu bar.
+#                 The offsets format is "TOP:RIGHT:BOTTOM:LEFT" (e.g. "15,0,0,0").
 #
 # Exit status:
 #   0    Updated note
-#   1-5  Failed to update note
+#   >0   Failed to update note
 #
 # Dependencies:
-#   grim + slurp (Wayland) / maim (Xorg), jq, curl, imagemagick, Anki Connect, libnotify
+#   grim + slurp (Wayland) / maim (Xorg), jq, curl, imagemagick, Anki Connect, libnotify,
+#   bc (-r option only)
 #
 
 # Config
@@ -37,13 +48,21 @@ notify() {
 }
 
 GEOMETRY_RE="^(-?[[:digit:]]+),(-?[[:digit:]]+) ([[:digit:]]+)x([[:digit:]]+)$"
+RATIO_RE="^([[:digit:]]+):([[:digit:]]+)$"
+OFFSETS_RE="^([[:digit:]]+),([[:digit:]]+),([[:digit:]]+),([[:digit:]]+)$"
 
 main() {
-  while getopts ":s:g:" opt; do
+  while getopts ":s:g:w:r:o:" opt; do
     case $opt in
       s) sentence="$OPTARG"
       ;;
       g) geometry="$OPTARG"
+      ;;
+      w) window_name="$OPTARG"
+      ;;
+      r) ratio="$OPTARG"
+      ;;
+      o) offsets="$OPTARG"
       ;;
       \?) echo "Invalid option -$OPTARG" >&2
       exit 1
@@ -58,7 +77,7 @@ main() {
       w=${BASH_REMATCH[3]}
       h=${BASH_REMATCH[4]}
     else
-      notify "Geometry format incorrect. Aborting"
+      notify 'Geometry format incorrect'
       exit 2
     fi
   fi
@@ -75,6 +94,83 @@ main() {
   if test -n "${WAYLAND_DISPLAY-}"; then
     if [[ $x ]]; then
       geometry_part="$geometry"
+    elif [[ $window_name ]]; then
+      local window_info
+      window_info=$(swaymsg -t get_tree | jq -r '[.. |try select(.name|test("'"$window_name"'")?)][0]')
+      if [[ "$window_info" == "null" ]]; then
+        notify "Window '$window_name' not found"
+        exit 6
+      fi
+      local wox
+      local woy
+      local wrx
+      local wry
+      local wx
+      local wy
+      local ww
+      local wh
+      read -r wox woy wrx wry ww wh <<<"$(echo "$window_info" \
+        | jq -r '"\(.rect.x) \(.rect.y) \(.window_rect.x) \(.window_rect.y) \(.window_rect.width) \(.window_rect.height)"')"
+      wx=$((wox+wrx))
+      wy=$((woy+wry))
+
+      if [[ -n "$offsets" ]]; then
+        local otop
+        local oright
+        local obottom
+        local oleft
+        if [[ "$offsets" =~ $OFFSETS_RE ]]; then
+          otop=${BASH_REMATCH[1]}
+          oright=${BASH_REMATCH[2]}
+          obottom=${BASH_REMATCH[3]}
+          oleft=${BASH_REMATCH[4]}
+        else
+          notify 'Offsets format incorrect'
+          exit 8
+        fi
+        wx=$((wx+oleft))
+        wy=$((wy+otop))
+        ww=$((ww-oleft-oright))
+        wh=$((wh-otop-obottom))
+      fi
+
+      if [[ -n $ratio ]]; then
+        if [[ "$ratio" =~ $RATIO_RE ]]; then
+          rw=${BASH_REMATCH[1]}
+          rh=${BASH_REMATCH[2]}
+          local r
+          local wr
+          r=$(echo "$rw/$rh" | bc -l)
+          wr=$(echo "$ww/$wh" | bc -l)
+          local cx
+          local cy
+          local cw
+          local ch
+          if (( $(echo "$r > $wr" | bc -l) )); then
+            cx="$wx"
+            cw="$ww"
+            ch=$(echo "(1/$r)*$cw" | bc -l | xargs printf '%.0f\n')
+            local h_half_delta
+            h_half_delta=$(((wh-ch)/2))
+            cy=$((wy+h_half_delta))
+          else
+            cy="$wy"
+            ch="$wh"
+            cw=$(echo "$r*$ch" | bc -l | xargs printf '%.0f\n')
+            local w_half_delta
+            w_half_delta=$(((ww-cw)/2))
+            cx=$((wx+w_half_delta))
+            echo "$cx,$cy $cw $ch"
+          fi
+
+          geometry_part="$cx,$cy ${cw}x$ch"
+        else
+          notify 'Ratio format incorrect'
+          exit 7
+        fi
+      else
+        geometry_part="$wx,$wy ${ww}x$wh"
+      fi
     else
       # shellcheck disable=SC2016
       geometry_part='$(slurp)'
@@ -88,13 +184,14 @@ main() {
     fi
     ss_cmd="maim $geometry_part"
   fi
+
   local picture_data
   picture_data=$(eval "$ss_cmd" \
     | convert - -resize ${PICTURE_RESIZE_GEOMETRY} webp:- \
     | base64 \
     | tr -d \\n)
   if [[ -z $picture_data ]]; then
-    notify "Screenshot cancelled"
+    notify 'Screenshot cancelled'
     exit 4
   fi
 
