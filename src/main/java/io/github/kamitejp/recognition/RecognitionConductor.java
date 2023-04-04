@@ -57,23 +57,20 @@ public class RecognitionConductor {
     )
       .toList();
 
-    @SuppressWarnings("rawtypes")
-    var engines = new HashMap<OCREngine, List<OCRConfiguration>>();
-
     // IMPROVEMENT: Share a single engine instance between multiple configurations as long as the
     //              params are the same.
     // NOTE: This is done in a roundabout way in order to better accomodate the above later
     for (var configuration : configurations) {
       switch (configuration) {
         case TesseractOCRConfiguration c -> {
-          var engine = new OCREngine.Tesseract(c.getEngineParams());
-          engines.put(engine, List.of(c));
-          c.setEngine(engine);
+          var adapter = new OCREngine.Tesseract(c.getAdapterInitParams());
+          adapters.put(adapter, List.of(c));
+          c.setAdapter(adapter);
         }
         case MangaOCROnlineOCRConfiguration c -> {
-          var engine = new OCREngine.MangaOCROnline();
-          engines.put(engine, List.of(c));
-          c.setEngine(engine);
+          var adapter = new OCREngine.MangaOCROnline();
+          adapters.put(adapter, List.of(c));
+          c.setAdapter(adapter);
         }
         default -> throw new IllegalStateException("XXX Unimplemented");
       };
@@ -85,8 +82,8 @@ public class RecognitionConductor {
     try {
       platform.initOCR();
 
-      for (var entry : engines.values()) {
-        var res = entry.get(0).getEngine().init();
+      for (var entry : adapters.values()) {
+        var res = entry.get(0).getAdapter().init();
         if (res.isErr()) {
           LOG.error("Could not initialize Recognizer: {}", res.err());
           return;
