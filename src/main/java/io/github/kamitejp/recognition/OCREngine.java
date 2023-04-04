@@ -8,45 +8,45 @@ package io.github.kamitejp.recognition;
 // import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.util.Result;
 
-public sealed interface OCREngine
-  permits OCREngine.Tesseract,
+// public sealed interface OCREngine
+  // permits OCREngine.Tesseract,
           // OCREngine.MangaOCR,
-          OCREngine.MangaOCROnline {
+          // OCREngine.MangaOCROnline {
           // OCREngine.OCRSpace,
           // OCREngine.EasyOCROnline,
           // OCREngine.HiveOCROnline,
           // OCREngine.GLens,
           // OCREngine.None {
-  final class Tesseract implements OCREngine {
-    public final String binPath; // XXX: public
-    private TesseractAdapter adapter;
-
-    public Tesseract(OCREngineParams.Tesseract params) {
-      this.binPath = params.binPath();
-    }
-
-    @Override
-    public Result<Void, String> init() {
-      if (adapter == null) {
-        this.adapter = new TesseractAdapter();
-      }
-      return Result.Ok(null);
-    }
-
-    @Override
-    public String toString() {
-      return "Tesseract OCR";
-    }
-
-    @Override
-    public boolean isRemote() {
-      return false;
-    }
-
-    public TesseractAdapter getAdapter() {
-      return adapter;
-    }
-  }
+  // final class Tesseract implements OCREngine {
+  //   public final String binPath; // XXX: public
+  //   private TesseractAdapter adapter;
+  //
+  //   public Tesseract(OCREngineParams.Tesseract params) {
+  //     this.binPath = params.binPath();
+  //   }
+  //
+  //   @Override
+  //   public Result<Void, String> init() {
+  //     if (adapter == null) {
+  //       this.adapter = new TesseractAdapter();
+  //     }
+  //     return Result.Ok(null);
+  //   }
+  //
+  //   @Override
+  //   public String toString() {
+  //     return "Tesseract OCR";
+  //   }
+  //
+  //   @Override
+  //   public boolean isRemote() {
+  //     return false;
+  //   }
+  //
+  //   public TesseractAdapter getAdapter() {
+  //     return adapter;
+  //   }
+  // }
 
   // record MangaOCR(
   //   String customPythonPath, MangaOCRController controller
@@ -83,31 +83,31 @@ public sealed interface OCREngine
   //   }
   // }
 
-  final class MangaOCROnline implements OCREngine {
-    private MangaOCRHFAdapter adapter;
-
-    @Override
-    public Result<Void, String> init() {
-      if (adapter == null) {
-        this.adapter = new MangaOCRHFAdapter();
-      }
-      return Result.Ok(null);
-    }
-
-    @Override
-    public boolean isRemote() {
-      return true;
-    }
-
-    @Override
-    public String toString() {
-      return "\"Manga OCR\" Online (HF Space by Detomo)";
-    }
-
-    public MangaOCRHFAdapter getAdapter() {
-      return adapter;
-    }
-  }
+  // final class MangaOCROnline implements OCREngine {
+  //   private MangaOCRHFAdapter adapter;
+  //
+  //   @Override
+  //   public Result<Void, String> init() {
+  //     if (adapter == null) {
+  //       this.adapter = new MangaOCRHFAdapter();
+  //     }
+  //     return Result.Ok(null);
+  //   }
+  //
+  //   @Override
+  //   public boolean isRemote() {
+  //     return true;
+  //   }
+  //
+  //   @Override
+  //   public String toString() {
+  //     return "\"Manga OCR\" Online (HF Space by Detomo)";
+  //   }
+  //
+  //   public MangaOCRHFAdapter getAdapter() {
+  //     return adapter;
+  //   }
+  // }
 
   // record OCRSpace(
   //   String apiKey, OCRSpaceSubengine subengine, OCRSpaceAdapter adapter
@@ -184,13 +184,13 @@ public sealed interface OCREngine
   //   }
   // }
 
-  public Result<Void, String> init();
-
-  boolean isRemote();
-
-  default void destroy() {
-    // Do nothing
-  }
+  // public Result<Void, String> init();
+  //
+  // boolean isRemote();
+  //
+  // default void destroy() {
+  //   // Do nothing
+  // }
 
   // XXX
   // static Result<OCREngine, String> uninitializedFromConfig(
@@ -230,4 +230,4 @@ public sealed interface OCREngine
   //
   //   return engine == null ? Result.Err(errorMessage) : Result.Ok(engine);
   // }
-}
+// }

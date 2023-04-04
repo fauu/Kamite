@@ -1,6 +1,5 @@
 package io.github.kamitejp.recognition;
 
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import java.awt.BasicStroke;
@@ -18,9 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -28,20 +24,20 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.chunk.UnprocessedChunkVariants;
+import io.github.kamitejp.config.Config.OCREngine;
 import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
-import io.github.kamitejp.platform.MangaOCRController;
 import io.github.kamitejp.platform.MangaOCREvent;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
+import io.github.kamitejp.recognition.configuration.MangaOCROCRConfiguration;
 import io.github.kamitejp.recognition.configuration.MangaOCROnlineOCRConfiguration;
 import io.github.kamitejp.recognition.configuration.OCRConfiguration;
 import io.github.kamitejp.recognition.configuration.TesseractOCRConfiguration;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
-import io.github.kamitejp.util.Executor;
 import io.github.kamitejp.util.Maths;
 import io.github.kamitejp.util.Result;
 
@@ -147,16 +143,17 @@ public class Recognizer {
       return Result.Err(RecognitionOpError.INPUT_TOO_SMALL);
     }
 
-    if (debug) {
-      sendDebugImage(img, "%s OCR".formatted(getCurrentOCRConfiguration().getEngine().isRemote() ? "Remote" : "Local"));
-    }
+    // XXX
+    // if (debug) {
+    //   sendDebugImage(img, "%s OCR".formatted(getCurrentOCRConfiguration().getAdapter().isRemote() ? "Remote" : "Local"));
+    // }
 
     LOG.debug("Starting box recognition");
     // XXX: Switch by configuration?
     return switch (getCurrentOCRConfiguration()) {
       case TesseractOCRConfiguration conf      -> conf.recognizeBox(img);
-      // case OCREngine.MangaOCR engine       -> recognizeBoxMangaOCR(engine.controller(), img);
-      case MangaOCROnlineOCRConfiguration conf -> recognizeBoxRemote(conf.getEngine().getAdapter(), img);
+      case MangaOCROCRConfiguration conf       -> conf.recognizeBox(img);
+      case MangaOCROnlineOCRConfiguration conf -> recognizeBoxRemote(conf.getAdapter(), img);
       // case OCREngine.OCRSpace engine       -> recognizeBoxRemote(engine.adapter(), img);
       // case OCREngine.EasyOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
       // case OCREngine.HiveOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
@@ -325,21 +322,6 @@ public class Recognizer {
 
     // PERF: Rotate and crop in one go?
     return ImageOps.cropped(rotated, cropRect, fillColor);
-  }
-
-  private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxMangaOCR(
-    MangaOCRController controller,
-    BufferedImage img
-  ) {
-    var maybeText = controller.recognize(img);
-    if (maybeText.isEmpty()) {
-      return Result.Err(RecognitionOpError.OCR_ERROR);
-    }
-    var text = maybeText.get();
-    if (text.isBlank()) {
-      return Result.Err(RecognitionOpError.ZERO_VARIANTS);
-    }
-    return Result.Ok(new BoxRecognitionOutput(UnprocessedChunkVariants.singleFromString(text)));
   }
 
   private static Result<BoxRecognitionOutput, RecognitionOpError> recognizeBoxRemote(

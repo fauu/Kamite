@@ -18,16 +18,16 @@ import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.config.Config.OCR;
 import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.recognition.BoxRecognitionOutput;
-import io.github.kamitejp.recognition.OCREngine;
-import io.github.kamitejp.recognition.OCREngineParams;
+import io.github.kamitejp.recognition.OCRAdapterInitParams;
 import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.recognition.Recognizer.LabelledTesseractHOCROutput;
+import io.github.kamitejp.recognition.TesseractAdapter;
 import io.github.kamitejp.recognition.TesseractModelType;
 import io.github.kamitejp.recognition.TesseractResult;
 import io.github.kamitejp.util.Executor;
 import io.github.kamitejp.util.Result;
 
-public final class TesseractOCRConfiguration extends OCRConfiguration<OCREngine.Tesseract, OCREngineParams.Tesseract> {
+public final class TesseractOCRConfiguration extends OCRConfiguration<OCRAdapterInitParams.Empty> {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String DEFAULT_BIN_PATH = "tesseract";
@@ -39,19 +39,26 @@ public final class TesseractOCRConfiguration extends OCRConfiguration<OCREngine.
   // Size of the border added around the input image to create the `white-border` OCR image variant
   private static final int WITH_BORDER_VARIANT_WHITE_BORDER_SIZE = 10;
 
+  private final String binPath;
   private final String model;
   private final int psm;
   private final String modelAlt;
   private final Integer psmAlt;
 
+  private TesseractAdapter adapter = null;
+
   public TesseractOCRConfiguration(OCR.Configuration config) {
     super(config);
-    var binPath = config.path() != null ? config.path() : DEFAULT_BIN_PATH;
-    engineInitParams = new OCREngineParams.Tesseract(binPath);
+    binPath = config.path() != null ? config.path() : DEFAULT_BIN_PATH;
+    adapterInitParams = new OCRAdapterInitParams.Empty();
     model = config.tesseractModel();
     psm = config.tesseractPSM();
     modelAlt = config.tesseractModelAlt();
     psmAlt = config.tesseractPSMAlt();
+  }
+
+  public void initAdapter() {
+    adapter = new TesseractAdapter();
   }
 
   public boolean hasAltModel() {
@@ -235,12 +242,9 @@ public final class TesseractOCRConfiguration extends OCRConfiguration<OCREngine.
 
 
   private TesseractResult ocr(BufferedImage img, TesseractModelType modelType) {
-    var engine = getEngine();
-    var adapter = engine.getAdapter();
-    // XXX: This is a mess
     return switch (modelType) {
-      case DEFAULT -> adapter.ocr(img, engine.binPath, model, psm);
-      case ALT     -> adapter.ocr(img, engine.binPath, modelAlt, psmAlt != null ? psmAlt : psm);
+      case DEFAULT -> adapter.ocr(img, binPath, model, psm);
+      case ALT     -> adapter.ocr(img, binPath, modelAlt, psmAlt != null ? psmAlt : psm);
     };
   }
 }
