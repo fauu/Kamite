@@ -20,8 +20,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.image.ImageOps;
+import io.github.kamitejp.recognition.OCRAdapter;
 
-public class MangaOCRController {
+public class MangaOCRController implements OCRAdapter {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String PIPX_DEFAULT_VENV_NAME = "manga-ocr";

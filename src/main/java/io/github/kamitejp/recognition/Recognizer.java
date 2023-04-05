@@ -70,7 +70,8 @@ public class Recognizer {
     new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
   private final Platform platform;
-  private final List<OCRConfiguration> configurations;
+  private final List<OCRConfiguration<? extends OCRAdapterInitParams, ? extends OCRAdapter>>
+    configurations;
   private final boolean debug;
   private final Consumer<RecognizerEvent> eventCb;
   private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
@@ -80,14 +81,15 @@ public class Recognizer {
     return configurations.get(0);
   }
 
+  @SuppressWarnings("unchecked")
   public Recognizer(
     Platform platform,
-    List<OCRConfiguration> configurations,
+    Object configurations,
     boolean debug,
     Consumer<RecognizerEvent> eventCb
   ) throws RecognizerInitializationException {
     this.platform = platform;
-    this.configurations = configurations;
+    this.configurations = (List<OCRConfiguration<? extends OCRAdapterInitParams, ? extends OCRAdapter>>) configurations;
     this.debug = debug;
     this.eventCb = eventCb;
     this.autoBlockDetectors = new HashMap<>();

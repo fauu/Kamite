@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.config.Config.OCR;
 import io.github.kamitejp.image.ImageOps;
+import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.recognition.BoxRecognitionOutput;
 import io.github.kamitejp.recognition.OCRAdapterInitParams;
 import io.github.kamitejp.recognition.RecognitionOpError;
@@ -27,7 +28,7 @@ import io.github.kamitejp.recognition.TesseractResult;
 import io.github.kamitejp.util.Executor;
 import io.github.kamitejp.util.Result;
 
-public final class TesseractOCRConfiguration extends OCRConfiguration<OCRAdapterInitParams.Empty> {
+public final class TesseractOCRConfiguration extends OCRConfiguration<OCRAdapterInitParams.Empty, TesseractAdapter> {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String DEFAULT_BIN_PATH = "tesseract";
@@ -45,8 +46,6 @@ public final class TesseractOCRConfiguration extends OCRConfiguration<OCRAdapter
   private final String modelAlt;
   private final Integer psmAlt;
 
-  private TesseractAdapter adapter = null;
-
   public TesseractOCRConfiguration(OCR.Configuration config) {
     super(config);
     binPath = config.path() != null ? config.path() : DEFAULT_BIN_PATH;
@@ -57,12 +56,9 @@ public final class TesseractOCRConfiguration extends OCRConfiguration<OCRAdapter
     psmAlt = config.tesseractPSMAlt();
   }
 
-  public void initAdapter() {
+  @Override
+  public void createAdapter(Platform platform) {
     adapter = new TesseractAdapter();
-  }
-
-  public boolean hasAltModel() {
-    return modelAlt != null;
   }
 
   private record LabelledTesseractResult(String label, TesseractResult result) {}
@@ -246,5 +242,9 @@ public final class TesseractOCRConfiguration extends OCRConfiguration<OCRAdapter
       case DEFAULT -> adapter.ocr(img, binPath, model, psm);
       case ALT     -> adapter.ocr(img, binPath, modelAlt, psmAlt != null ? psmAlt : psm);
     };
+  }
+
+  private boolean hasAltModel() {
+    return modelAlt != null;
   }
 }
