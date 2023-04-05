@@ -3,7 +3,6 @@ package io.github.kamitejp.recognition;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
@@ -13,10 +12,11 @@ import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.config.Config;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
+import io.github.kamitejp.platform.MangaOCRController;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
+import io.github.kamitejp.recognition.configuration.MangaOCROCRConfiguration;
 import io.github.kamitejp.recognition.configuration.MangaOCROnlineOCRConfiguration;
-import io.github.kamitejp.recognition.configuration.OCRConfiguration;
 import io.github.kamitejp.recognition.configuration.TesseractOCRConfiguration;
 import io.github.kamitejp.status.ProgramStatus;
 
@@ -49,44 +49,61 @@ public class RecognitionConductor {
 
   public void initRecognizer(Config config) {
     var configurations = config.ocr().configurations().stream().map(c ->
-      switch (c.engine()) {
-        case TESSERACT       -> new TesseractOCRConfiguration(c);
-        case MANGAOCR_ONLINE -> new MangaOCROnlineOCRConfiguration(c);
-        default -> throw new IllegalStateException("XXX Unimplemented");
-      }
-    )
-      .toList();
+        switch (c.engine()) {
+          case TESSERACT       -> new TesseractOCRConfiguration(c);
+          case MANGAOCR        -> new MangaOCROCRConfiguration(c);
+          case MANGAOCR_ONLINE -> new MangaOCROnlineOCRConfiguration(c);
+          default -> throw new IllegalStateException("XXX Unimplemented");
+        }
+      )
+        .toList();
 
-    // IMPROVEMENT: Share a single engine instance between multiple configurations as long as the
-    //              params are the same.
-    // NOTE: This is done in a roundabout way in order to better accomodate the above later
+    var adapters = new HashMap<OCRAdapterInitParams, OCRAdapter>(8);
+
     for (var configuration : configurations) {
-      switch (configuration) {
-        case TesseractOCRConfiguration c -> {
-          var adapter = new OCREngine.Tesseract(c.getAdapterInitParams());
-          adapters.put(adapter, List.of(c));
-          c.setAdapter(adapter);
+      var initParams = configuration.getAdapterInitParams();
+      @SuppressWarnings("unlikely-arg-type") var maybeExistingAdapter = adapters.get(initParams);
+      if (maybeExistingAdapter == null) {
+        configuration.createAdapter(platform);
+        adapters.put(initParams, configuration.getAdapter());
+      } else {
+        // QUAL: Is there a way to make this work?
+        //   var configurationToAdapter = Map.of(
+        //     TesseractOCRConfiguration.class, TesseractAdapter.class,
+        //     MangaOCROCRConfiguration.class, MangaOCRController.class,
+        //     MangaOCROnlineOCRConfiguration.class, MangaOCRHFAdapter.class
+        //   );
+        //   var adapterClass = configurationToAdapter.get(configuration.getClass());
+        //   if (adapterClass.isInstance(maybeExistingAdapter)) {
+        //     configuration.setAdapter(adapterClass.cast(maybeExistingAdapter));
+        //   } else {
+        //     throw new IllegalStateException("Configuration/Adapter mismatch");
+        //   }
+        switch (configuration) {
+          case TesseractOCRConfiguration c ->
+            c.setAdapter((TesseractAdapter) maybeExistingAdapter);
+          case MangaOCROCRConfiguration c ->
+            c.setAdapter((MangaOCRController) maybeExistingAdapter);
+          case MangaOCROnlineOCRConfiguration c ->
+            c.setAdapter((MangaOCRHFAdapter) maybeExistingAdapter);
+          default -> throw new IllegalStateException("Configuration/Adapter mismatch");
         }
-        case MangaOCROnlineOCRConfiguration c -> {
-          var adapter = new OCREngine.MangaOCROnline();
-          adapters.put(adapter, List.of(c));
-          c.setAdapter(adapter);
-        }
-        default -> throw new IllegalStateException("XXX Unimplemented");
-      };
+      }
     }
 
-    // XXX: Abort here when no configurations with validated engine params
+    // XXX: Abort here when no configurations with validated adapter params (?)
 
     var unavailable = true;
     try {
       platform.initOCR();
 
-      for (var entry : adapters.values()) {
-        var res = entry.get(0).getAdapter().init();
-        if (res.isErr()) {
-          LOG.error("Could not initialize Recognizer: {}", res.err());
-          return;
+      for (var adapter : adapters.values()) {
+        if (adapter instanceof StatefulOCRAdapter statefulAdapter) {
+          var res = statefulAdapter.init();
+          if (res.isErr()) {
+            LOG.error("Could not initialize Recognizer: {}", res.err());
+            return;
+          }
         }
       }
 

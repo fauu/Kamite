@@ -7,7 +7,7 @@ import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.platform.process.ProcessRunParams;
 
-public class TesseractAdapter {
+public class TesseractAdapter implements OCRAdapter {
   private static final String DPI = "70";
   private static final String OEM = "1";
   private static final Map<String, String> ENV = Map.of("OMP_THREAD_LIMIT", "1");

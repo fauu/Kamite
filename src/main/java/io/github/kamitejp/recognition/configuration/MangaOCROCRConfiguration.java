@@ -17,12 +17,10 @@ import io.github.kamitejp.recognition.OCRAdapterInitParams;
 import io.github.kamitejp.recognition.RecognitionOpError;
 import io.github.kamitejp.util.Result;
 
-public final class MangaOCROCRConfiguration extends OCRConfiguration<OCRAdapterInitParams.MangaOCR> {
+public final class MangaOCROCRConfiguration extends OCRConfiguration<OCRAdapterInitParams.MangaOCR, MangaOCRController> {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private final String pythonPath;
-
-  private MangaOCRController adapter = null;
 
   public MangaOCROCRConfiguration(OCR.Configuration config) {
     super(config);
@@ -30,7 +28,8 @@ public final class MangaOCROCRConfiguration extends OCRConfiguration<OCRAdapterI
     adapterInitParams = new OCRAdapterInitParams.MangaOCR(pythonPath);
   }
 
-  public void initAdapter(Platform platform, Consumer<MangaOCREvent> eventCb) {
+  @Override
+  public void createAdapter(Platform platform/* XXX , Consumer<MangaOCREvent> eventCb*/) {
     adapter = new MangaOCRController(platform, pythonPath, eventCb);
   }
 
