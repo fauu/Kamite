@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kamite DeepL mod
 // @description  Improves DeepL user experience when embedded into Kamite
-// @version      2.0.0
+// @version      2.0.1
 // @match        https://www.deepl.com/translator*
 // @icon         https://www.google.com/s2/favicons?domain=deepl.com
 // @grant        GM_addStyle
@@ -83,7 +83,7 @@
     };
     const targetElObserver = new MutationObserver(handleTargetMutation);
     targetElObserver.observe(
-      document.querySelector("#target-dummydiv"),
+      document.querySelector("d-textarea > div"),
       { childList: true }
     );
   }
