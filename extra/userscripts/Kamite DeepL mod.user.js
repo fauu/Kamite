@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kamite DeepL mod
 // @description  Improves DeepL user experience when embedded into Kamite
-// @version      2.0.1
+// @version      2.0.2
 // @match        https://www.deepl.com/translator*
 // @icon         https://www.google.com/s2/favicons?domain=deepl.com
 // @grant        GM_addStyle
@@ -57,10 +57,15 @@
     document.body.className = "";
     document.querySelector(".dl_translator_page_container").style.display = "none";
 
+    const inputTextareaEl = document.querySelector(".lmt__source_textarea");
+
     const inputContainerEl = document.createElement("div");
     inputContainerEl.className = "input-container";
-    const inputEl = document.querySelector(".lmt__source_textarea");
+
+    const inputEl = inputTextareaEl.querySelector("div[contenteditable=true]");
     inputEl.className = "input";
+    inputEl.addEventListener("input", () => inputTextareaEl.dispatchEvent(new Event("input")));
+
     inputContainerEl.append(inputEl);
     document.body.append(inputContainerEl);
 
