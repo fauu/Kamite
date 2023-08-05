@@ -783,7 +783,9 @@ export const App: VoidComponent = () => {
         >
           <Show when={characterCounter()} keyed>{counter =>
             <CharacterCounter
+              /* QUAL: Pass a unified state with reading pace accessor instead? */
               state={counter}
+              timerState={sessionTimer}
               onClick={handleCharacterCounterClick}
               onHoldClick={handleCharacterCounterHoldClick}
               />

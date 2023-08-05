@@ -1,18 +1,9 @@
 import { batch, createSignal } from "solid-js";
 
 import type { SessionTimer } from "~/backend";
-import { MINS_IN_HOUR, MSECS_IN_SECS, SECS_IN_MIN } from "~/common/time";
+import { MINS_IN_HOUR, MSECS_IN_SECS, SECS_IN_MIN, Time, defaultTime } from "~/common/time";
 
 const UPDATE_INTERVAL_MS = 1000;
-
-type Time = {
-  h: number,
-  m: number,
-};
-
-function defaultTime(): Time {
-  return { h: 0, m: 0 };
-}
 
 export type SessionTimerState = ReturnType<typeof createSessionTimerState>;
 
