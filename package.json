@@ -12,23 +12,23 @@
     "lint-fix": "eslint --fix ./src/web"
   },
   "devDependencies": {
-    "@solid-devtools/logger": "~0.6.1",
-    "@types/babel__core": "~7.20.0",
-    "@types/node": "~18.15.3",
-    "@typescript-eslint/eslint-plugin": "~5.55.0",
-    "@typescript-eslint/parser": "~5.55.0",
-    "eslint": "~8.36.0",
-    "rimraf": "~4.4.0",
-    "typescript": "~5.0.2",
-    "vite": "~4.2.0",
-    "vite-plugin-solid": "~2.6.1"
+    "@solid-devtools/logger": "~0.7.4",
+    "@types/babel__core": "~7.20.1",
+    "@types/node": "~20.4.8",
+    "@typescript-eslint/eslint-plugin": "~6.2.1",
+    "@typescript-eslint/parser": "~6.2.1",
+    "eslint": "~8.46.0",
+    "rimraf": "~5.0.1",
+    "typescript": "~5.1.6",
+    "vite": "~4.4.8",
+    "vite-plugin-solid": "~2.7.0"
   },
   "dependencies": {
-    "@floating-ui/core": "~1.2.4",
-    "@floating-ui/dom": "~1.2.4",
-    "csstype": "3.1.1",
-    "goober": "2.1.12",
-    "solid-js": "~1.6.14",
+    "@floating-ui/core": "~1.4.1",
+    "@floating-ui/dom": "~1.5.1",
+    "csstype": "3.1.2",
+    "goober": "2.1.13",
+    "solid-js": "~1.7.9",
     "solid-styled-components": "~0.28.5"
   },
   "private": true
