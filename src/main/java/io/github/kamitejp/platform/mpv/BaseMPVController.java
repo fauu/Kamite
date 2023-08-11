@@ -107,7 +107,6 @@ public abstract class BaseMPVController implements MPVController {
       return;
     }
 
-    processedText = subtitleTextMidTransform(processedText);
     processedText = ESCAPED_NEWLINE_RE.matcher(processedText).replaceAll("\n");
     processedText = ESCAPED_QUOTEMARK_RE.matcher(processedText).replaceAll("\"");
 
@@ -126,10 +125,6 @@ public abstract class BaseMPVController implements MPVController {
     } else {
       LOG.warn("Received subtitle time but there was no pending text");
     }
-  }
-
-  protected String subtitleTextMidTransform(String text) {
-    return text; // Pass through
   }
 
   private static String ipcJSONToPrintable(String json) {
