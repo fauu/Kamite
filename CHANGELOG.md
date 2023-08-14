@@ -9,6 +9,15 @@
 
 ## [Unreleased]
 
+### Added
+
+* Approximate reading pace is now displayed in the Character counter (only
+  appears if both Character counter and Session timer have non-zero values).
+
+### Fixed
+
+* Text from Hive OCR now has correctly formatted newlines.
+
 ## [0.13] – 2023-03-17
 
 ### Added
