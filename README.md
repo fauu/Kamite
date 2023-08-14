@@ -558,9 +558,14 @@ installed by pipx and examining its output.
     uninstall manga-ocr
     ```
 
-1. Delete the ~450 MB leftover model file in
-(<ins>Linux</ins>) `~/.cache/huggingface/transformers/`, (<ins>Windows</ins>)
-`C:\Users\<user>\.cache\huggingface\transformers`.
+1. Delete leftover Hugging Face Hub files:
+
+(<ins>Linux</ins>) `~/.cache/huggingface/hub/models--kha-white--manga-ocr-base`
+or a ~450 MB file in `~/.cache/huggingface/transformers/`.
+
+(<ins>Windows</ins>)
+`C:\Users\<user>\.cache\huggingface\hub\models--kha-white--manga-ocr-base` or a
+~450 MB file in `C:\Users\<user>\.cache\huggingface\transformers`.
 
 ###### Troubleshooting “pipx "Manga OCR" installation absent…”
 
