@@ -81,7 +81,7 @@ public class MangaOCRController {
       for (var line = outputReader.readLine(); line != null; line = outputReader.readLine()) {
         LOG.debug("Received output line from \"Manga OCR\": {}", line);
         if (!sentDownloadingEvent && line.startsWith("Downloading")) {
-          LOG.info("\"Manga OCR\" is downloading OCR model. This might take a while");
+          LOG.info("\"Manga OCR\" is downloading its base model. This might take a while");
           //noinspection ObjectAllocationInLoop
           eventCb.accept(new MangaOCREvent.StartedDownloadingModel());
           sentDownloadingEvent = true;
