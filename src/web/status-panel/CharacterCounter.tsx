@@ -29,8 +29,9 @@ export const CharacterCounter: VoidComponent<CharacterCounterProps> = (props) =>
     id="character-counter"
   >
     <div classList={{ [BlinkingClass]: props.state.frozen }}>
-      {props.state.count} <Show when={pace()}>{pace =>
-        <Pace>~{pace()}<PaceUnit>/h</PaceUnit></Pace>
+      <span id="character-count">{props.state.count}</span>
+      <Show when={pace()}>{pace =>
+        <Pace id="reading-pace">~{pace()}<PaceUnit>/h</PaceUnit></Pace>
       }</Show>
     </div>
   </StatusPanelIndicator>;
