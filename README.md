@@ -1044,16 +1044,22 @@ The integration must be enabled in Gomics-v under `Preferences › Kamite`.
 
 ### Visual novel / game text extraction
 
-As far as built-in integrations are concerned, Kamite can receive text extracted
-from other programs through **[Textractor]** and **[Agent]** text extractor
-programs:
+Kamite can receive text extracted from other programs through **[Textractor]**
+and **[Agent]** text extractor programs:
 
 * [Textractor integration](#textractor-integration)
 * [Agent integration](#agent-integration)
 
+There is also a RPG Maker MV/MZ plugin that can directly extract text from games
+using those engines: see
+[`contrib/KamiteSendRPGMaker.js`](contrib/KamiteSendRPGMaker.js) (usage
+instructions are in the plugin file).
+
+Other integrations can be created using the [Command API](#command-api).
+
 > **Note**
-> For games that do not work with Textractor or Agent, the [Region OCR](#region-ocr)
-> feature might prove an alternative.
+> For games that cannot be integrated using the above means, the
+> [Region OCR](#region-ocr) feature might prove an alternative.
 
 #### Textractor integration
 
@@ -1144,8 +1150,8 @@ with `Right click › Run with PowerShell`).
 
 ### Custom source / alternative method text extraction
 
-Custom sources and alternative extraction methods can be integrated using the
-[Command API](#command-api).
+Custom sources and alternative text extraction methods can be integrated using
+the [Command API](#command-api).
 
 ### Filtering and transforming incoming text
 
