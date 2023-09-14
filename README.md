@@ -1052,8 +1052,8 @@ and **[Agent]** text extractor programs:
 
 There is also a RPG Maker MV/MZ plugin that can directly extract text from games
 using those engines: see
-[`contrib/KamiteSendRPGMaker.js`](contrib/KamiteSendRPGMaker.js) (usage
-instructions are in the plugin file).
+[`contrib/KamiteSendRPGMaker.js`](https://github.com/fauu/Kamite/raw/master/contrib/KamiteSendRPGMaker.js)
+(usage instructions are in the plugin file).
 
 Other integrations can be created using the [Command API](#command-api).
 

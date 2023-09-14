@@ -6,8 +6,8 @@
 /*
  * Usage (might not work for some games):
  *
- *   1. Move this file to `<Game dir>/www/js/plugins/` or `<Game dir>/js/plugins/` (depending on
- *      which directory is present).
+ *   1. Save this file as `KamiteSendRPGMaker.js` to `<Game dir>/www/js/plugins/` or
+ *      `<Game dir>/js/plugins/` (depending on which directory is present).
  *
  *      If neither `www/` nor `js/` exists, you might try to extract game data from `Game.exe` using
  *      Enigma Virtual Box unpacker: https://lifeinhex.com/tag/enigma-virtual-box/.
