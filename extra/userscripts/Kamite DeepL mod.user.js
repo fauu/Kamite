@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kamite DeepL mod
 // @description  Improves DeepL user experience when embedded into Kamite
-// @version      2.0.2
+// @version      2.0.3
 // @match        https://www.deepl.com/translator*
 // @icon         https://www.google.com/s2/favicons?domain=deepl.com
 // @grant        GM_addStyle
@@ -10,11 +10,20 @@
 // @downloadURL  https://github.com/fauu/Kamite/raw/master/extra/userscripts/Kamite%20DeepL%20mod.user.js
 // ==/UserScript==
 
+let embedded = false;
+try {
+  window.parent.location.href;
+} catch(e) {
+  embedded = true;
+}
+
 (function() {
   "use strict";
 
+  let newVariant = false;
+
   function main() {
-    if (window === window.parent) {
+    if (!embedded) {
       return;
     }
 
@@ -55,16 +64,36 @@
 
   function setupUI() {
     document.body.className = "";
-    document.querySelector(".dl_translator_page_container").style.display = "none";
+    const mainWrapperEl = document.querySelector("#gatsby-focus-wrapper");
+    if (mainWrapperEl) {
+      mainWrapperEl.style.display = "none";
+      newVariant = true;
+    } else {
+      document.querySelector(".dl_translator_page_container").style.display = "none";
+    }
 
-    const inputTextareaEl = document.querySelector(".lmt__source_textarea");
+    const inputTextareaEl = document.querySelector(newVariant ? "d-textarea[aria-labelledby='translation-source-heading']" : ".lmt__source_textarea");
 
     const inputContainerEl = document.createElement("div");
     inputContainerEl.className = "input-container";
+    if (!newVariant) {
+      inputContainerEl.style.marginTop = "0.2rem";
+    }
 
     const inputEl = inputTextareaEl.querySelector("div[contenteditable=true]");
+    window.inputEl = inputEl;
     inputEl.className = "input";
-    inputEl.addEventListener("input", () => inputTextareaEl.dispatchEvent(new Event("input")));
+    inputEl.addEventListener("input", () => {
+      if (newVariant) {
+        inputTextareaEl.querySelector("div[contenteditable=true]").innerHTML = inputEl.innerHTML;
+      }
+      inputTextareaEl.dispatchEvent(new Event("input"));
+    });
+
+    if (newVariant) {
+      handleHashChange();
+      addEventListener("hashchange", handleHashChange);
+    }
 
     inputContainerEl.append(inputEl);
     document.body.append(inputContainerEl);
@@ -76,21 +105,37 @@
     copyOutputsTo(outputEl);
   }
 
+  function handleHashChange() {
+    const hashSegs = window.location.hash.split("/");
+    window.inputEl.textContent = decodeURI(hashSegs[hashSegs.length - 1]);
+  }
+
   function copyOutputsTo(outputEl) {
-    const handleTargetMutation = () => {
-      outputEl.innerHTML = "";
-      for (const el of document.querySelectorAll(".lmt__translations_as_text__text_btn")) {
-        const altEl = document.createElement("div");
-        altEl.className = "output-alternative";
-        altEl.textContent = el.textContent;
-        outputEl.append(altEl);
+    const handleTargetMutation = (mutations) => {
+      const altEls = [];
+      if (newVariant) {
+        altEls.push(createOutputAlternativeEl(mutations[0].target.textContent));
       }
+      const container = newVariant
+        ? mutations[0].target.parentElement.parentElement.querySelectorAll("ul[aria-labelledby='alternatives-heading'] li span:first-child")
+        : document.querySelectorAll(".lmt__translations_as_text__text_btn");
+      for (const el of container) {
+        altEls.push(createOutputAlternativeEl(el.textContent));
+      }
+      outputEl.replaceChildren(...altEls);
     };
+
+    const targetEl = document.querySelector(newVariant ? "d-textarea[aria-labelledby='translation-target-heading'] > div[contenteditable=true]" : "d-textarea > div");
+
     const targetElObserver = new MutationObserver(handleTargetMutation);
-    targetElObserver.observe(
-      document.querySelector("d-textarea > div"),
-      { childList: true }
-    );
+    targetElObserver.observe(targetEl, { childList: true });
+  }
+
+  function createOutputAlternativeEl(content) {
+    const altEl = document.createElement("div");
+    altEl.className = "output-alternative";
+    altEl.textContent = content;
+    return altEl;
   }
 
   function addCSS() {
