@@ -5,7 +5,7 @@ import type { Chunk } from "./Chunk";
 export type ChunkTextSelectionState = ReturnType<typeof createChunkTextSelectionState>;
 
 export type ChunkTextSelection = {
-  range: [number, number],
+  range: [start: number, end: number],
   anchor?: number,
 };
 
