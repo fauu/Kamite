@@ -84,6 +84,8 @@ import io.github.kamitejp.status.PlayerStatus;
 import io.github.kamitejp.status.ProgramStatus;
 import io.github.kamitejp.status.SessionTimer;
 import io.github.kamitejp.textprocessing.TextProcessor;
+import io.github.kamitejp.textprocessing.jumanpp.JumanppAdapter;
+import io.github.kamitejp.textprocessing.jumanpp.JumanppLoadingException;
 import io.github.kamitejp.textprocessing.kuromoji.KuromojiAdapter;
 import io.github.kamitejp.universalfeature.UnavailableAutoFurigana;
 import io.github.kamitejp.universalfeature.UnavailableUniversalFeature;
@@ -114,6 +116,7 @@ public class Kamite {
   private TextProcessor textProcessor;
   private MPVController mpvController;
   private AgentClient agentClient;
+  private JumanppAdapter jumanppAdapter;
   private ChunkCheckpoint chunkCheckpoint;
   private ChunkFilter chunkFilter;
   private ChunkTransformer chunkTransformer;
@@ -175,6 +178,16 @@ public class Kamite {
           "`chunk.furigana.enable` is turned on, but a library needed for generating furigana is"
           + " not available"
         );
+      }
+    }
+
+    // XXX
+    jumanppAdapter = new JumanppAdapter(platform);
+    if (args.containsKey("jumanTest")) {
+      try {
+        jumanppAdapter.start();
+      } catch (JumanppLoadingException e) {
+        e.printStackTrace();
       }
     }
 
@@ -343,6 +356,9 @@ public class Kamite {
     mpvController.destroy();
     if (agentClient != null) {
       agentClient.destroy();
+    }
+    if (jumanppAdapter != null) {
+      jumanppAdapter.destroy();
     }
     if (chunkLogger != null) {
       chunkLogger.finalizeLog();
@@ -773,10 +789,13 @@ public class Kamite {
             LOG.warn("Received an empty chunk enhancements request");
           case 1 -> {
             enhancements = switch (body.enhancements().get(0)) {
-              case FURIGANA ->
-                textProcessor.addFurigana(body.text())
+              case FURIGANA -> {
+                String text = body.text();
+                jumanppAdapter.test(text);
+                yield textProcessor.addFurigana(text)
                   .map(maybeRubies -> ChunkEnhancements.ofFuriganaMaybeRubies(maybeRubies))
                   .orElse(null);
+              }
             };
           }
           default ->

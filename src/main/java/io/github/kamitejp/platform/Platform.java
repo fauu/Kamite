@@ -1,6 +1,8 @@
 package io.github.kamitejp.platform;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.List;
@@ -23,6 +25,7 @@ import io.github.kamitejp.platform.windows.WindowsPlatform;
 import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionOpError;
+import io.github.kamitejp.util.Hashing;
 import io.github.kamitejp.util.Result;
 
 public interface Platform {
@@ -83,6 +86,34 @@ public interface Platform {
 
   default String getPlatformSpecificDirName(CPUArchitecture forCPUArch) {
     return "%s-%s".formatted(getName(), forCPUArch == null ? "generic" : forCPUArch);
+  }
+
+  default Result<File, DependencyFileVerificationError> getVerifiedDependencyFile(
+    String filename,
+    long expectedCRC32
+  ) {
+    var maybeFilePath = getDataDirPath().map(p -> p.resolve(filename));
+    if (maybeFilePath.isEmpty()) {
+      return Result.Err(DependencyFileVerificationError.COULD_NOT_DETERMINE_PATH);
+    }
+
+    var filePath = maybeFilePath.get();
+    var file = filePath.toFile();
+    if (!file.canRead()) {
+      return Result.Err(DependencyFileVerificationError.NO_READABLE_FILE_AT_PATH);
+    }
+
+    try {
+      var fileCRC32 = Hashing.crc32(file);
+      if (fileCRC32 != expectedCRC32) {
+        return Result.Err(DependencyFileVerificationError.HASH_DOES_NOT_MATCH);
+      }
+    } catch (IOException e) {
+      LOG.error("Exception while hashing dependency file", e);
+      return Result.Err(DependencyFileVerificationError.COULD_NOT_COMPUTE_HASH);
+    }
+
+    return Result.Ok(file);
   }
 
   static Platform createSuitable() {

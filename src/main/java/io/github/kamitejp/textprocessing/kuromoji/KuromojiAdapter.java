@@ -1,6 +1,5 @@
 package io.github.kamitejp.textprocessing.kuromoji;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
@@ -15,8 +14,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.platform.Platform;
-import io.github.kamitejp.util.Hashing;
-import io.github.kamitejp.util.Result;
 
 public class KuromojiAdapter {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
@@ -78,39 +75,14 @@ public class KuromojiAdapter {
     }
   }
 
-  private Result<File, KuromojiLibraryVerificationError> getVerifiedLibraryFile() {
-    var maybeJARPath = platform.getDataDirPath().map(p -> p.resolve(JAR_FILENAME));
-    if (maybeJARPath.isEmpty()) {
-      return Result.Err(KuromojiLibraryVerificationError.COULD_NOT_DETERMINE_PATH);
-    }
-
-    var jarPath = maybeJARPath.get();
-    var jarFile = jarPath.toFile();
-    if (!jarFile.canRead()) {
-      return Result.Err(KuromojiLibraryVerificationError.NO_READABLE_FILE_AT_PATH);
-    }
-
-    try {
-      var jarCRC32 = Hashing.crc32(jarFile);
-      if (jarCRC32 != JAR_CRC32) {
-        return Result.Err(KuromojiLibraryVerificationError.HASH_DOES_NOT_MATCH);
-      }
-    } catch (IOException e) {
-      LOG.error("Exception while hashing Kuromoji JAR file", e);
-      return Result.Err(KuromojiLibraryVerificationError.COULD_NOT_COMPUTE_HASH);
-    }
-
-    return Result.Ok(jarFile);
-  }
-
   public boolean isKuromojiAvailable() {
-    return getVerifiedLibraryFile().isOk();
+    return platform.getVerifiedDependencyFile(JAR_FILENAME, JAR_CRC32).isOk();
   }
 
   private void loadLibrary() throws KuromojiLoadingException {
-    LOG.info("Loading Kuromoji");
+    LOG.info("Loading Kuromoji morphological analyzer");
 
-    var maybeVerifiedJAR = getVerifiedLibraryFile();
+    var maybeVerifiedJAR = platform.getVerifiedDependencyFile(JAR_FILENAME, JAR_CRC32);
     if (maybeVerifiedJAR.isErr()) {
       throw new KuromojiLoadingException(
         "Do not have valid Kuromoji JAR file: %s".formatted(maybeVerifiedJAR.err())
