@@ -303,6 +303,40 @@ export class ChunkLabel {
       return 0.5;
     }
   }
+
+  highlightRange(range: [start: number, end: number]) {
+    const charEls = this.#getRangeCharElements(range);
+    if (charEls.length === 0) {
+      return;
+    }
+    const highlightRange = new Range();
+    highlightRange.setStart(charEls[0].firstChild!, 0);
+    const endEl = charEls[charEls.length - 1].firstChild!;
+    highlightRange.setEnd(endEl, endEl.textContent!.length);
+    const browserSelection = document.getSelection()!;
+    browserSelection.removeAllRanges();
+    browserSelection.addRange(highlightRange);
+  }
+
+  #getRangeCharElements(range: [start: number, end: number]): HTMLElement[] {
+    const els: HTMLElement[] = [];
+    this.#forCharElement((charEl, rawCharIdx) => {
+      const idx = parseInt(rawCharIdx);
+      if (idx >= range[0] && idx <= range[1]) {
+        els.push(charEl);
+      }
+    });
+    return els;
+  }
+
+  static isCharElement(el: HTMLElement): boolean {
+    return !!el.dataset[ChunkCharIdxAttrName];
+  }
+
+  static charIdxOfElement(el: HTMLElement): number | null {
+    const rawIdx = el.dataset[ChunkCharIdxAttrName];
+    return (rawIdx && parseInt(rawIdx)) || null;
+  }
 }
 
 const RootClass = css`
@@ -313,6 +347,12 @@ const RootClass = css`
   position: relative;
   box-sizing: content-box;
   margin-top: var(--text-margin-top);
+
+  /* Fix for 'window.getSelection().toString()' only returning the first and the last character */
+  * {
+    user-select: text !important;
+    cursor: default;
+  }
 
   /* Sub-root */
   #${ChunkLabelId} {

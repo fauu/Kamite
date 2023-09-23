@@ -44,12 +44,17 @@ interface Server {
 interface Chunk {
   flash: boolean,
   furigana: Furigana,
+  selection: Selection,
   translationOnlyMode: boolean,
 }
 
 interface Furigana {
   enable: boolean,
   conceal: boolean,
+}
+
+interface Selection {
+  autoHighlight: boolean,
 }
 
 interface Keybindings {

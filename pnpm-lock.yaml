@@ -11,6 +11,9 @@ dependencies:
   '@floating-ui/dom':
     specifier: ~1.5.1
     version: 1.5.1
+  '@solid-primitives/scheduled':
+    specifier: ~1.4.1
+    version: 1.4.1(solid-js@1.7.9)
   csstype:
     specifier: 3.1.2
     version: 3.1.2
@@ -757,7 +760,7 @@ packages:
       '@solid-primitives/keyboard': 1.2.3(solid-js@1.7.9)
       '@solid-primitives/platform': 0.0.105(solid-js@1.7.9)
       '@solid-primitives/rootless': 1.4.1(solid-js@1.7.9)
-      '@solid-primitives/scheduled': 1.4.0(solid-js@1.7.9)
+      '@solid-primitives/scheduled': 1.4.1(solid-js@1.7.9)
       '@solid-primitives/static-store': 0.0.4(solid-js@1.7.9)
       '@solid-primitives/utils': 6.2.0(solid-js@1.7.9)
       solid-js: 1.7.9
@@ -785,7 +788,7 @@ packages:
       '@solid-primitives/media': 2.2.3(solid-js@1.7.9)
       '@solid-primitives/refs': 1.0.4(solid-js@1.7.9)
       '@solid-primitives/rootless': 1.4.1(solid-js@1.7.9)
-      '@solid-primitives/scheduled': 1.4.0(solid-js@1.7.9)
+      '@solid-primitives/scheduled': 1.4.1(solid-js@1.7.9)
       '@solid-primitives/static-store': 0.0.4(solid-js@1.7.9)
       '@solid-primitives/styles': 0.0.110(solid-js@1.7.9)
       '@solid-primitives/utils': 6.2.0(solid-js@1.7.9)
@@ -892,13 +895,12 @@ packages:
       solid-js: 1.7.9
     dev: true
 
-  /@solid-primitives/scheduled@1.4.0(solid-js@1.7.9):
-    resolution: {integrity: sha512-j4xMdsvluO8xv+M62gSUrUEKiqT0qlymM9PhXiqIzpnRNm5rrP+bHpG0BDhqkNe6fDEDb+W1L7OCmiG+qveBvQ==}
+  /@solid-primitives/scheduled@1.4.1(solid-js@1.7.9):
+    resolution: {integrity: sha512-OLcNXwYpX7HUOEqNPcmR31dkyI1E2imkMDBRlqsGT0ZhJV1L2g0TEREpo4nm/kUhh8LVQzkfnxS+GONx9kh90A==}
     peerDependencies:
       solid-js: ^1.6.12
     dependencies:
       solid-js: 1.7.9
-    dev: true
 
   /@solid-primitives/static-store@0.0.4(solid-js@1.7.9):
     resolution: {integrity: sha512-NcLtDNA6H+Z9LmqaUe4SKfMx0YbszIMXEqfV15cB34t5XyEeOM5TihYwsVJ/dpkmpHYzflm0SwAL+P9uwyzvWQ==}

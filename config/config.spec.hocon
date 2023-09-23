@@ -27,6 +27,10 @@ chunk: {
     conceal: "boolean | false"
   }
 
+  selection: {
+    autoHighlight: "boolean | false"
+  }
+
   #@optional
   transforms: [{
     replace: string

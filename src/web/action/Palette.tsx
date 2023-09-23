@@ -24,7 +24,7 @@ const HOVER_SCROLL_INTERVAL_MS = 10;
 const HOVER_SCROLL_STEP_PX = 20;
 
 interface ActionPaletteProps {
-  actions: Action[],
+  actions?: Action[],
   targetText?: string,
   onAction: (action: Action, invokation: ActionInvocation) => void,
   ref: Ref<HTMLDivElement>,

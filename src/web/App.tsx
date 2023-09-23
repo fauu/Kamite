@@ -1,4 +1,6 @@
+import { createScheduled, debounce } from "@solid-primitives/scheduled";
 import {
+  Accessor,
   batch, createEffect, createMemo, createSignal, on, onMount, Show, untrack, type VoidComponent
 } from "solid-js";
 import { createStore } from "solid-js/store";
@@ -22,6 +24,7 @@ import {
 import {
   ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState, type Chunk
 } from "~/chunk";
+import { ChunkLabel } from "~/chunk/label";
 import {
   availableCommandPaletteCommands, CommandPalette, commandPrepareForDispatch
 } from "~/command";
@@ -45,7 +48,7 @@ import {
 import { ChromeClass, GlobalStyles } from "~/style";
 
 import { integrateClipboardInserter } from "./clipboardInserter";
-import { ChunkCharIdxAttrName, ChunkLabelId, RootId } from "./dom";
+import { ChunkLabelId, RootId } from "./dom";
 import { createEventNotifier } from "./eventNotifier";
 import { SHOW_FURIGANA_DISABLED_MSG } from "./features";
 import { useGlobalTooltip } from "./GlobalTooltip";
@@ -134,8 +137,13 @@ export const App: VoidComponent = () => {
       playerStatus(),
       config(),
     ));
-  const availableActions =
-    createMemo(() => getAvailableActions(chunks));
+
+  const availableActionsScheduled = createScheduled(fn => debounce(fn, 50));
+  const availableActions: Accessor<Action[] | undefined> = createMemo(actions => {
+    const newActions = getAvailableActions(chunks);
+    return availableActionsScheduled() ? newActions : actions;
+  });
+
   const availableChunkHistoryActions =
     createMemo(() => getAvailableChunkHistoryActions(chunks));
 
@@ -148,11 +156,15 @@ export const App: VoidComponent = () => {
       return;
     }
     settings.forEach(s => handleSettingChangeRequest(s.id, s.configKey(c)));
+
     mainSectionEl && notebook.syncHeight(c);
+
     if (import.meta.env.DEV && c.dev.serveStaticInDevMode) {
       notifyUser("warning", "serveStaticInDevMode override is enabled");
     }
+
     notebook.updateLookupTabs(c.lookup?.targets ?? []);
+
     sessionTimer.setAutoPauseIntervalS(
       (c.sessionTimer.autoPause.enable && c.sessionTimer.autoPause.after) || undefined
     );
@@ -225,11 +237,12 @@ export const App: VoidComponent = () => {
     const targetEl = event.target as HTMLElement;
     switch (event.button) {
       case 0: { // Left
-        const charIdxS = targetEl.dataset[ChunkCharIdxAttrName];
-        if (charIdxS) { // Mouse over chunk character
+        if (ChunkLabel.isCharElement(targetEl)) {
           // Initiate selection starting inside chunk label
-          const charIdx = parseInt(charIdxS);
-          chunks.textSelection.set({ range: [charIdx, charIdx], anchor: charIdx });
+          const chIdx = ChunkLabel.charIdxOfElement(targetEl)!;
+          chunks.textSelection.set({ range: [chIdx, chIdx], anchor: chIdx });
+          // Prevents dragging when auto highlight is on
+          event.preventDefault();
         } else {
           if (chunks.editing() && commandPaletteEl && commandPaletteEl.contains(targetEl)) {
             // Prevent deselecting chunk input text so that the selected part can be replaced with
@@ -246,6 +259,10 @@ export const App: VoidComponent = () => {
               && !actionPaletteEl?.contains(targetEl);
             if (insideSelectionClearningEl) {
               chunks.textSelection.set(undefined);
+              document.getSelection()?.removeAllRanges();
+              // Needs to be triggered manually because otherwise it's delayed for the purposes of the
+              // `select-highlighted` action
+              chunks.setTextHighlight(undefined);
             }
           }
 
@@ -260,14 +277,40 @@ export const App: VoidComponent = () => {
         }
       }
         break;
-      case 1: { // Middle
+
+      case 1: // Middle
         setMiddleMouseButtonLikelyDown(true);
-      }
+        // Prevents characters highlighting when middle-clicking on the chunk
+        event.preventDefault();
+        break;
+
+      case 2: // Right
+        if (assumeChrome) {
+          // Prevents characters highlighting when right-clicking on the chunk on Chrome
+          event.preventDefault();
+        }
         break;
     }
   };
 
-  document.addEventListener("contextmenu", (event: Event) => event.preventDefault());
+  document.addEventListener("contextmenu", (event: Event) => {
+    if (shouldPreventContextMenu(event.target as HTMLElement)) {
+      event.preventDefault();
+    }
+  });
+
+  function shouldPreventContextMenu(targetEl: HTMLElement): boolean {
+    if (config()?.chunk.selection?.autoHighlight) {
+      const range = chunks.textSelection.get()?.range;
+      if (range) {
+        const chIdx = ChunkLabel.charIdxOfElement(targetEl);
+        if (chIdx && chIdx >= range[0] && chIdx <= range[1]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
   const handleRootMouseUp = (event: MouseEvent) => {
     handleActivity();
@@ -299,11 +342,7 @@ export const App: VoidComponent = () => {
         notebook.resizeTick(themeLayoutFlippedMemo(), event.movementY);
       } else {
         const el = event.target as HTMLElement;
-        let charIdxStr: string | undefined;
-        if (el.dataset) {
-          charIdxStr = el.dataset[ChunkCharIdxAttrName];
-        }
-        if (charIdxStr) { // Mouse over chunk character
+        if (ChunkLabel.isCharElement(el)) {
           // Set the chunk selection to include the hovered character
           const anchor =
             chunks.textSelection.inProgress()
@@ -311,12 +350,13 @@ export const App: VoidComponent = () => {
             : event.movementY > 0
               ? 0 // New selection from above, use 1st char as anchor
               : chunks.current().text.length - 1; // New sel. from below, use last char as anchor
-          const range = [parseInt(charIdxStr), anchor] as [number, number];
+          const range = [ChunkLabel.charIdxOfElement(el), anchor] as [number, number];
           range.sort((a, b) => a - b);
           chunks.textSelection.set({ range, anchor });
         } else if (chunks.textSelection.inProgress()) {
           // Update chunk selection to include characters between the anchor and the cursor
-          // QUAL: Is there a better way of passing this?
+          // QUAL: Should probably have a reference to ChunkLabel and move some of this code to its
+          //       internal methods
           const labelEl = document.getElementById(ChunkLabelId)!;
           const lastChunkElIdx = labelEl.childElementCount - 1;
           const lastChunkEl = labelEl.childNodes[lastChunkElIdx] as HTMLElement;
@@ -696,13 +736,11 @@ export const App: VoidComponent = () => {
     const anchorParentEl = selection?.anchorNode?.parentElement;
 
     // Register the extent of a browser native selection in chunk (from Yomichan hover, etc.)
-    const selectingInChunk = anchorParentEl?.dataset[ChunkCharIdxAttrName] !== undefined;
-    if (selectingInChunk) {
-      const focusParentEl = selection?.focusNode?.parentElement;
+    if (anchorParentEl && ChunkLabel.isCharElement(anchorParentEl)) {
+      const focusParentEl = selection!.focusNode!.parentElement!;
       // ASSUMPTION: Selection always made left-to-right
       chunks.setTextHighlight(
-        [anchorParentEl, focusParentEl]
-          .map(el => parseInt(el!.dataset[ChunkCharIdxAttrName]!)) as [number, number]
+        [anchorParentEl, focusParentEl].map(ChunkLabel.charIdxOfElement) as [number, number]
       );
     } else {
       setTimeout(() => {
@@ -775,6 +813,7 @@ export const App: VoidComponent = () => {
           onInput={handleChunkInput}
           inputRef={el => chunkInputEl = el}
           labelAndTranslationRef={el => chunkLabelAndTranslationEl = el}
+          labelSelectionAutoHighlight={() => config()?.chunk.selection.autoHighlight || false}
         />
         <StatusPanel
           fade={statusPanelFader.shouldFade()}

@@ -1,4 +1,4 @@
-import { createEffect, type Accessor, type VoidComponent } from "solid-js";
+import { createEffect, on, type Accessor, type VoidComponent } from "solid-js";
 
 import type { ChunksState } from "~/chunk";
 import {
@@ -10,6 +10,7 @@ import { ChunkLabel } from "./Label";
 interface ChunkLabelWrapperProps {
   chunksState: ChunksState,
   movingMouseWhilePrimaryDown: Accessor<boolean>,
+  selectionAutoHighlight: Accessor<boolean>,
 }
 
 export const ChunkLabelWrapper: VoidComponent<ChunkLabelWrapperProps> = (props) => {
@@ -17,7 +18,12 @@ export const ChunkLabelWrapper: VoidComponent<ChunkLabelWrapperProps> = (props) 
 
   createEffect(() => label.setChunk(props.chunksState.current()));
 
-  createEffect(() => label.setSelection(props.chunksState.textSelection.get()));
+  createEffect(on(props.chunksState.textSelection.get, (selection) => {
+    label.setSelection(selection);
+    if (selection && props.selectionAutoHighlight()) {
+      label.highlightRange(selection.range);
+    }
+  }));
 
   createEffect(() => label.setHighlight(props.chunksState.textHighlight()));
 

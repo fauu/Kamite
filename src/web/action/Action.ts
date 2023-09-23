@@ -50,7 +50,13 @@ export const actionKinds: Readonly<Record<Action["kind"], ActionKind>> = {
 
 export type ActionInvocation = "base" | "alternative";
 
-export function actionsInclude(actions: Action[], kind: Action["kind"] | Action["kind"][]) {
+export function actionsInclude(
+  actions: Action[] | undefined,
+  kind: Action["kind"] | Action["kind"][]
+) {
+  if (!actions) {
+    return;
+  }
   const manyKinds = Array.isArray(kind);
   return actions.some(a => manyKinds ? kind.includes(a.kind) : kind === a.kind);
 }
