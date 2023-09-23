@@ -113,6 +113,7 @@ Kamite is cost-free and is licensed under the GNU AGPL v3 or later.
 1. [Text use](#text-use)
     * [Editing and transforming the text](#editing-and-transforming-the-text)
     * [Pop-up dictionary](#pop-up-dictionary)
+    * [Other web browser extensions](#other-web-browser-extensions)
     * [Lookups](#lookups)
     * [Auto-generated furigana](#auto-generated-furigana)
     * [Saving text to a file for external use](#saving-text-to-a-file-for-external-use)
@@ -1290,6 +1291,22 @@ Yomichan Frequency Dictionaries][anacreon-yomichan-freq].
 [themoeway-yomichan]: https://learnjapanese.moe/yomichan/
 [anacreon-yomichan-freq]: https://anacreondjt.gitlab.io/docs/freq/
 
+### Other web browser extensions
+
+Some web browser extensions that act on preselected text could also be useful.
+For compatibility with such extensions, you will need to set
+`chunk.selection.autoHighlight` to `yes` in the [config](#config). This setting
+makes the web browser’s internal text selection reflect Kamite’s text selection
+within the current text chunk. It also enables the browser’s native right-click
+context menu for selected chunk text.
+
+An example of a browser extension which can be used with this setup is the DeepL
+Translate extension ([Firefox][deepl-browser-ff],
+[Chrome][deepl-browser-chrome]).
+
+[deepl-browser-ff]: https://addons.mozilla.org/en-US/firefox/addon/deepl-translate/
+[deepl-browser-chrome]: https://chrome.google.com/webstore/detail/deepl-translate-reading-w/cofdbpoegempjloogbagkncekinflcnj
+
 ### Lookups
 
 You can use the text chunks within Kamite as inputs for lookups on external
@@ -1301,6 +1318,10 @@ the current chunk, it is only the selection that will be used for lookups.
 By default, Kamite embeds the following sites for quick lookups:
 <https://www.deepl.com/>, <https://ichi.moe/>, <https://jpdb.io/>. It also by
 default provides a button for Google Images lookup in a new browser tab.
+
+> **Note**
+> An alternative to using DeepL as a lookup is to use the DeepL web browser
+> extension. See [Other web browser extensions](#other-web-browser-extensions).
 
 Optional userscripts are provided for the embedded sites that modify their look
 when embedded into Kamite to improve their user experience. To install or update
@@ -1737,6 +1758,15 @@ chunk: {
     # matching chunk will be rejected entirely. See the "Filtering chunks"
     # section of the Readme
     rejectPatterns: […]
+  }
+
+  # [RELOADABLE]
+  selection: {
+    # Synchronize the web browser selection with the chunk text selection.
+    # Necessasry when using browser addons that operate on selected text.
+    # This setting also enables the browser right-click context menu for
+    # selected chunk text.
+    autoHighlight: no
   }
 
   # [RELOADABLE] A *list* of objects describing text replacement rules for
