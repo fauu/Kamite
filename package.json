@@ -13,23 +13,23 @@
   },
   "devDependencies": {
     "@solid-devtools/logger": "~0.7.4",
-    "@types/babel__core": "~7.20.1",
-    "@types/node": "~20.4.8",
-    "@typescript-eslint/eslint-plugin": "~6.2.1",
-    "@typescript-eslint/parser": "~6.2.1",
-    "eslint": "~8.46.0",
+    "@types/babel__core": "~7.20.2",
+    "@types/node": "~20.6.3",
+    "@typescript-eslint/eslint-plugin": "~6.7.2",
+    "@typescript-eslint/parser": "~6.7.2",
+    "eslint": "~8.50.0",
     "rimraf": "~5.0.1",
-    "typescript": "~5.1.6",
-    "vite": "~4.4.8",
+    "typescript": "~5.2.2",
+    "vite": "~4.4.9",
     "vite-plugin-solid": "~2.7.0"
   },
   "dependencies": {
-    "@floating-ui/core": "~1.4.1",
-    "@floating-ui/dom": "~1.5.1",
+    "@floating-ui/core": "~1.5.0",
+    "@floating-ui/dom": "~1.5.3",
     "@solid-primitives/scheduled": "~1.4.1",
     "csstype": "3.1.2",
     "goober": "2.1.13",
-    "solid-js": "~1.7.9",
+    "solid-js": "~1.7.12",
     "solid-styled-components": "~0.28.5"
   },
   "private": true
