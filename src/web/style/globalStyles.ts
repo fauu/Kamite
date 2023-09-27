@@ -8,18 +8,18 @@ setup(cssPrefixer);
 
 export const GlobalStyles = createGlobalStyles`
   :root {
-    --color-bgm2: #201D1B;
-    --color-bgm1: #252320;
-    --color-bg: #383532;
-    --color-bg-hl: #403D3A;
-    --color-bg2: #484542;
-    --color-bg2-hl: #504D4A;
-    --color-bg3: #585552;
-    --color-bg3-hl: #605D5A;
-    --color-bg4: #686562;
-    --color-med: #787572;
-    --color-med2: #888583;
-    --color-med3: #989593;
+    --color-bgm2: #1d1a19;
+    --color-bgm1: #22201e;
+    --color-bg: #353230;
+    --color-bg-hl: #3d3a38;
+    --color-bg2: #454240;
+    --color-bg2-hl: #4d4a48;
+    --color-bg3: #555250;
+    --color-bg3-hl: #5d5a58;
+    --color-bg4: #656260;
+    --color-med: #757270;
+    --color-med2: #868280;
+    --color-med3: #969290;
     --color-fg: #ffffff;
     --color-fg2: #f8f5f2;
     --color-fg3: #e8e5e2;
