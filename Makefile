@@ -122,8 +122,8 @@ lint-spotbugs:
 
 lint-pmd:
 	export PMD_JAVA_OPTS=--enable-preview
-	pmd --use-version java-19-preview -d src/main/java -f text \
-		-R support/definitions/pmd-ruleset.xml
+	pmd check --use-version java-21-preview -d src/main/java -f text \
+	  -R support/definitions/pmd-ruleset.xml
 .PHONY: lint-pmd
 
 lint-ts:
