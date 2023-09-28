@@ -335,7 +335,10 @@ export class ChunkLabel {
 
   static charIdxOfElement(el: HTMLElement): number | null {
     const rawIdx = el.dataset[ChunkCharIdxAttrName];
-    return (rawIdx && parseInt(rawIdx)) || null;
+    if (rawIdx) {
+      return parseInt(rawIdx);
+    }
+    return null;
   }
 }
 
