@@ -330,7 +330,7 @@ export class ChunkLabel {
   }
 
   static isCharElement(el: HTMLElement): boolean {
-    return !!el.dataset[ChunkCharIdxAttrName];
+    return !!(el.dataset && el.dataset[ChunkCharIdxAttrName]);
   }
 
   static charIdxOfElement(el: HTMLElement): number | null {
