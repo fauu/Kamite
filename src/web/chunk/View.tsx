@@ -79,6 +79,8 @@ const SpinnerContainer = styled.div`
 const ChunkLabelAndTranslation = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: ${p => !themeLayoutFlipped(p.theme) ? "column" : "column-reverse"};
 `;
 
 const ChunkInputWrapper = styled.div`
