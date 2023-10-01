@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # Kamite DeepLX: fetch DeepL translation of given JP text through DeepLX and send it to Kamite
