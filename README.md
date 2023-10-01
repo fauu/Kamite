@@ -1302,6 +1302,14 @@ By default, Kamite embeds the following sites for quick lookups:
 <https://www.deepl.com/>, <https://ichi.moe/>, <https://jpdb.io/>. It also by
 default provides a button for Google Images lookup in a new browser tab.
 
+> **Note**
+> A faster and more robust alternative to using DeepL as a Kamite lookup is to
+> use a scripting-friendly DeepL API client in combination with Kamite’s custom
+> command mechanism.\
+> The Wiki contains [a Linux recipe][wiki-deeplx-linux] for how to use the
+> [DeepLX][deeplx] program to get DeepL translations into Kamite’s chunk
+> translation component on button click.
+
 Optional userscripts are provided for the embedded sites that modify their look
 when embedded into Kamite to improve their user experience. To install or update
 the scripts, first install a userscript browser extension such as [Violentmonkey]
@@ -1312,6 +1320,11 @@ or [Tampermonkey], and then open the links below and follow the prompt.
 * [Kamite ichi.moe mod](https://github.com/fauu/Kamite/raw/master/extra/userscripts/Kamite%20ichi.moe%20mod.user.js)
 
 * [Kamite jpdb mod](https://github.com/fauu/Kamite/raw/master/extra/userscripts/Kamite%20jpdb%20mod.user.js)
+
+[deeplx]: https://github.com/OwO-Network/DeepLX
+
+[wiki-deeplx-linux]:
+https://github.com/fauu/Kamite/wiki/Linux-recipes#translate-text-with-deepl-through-deeplx
 
 **DeepL and jpdb require yet another intervention to work**. A browser extension
 to slightly modify the responses from those sites is required to make them available
