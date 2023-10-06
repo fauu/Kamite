@@ -50,6 +50,8 @@ else
   text="$2"
 fi
 
+text=${text//$'\n'/}
+
 res=$(curl -s -X POST \
   -d '{"text":"'"$text"'","source_lang":"JA","target_lang":"'"$1"'"}' \
   $DEEPLX_ENDPOINT)
