@@ -57,7 +57,7 @@ res=$(curl -s -X POST \
   $DEEPLX_ENDPOINT)
 
 # NOTE: Alternative translations (`alternatives`) are currently ignored
-translation=$(jq -r '.data' <<< "$res")
+translation=$(jq -r '.data' <<< "$res" | sed "s/\"/\\\\\"/g")
 if [[ $translation == 'null' ]]; then
   notify-send "$NAME" 'Error fetching translation'
   exit 1
