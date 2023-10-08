@@ -9,7 +9,7 @@ launchBrowser: "boolean | true"
 
 chunk: {
   correct: true
-  throttleMS: "int | 1000"
+  throttleMS: "int | 200"
   translationOnlyMode: false
   flash: true
 
