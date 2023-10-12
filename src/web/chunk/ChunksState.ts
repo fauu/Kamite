@@ -195,6 +195,14 @@ export function createChunksState(
       : void unenhanceCurrentWithFurigana();
   }));
 
+  createEffect(() => {
+    if (!textSelection.get()) {
+      // Syncing for the selection removal case
+      setTextHighlight(undefined);
+      document.getSelection()?.removeAllRanges();
+    }
+  });
+
   // Make those two mutually exclusive: 1) text selection within the current chunk, and 2) selection
   // within chunk history window involving more than just the current chunk. This is necessary to
   // unambiguously determine `effectiveText`

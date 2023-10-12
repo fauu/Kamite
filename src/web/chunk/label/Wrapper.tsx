@@ -20,7 +20,7 @@ export const ChunkLabelWrapper: VoidComponent<ChunkLabelWrapperProps> = (props) 
 
   createEffect(on(props.chunksState.textSelection.get, (selection) => {
     label.setSelection(selection);
-    if (selection && props.selectionAutoHighlight()) {
+    if (selection) {
       label.highlightRange(selection.range);
     }
   }));

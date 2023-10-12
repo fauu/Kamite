@@ -313,6 +313,7 @@ export class ChunkLabel {
     highlightRange.setStart(charEls[0].firstChild!, 0);
     const endEl = charEls[charEls.length - 1].firstChild!;
     highlightRange.setEnd(endEl, endEl.textContent!.length);
+    highlightRange.fromKamiteChunkAction = true;
     const browserSelection = document.getSelection()!;
     browserSelection.removeAllRanges();
     browserSelection.addRange(highlightRange);
@@ -426,10 +427,7 @@ const RangeWithBgLastCharClass = css`
   border-bottom-right-radius: var(--border-radius-default);
 `;
 
-const SelectedCharClass = css`
-  background: linear-gradient(0, var(--color-bg3) 0%, transparent 100%);
-  border-bottom: 1px solid var(--color-bg3-hl);
-`;
+const SelectedCharClass = css``;
 
 const SelectionStartCharClass = css`
   border-bottom-left-radius: var(--selection-border-radius);
@@ -452,7 +450,5 @@ const HasSelectionClass = css`
 `;
 
 const HighlightedCharClass = css`
-  background: linear-gradient(0, var(--color-accB2) 0%, transparent 100%) !important;
-  border-bottom: 1px solid var(--color-accB2-hl2);
-  z-index: 5;
+  background: linear-gradient(0, var(--color-accB2) 0%, transparent 100%);
 `;

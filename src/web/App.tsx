@@ -22,7 +22,9 @@ import {
   parseRecognizerStatus, playerStatusGotConnected
 } from "~/backend";
 import {
-  ChunkCurrentTranslationSelectionParentClass, ChunkView, createChunksState, type Chunk
+  ChunkCurrentTranslationSelectionParentClass,
+  ChunkTextSelection,
+  ChunkView, createChunksState, type Chunk
 } from "~/chunk";
 import { ChunkLabel } from "~/chunk/label";
 import {
@@ -76,8 +78,10 @@ export const App: VoidComponent = () => {
     createSignal(false);
   const [movingMouseWhilePrimaryDown, setMovingMouseWhilePrimaryDown] =
     createSignal(false);
+  const [ impedeClickMoveChunkTextSelect, setImpedeClickMoveChunkTextSelect ] = createSignal(false);
   const [debugMode, setDebugMode] =
     createSignal(false);
+
 
   let mainSectionEl: HTMLDivElement | undefined;
   let commandPaletteEl: HTMLDivElement | undefined;
@@ -238,10 +242,24 @@ export const App: VoidComponent = () => {
     switch (event.button) {
       case 0: { // Left
         if (ChunkLabel.isCharElement(targetEl)) {
-          // Initiate selection starting inside chunk label
           const chIdx = ChunkLabel.charIdxOfElement(targetEl)!;
-          chunks.textSelection.set({ range: [chIdx, chIdx], anchor: chIdx });
-          // Prevents dragging when auto highlight is on
+
+          const selectionRange = chunks.textSelection.get()?.range;
+          const clickedCharTheOnlySelected = selectionRange &&
+            selectionRange.every(idx => idx === chIdx);
+          const newSelection: ChunkTextSelection | undefined = clickedCharTheOnlySelected
+            ? undefined
+            : { range: [chIdx, chIdx], anchor: chIdx };
+          chunks.textSelection.set(newSelection);
+
+          if (!newSelection) {
+            // Needed for clicking a single selected chunk char to remove selection and then
+            // slightly moving the cursor not to be immediately misinterpreted as initiating
+            // selection by pressing M1 before moving the cursor inside the chunk label
+            setImpedeClickMoveChunkTextSelect(true);
+          }
+
+          // Prevents dragging when selecting caused by syncing with the native browser selection
           event.preventDefault();
         } else {
           if (chunks.editing() && commandPaletteEl && commandPaletteEl.contains(targetEl)) {
@@ -259,10 +277,6 @@ export const App: VoidComponent = () => {
               && !actionPaletteEl?.contains(targetEl);
             if (insideSelectionClearningEl) {
               chunks.textSelection.set(undefined);
-              document.getSelection()?.removeAllRanges();
-              // Needs to be triggered manually because otherwise it's delayed for the purposes of the
-              // `select-highlighted` action
-              chunks.setTextHighlight(undefined);
             }
           }
 
@@ -317,6 +331,7 @@ export const App: VoidComponent = () => {
 
     switch (event.button) {
       case 0: // Left
+        setImpedeClickMoveChunkTextSelect(false);
         chunks.textSelection.finish();
         notebook.setResizing(false);
         break;
@@ -342,7 +357,7 @@ export const App: VoidComponent = () => {
         notebook.resizeTick(themeLayoutFlippedMemo(), event.movementY);
       } else {
         const el = event.target as HTMLElement;
-        if (ChunkLabel.isCharElement(el)) {
+        if (ChunkLabel.isCharElement(el) && !impedeClickMoveChunkTextSelect()) {
           // Set the chunk selection to include the hovered character
           const anchor =
             chunks.textSelection.inProgress()
@@ -735,26 +750,31 @@ export const App: VoidComponent = () => {
     const selection = document.getSelection();
     const anchorParentEl = selection?.anchorNode?.parentElement;
 
-    // Register the extent of a browser native selection in chunk (from Yomichan hover, etc.)
-    if (anchorParentEl && ChunkLabel.isCharElement(anchorParentEl)) {
-      const focusParentEl = selection!.focusNode!.parentElement!;
-      // ASSUMPTION: Selection always made left-to-right
-      chunks.setTextHighlight(
-        [anchorParentEl, focusParentEl].map(ChunkLabel.charIdxOfElement) as [number, number]
-      );
-    } else {
-      setTimeout(() => {
-        // This code might run as a result of clicking the `select-highlighted` action button.
-        // The action, however, needs the highlight to work on, so we delay its removal slightly.
-        chunks.setTextHighlight(undefined);
-      }, 200);
-    }
-
-    // Register the fact of a browser native selection in chunk
     const selectingInChunkTranslation =
       anchorParentEl?.classList.contains(ChunkCurrentTranslationSelectionParentClass)
       && selection!.type === "Range";
     chunks.setSelectingInTranslation(selectingInChunkTranslation ?? false);
+
+    // We want the browser selection to be in sync with main chunk's Kamite text selection. So if
+    // the current modification of browser's selection doesn't come from that, we must clear Kamite's
+    // selection so that it's not out of sync
+    const fromKamiteChunkAction = selection && selection?.rangeCount >= 1
+      && selection.getRangeAt(0).fromKamiteChunkAction
+    if (!fromKamiteChunkAction) {
+      chunks.textSelection.set(undefined);
+    }
+
+    const browserSelectionChangedInMainChunk = anchorParentEl && ChunkLabel.isCharElement(anchorParentEl);
+    if (browserSelectionChangedInMainChunk) {
+      // We hide the native browser selection highlight in main chunk due to a Chrome quirk, so we
+      // need to emulate it ourselves
+      const focusParentEl = selection!.focusNode?.parentElement!;
+      if (focusParentEl) {
+        chunks.setTextHighlight(
+          [anchorParentEl, focusParentEl].map(ChunkLabel.charIdxOfElement) as [number, number]
+        );
+      }
+    }
   });
 
   document.documentElement.addEventListener("mouseleave", () => {
