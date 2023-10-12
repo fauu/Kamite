@@ -746,6 +746,11 @@ export const App: VoidComponent = () => {
 
   document.addEventListener("selectionchange", () => {
     const selection = document.getSelection();
+
+    if (!selection || selection.rangeCount == 0) {
+      chunks.setTextHighlight(undefined);
+    }
+
     const anchorParentEl = selection?.anchorNode?.parentElement;
 
     const selectingInChunkTranslation =
