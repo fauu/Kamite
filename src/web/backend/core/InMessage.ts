@@ -19,6 +19,7 @@ export type InMessage =
 | {
   kind: "chunk-translation",
   translation: string,
+  destination: ChunkTranslationDestination,
   playbackTimeS: number | null,
 }
 | ChunkEnhancementsInMessage
@@ -50,6 +51,8 @@ export type ChunkEnhancementsInMessage = {
 };
 
 type UserNotificationKind = "INFO" | "ERROR";
+
+export type ChunkTranslationDestination = "CURRENT" | "LATEST";
 
 export interface ChunkVariant {
   content: string,

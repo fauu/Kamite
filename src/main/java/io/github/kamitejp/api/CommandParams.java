@@ -1,5 +1,6 @@
 package io.github.kamitejp.api;
 
+import io.github.kamitejp.chunk.ChunkTranslationDestination;
 import io.github.kamitejp.recognition.PointSelectionMode;
 
 public interface CommandParams {
@@ -12,7 +13,11 @@ public interface CommandParams {
 
   interface Chunk {
     record Show(String chunk, Double playbackTimeS) {}
-    record ShowTranslation(String translation, Double playbackTimeS) {}
+    record ShowTranslation(
+      String translation,
+      ChunkTranslationDestination destination,
+      Double playbackTimeS
+    ) {}
   }
 
   interface Misc {

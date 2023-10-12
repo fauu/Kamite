@@ -3,6 +3,7 @@ package io.github.kamitejp.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import io.github.kamitejp.chunk.ChunkTranslationDestination;
 import io.github.kamitejp.chunk.IncomingChunkText;
 import io.github.kamitejp.chunk.IncomingChunkTranslation;
 import io.github.kamitejp.geometry.Dimension;
@@ -255,8 +256,12 @@ public sealed interface Command
               paramsMissing = true;
               yield null;
             }
+            var destination = p.destination();
+            if (destination == null) {
+              destination = ChunkTranslationDestination.LATEST;
+            }
             yield new Chunk.ShowTranslation(
-              new IncomingChunkTranslation(p.translation(), p.playbackTimeS())
+              new IncomingChunkTranslation(p.translation(), destination, p.playbackTimeS())
             );
           }
 

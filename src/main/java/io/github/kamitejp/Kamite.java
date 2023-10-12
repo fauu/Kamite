@@ -28,6 +28,7 @@ import io.github.kamitejp.chunk.ChunkFilter;
 import io.github.kamitejp.chunk.ChunkLogger;
 import io.github.kamitejp.chunk.ChunkLoggerInitializationException;
 import io.github.kamitejp.chunk.ChunkTransformer;
+import io.github.kamitejp.chunk.ChunkTranslationDestination;
 import io.github.kamitejp.chunk.IncomingChunkText;
 import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.config.Config;
@@ -500,7 +501,11 @@ public class Kamite {
   private void handlePlayerSubtitle(Subtitle subtitle) {
     switch (subtitle.kind()) { // NOPMD - misidentifies as non-exhaustive
       case PRIMARY   -> showChunkPostCheckpoint(subtitle.text(), subtitle.startTimeS());
-      case SECONDARY -> showChunkTranslation(subtitle.text(), subtitle.startTimeS());
+      case SECONDARY -> showChunkTranslation(
+        subtitle.text(),
+        ChunkTranslationDestination.LATEST,
+        subtitle.startTimeS()
+      );
     }
   }
 
@@ -612,12 +617,17 @@ public class Kamite {
   }
 
   private void showChunkTranslation(String translation) {
-    showChunkTranslation(translation, null);
+    showChunkTranslation(translation, ChunkTranslationDestination.LATEST, null);
   }
 
-  private void showChunkTranslation(String translation, Double playbackTimeS) {
+  private void showChunkTranslation(
+    String translation,
+    ChunkTranslationDestination destination,
+    Double playbackTimeS
+  ) {
     server.send(new ChunkTranslationOutMessage(
       TextProcessor.correctForm(translation),
+      destination,
       playbackTimeS
     ));
   }
@@ -729,7 +739,11 @@ public class Kamite {
       case Command.Chunk.Show cmd ->
         chunkCheckpoint.register(cmd.chunk());
       case Command.Chunk.ShowTranslation cmd ->
-        showChunkTranslation(cmd.translation().translation(), cmd.translation().playbackTimeS());
+        showChunkTranslation(
+          cmd.translation().translation(),
+          cmd.translation().destination(),
+          cmd.translation().playbackTimeS()
+        );
 
       case Command.Misc.Custom cmd -> {
         if (source == CommandSource.API) {

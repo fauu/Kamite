@@ -2,6 +2,7 @@ import { batch, createEffect, createMemo, createSignal, on } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 
 import type { Backend, ChunkEnhancementsInMessage, MaybeRuby } from "~/backend";
+import { ChunkTranslationDestination } from "~/backend";
 import { notifyUser } from "~/common/notify";
 import { getSetting, type Setting } from "~/settings";
 import { BG_FLASH_DURATION_MS } from "~/style";
@@ -421,7 +422,14 @@ export function createChunksState(
     void insert(current().text.base, { op: "overwrite", inPlace: true, allowUnchangedText: true });
   }
 
-  function handleIncomingTranslation(text: string, playbackTimeS: number | null) {
+  function handleIncomingTranslation(
+    text: string,
+    destination: ChunkTranslationDestination,
+    playbackTimeS: number | null
+  ) {
+    // NOTE: `destination` is assumed to be "LATEST" in "translation-only-mode" or when
+    //       `playbackTimeS` is not null
+
     if (getSetting(settings, "translation-only-mode")) {
       void insert("", {
         op: "overwrite",
@@ -433,32 +441,45 @@ export function createChunksState(
     }
 
     if (!playbackTimeS) {
-      initTranslationOfLatest({ text });
+      const translationSegment = { text };
+      switch (destination) {
+        case "CURRENT":
+          initTranslationOfNth(pointer(), translationSegment);
+          break;
+        case "LATEST":
+        default: // Fallthrough
+          initTranslationOfLatest(translationSegment);
+      }
       return;
     }
 
-    const segment = { text, playbackTimeS: playbackTimeS ?? undefined };
+    // From here on we have a given playback time for the translation, which we will use to guess
+    // which chunk the translation is intended for.
 
-    const lastChunkPlaybackTime = chunks[chunks.length - 1].playbackTimeS;
-    if (!lastChunkPlaybackTime) {
-      initTranslationOfLatest(segment);
+    const translationSegment = { text, playbackTimeS: playbackTimeS ?? undefined };
+
+    // If we don't have the playback time information for the latest chunk to compare with, the best
+    // we can do is assume the translation belongs to it
+    const latestChunkPlaybackTime = chunks[chunks.length - 1].playbackTimeS;
+    if (!latestChunkPlaybackTime) {
+      initTranslationOfLatest(translationSegment);
       return;
     }
 
-    const timeSinceLastChunk = playbackTimeS - lastChunkPlaybackTime;
+    const timeSinceLastChunk = playbackTimeS - latestChunkPlaybackTime;
     if (timeSinceLastChunk < 0 || timeSinceLastChunk <= TRANSLATION_INITIAL_MAX_DELAY_S) {
       // Left condition true: We're either rewinding or playing a new video. Simply replacing the
       // translation with what has arrived is probably the safest option.
       // Right condition true: Assume this is the initial segement for the most recent chunk's
       // translation, since it arrived just following it
-      initTranslationOfLatest(segment);
+      initTranslationOfLatest(translationSegment);
     } else {
       // Assume this segment is either the intial one for the upcoming chunk's translation or a
       // supplementary one for the most recent chunk's translation, since it arrived significantly
       // after the most recent chunk. Append it to the latest chunk's translation for now and store
       // it for later
-      pendingTranslation = segment as Required<ChunkTranslationSegment>;
-      const tentativeSegment = { ...segment, tentative: true };
+      pendingTranslation = translationSegment as Required<ChunkTranslationSegment>;
+      const tentativeSegment = { ...translationSegment, tentative: true };
       setChunks(
         chunks.length - 1,
         "translation",
@@ -629,8 +650,12 @@ export function createChunksState(
     return { value, wasClamped };
   }
 
+  function initTranslationOfNth(chunkIdx: number, translationSegment: ChunkTranslationSegment) {
+    setChunks(chunkIdx, "translation", ChunkTranslation.withSegment(translationSegment));
+  }
+
   function initTranslationOfLatest(translationSegment: ChunkTranslationSegment) {
-    setChunks(chunks.length - 1, "translation", ChunkTranslation.withSegment(translationSegment));
+    initTranslationOfNth(chunks.length - 1, translationSegment);
   }
 
   type CopyToClipboardMode = "text" | "original-text";

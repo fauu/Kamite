@@ -390,7 +390,7 @@ export const App: VoidComponent = () => {
         const defaultVariant = msg.variants[0];
 
         if (getSetting(settings, "translation-only-mode")) {
-          chunks.handleIncomingTranslation(defaultVariant.content, msg.playbackTimeS);
+          chunks.handleIncomingTranslation(defaultVariant.content, "LATEST", msg.playbackTimeS);
           break;
         }
 
@@ -420,7 +420,7 @@ export const App: VoidComponent = () => {
       }
 
       case "chunk-translation":
-        chunks.handleIncomingTranslation(msg.translation, msg.playbackTimeS);
+        chunks.handleIncomingTranslation(msg.translation, msg.destination, msg.playbackTimeS);
         break;
 
       case "program-status":
