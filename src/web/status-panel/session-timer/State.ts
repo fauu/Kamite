@@ -1,14 +1,16 @@
 import { batch, createSignal } from "solid-js";
 
 import type { SessionTimer } from "~/backend";
-import { MINS_IN_HOUR, MSECS_IN_SECS, SECS_IN_MIN, Time, defaultTime } from "~/common/time";
+import {
+  MINS_IN_HOUR, MSECS_IN_SECS, SECS_IN_MIN, Time, defaultTime, timeEquals
+} from "~/common/time";
 
 const UPDATE_INTERVAL_MS = 1000;
 
 export type SessionTimerState = ReturnType<typeof createSessionTimerState>;
 
 export function createSessionTimerState() {
-  const [time, setTime] = createSignal<Time>(defaultTime());
+  const [time, setTime] = createSignal<Time>(defaultTime(), { equals: timeEquals });
   const [running, setRunning] = createSignal(false);
   const [autoPauseIntervalS, setAutoPauseIntervalS] = createSignal<number | undefined>(undefined);
   const [autoPaused, setAutoPaused] = createSignal(false);

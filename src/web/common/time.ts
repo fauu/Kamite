@@ -14,3 +14,7 @@ export function defaultTime(): Time {
 export function timeToMins(time: Time): number {
   return (time.h * 60) + time.m;
 }
+
+export function timeEquals(a: Time, b: Time): boolean {
+  return a.h === b.h && a.m === b.m;
+}
