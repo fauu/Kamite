@@ -14,7 +14,6 @@ interface ChunkViewProps {
   onInput: (newText: string) => void,
   inputRef: Ref<HTMLTextAreaElement>,
   labelAndTranslationRef: Ref<HTMLDivElement>,
-  labelSelectionAutoHighlight: Accessor<boolean>,
   movingMouseWhilePrimaryDown: Accessor<boolean>,
 }
 
@@ -31,7 +30,6 @@ export const ChunkView: VoidComponent<ChunkViewProps> = (props) => {
           <ChunkLabelWrapper
             chunksState={props.chunksState}
             movingMouseWhilePrimaryDown={props.movingMouseWhilePrimaryDown}
-            selectionAutoHighlight={props.labelSelectionAutoHighlight}
           />
           <Show when={props.chunksState.translationWithContext()} keyed>{translations =>
             <CurrentTranslation translations={translations}/>

@@ -10,7 +10,6 @@ import { ChunkLabel } from "./Label";
 interface ChunkLabelWrapperProps {
   chunksState: ChunksState,
   movingMouseWhilePrimaryDown: Accessor<boolean>,
-  selectionAutoHighlight: Accessor<boolean>,
 }
 
 export const ChunkLabelWrapper: VoidComponent<ChunkLabelWrapperProps> = (props) => {

@@ -314,13 +314,11 @@ export const App: VoidComponent = () => {
   });
 
   function shouldPreventContextMenu(targetEl: HTMLElement): boolean {
-    if (config()?.chunk.selection?.autoHighlight) {
-      const range = chunks.textSelection.get()?.range;
-      if (range) {
-        const chIdx = ChunkLabel.charIdxOfElement(targetEl);
-        if (chIdx && chIdx >= range[0] && chIdx <= range[1]) {
-          return false;
-        }
+    const range = chunks.textSelection.get()?.range;
+    if (range) {
+      const chIdx = ChunkLabel.charIdxOfElement(targetEl);
+      if (chIdx && chIdx >= range[0] && chIdx <= range[1]) {
+        return false;
       }
     }
     return true;
@@ -833,7 +831,6 @@ export const App: VoidComponent = () => {
           onInput={handleChunkInput}
           inputRef={el => chunkInputEl = el}
           labelAndTranslationRef={el => chunkLabelAndTranslationEl = el}
-          labelSelectionAutoHighlight={() => config()?.chunk.selection.autoHighlight || false}
         />
         <StatusPanel
           fade={statusPanelFader.shouldFade()}
