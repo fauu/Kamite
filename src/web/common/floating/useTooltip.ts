@@ -1,6 +1,7 @@
 import { flip, offset, shift } from "@floating-ui/dom";
 import { createSignal, type JSX } from "solid-js";
 
+import { overridePlacement } from "./overridePlacement";
 import { useFloating } from "./useFloating";
 
 export const DEFAULT_TOOLTIP_SCALE = 1;
@@ -19,7 +20,7 @@ export function useTooltip() {
   const [scale, setScale] = createSignal(DEFAULT_TOOLTIP_SCALE);
 
   const floating = useFloating({
-    middleware: [offset(OFFSET), flip(), shift({ padding: PADDING })],
+    middleware: [offset(OFFSET), overridePlacement, flip(), shift({ padding: PADDING })],
   });
 
   function show(delayMS: number = DEFAULT_REVEAL_DELAY_MS, pre?: () => void) {

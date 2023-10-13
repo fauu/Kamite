@@ -130,6 +130,7 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
               regularClickCb: () => handleButtonClick(action, "base"),
             }
           }
+          data-tooltip-placement-override="right"
           use:tooltipAnchor={
             (!action.disabled && actionKind.description)
             ? {

@@ -41,6 +41,7 @@ export const CommandPalette: VoidComponent<CommandPaletteProps> = (props) => {
         }}
         data-kind={pc.command.kind}
         data-symbol={pc.symbol}
+        data-tooltip-placement-override="right"
         use:tooltipAnchor={pc.description ? { tooltip, header: pc.description } : undefined}
         onClick={[handleButtonClick, pc.command]}
       >
