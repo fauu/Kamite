@@ -10,6 +10,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -101,7 +102,8 @@ public class Kamite {
   public static final Map<String, String> PRECONFIG_ARGS = Map.of(
     "debug", "debug",
     "profile", "profile",
-    "regionHelper", "regionHelper"
+    "regionHelper", "regionHelper",
+    "countChars", "countChars"
   );
 
   private static final List<String> DEFAULT_SUBSCRIBED_EVENTS = List.of("chunk-add");
@@ -126,6 +128,12 @@ public class Kamite {
     LOG.info("Starting {} (version {})", () -> APP_NAME_DISPLAY, buildInfo::getVersion);
 
     var preconfigArgs = processPreconfigArgs(args);
+
+    if (preconfigArgs.countChars()) {
+      runCountCharsMode();
+      System.exit(0);
+      return;
+    }
 
     platform = Platform.createSuitable();
     if (platform == null) {
@@ -401,6 +409,16 @@ public class Kamite {
         area.getHeight()
       );
     }
+  }
+
+  private void runCountCharsMode() {
+    var scanner = new Scanner(System.in);
+    var count = 0;
+    while (scanner.hasNext()) {
+      count += CharacterCounter.count(scanner.nextLine());
+    }
+    scanner.close();
+    System.out.printf("\nCharacters: %d%n", count);
   }
 
   private void createControlGUI() {
@@ -914,7 +932,8 @@ public class Kamite {
   private record PreconfigArgs(
     boolean debug,
     List<String> profileNames,
-    boolean regionHelper
+    boolean regionHelper,
+    boolean countChars
   ) {}
 
   private static PreconfigArgs processPreconfigArgs(Map<String, String> args) {
@@ -936,7 +955,9 @@ public class Kamite {
 
     var regionHelper = isArgValueTruthy(args.get(PRECONFIG_ARGS.get("regionHelper")));
 
-    return new PreconfigArgs(debug, profileNames, regionHelper);
+    var countChars = isArgValueTruthy(args.get(PRECONFIG_ARGS.get("countChars")));
+
+    return new PreconfigArgs(debug, profileNames, regionHelper, countChars);
   }
 
   // QUAL: Move?

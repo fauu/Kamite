@@ -18,7 +18,7 @@ public final class CharacterCounter {
     if (c.content().equals(lastCountedContent)) {
       return;
     }
-    count += COUNTED_CHARACTER_RE.matcher(c.content()).results().count();
+    count += count(c.content());
     lastCountedContent = c.content();
   }
 
@@ -41,5 +41,9 @@ public final class CharacterCounter {
 
   public void setFrozen(boolean frozen) {
     this.frozen = frozen;
+  }
+
+  public static int count(String text) {
+    return (int) COUNTED_CHARACTER_RE.matcher(text).results().count();
   }
 }
