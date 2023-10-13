@@ -840,7 +840,6 @@ above).
 > they are not, please [create a GitHub Issue](https://github.com/fauu/Kamite/issues/new)
 > so that the assumption can be updated and the implementation reconsidered.
 
-
 ##### Region OCR
 
 ![OCR region button](media/docs/ocr_region.png)

@@ -11,8 +11,8 @@ interface ChunkPickerVariantContentProps {
 export const ChunkPickerVariantContent : VoidComponent<ChunkPickerVariantContentProps> = props => {
   const uniqueCharIndices = props.variant.enhancements.interVariantUniqueCharacterIndices || [];
 
-  return <Root lang="ja">{() => {
-    return <Index each={props.variant.content.split("")}>{(c, i) =>
+  return <Root lang="ja">
+    <Index each={props.variant.content.split("")}>{(c, i) =>
       <span
         class={CharClass}
         classList={{ [UniqueCharClass]: uniqueCharIndices.includes(i) }}
@@ -20,7 +20,7 @@ export const ChunkPickerVariantContent : VoidComponent<ChunkPickerVariantContent
         <CharMaybeNewline value={c()} newlineAs={<Newline/>}/>
       </span>
     }</Index>;
-  }}</Root>;
+  </Root>;
 };
 
 const Root = styled.span`

@@ -1,8 +1,9 @@
 import { batch, createEffect, createMemo, createSignal, on } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 
-import type { Backend, ChunkEnhancementsInMessage, MaybeRuby } from "~/backend";
-import { ChunkTranslationDestination } from "~/backend";
+import type {
+  Backend, ChunkEnhancementsInMessage, ChunkTranslationDestination, MaybeRuby
+} from "~/backend";
 import { notifyUser } from "~/common/notify";
 import { getSetting, type Setting } from "~/settings";
 import { BG_FLASH_DURATION_MS } from "~/style";

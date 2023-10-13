@@ -155,10 +155,11 @@ export class Backend {
   }
 
   #handleConnectionClose({ code }: CloseEvent) {
+    const c = code as WSCloseCode;
     if (
-      code === WSCloseCode.SupersededByAnotherClient
-      || code === WSCloseCode.NoStatusReceived
-      || code === WSCloseCode.AbnormalClosue
+      c === WSCloseCode.SupersededByAnotherClient
+      || c === WSCloseCode.NoStatusReceived
+      || c === WSCloseCode.AbnormalClosue
     ) {
       if (!import.meta.env.VITE_DEV_MULTI_CLIENT) {
         this.#setConnectionState("disconnected-wont-reconnect");

@@ -6,7 +6,7 @@ import { BlinkingClass } from "~/common";
 
 import { StatusPanelIndicator } from "./Indicator";
 import { approxPaceCPH } from "./pace";
-import { SessionTimerState } from "./session-timer/State";
+import type { SessionTimerState } from "./session-timer/State";
 
 interface CharacterCounterProps {
   state: BackendCharacterCounter,
@@ -35,7 +35,7 @@ export const CharacterCounter: VoidComponent<CharacterCounterProps> = (props) =>
       }</Show>
     </div>
   </StatusPanelIndicator>;
-}
+};
 
 const Pace = styled.span`
   color: var(--color-med2);

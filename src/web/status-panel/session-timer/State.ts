@@ -2,7 +2,9 @@ import { batch, createSignal } from "solid-js";
 
 import type { SessionTimer } from "~/backend";
 import {
-  MINS_IN_HOUR, MSECS_IN_SECS, SECS_IN_MIN, Time, defaultTime, timeEquals
+  MINS_IN_HOUR, MSECS_IN_SECS, SECS_IN_MIN,
+  defaultTime, timeEquals,
+  type Time
 } from "~/common/time";
 
 const UPDATE_INTERVAL_MS = 1000;

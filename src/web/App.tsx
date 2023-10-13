@@ -1,7 +1,8 @@
 import { createScheduled, debounce } from "@solid-primitives/scheduled";
 import {
-  Accessor,
-  batch, createEffect, createMemo, createSignal, on, onMount, Show, untrack, type VoidComponent
+  batch, createEffect, createMemo, createSignal, on, onMount, Show, untrack,
+  type Accessor,
+  type VoidComponent
 } from "solid-js";
 import { createStore } from "solid-js/store";
 import { css, styled, ThemeProvider } from "solid-styled-components";
@@ -23,8 +24,8 @@ import {
 } from "~/backend";
 import {
   ChunkCurrentTranslationSelectionParentClass,
-  ChunkTextSelection,
-  ChunkView, createChunksState, type Chunk
+  ChunkView, createChunksState, type Chunk,
+  type ChunkTextSelection
 } from "~/chunk";
 import { ChunkLabel } from "~/chunk/label";
 import {
@@ -762,7 +763,7 @@ export const App: VoidComponent = () => {
     // the current modification of browser's selection doesn't come from that, we must clear Kamite's
     // selection so that it's not out of sync
     const fromKamiteChunkAction = selection && selection?.rangeCount >= 1
-      && selection.getRangeAt(0).fromKamiteChunkAction
+      && selection.getRangeAt(0).fromKamiteChunkAction;
     if (!fromKamiteChunkAction) {
       chunks.textSelection.set(undefined);
     }
@@ -771,7 +772,7 @@ export const App: VoidComponent = () => {
     if (browserSelectionChangedInMainChunk) {
       // We hide the native browser selection highlight in main chunk due to a Chrome quirk, so we
       // need to emulate it ourselves
-      const focusParentEl = selection!.focusNode?.parentElement!;
+      const focusParentEl = selection.focusNode?.parentElement;
       if (focusParentEl) {
         chunks.setTextHighlight(
           [anchorParentEl, focusParentEl].map(ChunkLabel.charIdxOfElement) as [number, number]

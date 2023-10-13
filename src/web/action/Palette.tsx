@@ -53,7 +53,7 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
   };
 
   const setupScrollers = () => {
-    let leftScrollInterval: NodeJS.Timer;
+    let leftScrollInterval: ReturnType<typeof setInterval>;
     leftScrollerEl.addEventListener("mouseenter", () => {
       leftScrollInterval = setInterval(() =>
         buttonsEl.scrollBy(-HOVER_SCROLL_STEP_PX, 0), HOVER_SCROLL_INTERVAL_MS
@@ -63,7 +63,7 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
       clearInterval(leftScrollInterval);
     });
 
-    let rightScrollInterval: NodeJS.Timer;
+    let rightScrollInterval: ReturnType<typeof setInterval>;
     rightScrollerEl.addEventListener("mouseenter", () => {
       rightScrollInterval = setInterval(() =>
         buttonsEl.scrollBy(HOVER_SCROLL_STEP_PX, 0), HOVER_SCROLL_INTERVAL_MS
