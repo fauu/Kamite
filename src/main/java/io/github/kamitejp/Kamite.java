@@ -716,8 +716,10 @@ public class Kamite {
         switch (cmd) { // NOPMD - misidentifies as non-exhaustive
           case Command.CharacterCounter.ToggleFreeze ignored ->
             status.getCharacterCounter().toggleFreeze();
-          case Command.CharacterCounter.Reset ignored ->
+          case Command.CharacterCounter.Reset ignored -> {
             status.getCharacterCounter().reset();
+            notifyUserOfInfo("Character counter has been reset");
+          }
         }
         sendStatus(ProgramStatusOutMessage.CharacterCounter.class);
       }
@@ -730,8 +732,10 @@ public class Kamite {
             status.getSessionTimer().stop();
           case Command.SessionTimer.Toggle ignored ->
             status.getSessionTimer().toggle();
-          case Command.SessionTimer.Reset ignored ->
+          case Command.SessionTimer.Reset ignored -> {
             status.getSessionTimer().reset();
+            notifyUserOfInfo("Session timer has been reset");
+          }
         }
         sendStatus(ProgramStatusOutMessage.SessionTimer.class);
       }
