@@ -179,18 +179,16 @@ export const App: VoidComponent = () => {
 
   createEffect(() => notebook.setTabHidden("debug", !debugMode()));
 
+  // We have a special handling for the selection if Chunk Picker is active, so it's better to
+  // clear the existing selection when activating the picker
+  createEffect(() =>
+    notebook.activeTab().id === "chunk-picker" && chunks.textSelection.set(undefined)
+  );
+
   // === ON MOUNT =================================================================================
 
   onMount(() => {
-    if (import.meta.env.DEV) {
-      setTimeout(() =>
-        void chunks.insert(
-          "電車に乗ることや店で食事をすることなどができます。氷",
-          { op: "overwrite", flash: true },
-        ),
-        300
-      );
-    }
+    import.meta.env.DEV && debugSetup();
 
     // Catch in capturing phase so that when we exit chunk edit mode by clicking on a lookup button
     // the editing changes are committed before the lookup button handler initiates lookup
@@ -315,6 +313,10 @@ export const App: VoidComponent = () => {
   });
 
   function shouldPreventContextMenu(targetEl: HTMLElement): boolean {
+    if (!chunks.textHighlight()) {
+      return true;
+    }
+
     const range = chunks.textSelection.get()?.range;
     if (range) {
       const chIdx = ChunkLabel.charIdxOfElement(targetEl);
@@ -498,9 +500,6 @@ export const App: VoidComponent = () => {
         break;
       case "select-all":
         chunks.textSelection.selectAll();
-        break;
-      case "select-highlighted":
-        chunks.textSelection.selectHighlighted();
         break;
       case "delete-selected":
         chunks.deleteSelectedText();
@@ -748,37 +747,59 @@ export const App: VoidComponent = () => {
   document.addEventListener("selectionchange", () => {
     const selection = document.getSelection();
 
-    if (!selection || selection.rangeCount == 0) {
-      chunks.setTextHighlight(undefined);
+    if (selection?.skipNextMainProcessing) {
+      selection.skipNextMainProcessing = false;
+      return;
     }
 
     const anchorParentEl = selection?.anchorNode?.parentElement;
+
+    const selectingInChunkPicker = anchorParentEl && chunkPickerEl.contains(anchorParentEl);
+    if (selectingInChunkPicker) {
+      return;
+    }
 
     const selectingInChunkTranslation =
       anchorParentEl?.classList.contains(ChunkCurrentTranslationSelectionParentClass)
       && selection!.type === "Range";
     chunks.setSelectingInTranslation(selectingInChunkTranslation ?? false);
 
-    // We want the browser selection to be in sync with main chunk's Kamite text selection. So if
-    // the current modification of browser's selection doesn't come from that, we must clear Kamite's
-    // selection so that it's not out of sync
     const fromKamiteChunkAction = selection && selection?.rangeCount >= 1
       && selection.getRangeAt(0).fromKamiteChunkAction;
     if (!fromKamiteChunkAction) {
+      // We want the browser selection to be in sync with main chunk's Kamite text selection. So
+      // if the current modification of browser's selection doesn't come from that, we must clear
+      // Kamite's selection so that it's not out of sync
       chunks.textSelection.set(undefined);
     }
 
-    const browserSelectionChangedInMainChunk = anchorParentEl && ChunkLabel.isCharElement(anchorParentEl);
-    if (browserSelectionChangedInMainChunk) {
-      // We hide the native browser selection highlight in main chunk due to a Chrome quirk, so we
-      // need to emulate it ourselves
+    if (selection && fromKamiteChunkAction && notebook.activeTab().id === "chunk-picker") {
+      // Special case: Chunk Picker is active and we want to allow simultaneous selection in main
+      // chunk and in chunk picker so that selected text from main chunk could be replaced with
+      // selected text in chunk picker.
+      // Chrome (as opposed to Firefox) doesn't allow selections with multiple ranges, so the way
+      // we achieve this instead is by disabling syncing of main chunk selection into browser
+      // selection in this special case. The code below vetoes syncing main chunk text selection
+      // to browser text selection and then sets a flag that makes it so this clearing of browser
+      // selection doesn't loop back and clear the change in main chunk text selection that
+      // triggered it in the first place.
+      selection.removeAllRanges();
+      selection.skipNextMainProcessing = true;
+    }
+
+    // We hide the native browser selection highlight in main chunk due to a Chrome quirk, so we
+    // need to emulate it ourselves.
+    const nonEmptyBrowserSelectionChangedInMainChunk = anchorParentEl
+      && ChunkLabel.isCharElement(anchorParentEl);
+    let newHighlight: [number, number] | undefined;
+    if (nonEmptyBrowserSelectionChangedInMainChunk) {
       const focusParentEl = selection.focusNode?.parentElement;
       if (focusParentEl) {
-        chunks.setTextHighlight(
-          [anchorParentEl, focusParentEl].map(ChunkLabel.charIdxOfElement) as [number, number]
-        );
+        newHighlight = [anchorParentEl, focusParentEl]
+          .map(ChunkLabel.charIdxOfElement) as [number, number];
       }
     }
+    chunks.setTextHighlight(newHighlight);
   });
 
   document.documentElement.addEventListener("mouseleave", () => {
@@ -787,6 +808,30 @@ export const App: VoidComponent = () => {
       notebook.setCollapsed(true);
     }
   });
+
+  // ==============================================================================================
+
+  function debugSetup() {
+    setTimeout(() => {
+      void chunks.insert(
+        "電車に乗ることや店で食事をすることなどができます。氷",
+        { op: "overwrite", flash: true },
+      )
+
+      setChunkVariants([{
+        content: "電車に乗ることや\n店で食事をすることなど",
+        originalContent: null,
+        labels: ["test"],
+        score: 100,
+        enhancements: {
+          interVariantUniqueCharacterIndices: [3],
+          furiganaMaybeRubies: [],
+        }
+      }]);
+      notebook.setTabHidden("chunk-picker", false);
+      revealedChunkPickerTab = true;
+    }, 200);
+  }
 
   // ==============================================================================================
 

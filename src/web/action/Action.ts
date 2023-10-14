@@ -9,7 +9,6 @@ export type Action = (
   | { kind: "undo" }
   | { kind: "redo" }
   | { kind: "select-all" }
-  | { kind: "select-highlighted" }
   | { kind: "delete-selected" }
   | { kind: "delete-every-second-char" }
   | { kind: "duplicate-selected" }
@@ -36,7 +35,6 @@ export const actionKinds: Readonly<Record<Action["kind"], ActionKind>> = {
     hasAlternativeInvocation: true,
   },
   "select-all": { staticLabel: "Select all" },
-  "select-highlighted": { staticLabel: "Select highlighted" },
   "delete-selected": { staticLabel: "Delete" },
   "delete-every-second-char": { staticLabel: "Delete every 2<sup>nd</sup> char." },
   "duplicate-selected": { staticLabel: "Duplicate" },
@@ -70,15 +68,6 @@ export function availableActions(chunks: ChunksState): Action[] {
 
   res.push({ kind: "undo", disabled: !chunks.canTravelBy(-1) });
   res.push({ kind: "redo", disabled: !chunks.canTravelBy(1) });
-
-  const hl = chunks.textHighlight();
-  if (hl) {
-    const selRange = chunks.textSelection.get()?.range;
-    const selRangeDefinedEqualsHl = selRange && selRange[0] === hl[0] && selRange[1] === hl[1];
-    if (!selRangeDefinedEqualsHl) {
-      res.push({ kind: "select-highlighted" });
-    }
-  }
 
   if (chunks.textSelection.get() && chunks.currentEffectiveText().length === 1) {
     const candidateTransforms = [];

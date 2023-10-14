@@ -427,7 +427,11 @@ const RangeWithBgLastCharClass = css`
   border-bottom-right-radius: var(--border-radius-default);
 `;
 
-const SelectedCharClass = css``;
+// This background is covered by the highlight background except in the special
+// case when Chunk Picker is active
+const SelectedCharClass = css`
+  background: linear-gradient(0, var(--color-bg3) 0%, transparent 100%);
+`;
 
 const SelectionStartCharClass = css`
   border-bottom-left-radius: var(--selection-border-radius);

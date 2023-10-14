@@ -32,44 +32,25 @@ export const ChunkPicker: VoidComponent<ChunkPickerProps> = (props) => {
   };
 
   const handleSelectionChange = () => {
-    // Collect selection ranges that are inside chunk variants
-    const variantRanges: VariantRange[] = [];
-    const selection = document.getSelection();
-    if (selection) {
-      for (let i = 0; i < selection?.rangeCount; i++) {
-        const range = selection.getRangeAt(i);
-        const maybeVariantEl = range.commonAncestorContainer.parentElement;
-        const maybeVariantIdx = maybeVariantEl?.dataset.variantIdx;
-        if (maybeVariantIdx) {
-          variantRanges.push({
-            range,
-            variantEl: maybeVariantEl,
-            variantIdx: parseInt(maybeVariantIdx)
-          });
-        }
-      }
-    }
+    const sel = document.getSelection();
+    const anchorNode = sel?.anchorNode;
+    const anchorParentEl = anchorNode?.parentElement;
+
+    const variantEl = anchorParentEl?.parentElement?.parentElement;
+    const variantIdx = variantEl?.dataset["variantIdx"];
 
     let variantBeingSelectedInIdx: number | undefined;
-    let combinedText: string | undefined;
-    if (variantRanges.length > 0) {
-      variantBeingSelectedInIdx = variantRanges[0].variantIdx;
-      combinedText = variantRanges.filter(vr => vr.variantIdx === variantBeingSelectedInIdx)
-        .map(vr => vr.range.toString())
-        .join("");
+    let selectionText: string | undefined;
+    const selStr = sel?.toString();
+    if (variantIdx && sel && selStr !== "") {
+      variantBeingSelectedInIdx = parseInt(variantIdx);
+      selectionText = selStr;
     }
-
     batch(() => {
       setVariantBeingSelectedInIdx(variantBeingSelectedInIdx);
-      setSelectionText(combinedText);
+      setSelectionText(selectionText);
     });
   };
-
-  type VariantRange = {
-    range: Range;
-    variantEl: HTMLElement;
-    variantIdx: number;
-  }
 
   document.addEventListener("selectionchange", handleSelectionChange);
   onCleanup(() => document.removeEventListener("selectionchange", handleSelectionChange));

@@ -91,7 +91,7 @@ export function createChunksState(
   const current = (): Chunk => chunks[pointer()];
 
   // Selection within the current chunk
-  const textSelection = createChunkTextSelectionState({ current, textHighlight });
+  const textSelection = createChunkTextSelectionState({ current });
 
   // Either the text selected in the current chunk or its entire text if a selection is absent.
   // The name is to be understood as "the current chunk's effective text"

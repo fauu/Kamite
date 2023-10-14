@@ -1,4 +1,4 @@
-import { createSignal, type Accessor } from "solid-js";
+import { createSignal } from "solid-js";
 
 import type { Chunk } from "./Chunk";
 
@@ -17,12 +17,9 @@ export function chunkTextSelectionEquals(a: ChunkTextSelection, b: ChunkTextSele
 
 interface CreateChunkTextSelectionStateParams {
   current: () => Chunk,
-  textHighlight: Accessor<[number, number] | undefined>,
 }
 
-export function createChunkTextSelectionState(
-  { current, textHighlight }: CreateChunkTextSelectionStateParams
-) {
+export function createChunkTextSelectionState({ current }: CreateChunkTextSelectionStateParams) {
   const [value, setValue] =
     createSignal<ChunkTextSelection | undefined>(undefined, {
       equals: (newVal, oldVal) =>
@@ -65,14 +62,6 @@ export function createChunkTextSelectionState(
     setValue({ range: [0, current().text.length - 1] });
   }
 
-  function selectHighlighted() {
-    const hl = textHighlight();
-    if (!hl) {
-      return;
-    }
-    setValue({ range: hl });
-  }
-
   return {
     get: value,
     set: setValue,
@@ -83,6 +72,5 @@ export function createChunkTextSelectionState(
     isCharSelected,
     finish,
     selectAll,
-    selectHighlighted,
   };
 }
