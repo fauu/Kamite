@@ -11,7 +11,7 @@
 
 <!-- -->
 
-> **Note**
+> [!NOTE]
 > This is alpha software.
 
 Kamite is desktop software to aid learning Japanese through immersion in native
@@ -325,12 +325,12 @@ subtitle track as *primary* (assumed by Kamite to be the Japanese subtitles) and
 glanced by pressing <kbd>F9</kbd> in mpv while the video file is opened and the
 subtitles loaded.
 
-> **Note**
+> [!NOTE]
 > Subtitles hidden within mpv will still be recognized by Kamite.
 
 <!-- -->
 
-> **Warning**
+> [!WARNING]
 > The subtitle extraction functionality will not work with subtitles that
 > are stored as images, not as text.
 
@@ -484,7 +484,7 @@ resources.
 
 #### Setting up “Manga OCR” Online
 
-> **Warning**
+> [!WARNING]
 > The “Manga OCR” Online engine depends on a third-party online service
 > ([a Hugging Face Space by Detomo][manga-ocr-hf])—using it involves sending
 > screenshots of portions of your screen to third parties. (See
@@ -498,7 +498,7 @@ if necessary, and to launch Kamite with the config key `ocr.engine` set to
 
 #### Setting up “Manga OCR” (Local)
 
-> **Note**
+> [!NOTE]
 > “Manga OCR” will use up to 2.5 GB of disk space. During launch, it will use up
 > to 1 GB of additional RAM.
 
@@ -619,14 +619,14 @@ ocr: {
 }
 ```
 
-> **Note**
+> [!NOTE]
 > After deinstallation, there will be a ~450 MB leftover model file in
 > (<ins>Linux</ins>) `~/.cache/huggingface/transformers/`, (<ins>Windows</ins>)
 > `C:\Users\<user>\.cache\huggingface\transformers`.
 
 #### Setting up Hive OCR Online
 
-> **Warning**
+> [!WARNING]
 > The Hive OCR Online engine depends on a third-party online service ([a Hugging
 > Face Space by seaoctopusredchicken][hiveocr-hf])—using it involves sending
 > screenshots of portions of your screen to third parties. (See
@@ -639,7 +639,7 @@ if necessary, and to launch Kamite with the config key `ocr.engine` set to `hive
 
 #### Setting up EasyOCR Online
 
-> **Warning**
+> [!WARNING]
 > The EasyOCR Online engine depends on a third-party online service ([a Hugging
 > Face Space by tomofi][easyocr-hf])—using it involves sending screenshots
 > of portions of your screen to third parties. (See [Privacy](#privacy))
@@ -652,7 +652,7 @@ if necessary, and to launch Kamite with the config key `ocr.engine` set to
 
 #### Setting up OCR.space
 
-> **Warning**
+> [!WARNING]
 > OCR.space is an online service—using it involves sending screenshots of
 > portions of your screen to a third party. (See [Privacy](#privacy))
 
@@ -666,7 +666,7 @@ provider as “Requests/month: 25000, Rate Limit: 500 calls/DAY”.
 
 1. Put the API key in Kamite’s [config file](#config):
 
-    > **Warning**
+    > [!WARNING]
     > This is unsafe plain-text storage. Do not do this if you deem your key too
     > sensitive for this kind of storage.
 
@@ -778,7 +778,7 @@ Text recognition can be initiated by:
 * Adding or modifying an image in a directory provided to the [OCR directory
   watcher](#ocr-directory-watcher).
 
-> **Note**
+> [!WARNING]
 > **On Linux / GNOME Wayland and Plasma Wayland**, only the following of
 > the above are available:
 >
@@ -810,7 +810,7 @@ the block and then OCR the resulting area.
 *This should be good enough for > 90% of typical manga text blocks, but the
 block detection algorithm has a lot of room for improvement.*
 
-> **Note**
+> [!NOTE]
 > (Linux/Xorg) On Xorg, the point selection mechanism cannot be restricted to
 > just a point, meaning that when the mouse is pressed and dragged, a rectangle
 > area will be selected instead of a point. If this happens, Kamite will
@@ -832,7 +832,7 @@ Clicks 1 and 2 must be made at the start and end of the initial edge of the text
 respectively. Click 3 can be anywhere along the closing edge (pictured as green
 above).
 
-> **Note**
+> [!NOTE]
 > The current implementation of rotated block OCR guesses the text orientation
 > based on the rotation angle. This means the feature will fail in unusual cases,
 > such as a block of horizontal text positioned vertically. The current
@@ -908,7 +908,7 @@ Helper mode: Launch Kamite from console with the launch option `--regionHelper`,
 select the desired areas, and copy the resulting region specifications from the
 console output.
 
-> **Note**
+> [!NOTE]
 > (Windows) To get console output on Windows, you must launch Kamite using the
 > `Kamite.com` executable, not `Kamite.exe`.
 
@@ -1056,7 +1056,7 @@ using those engines: see
 
 Other integrations can be created using the [Command API](#command-api).
 
-> **Note**
+> [!TIP]
 > For games that cannot be integrated using the above means, the
 > [Region OCR](#region-ocr) feature might prove an alternative.
 
@@ -1072,7 +1072,7 @@ To install the *Kamite Send* Textractor extension:
    package to the main Textractor directory (the one containing
    `Textractor.exe`).
 
-   > **Note**
+   > [!NOTE]
    > If you installed Kamite from AUR, the files will be in `/opt/kamite`.
 
 2. In Textractor, press the `Extensions` button, right-click in the extension
@@ -1111,7 +1111,7 @@ extractor:
 
 With this setup, Kamite should receive text from Agent.
 
-> **Note**
+> [!TIP]
 > (Linux) To hook Wine games, you can run the Windows version of Agent through
 > Wine (you might need an older version of Wine, such as 6.14).
 
@@ -1164,7 +1164,7 @@ following resources:
 * [RegexOne] — interactive regular expression tutorial.
 * [regex101] — regular expression tester and explainer.
 
-> **Note**
+> [!NOTE]
 > The particular regular expression engine used by Kamite is Java’s, which
 > has some particularities. Therefore, [Java’s own regular expression reference][java-regex]
 > might also come useful (note that [regex101] can be instructed to use the Java
@@ -1196,14 +1196,14 @@ and chunks that are above 90 characters in length. *The first of those filters i
 already included in the [default config] that is created automatically when no
 config file exists.*
 
-> **Note**
+> [!WARNING]
 > Regular expressions containing the backslash (`\`) character must (generally)
 > be specified within triple instead of single quotes (that is, `"""` instead of
 > `"`). See the section Transforming chunks (following) for an example.
 
 <!-- -->
 
-> **Note**
+> [!NOTE]
 > **Kamite will automatically reload the patterns once a config file is
 > modified.** There is no need to restart the program. The simplest way to test
 > the filter is by pasting (<kbd>Ctrl</kbd> + <kbd>V</kbd>) prepared chunks into
@@ -1234,14 +1234,14 @@ as `<name>「<dialogue>」` (this will be replaced with just `<dialogue>`. The
 text captured in the first and only [match group][regex-match-groups] defined
 within the `replace` field). The rules will be applied in the specified order.
 
-> **Note**
+> [!WARNING]
 > Regular expressions containing the backslash (`\`) character must (generally)
 > be specified within triple instead of single quotes (that is, `"""` instead of
 > `"`). See the first transform in the example above for illustration.
 
 <!-- -->
 
-> **Note**
+> [!NOTE]
 > **Kamite will automatically reload the transform definitions once a config
 > file is modified.** There is no need to restart the program. The simplest way
 > to test the transforms is by pasting (<kbd>Ctrl</kbd> + <kbd>V</kbd>) prepared
@@ -1301,7 +1301,7 @@ By default, Kamite embeds the following sites for quick lookups:
 <https://www.deepl.com/>, <https://ichi.moe/>, <https://jpdb.io/>. It also by
 default provides a button for Google Images lookup in a new browser tab.
 
-> **Note**
+> [!TIP]
 > A faster and more robust alternative to using DeepL as a Kamite lookup is to
 > use a scripting-friendly DeepL API client in combination with Kamite’s custom
 > command mechanism.\
@@ -1497,7 +1497,7 @@ CUSTOM_COMMANDS: {
 }
 ```
 
-> **Note**
+> [!NOTE]
 > (Windows) To execute a PowerShell script, set `command` to, e.g.,
 > `["powershell.exe", """C:\path\to\the\script.ps1""", "first argument"]` (note
 > the triple quotes). The execution of PowerShell scripts is disabled by default
@@ -1674,14 +1674,14 @@ The config file’s format is [HOCON], which is a superset of JSON.
 A default config file is automatically placed by Kamite in the expected
 directory if absent on launch.
 
-> **Note**
+> [!WARNING]
 > (Windows) On unupdated Windows 10 installations as well as earlier Windows
 > versions, the system Notepad will not be able to properly display the config
 > file. In that case, please use another text editor.
 
 <!-- -->
 
-> **Warning**
+> [!WARNING]
 > When providing values that containin backslashes (`\`), for example Windows
 > paths, you must enclose them within triple quote marks (`"""`). For example:
 > `ocr.tesseract.path: """C:\Program Files\Tesseract-OCR\tesseract.exe"""`.
