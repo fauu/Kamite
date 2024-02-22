@@ -88,6 +88,9 @@ function KamiteShowChunk(text) {
       "Content-Length": Buffer.byteLength(data)
     }
   });
+  req.on("error", (error) => {
+    console.error("KamiteSend: Cannot connect to Kamite:", error);
+  });
   req.write(data);
   req.end();
 }
