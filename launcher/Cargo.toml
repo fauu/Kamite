@@ -1,5 +1,6 @@
 [workspace]
 members = ["linux", "win"]
+resolver = "2"
 
 [profile.release]
 strip = true

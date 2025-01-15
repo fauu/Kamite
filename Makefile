@@ -96,7 +96,7 @@ launcher-linux:
 
 launcher-win:
 	mkdir -p target/launcher/res
-	convert res/icon/icon-16.png res/icon/icon-32.png res/icon/icon-48.png res/icon/icon-256.png \
+	magick res/icon/icon-16.png res/icon/icon-32.png res/icon/icon-48.png res/icon/icon-256.png \
     target/launcher/res/icon.ico
 	pushd launcher
 	x86_64-w64-mingw32-windres win/res/resources.rc --output "$(LAUNCHER_TARGET_DIR)/res/resources.o"
