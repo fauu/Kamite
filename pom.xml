@@ -172,6 +172,28 @@
         <source>${maven.compiler.source}</source>
         <target>${maven.compiler.target}</target>
       </configuration>
+      <executions>
+        <execution>
+          <id>generate-log4j-plugin-descriptor</id>
+          <goals>
+            <goal>compile</goal>
+          </goals>
+          <phase>process-classes</phase>
+          <configuration>
+            <proc>only</proc>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-core</artifactId>
+                <version>2.24.3</version>
+              </path>
+            </annotationProcessorPaths>
+            <annotationProcessors>
+              <processor>org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor</processor>
+            </annotationProcessors>
+          </configuration>
+        </execution>
+      </executions>
     </plugin>
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
