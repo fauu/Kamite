@@ -108,8 +108,8 @@ lint: lint-docs lint-java lint-ts
 .PHONY: lint
 
 lint-docs:
-	markdownlint README.md
-	markdownlint CHANGELOG.md
+	markdownlint-cli2 README.md
+	markdownlint-cli2 CHANGELOG.md
 .PHONY: lint-docs
 
 lint-java: lint-spotbugs lint-pmd
