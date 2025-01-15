@@ -52,12 +52,12 @@ public class Server {
     javalinInstance = Javalin.create(config -> {
       config.http.maxRequestSize = 10_000_000L; // Bump for image recognition requests
       if (Env.isDevMode()) {
-        config.plugins.enableDevLogging();
+        config.bundledPlugins.enableDevLogging();
       }
       if (!Env.isDevMode() || serveStaticInDevMode) {
         config.staticFiles.add("/web", Location.CLASSPATH);
       }
-      config.jetty.wsFactoryConfig(wsFactory -> wsFactory.setIdleTimeout(WS_IDLE_TIMEOUT));
+      config.jetty.modifyWebSocketServletFactory(wsFactory -> wsFactory.setIdleTimeout(WS_IDLE_TIMEOUT));
     })
       .events(event -> {
         event.serverStarted(() -> {
