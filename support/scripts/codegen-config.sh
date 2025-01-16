@@ -43,8 +43,9 @@ Region
 Handlers\$Elm
 Handler
 ___HERE
-# Make PMD ignore the generated file
-sed -ri "/^public record Config/i @SuppressWarnings(\"PMD\")" "$CONFIG_FILE_PATH"
+
+sed -ri "/^public record Config/i @SuppressWarnings(\"all\")" "$CONFIG_FILE_PATH"
+
 # Make enum value parsing case-insensitive and add default values
 patch_enum () {
   local name=$1
