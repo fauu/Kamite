@@ -19,7 +19,7 @@
     <rule ref="category/java/bestpractices.xml/AvoidUsingHardCodedIP"/>
     <rule ref="category/java/bestpractices.xml/CheckResultSet"/>
     <rule ref="category/java/bestpractices.xml/ConstantsInInterface"/>
-    <rule ref="category/java/bestpractices.xml/DefaultLabelNotLastInSwitchStmt"/>
+    <rule ref="category/java/bestpractices.xml/DefaultLabelNotLastInSwitch"/>
     <rule ref="category/java/bestpractices.xml/DoubleBraceInitialization"/>
     <rule ref="category/java/bestpractices.xml/ForLoopCanBeForeach"/>
     <!-- <rule ref="category/java/bestpractices.xml/ForLoopVariableCount" /> -->
@@ -32,7 +32,7 @@
     <rule ref="category/java/bestpractices.xml/PrimitiveWrapperInstantiation"/>
     <rule ref="category/java/bestpractices.xml/PreserveStackTrace"/>
     <rule ref="category/java/bestpractices.xml/SimplifiableTestAssertion"/>
-    <rule ref="category/java/bestpractices.xml/SwitchStmtsShouldHaveDefault"/>
+    <rule ref="category/java/bestpractices.xml/NonExhaustiveSwitch"/>
     <!-- <rule ref="category/java/bestpractices.xml/SystemPrintln" /> -->
     <!-- <rule ref="category/java/bestpractices.xml/UnusedAssignment"/> -->
     <rule ref="category/java/bestpractices.xml/UnusedFormalParameter"/>
@@ -228,7 +228,7 @@
     <!-- <rule ref="category/java/errorprone.xml/MissingSerialVersionUID" /> -->
     <rule ref="category/java/errorprone.xml/MissingStaticMethodInNonInstantiatableClass"/>
     <!-- <rule ref="category/java/errorprone.xml/MoreThanOneLogger" /> -->
-    <rule ref="category/java/errorprone.xml/NonCaseLabelInSwitchStatement"/>
+    <rule ref="category/java/errorprone.xml/NonCaseLabelInSwitch"/>
     <rule ref="category/java/errorprone.xml/NonStaticInitializer"/>
     <!-- <rule ref="category/java/errorprone.xml/NullAssignment" /> -->
     <rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashcode"/>

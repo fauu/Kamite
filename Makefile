@@ -122,7 +122,7 @@ lint-spotbugs:
 
 lint-pmd:
 	export PMD_JAVA_OPTS=--enable-preview
-	pmd --use-version java-19-preview -d src/main/java -f text \
+	pmd check --use-version java-23-preview -d src/main/java -f text \
 		-R support/definitions/pmd-ruleset.xml
 .PHONY: lint-pmd
 
