@@ -29,9 +29,9 @@ public enum MessageType {
 
   public static Optional<MessageType> fromLog4jStandardLevel(StandardLevel level) {
     return Optional.ofNullable(switch (level) {
-      case INFO  -> MessageType.INFO;
-      case WARN  -> MessageType.WARNING;
-      case ERROR -> MessageType.ERROR;
+      case INFO  -> INFO;
+      case WARN  -> WARNING;
+      case ERROR -> ERROR;
       default -> null;
     });
   }

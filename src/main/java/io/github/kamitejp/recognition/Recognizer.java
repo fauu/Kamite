@@ -509,8 +509,8 @@ public class Recognizer {
     var numExecutions = tesseractResultFutures.size();
     var numExecutionFails = 0;
     var numTimeouts = 0;
-    ArrayList<String> errorMsgs = null;
-    ArrayList<LabelledTesseractHOCROutput> variants = null;
+    List<String> errorMsgs = null;
+    List<LabelledTesseractHOCROutput> variants = null;
     for (var labelledResultFuture : tesseractResultFutures) {
       LabelledTesseractResult labelledResult = null;
       try {
@@ -575,7 +575,7 @@ public class Recognizer {
     return Result.Ok(new BoxRecognitionOutput(parsedVariants));
   }
 
-  private static class LineBucket {
+  private static final class LineBucket {
     private float avgX = Float.NaN;
     private int minY = Integer.MAX_VALUE;
     private int maxY = Integer.MIN_VALUE;

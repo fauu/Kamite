@@ -125,7 +125,7 @@ public final class Rectangle {
         bottom = r.getBottom();
       }
     }
-    return Rectangle.ofEdges(left, top, right, bottom);
+    return ofEdges(left, top, right, bottom);
   }
 
   public static Rectangle ofEdges(int left, int top, int right, int bottom) {
@@ -167,7 +167,7 @@ public final class Rectangle {
   }
 
   public static <T extends java.awt.geom.Rectangle2D> Rectangle fromAWT(T r) {
-    return Rectangle.ofStartAndDimensions(
+    return ofStartAndDimensions(
       (int) r.getX(),
       (int) r.getY(),
       (int) r.getWidth(),

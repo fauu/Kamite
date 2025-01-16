@@ -173,7 +173,7 @@ public final class ScreenSelector extends JFrame {
     setBounds(fullBounds);
 
     setVisible(true);
-    setExtendedState(Frame.NORMAL);
+    setExtendedState(NORMAL);
     toFront();
     requestFocus();
   }
@@ -205,7 +205,8 @@ public final class ScreenSelector extends JFrame {
       : Point.from(e.getLocationOnScreen());
   }
 
-  private class MouseListener extends MouseAdapter {
+  private final class MouseListener extends MouseAdapter {
+    @Override
     public void mousePressed(MouseEvent e) {
       if (futurePoint != null) {
         deactivate();
@@ -216,11 +217,13 @@ public final class ScreenSelector extends JFrame {
       setStartPoint(e.getPoint(), getVirtualScreenCursorPosition(e));
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
       setEndPoint(e.getPoint(), getVirtualScreenCursorPosition(e));
       repaint();
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
       setEndPoint(e.getPoint(), getVirtualScreenCursorPosition(e));
       repaint();
@@ -242,7 +245,7 @@ public final class ScreenSelector extends JFrame {
     }
   }
 
-  private class KeyListener extends KeyAdapter {
+  private final class KeyListener extends KeyAdapter {
     @Override
     public void keyPressed(KeyEvent e) {
       if (CANCEL_KEYS.contains(e.getKeyCode())) {

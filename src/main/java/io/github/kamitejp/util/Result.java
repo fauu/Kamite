@@ -49,7 +49,7 @@ public abstract class Result<L, R> {
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   public static <T, R> Result<T, R> of(Optional<T> optional, R errValue) {
-    return optional.<Result<T, R>>map(Result::Ok).orElseGet(() -> Result.Err(errValue));
+    return optional.<Result<T, R>>map(Result::Ok).orElseGet(() -> Err(errValue));
   }
 
   public static class Ok<L, R> extends Result<L, R> {
@@ -75,10 +75,7 @@ public abstract class Result<L, R> {
 
     @Override
     public boolean equals(Object object) {
-      if (object instanceof final Ok<?, ?> other) {
-        return value.equals(other.value);
-      }
-      return false;
+      return object instanceof final Ok<?, ?> other && value.equals(other.value);
     }
 
     @Override
@@ -122,10 +119,7 @@ public abstract class Result<L, R> {
 
     @Override
     public boolean equals(Object object) {
-      if (object instanceof final Err<?, ?> other) {
-        return value.equals(other.value);
-      }
-      return false;
+      return object instanceof final Err<?, ?> other && value.equals(other.value);
     }
 
     @Override

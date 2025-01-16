@@ -30,7 +30,7 @@ public final class ProcessHelper {
         process.getOutputStream().write(params.getInputBytes());
       }
       process.getOutputStream().close();
-      var out = ProcessHelper.readStdoutAndStderr(process);
+      var out = readStdoutAndStderr(process);
       return ProcessResult.completed(process.waitFor(), out.stdout(), out.stderr());
     } catch (ProcessTimeoutException e) {
       LOG.debug("Process '{}' has timed out", params.getCmd()[0]);
@@ -55,7 +55,7 @@ public final class ProcessHelper {
     try {
       var process = pb.start();
       process.getOutputStream().close();
-      var out = ProcessHelper.readStdoutBinaryAndStderr(process);
+      var out = readStdoutBinaryAndStderr(process);
       return ProcessResult.completed(process.waitFor(), out.stdout(), out.stderr());
     } catch (Exception e) {
       LOG.debug("Exception while running process '{}': {}", params.getCmd()[0], e);

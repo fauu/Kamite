@@ -53,7 +53,7 @@ public final class MessageAppender extends AbstractAppender {
   }
 
   public static void setTargetContainer(Container container) {
-    MessageAppender.targetContainer = container;
+    targetContainer = container;
   }
 
   @Override

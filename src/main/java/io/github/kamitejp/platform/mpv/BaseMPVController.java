@@ -138,6 +138,7 @@ public abstract class BaseMPVController implements MPVController {
       this.messagesCb = messagesCb;
     }
 
+    @Override
     public void run() {
       LOG.debug("Waiting for mpv connection");
       connect();
