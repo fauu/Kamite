@@ -19,7 +19,6 @@ import { notebookTabIsEmbeddedLookup, type NotebookTab } from "./tabs";
 interface NotebookProps {
   state: NotebookState,
   lookupText: string,
-  chunkPicker: JSX.Element,
   chunkHistory: JSX.Element,
   settings: JSX.Element,
   debug: JSX.Element,
@@ -120,9 +119,6 @@ export const Notebook: VoidComponent<NotebookProps> = (props) => {
           <Switch>
             <Match when={notebookTabIsEmbeddedLookup(tab)}>
               <iframe></iframe>
-            </Match>
-            <Match when={tab.id === "chunk-picker"}>
-              {props.chunkPicker}
             </Match>
             <Match when={tab.id === "chunk-history"}>
               {props.chunkHistory}

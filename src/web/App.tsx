@@ -36,7 +36,7 @@ import { TooltipView } from "~/common/floating";
 import { notifyUser, type NotificationToastKind } from "~/common/notify";
 import { MSECS_IN_SECS } from "~/common/time";
 import {
-  ChunkHistory, ChunkPicker, createDebugState, createNotebookState, Debug, Notebook
+  ChunkHistory, createDebugState, createNotebookState, Debug, Notebook
 } from "~/notebook";
 import {
   availableChunkHistoryActions as getAvailableChunkHistoryActions, type ChunkHistoryAction
@@ -79,10 +79,9 @@ export const App: VoidComponent = () => {
     createSignal(false);
   const [movingMouseWhilePrimaryDown, setMovingMouseWhilePrimaryDown] =
     createSignal(false);
-  const [ impedeClickMoveChunkTextSelect, setImpedeClickMoveChunkTextSelect ] = createSignal(false);
+  const [impedeClickMoveChunkTextSelect, setImpedeClickMoveChunkTextSelect] = createSignal(false);
   const [debugMode, setDebugMode] =
     createSignal(false);
-
 
   let mainSectionEl: HTMLDivElement | undefined;
   let commandPaletteEl: HTMLDivElement | undefined;
@@ -90,7 +89,6 @@ export const App: VoidComponent = () => {
   let chunkInputEl: HTMLTextAreaElement | undefined;
   let chunkLabelAndTranslationEl: HTMLDivElement;
   let statusPanelEl!: HTMLDivElement;
-  let chunkPickerEl!: HTMLDivElement;
 
   let mouseY = 0;
 
@@ -152,8 +150,6 @@ export const App: VoidComponent = () => {
   const availableChunkHistoryActions =
     createMemo(() => getAvailableChunkHistoryActions(chunks));
 
-  let revealedChunkPickerTab = false;
-
   // === EFFECTS ==================================================================================
 
   createEffect(on(config, c => {
@@ -178,12 +174,6 @@ export const App: VoidComponent = () => {
   createEffect(() => chunks.setWaiting(recognizerStatus().kind === "processing"));
 
   createEffect(() => notebook.setTabHidden("debug", !debugMode()));
-
-  // We have a special handling for the selection if Chunk Picker is active, so it's better to
-  // clear the existing selection when activating the picker
-  createEffect(() =>
-    notebook.activeTab().id === "chunk-picker" && chunks.textSelection.set(undefined)
-  );
 
   // === ON MOUNT =================================================================================
 
@@ -226,7 +216,7 @@ export const App: VoidComponent = () => {
     }
     if (chunks.editing()) {
       // Exit Chunk edit mode with a mouse click except when clicked inside the following elements
-      const exceptionalEls = [commandPaletteEl, chunkInputEl, chunkPickerEl];
+      const exceptionalEls = [commandPaletteEl, chunkInputEl];
       const insideExceptionalEl = exceptionalEls.some(el => el && el.contains(target as Node));
       if (!insideExceptionalEl) {
         chunks.finishEditing();
@@ -420,17 +410,6 @@ export const App: VoidComponent = () => {
             flash: true,
           }
         );
-
-        if (msg.variants.length > 1) {
-          setChunkVariants(msg.variants.slice(1));
-          if (!revealedChunkPickerTab) {
-            notebook.setTabHidden("chunk-picker", false);
-            revealedChunkPickerTab = true;
-          }
-          if (notebook.activeTab().id !== "debug") {
-            notebook.activateTab("chunk-picker");
-          }
-        }
 
         break;
       }
@@ -754,11 +733,6 @@ export const App: VoidComponent = () => {
 
     const anchorParentEl = selection?.anchorNode?.parentElement;
 
-    const selectingInChunkPicker = anchorParentEl && chunkPickerEl.contains(anchorParentEl);
-    if (selectingInChunkPicker) {
-      return;
-    }
-
     const selectingInChunkTranslation =
       anchorParentEl?.classList.contains(ChunkCurrentTranslationSelectionParentClass)
       && selection!.type === "Range";
@@ -771,20 +745,6 @@ export const App: VoidComponent = () => {
       // if the current modification of browser's selection doesn't come from that, we must clear
       // Kamite's selection so that it's not out of sync
       chunks.textSelection.set(undefined);
-    }
-
-    if (selection && fromKamiteChunkAction && notebook.activeTab().id === "chunk-picker") {
-      // Special case: Chunk Picker is active and we want to allow simultaneous selection in main
-      // chunk and in chunk picker so that selected text from main chunk could be replaced with
-      // selected text in chunk picker.
-      // Chrome (as opposed to Firefox) doesn't allow selections with multiple ranges, so the way
-      // we achieve this instead is by disabling syncing of main chunk selection into browser
-      // selection in this special case. The code below vetoes syncing main chunk text selection
-      // to browser text selection and then sets a flag that makes it so this clearing of browser
-      // selection doesn't loop back and clear the change in main chunk text selection that
-      // triggered it in the first place.
-      selection.removeAllRanges();
-      selection.skipNextMainProcessing = true;
     }
 
     // We hide the native browser selection highlight in main chunk due to a Chrome quirk, so we
@@ -828,8 +788,6 @@ export const App: VoidComponent = () => {
           furiganaMaybeRubies: [],
         }
       }]);
-      notebook.setTabHidden("chunk-picker", false);
-      revealedChunkPickerTab = true;
     }, 200);
   }
 
@@ -907,14 +865,6 @@ export const App: VoidComponent = () => {
       <Notebook
         state={notebook}
         lookupText={untrack(chunks.effectiveText)}
-        chunkPicker={
-          <ChunkPicker
-            variants={chunkVariants()}
-            debug={debugMode()}
-            onPick={handleChunkVariantPick}
-            ref={chunkPickerEl}
-            />
-        }
         chunkHistory={
           <ChunkHistory
             state={chunks}
