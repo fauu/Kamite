@@ -31,6 +31,7 @@ import io.github.kamitejp.util.JSON;
 import io.github.kamitejp.util.Result;
 
 public class OCRSpaceAdapter implements RemoteOCRAdapter {
+  @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final int REQUEST_TIMEOUT_BASE_S = 10;

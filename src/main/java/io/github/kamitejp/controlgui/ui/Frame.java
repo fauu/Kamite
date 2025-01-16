@@ -52,7 +52,7 @@ public class Frame extends JFrame {
     Message.platform = platform;
 
     var quitButton = new JButton("Close Kamite");
-    quitButton.addActionListener(e -> System.exit(0));
+    quitButton.addActionListener(_ -> System.exit(0));
 
     layout.setHorizontalGroup(
       layout.createParallelGroup()

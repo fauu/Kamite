@@ -93,7 +93,7 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
 
     var slopRes = slop.getAreaSelectionFromUser();
     return switch (slopRes) {
-      case SlopResult.ExecutionFailed __ -> {
+      case SlopResult.ExecutionFailed _ -> {
         LOG.error("slop did not execute properly");
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
@@ -103,7 +103,7 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
 
-      case SlopResult.Cancelled ignored -> Result.Err(RecognitionOpError.SELECTION_CANCELLED);
+      case SlopResult.Cancelled _ -> Result.Err(RecognitionOpError.SELECTION_CANCELLED);
 
       case SlopResult.FormatDifferentFromExpected expected -> {
         LOG.error(
@@ -113,7 +113,7 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
 
-      case SlopResult.ZeroArea ignored -> {
+      case SlopResult.ZeroArea _ -> {
         LOG.error("slop returned a zero area");
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }

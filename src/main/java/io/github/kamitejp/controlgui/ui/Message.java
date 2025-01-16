@@ -43,7 +43,7 @@ public class Message extends JPanel {
 
     if (url[0] != null) {
       mainLabel.addMouseListener(
-        new LinkMessageMouseAdapter(ignored -> platform.openURL(url[0]))
+        new LinkMessageMouseAdapter(_ -> platform.openURL(url[0]))
       );
     }
 

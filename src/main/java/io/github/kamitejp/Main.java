@@ -53,7 +53,7 @@ Options:
       .collect(toMap(
         segs -> segs[0],
         segs -> segs.length == 2 ? segs[1] : "true",
-        (arg1, arg2) -> arg2 // Keep last
+        (_, arg2) -> arg2 // Keep last
       ));
   }
 }

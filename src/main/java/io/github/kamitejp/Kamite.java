@@ -543,9 +543,9 @@ public class Kamite {
         status.updateRecognizerStatus(RecognizerStatus.Kind.IDLE, e.availableCommands());
         sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
       }
-      case RecognizerEvent.MangaOCRStartedDownloadingModel ignored ->
+      case RecognizerEvent.MangaOCRStartedDownloadingModel _ ->
         notifyUserOfInfo("\"Manga OCR\" is downloading OCR model. This might take a while…");
-      case RecognizerEvent.Crashed ignored -> {
+      case RecognizerEvent.Crashed _ -> {
         LOG.info("Recognizer has crashed and will not be restarted");
         notifyUserOfError("Recognizer has crashed. Text recognition will be unavailable");
         updateAndSendRecognizerStatus(RecognizerStatus.Kind.UNAVAILABLE);
@@ -580,13 +580,13 @@ public class Kamite {
 
   private void handleServerEvent(ServerEvent event) {
     switch (event) {
-      case ServerEvent.Started ignored -> {
+      case ServerEvent.Started _ -> {
         if (config.launchBrowser()) {
           platform.openURL("http://localhost:%d".formatted(config.server().port()));
           LOG.info("Navigated to web UI URL in web browser");
         }
       }
-      case ServerEvent.ClientConnected ignored -> {
+      case ServerEvent.ClientConnected _ -> {
         LOG.info("Client connected");
         // NOTE: The order is important so that unavailable settings can be disabled before
         //       the config is applied
@@ -701,13 +701,13 @@ public class Kamite {
           return;
         }
         switch (cmd) { // NOPMD - misidentifies as non-exhaustive
-          case Command.OCR.ManualBlock ignored ->
+          case Command.OCR.ManualBlock _ ->
             recognitionConductor.recognizeManualBlockDefault();
-          case Command.OCR.ManualBlockVertical ignored ->
+          case Command.OCR.ManualBlockVertical _ ->
             recognitionConductor.recognizeManualBlock(TextOrientation.VERTICAL);
-          case Command.OCR.ManualBlockHorizontal ignored ->
+          case Command.OCR.ManualBlockHorizontal _ ->
             recognitionConductor.recognizeManualBlock(TextOrientation.HORIZONTAL);
-          case Command.OCR.ManualBlockRotated ignored ->
+          case Command.OCR.ManualBlockRotated _ ->
             recognitionConductor.recognizeManualBlockRotated();
           case Command.OCR.AutoBlock cm ->
             recognitionConductor.recognizeAutoBlockDefault(cm.mode());
@@ -722,19 +722,19 @@ public class Kamite {
 
       case Command.Player cmd -> {
         var mpvCmd = switch (cmd) {
-          case Command.Player.PlayPause ignored    -> new MPVCommand.PlayPause();
-          case Command.Player.SeekBack ignored     -> new MPVCommand.Seek(-1);
-          case Command.Player.SeekForward ignored  -> new MPVCommand.Seek(1);
-          case Command.Player.SeekStartSub ignored -> new MPVCommand.SeekStartSub();
+          case Command.Player.PlayPause _    -> new MPVCommand.PlayPause();
+          case Command.Player.SeekBack _     -> new MPVCommand.Seek(-1);
+          case Command.Player.SeekForward _  -> new MPVCommand.Seek(1);
+          case Command.Player.SeekStartSub _ -> new MPVCommand.SeekStartSub();
         };
         mpvController.sendCommand(mpvCmd);
       }
 
       case Command.CharacterCounter cmd -> {
         switch (cmd) { // NOPMD - misidentifies as non-exhaustive
-          case Command.CharacterCounter.ToggleFreeze ignored ->
+          case Command.CharacterCounter.ToggleFreeze _ ->
             status.getCharacterCounter().toggleFreeze();
-          case Command.CharacterCounter.Reset ignored -> {
+          case Command.CharacterCounter.Reset _ -> {
             status.getCharacterCounter().reset();
             notifyUserOfInfo("Character counter has been reset");
           }
@@ -744,13 +744,13 @@ public class Kamite {
 
       case Command.SessionTimer cmd -> {
         switch (cmd) { // NOPMD - misidentifies as non-exhaustive
-          case Command.SessionTimer.Start ignored ->
+          case Command.SessionTimer.Start _ ->
             status.getSessionTimer().start();
-          case Command.SessionTimer.Stop ignored ->
+          case Command.SessionTimer.Stop _ ->
             status.getSessionTimer().stop();
-          case Command.SessionTimer.Toggle ignored ->
+          case Command.SessionTimer.Toggle _ ->
             status.getSessionTimer().toggle();
-          case Command.SessionTimer.Reset ignored -> {
+          case Command.SessionTimer.Reset _ -> {
             status.getSessionTimer().reset();
             notifyUserOfInfo("Session timer has been reset");
           }

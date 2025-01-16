@@ -152,13 +152,13 @@ public class Recognizer {
 
     LOG.debug("Starting box recognition");
     return switch (engine) {
-      case OCREngine.Tesseract ignored     -> recognizeBoxTesseract(img, textOrientation);
+      case OCREngine.Tesseract _     -> recognizeBoxTesseract(img, textOrientation);
       case OCREngine.MangaOCR engine       -> recognizeBoxMangaOCR(engine.controller(), img);
       case OCREngine.MangaOCROnline engine -> recognizeBoxRemote(engine.adapter(), img);
       case OCREngine.OCRSpace engine       -> recognizeBoxRemote(engine.adapter(), img);
       case OCREngine.EasyOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
       case OCREngine.HiveOCROnline engine  -> recognizeBoxRemote(engine.adapter(), img);
-      case OCREngine.None ignored          -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+      case OCREngine.None _          -> Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
     };
   }
 
@@ -357,7 +357,7 @@ public class Recognizer {
       mightAttempt = false;
       if (res.isErr()) {
         var msg = switch (res.err()) {
-          case RemoteOCRRequestError.Timeout ignored -> {
+          case RemoteOCRRequestError.Timeout _ -> {
             mightAttempt = true;
             yield "HTTP request timed out";
           }
@@ -365,7 +365,7 @@ public class Recognizer {
             mightAttempt = true;
             yield "HTTP client send execution has failed: %s".formatted(err.exceptionMessage());
           }
-          case RemoteOCRRequestError.Unauthorized ignored ->
+          case RemoteOCRRequestError.Unauthorized _ ->
             "Received `Unauthorized` response. The provided API key is likely invalid";
           case RemoteOCRRequestError.UnexpectedStatusCode err ->
             "Received unexpected status code: %s".formatted(err.code());
@@ -521,9 +521,9 @@ public class Recognizer {
         continue;
       }
       switch (labelledResult.result) { // NOPMD - misidentifies as non-exhaustive
-        case TesseractResult.ExecutionFailed ignored ->
+        case TesseractResult.ExecutionFailed _ ->
           numExecutionFails++;
-        case TesseractResult.TimedOut ignored ->
+        case TesseractResult.TimedOut _ ->
           numTimeouts++;
         case TesseractResult.Error error -> {
           if (errorMsgs == null) {
@@ -729,13 +729,13 @@ public class Recognizer {
 
   private void handleMangaOCREvent(MangaOCREvent event) {
     var transformedEvent = switch (event) {
-      case MangaOCREvent.Started ignored ->
+      case MangaOCREvent.Started _ ->
         null;
-      case MangaOCREvent.StartedDownloadingModel ignored ->
+      case MangaOCREvent.StartedDownloadingModel _ ->
         new RecognizerEvent.MangaOCRStartedDownloadingModel();
-      case MangaOCREvent.Crashed ignored ->
+      case MangaOCREvent.Crashed _ ->
         new RecognizerEvent.Crashed();
-      case MangaOCREvent.TimedOutAndRestarting ignored ->
+      case MangaOCREvent.TimedOutAndRestarting _ ->
         new RecognizerEvent.Restarting(RecognizerRestartReason.MANGA_OCR_TIMED_OUT_AND_RESTARTING);
     };
     if (transformedEvent != null) {

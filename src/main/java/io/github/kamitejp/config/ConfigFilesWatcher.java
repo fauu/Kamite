@@ -50,7 +50,7 @@ final class ConfigFilesWatcher implements Runnable {
       }
     } catch (IOException e) {
       LOG.error("Exception while creating file watcher:", e);
-    } catch (InterruptedException ignored) {
+    } catch (InterruptedException _) {
       LOG.debug("Watch service was interrupted");
     }
   }

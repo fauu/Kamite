@@ -84,9 +84,9 @@ public abstract class BaseMPVController implements MPVController {
               LOG.debug("Did not handle mpv property change: {}", msg.name());
           }
         }
-        case MPVMessage.EndFile ignored ->
+        case MPVMessage.EndFile _ ->
           gotQuitMessage = true;
-        case MPVMessage.Unrecognized ignored ->
+        case MPVMessage.Unrecognized _ ->
           LOG.trace("Did not handle an unrecognized mpv message");
       }
     }

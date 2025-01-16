@@ -18,6 +18,7 @@ import io.github.kamitejp.util.Result;
 
 @SuppressWarnings("PMD")
 public class PlasmaPlatform extends WaylandPlatform {
+  @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public PlasmaPlatform() throws PlatformCreationException {

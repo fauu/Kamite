@@ -47,7 +47,7 @@ public class ControlGUI {
       .toList();
 
   public ControlGUI(Platform platform) {
-    LafManager.registerDefaultsAdjustmentTask((theme, p) -> {
+    LafManager.registerDefaultsAdjustmentTask((_, p) -> {
       p.put("background", COLOR_BG);
       p.put("backgroundContainer", COLOR_BG2_HL);
       p.put("Label.foreground", COLOR_FG);
@@ -55,7 +55,7 @@ public class ControlGUI {
       p.put("Button.background", COLOR_BG2);
     });
 
-    LafManager.registerInitTask((theme, d) -> {
+    LafManager.registerInitTask((_, d) -> {
       d.put("Button.activeFillColorClick", COLOR_BG3);
     });
 

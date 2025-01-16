@@ -103,7 +103,7 @@ public final class ConfigManager {
       config = read(configFiles, programArgsConfig);
       LOG.debug("Read config: {}", config);
 
-      configFilesWatcher = new ConfigFilesWatcher(configFiles, (ignored) -> {
+      configFilesWatcher = new ConfigFilesWatcher(configFiles, _ -> {
         try {
           var newConfig = reload();
           // PERF: Reject doubled config file change event before parsing the config

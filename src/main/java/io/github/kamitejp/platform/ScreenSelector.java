@@ -3,7 +3,6 @@ package io.github.kamitejp.platform;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
@@ -29,6 +28,7 @@ import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 
 public final class ScreenSelector extends JFrame {
+  @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final List<Integer> CANCEL_KEYS = List.of(KeyEvent.VK_ESCAPE, KeyEvent.VK_Q);

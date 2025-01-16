@@ -21,7 +21,7 @@ public interface GlobalKeybindingProvider {
       throw new InvalidKeyStrokeException();
     }
 
-    getKeymasterProvider().register(keyStroke, keybinding -> cb.run());
+    getKeymasterProvider().register(keyStroke, _ -> cb.run());
   }
 
   default void destroyKeybindings() {

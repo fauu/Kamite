@@ -15,11 +15,11 @@ public sealed interface MPVCommand
       + switch (this) {
         case ObserveProperty cmd ->
           "\"observe_property\", 0, \"%s\"".formatted(cmd.name());
-        case PlayPause ignored ->
+        case PlayPause _ ->
           "\"cycle\", \"pause\"";
         case Seek cmd ->
           "\"seek\", %s, \"exact\"".formatted(cmd.seconds);
-        case SeekStartSub ignored ->
+        case SeekStartSub _ ->
           "\"sub-seek\", 0";
       }
       + "]}\n";

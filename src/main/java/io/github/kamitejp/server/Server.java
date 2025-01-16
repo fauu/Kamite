@@ -67,12 +67,12 @@ public class Server {
       })
       .get("/custom.css", this::handleGetCustomCSS)
       .post("/cmd/{group}/{name}", this::handleCommandPost)
-      .exception(Exception.class, (e, ctx) -> {
+      .exception(Exception.class, (e, _) -> {
         LOG.error("Could not handle HTTP request. See stderr for the stack trace");
         e.printStackTrace();
       })
       .ws("/ws", this::setupWS)
-      .wsException(Exception.class, (e, ctx) -> {
+      .wsException(Exception.class, (e, _) -> {
         LOG.error("Could not handle WS request. See stderr for the stack trace");
         e.printStackTrace();
       });

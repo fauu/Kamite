@@ -145,7 +145,7 @@ public class WlrootsPlatform extends WaylandPlatform {
 
     var slurpRes = slurp.getSelectionFromUser(mode, fade);
     return switch (slurpRes) {
-      case SlurpResult.ExecutionFailed ignored -> {
+      case SlurpResult.ExecutionFailed _ -> {
         LOG.error("slurp did not execute properly");
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
@@ -155,7 +155,7 @@ public class WlrootsPlatform extends WaylandPlatform {
         yield Result.Err(RecognitionOpError.SELECTION_FAILED);
       }
 
-      case SlurpResult.Cancelled ignored -> Result.Err(RecognitionOpError.SELECTION_CANCELLED);
+      case SlurpResult.Cancelled _ -> Result.Err(RecognitionOpError.SELECTION_CANCELLED);
 
       case SlurpResult.FormatDifferentFromExpected expected -> {
         LOG.error(
@@ -174,7 +174,7 @@ public class WlrootsPlatform extends WaylandPlatform {
       CompletableFuture.supplyAsync(() -> wlrctl.mouseClick(), wlrctlDelayedExecutor);
     try {
       switch (futureWlrctlRes.get()) {
-        case WlrctlResult.ExecutionFailed ignored -> {
+        case WlrctlResult.ExecutionFailed _ -> {
           LOG.error("wlrctl did not execute properly");
         }
         case WlrctlResult.Error error -> {
@@ -194,7 +194,7 @@ public class WlrootsPlatform extends WaylandPlatform {
     }
     var selection = "%d,%d %dx%d".formatted(a.getLeft(), a.getTop(), a.getWidth(), a.getHeight());
     return switch (grim.takeScreenshotOfSlurpSelection(selection)) {
-      case GrimResult.ExecutionFailed ignored -> {
+      case GrimResult.ExecutionFailed _ -> {
         LOG.error("grim did not execute properly");
         yield Result.Err(RecognitionOpError.SCREENSHOT_FAILED);
       }
