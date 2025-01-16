@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Backend (Dev)",
+      "type": "shell",
+      "command": "DEV=1 mvn compile exec:java -Dexec.args='--debug --controlWindow=no --launchBrowser=no'",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Client (Dev)",
+      "type": "shell",
+      "command": "pnpm dev",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+  ]
+}
