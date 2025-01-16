@@ -4,7 +4,7 @@
 PKG_NAME="io.github.kamitejp.config"
 PKG_BASE="src/main/java/io/github/kamitejp/config/"
 CLASS_NAME="Config"
-TSCFG_PATH="support/lib/tscfg/tscfg-1.0.0.jar"
+TSCFG_PATH="support/lib/tscfg/tscfg-1.2.1.jar"
 SPEC_PATH="config/config.spec.hocon"
 CONFIG_FILE_NAME="$CLASS_NAME.java"
 CONFIG_FILE_PATH="$PKG_BASE$CONFIG_FILE_NAME"
