@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import io.github.kamitejp.util.Result;
 
 public class HiveOCRHFAdapter extends BaseHFOCRAdapter {
+  @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public HiveOCRHFAdapter() {

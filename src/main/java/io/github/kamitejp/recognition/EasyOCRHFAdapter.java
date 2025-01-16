@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import io.github.kamitejp.util.Result;
 
 public class EasyOCRHFAdapter extends BaseHFOCRAdapter {
+  @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final Pattern OCR_RESPONSE_TEXT_FRAGMENT_RE = Pattern.compile("\"([^\"]*)\"");
