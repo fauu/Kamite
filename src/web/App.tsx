@@ -664,21 +664,22 @@ export const App: VoidComponent = () => {
 
       case "KeyC":
         if (event.ctrlKey) {
-          let allowDefault = true;
+          let handled = true;
+          let allowDefault = chunks.editing();
           if (event.altKey) {
-            allowDefault = false;
+            handled = false;
             const a = "copy-original";
             if (availableChunkHistoryActions().includes(a)) {
               handleChunkHistoryAction(a);
             } else if (actionsInclude(availableActions(), a)) {
               chunks.copyOriginalTextToClipboard();
             } else {
-              allowDefault = true;
+              handled = true;
             }
           }
-          if (allowDefault) {
+          if (handled) {
             if (chunks.selectingInTranslation()) {
-              // Allow default
+              allowDefault = true;
             } else if (actionsInclude(availableActions(), "copy-selected")) {
               chunks.copyTextToClipboard();
             } else if (availableChunkHistoryActions().includes("copy")) {
@@ -686,6 +687,9 @@ export const App: VoidComponent = () => {
             } else if (actionsInclude(availableActions(), "copy-all")) {
               chunks.copyTextToClipboard();
             }
+          }
+          if (!allowDefault) {
+            event.preventDefault();
           }
         }
         break;
