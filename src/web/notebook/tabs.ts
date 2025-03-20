@@ -21,6 +21,12 @@ export function lookupTargetSymbolToLookupTabID(n: LookupTarget["symbol"]) {
 
 export const BASE_NOTEBOOK_TABS: NotebookTab[] = [
   {
+    id: "chunk-picker",
+    title: "OCR Variants",
+    group: 0,
+    hidden: true,
+  },
+  {
     id: "chunk-history",
     title: "History",
     keepScrolled: true,
