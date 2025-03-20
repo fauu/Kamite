@@ -179,12 +179,6 @@ export const App: VoidComponent = () => {
 
   createEffect(() => notebook.setTabHidden("debug", !debugMode()));
 
-  // We have a special handling for the selection if Chunk Picker is active, so it's better to
-  // clear the existing selection when activating the picker
-  createEffect(() =>
-    notebook.activeTab().id === "chunk-picker" && chunks.textSelection.set(undefined)
-  );
-
   // === ON MOUNT =================================================================================
 
   onMount(() => {
@@ -747,11 +741,6 @@ export const App: VoidComponent = () => {
   document.addEventListener("selectionchange", () => {
     const selection = document.getSelection();
 
-    if (selection?.skipNextMainProcessing) {
-      selection.skipNextMainProcessing = false;
-      return;
-    }
-
     const anchorParentEl = selection?.anchorNode?.parentElement;
 
     const selectingInChunkPicker = anchorParentEl && chunkPickerEl.contains(anchorParentEl);
@@ -771,20 +760,6 @@ export const App: VoidComponent = () => {
       // if the current modification of browser's selection doesn't come from that, we must clear
       // Kamite's selection so that it's not out of sync
       chunks.textSelection.set(undefined);
-    }
-
-    if (selection && fromKamiteChunkAction && notebook.activeTab().id === "chunk-picker") {
-      // Special case: Chunk Picker is active and we want to allow simultaneous selection in main
-      // chunk and in chunk picker so that selected text from main chunk could be replaced with
-      // selected text in chunk picker.
-      // Chrome (as opposed to Firefox) doesn't allow selections with multiple ranges, so the way
-      // we achieve this instead is by disabling syncing of main chunk selection into browser
-      // selection in this special case. The code below vetoes syncing main chunk text selection
-      // to browser text selection and then sets a flag that makes it so this clearing of browser
-      // selection doesn't loop back and clear the change in main chunk text selection that
-      // triggered it in the first place.
-      selection.removeAllRanges();
-      selection.skipNextMainProcessing = true;
     }
 
     // We hide the native browser selection highlight in main chunk due to a Chrome quirk, so we

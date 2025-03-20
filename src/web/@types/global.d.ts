@@ -8,11 +8,6 @@ declare global {
     mainUIVisible: Accessor<boolean>,
   }
 
-  interface Selection {
-    // Whether to return early from `App`'s `selectionchange` handler the next time
-    skipNextMainProcessing?: boolean,
-  }
-
   interface Range {
     // E.g. `true` for highlight resulting from user chunk selection, `false` for highlight
     // resulting from Yomichan hover
