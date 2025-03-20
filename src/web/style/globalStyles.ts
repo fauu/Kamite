@@ -200,6 +200,9 @@ export const PaletteButtonClass = css`
     border-right: 1px solid var(--color-bg);
   }
 
+  /* NOTE: This selector breaks somwhere between goober 2.1.14-2.1.16 where it
+           starts to incorrectly apply to the child label element instead of the
+           button element */
   &:not(.${PaletteButtonDisabledClass}):hover {
     background-color: var(--color-bg3);
   }
