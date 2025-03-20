@@ -50,6 +50,7 @@ public class Server {
     this.eventCb = eventCb;
 
     javalinInstance = Javalin.create(config -> {
+      config.useVirtualThreads = true;
       config.http.maxRequestSize = 10_000_000L; // Bump for image recognition requests
       if (Env.isDevMode()) {
         config.bundledPlugins.enableDevLogging();
