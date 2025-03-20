@@ -36,22 +36,22 @@
   <dependency>
     <groupId>io.javalin</groupId>
     <artifactId>javalin</artifactId>
-    <version>6.4.0</version>
+    <version>6.5.0</version>
   </dependency>
   <dependency>
     <groupId>com.fasterxml.jackson.core</groupId>
     <artifactId>jackson-databind</artifactId>
-    <version>2.18.2</version>
+    <version>2.18.3</version>
   </dependency>
   <dependency>
     <groupId>com.fasterxml.jackson.datatype</groupId>
     <artifactId>jackson-datatype-jsr310</artifactId>
-    <version>2.18.2</version>
+    <version>2.18.3</version>
   </dependency>
   <dependency>
     <groupId>com.fasterxml.jackson.datatype</groupId>
     <artifactId>jackson-datatype-jdk8</artifactId>
-    <version>2.18.2</version>
+    <version>2.18.3</version>
   </dependency>
   <dependency>
     <groupId>com.neovisionaries</groupId>
@@ -86,12 +86,12 @@
   <dependency>
     <groupId>org.jsoup</groupId>
     <artifactId>jsoup</artifactId>
-    <version>1.18.3</version>
+    <version>1.19.1</version>
   </dependency>
   <dependency>
     <groupId>net.java.dev.jna</groupId>
     <artifactId>jna</artifactId>
-    <version>5.16.0</version>
+    <version>5.17.0</version>
   </dependency>
   <dependency>
     <groupId>com.github.atilika.kuromoji</groupId>
