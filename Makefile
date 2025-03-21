@@ -69,7 +69,7 @@ dist-linux: launcher-linux dist-prepare-generic
 dist-win: launcher-win dist-prepare-generic
 	pushd target
 	cp -r dist-base kamite
-	cp -r "$(WIN_RUNTIME)" kamite
+	cp -r "$(WIN_RUNTIME)" kamite/runtime
 	pushd kamite/runtime/bin
 	rm java.exe javaw.exe jrunscript.exe keytool.exe rmiregistry.exe kinit.exe klist.exe ktab.exe
 	popd
