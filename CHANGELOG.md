@@ -11,12 +11,42 @@
 
 ### Added
 
-* Approximate reading pace is now displayed in the Character counter (only
-  appears if both Character counter and Session timer have non-zero values).
+* Display a reading pace approximation in the Character counter. (Only
+  appears when both the Character counter and the Session timer are not zero).
+* Enable native browser right-click context menu for selections in the main
+  chunk view. This allows, e.g., the use of browser extensions like DeepL using
+  the selected text.
+* Count Chars mode: Launch Kamite with `--countChars` to get a character count
+  for the given text. Uses the same counting method as is used for the Character
+  counter in the normal run mode.
+* (API) Chunk translations can now be added for the chunk that is currently
+  being displayed in the client, instead of just for the latest chunk.
+
+### Changed
+
+* (Windows) Improved the performance and robustness of communication with mpv.
+* In flipped layout, the chunk translation is now displayed above the chunk
+  text.
+* Reduced the default chunk throttling interval to avoid missing legitimate
+  game text.
+* If a single character is selected in the main chunk view, clicking on it now
+  removes the selection.
+* Show a notification when the Session timer or the Character counter is reset.
+* Updated the runtime to Java 23.
+* Removed *Select highlighted* action (its usefulness was low and it complicated
+  other improvements).
+* Reduced the number of scenarios in which a simultaneous selection is allowed
+  in the main chunk view and the Chunk picker (only relevant for Tesseract OCR).
+  Now text in the main chunk has to be selected first, followed by its
+  replacement in the Chunk picker. (The usefulness of this functionality is low
+  and keeping it unchanged would have complicated other improvements).
 
 ### Fixed
 
-* Text from Hive OCR now has correctly formatted newlines.
+* Text coming from Hive OCR now has the correct new line formatting.
+* Toolbar button tooltips are no longer displayed over the main chunk text in
+  some situations.
+* Avoid unnecessary re-renders of the Status panel.
 
 ## [0.13] – 2023-03-17
 
