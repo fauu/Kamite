@@ -7,7 +7,7 @@
 <version>0.0.0</version>
 
 <properties>
-  <maven.compiler.release>24</maven.compiler.release>
+  <maven.compiler.release>23</maven.compiler.release>
 </properties>
 
 <repositories>
