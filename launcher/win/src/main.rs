@@ -12,8 +12,8 @@ use jni_sys_dynamic::{
     JNI_EVERSION, JNI_FALSE, JNI_OK, JNI_VERSION_10,
 };
 
-use winapi::um::winbase::SetDllDirectoryW;
-use winapi::um::wincon::{AttachConsole, ATTACH_PARENT_PROCESS};
+use windows_sys::Win32::System::LibraryLoader::SetDllDirectoryW;
+use windows_sys::Win32::System::Console::{AttachConsole, ATTACH_PARENT_PROCESS};
 
 const JVM_BIN_DIR_PATH_REL: &[&str] = &["runtime", "bin"];
 const JVM_DLL_PATH_REL: &[&str] = &["runtime", "bin", "server", "jvm.dll"];

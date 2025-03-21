@@ -12,6 +12,6 @@ name = "kamite-launcher-win-console-wrapper"
 path = "src/console_wrapper.rs"
 
 [dependencies]
-libloading = "0.7"
+libloading = "0.8.6"
 jni-sys-dynamic = { git = "https://github.com/fauu/jni-sys-dynamic-rs" }
-winapi = { version = "0.3.9", features = ["winbase", "wincon"] }
+windows-sys = { version = "0.59", features = ["Win32_System_LibraryLoader", "Win32_System_Console"] }
