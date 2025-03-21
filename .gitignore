@@ -1,3 +1,9 @@
+src/main/java/io/github/kamitejp/config/Config.java
+src/main/resources/known_config_keys.txt
+make-env
+.vscode/settings.json
+
+# Misc
 node_modules/
 target/
 .classpath
@@ -8,10 +14,6 @@ hs_err_*
 .parcel-cache/
 yarn-error.log
 \#*#
-
-src/main/java/io/github/kamitejp/config/Config.java
-src/main/resources/known_config_keys.txt
-make-env
 
 # JetBrains
 .idea/**/workspace.xml
