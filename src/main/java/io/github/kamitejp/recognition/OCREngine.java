@@ -16,6 +16,7 @@ public sealed interface OCREngine
           OCREngine.OCRSpace,
           OCREngine.EasyOCROnline,
           OCREngine.HiveOCROnline,
+          OCREngine.GLens,
           OCREngine.None {
   record Tesseract(String binPath) implements OCREngine {
     @Override
@@ -164,6 +165,31 @@ public sealed interface OCREngine
     }
   }
 
+  record GLens(GLensHFAdapter adapter) implements OCREngine {
+    public static GLens uninitialized() {
+      return new GLens(null);
+    }
+
+    public GLens initialized() {
+      if (adapter != null) {
+        throw new IllegalStateException(
+          "This OCREngine.GLens instance is already initialized"
+        );
+      }
+      return new GLens(new GLensHFAdapter());
+    }
+
+    @Override
+    public boolean isRemote() {
+      return true;
+    }
+
+    @Override
+    public String toString() {
+      return "G Lens (HF Space by akiraakirasharika)";
+    }
+  }
+
   record None() implements OCREngine {
     @Override
     public String toString() {
@@ -207,6 +233,8 @@ public sealed interface OCREngine
         OCREngine.EasyOCROnline.uninitialized();
       case HIVEOCR_ONLINE  ->
         OCREngine.HiveOCROnline.uninitialized();
+      case GLENS  ->
+        OCREngine.GLens.uninitialized();
       case NONE ->
         new OCREngine.None();
     };

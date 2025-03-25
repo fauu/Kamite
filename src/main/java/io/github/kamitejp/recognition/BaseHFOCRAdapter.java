@@ -23,7 +23,8 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
 
   private static final int REQUEST_TIMEOUT_S = 8;
 
-  private static final String API_ENDPOINT_TPL = "https://%s.hf.space/api/predict/";
+  private static final String DEFAULT_API_ENDPOINT_PATH = "/api/predict";
+  private static final String API_ENDPOINT_TPL = "https://%s.hf.space%s";
   private static final String OCR_REQUEST_BODY_TPL = "{\"data\": [\"data:%s;base64,%s\"%s]}";
 
   private final URI apiEndpoint;
@@ -33,11 +34,24 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
 
   public BaseHFOCRAdapter(
     String hfSpaceID,
+    String endpointPath,
     String requestExtraPayload,
     String responseTrimStartMarker,
     String responseTrimEndMarker
   ) {
-    this.apiEndpoint = URI.create(API_ENDPOINT_TPL.formatted(hfSpaceID));
+    this.apiEndpoint = URI.create(API_ENDPOINT_TPL.formatted(hfSpaceID, endpointPath));
+    this.requestExtraPayload = requestExtraPayload;
+    this.responseTrimStartMarker = responseTrimStartMarker;
+    this.responseTrimEndMarker = responseTrimEndMarker;
+  }
+
+  public BaseHFOCRAdapter(
+    String hfSpaceID,
+    String requestExtraPayload,
+    String responseTrimStartMarker,
+    String responseTrimEndMarker
+  ) {
+    this.apiEndpoint = URI.create(API_ENDPOINT_TPL.formatted(hfSpaceID, DEFAULT_API_ENDPOINT_PATH));
     this.requestExtraPayload = requestExtraPayload;
     this.responseTrimStartMarker = responseTrimStartMarker;
     this.responseTrimEndMarker = responseTrimEndMarker;
@@ -81,13 +95,14 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
         );
       }
       var textStartIdx = textStartMarkerIdx + responseTrimStartMarker.length();
-      var textEndMarkerIdx = res.body().indexOf(responseTrimEndMarker, textStartIdx);
+      var textEndMarkerIdx = responseTrimEndMarker == null
+        ? res.body().length()
+        : res.body().indexOf(responseTrimEndMarker, textStartIdx);
       if (textEndMarkerIdx == -1) {
         return Result.Err(
           new RemoteOCRRequestError.Other("Response did not contain the expected text end marker")
         );
       }
-
       resBody = resBody.substring(textStartIdx, textEndMarkerIdx);
     }
 
