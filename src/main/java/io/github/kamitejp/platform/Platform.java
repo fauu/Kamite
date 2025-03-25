@@ -52,7 +52,9 @@ public interface Platform {
     return !getUnsupportedFeatures().contains(feature);
   }
 
-  void initOCR() throws PlatformOCRInitializationException;
+  // XXX
+  // void initOCR() throws PlatformOCRInitializationException;
+  void initOCR();
 
   Path getGenericLibDirPath();
 

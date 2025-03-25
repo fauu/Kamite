@@ -29,27 +29,35 @@ public class MangaOCRController implements OCRAdapter {
   private static final int RECOGNITION_TIMEOUT_S = 8;
 
   private State state;
-  private final Consumer<MangaOCREvent> eventCb;
+  // XXX
+  // private final Consumer<MangaOCREvent> eventCb;
   private final String[] cmd;
   private Process process;
   private BufferedReader outputReader;
 
   public MangaOCRController(
-    Platform platform, String customPythonPath, Consumer<MangaOCREvent> eventCb
-  ) throws MangaOCRInitializationException {
-    this.eventCb = eventCb;
+    // XXX
+    // Platform platform, String customPythonPath, Consumer<MangaOCREvent> eventCb
+    Platform platform, String customPythonPath
+    // XXX
+  // ) throws MangaOCRInitializationException {
+  ) {
+    // XXX
+    // this.eventCb = eventCb;
 
     var pythonPath = effectivePythonPath(platform, customPythonPath);
     if (pythonPath == null) {
-      throw new MangaOCRInitializationException(
-        "pipx \"Manga OCR\" installation absent at default location."
-        + " Please specify `ocr.mangaocr.pythonPath` in the config"
-      );
+    // XXX
+      // throw new MangaOCRInitializationException(
+      //   "pipx \"Manga OCR\" installation absent at default location."
+      //   + " Please specify `ocr.mangaocr.pythonPath` in the config"
+      // );
     }
 
     cmd = new String[] { pythonPath, platform.getMangaOCRAdapterPath().toString() };
 
-    start();
+    // XXX
+    // start();
   }
 
   private String effectivePythonPath(Platform platform, String customPath) {
@@ -66,7 +74,9 @@ public class MangaOCRController implements OCRAdapter {
     return null;
   }
 
-  private void start() throws MangaOCRInitializationException {
+  // XXX
+  //private void start() throws MangaOCRInitializationException {
+  private void start() {
     state = State.STARTING;
     LOG.info("Starting \"Manga OCR\" using `{}`", cmd[0]);
     var pb = new ProcessBuilder(cmd);
@@ -84,7 +94,8 @@ public class MangaOCRController implements OCRAdapter {
         if (!sentDownloadingEvent && line.startsWith("Downloading")) {
           LOG.info("\"Manga OCR\" is downloading its base model. This might take a while");
           //noinspection ObjectAllocationInLoop
-          eventCb.accept(new MangaOCREvent.StartedDownloadingModel());
+          // XXX
+          // eventCb.accept(new MangaOCREvent.StartedDownloadingModel());
           sentDownloadingEvent = true;
         }
         if ("READY".equals(line)) {
@@ -94,13 +105,16 @@ public class MangaOCRController implements OCRAdapter {
       }
       if (!ready) {
         state = State.FAILED;
-        throw new MangaOCRInitializationException("did not report readiness");
+        // XXX
+        //throw new MangaOCRInitializationException("did not report readiness");
       }
     } catch (IOException e) {
       state = State.FAILED;
-      throw new MangaOCRInitializationException("error while reading initial output", e);
+        // XXX
+      //throw new MangaOCRInitializationException("error while reading initial output", e);
     }
-    eventCb.accept(new MangaOCREvent.Started());
+    // XXX
+    // eventCb.accept(new MangaOCREvent.Started());
     state = State.STARTED;
   }
 
@@ -151,13 +165,16 @@ public class MangaOCRController implements OCRAdapter {
       e.printStackTrace();
     } catch (TimeoutException e) {
       state = State.FAILED;
-      eventCb.accept(new MangaOCREvent.TimedOutAndRestarting());
+      // XXX
+      // eventCb.accept(new MangaOCREvent.TimedOutAndRestarting());
       LOG.info("\"Manga OCR\" is taking too long to respond. Restarting");
       process.destroy();
       try {
         start();
-      } catch (MangaOCRInitializationException e1) {
-        handleCrash("Error while restarting \"Manga OCR\": %s".formatted(e.getMessage()));
+      // XXX
+      //} catch (MangaOCRInitializationException e1) {
+      } catch (Exception e1) {
+        handleCrash("Error while restarting \"Manga OCR\": %s".formatted(e1.getMessage()));
       }
     }
     return Optional.empty();
@@ -165,7 +182,8 @@ public class MangaOCRController implements OCRAdapter {
 
   private void handleCrash(String errorMsg) {
     state = State.FAILED;
-    eventCb.accept(new MangaOCREvent.Crashed());
+    // XXX
+    // eventCb.accept(new MangaOCREvent.Crashed());
     LOG.error(errorMsg);
   }
 

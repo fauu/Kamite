@@ -77,9 +77,10 @@ public class Recognizer {
   private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
 
   // XXX
-  private OCRConfiguration getCurrentOCRConfiguration() {
-    return configurations.get(0);
-  }
+  private OCRConfiguration<? extends OCRAdapterInitParams, ? extends OCRAdapter>
+    getCurrentOCRConfiguration() {
+      return configurations.get(0);
+    }
 
   @SuppressWarnings("unchecked")
   public Recognizer(
@@ -122,7 +123,7 @@ public class Recognizer {
     //};
 
     // XXX
-    engine = configurations.get(0).getEngine();
+    // var engine = this.configurations.get(0).getEngine();
 
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
     LOG.info("Initialized recognizer");
@@ -504,18 +505,20 @@ public class Recognizer {
     return lineRects;
   }
 
+  // XXX: We will probably be checking the engine of the active configuration here instead
   private List<String> getAvailableCommands() {
     if (platform.getUnsupportedFeatures().contains(PlatformDependentFeature.GLOBAL_OCR)) {
       return List.of();
-    } else if (engine instanceof OCREngine.Tesseract) {
-      return List.of(
-        "ocr_manual-block-vertical",
-        "ocr_manual-block-horizontal",
-        "ocr_auto-block",
-        "ocr_manual-block-rotated",
-        "ocr_region"
-      );
-    } else if (!(engine instanceof OCREngine.None)) {
+    // } else if (engine instanceof OCREngine.Tesseract) {
+      // return List.of(
+      //   "ocr_manual-block-vertical",
+      //   "ocr_manual-block-horizontal",
+      //   "ocr_auto-block",
+      //   "ocr_manual-block-rotated",
+      //   "ocr_region"
+      // );
+    // } else if (!(engine instanceof OCREngine.None)) {
+    } else if (true) { // XXX
       return List.of(
         "ocr_manual-block",
         "ocr_auto-block",

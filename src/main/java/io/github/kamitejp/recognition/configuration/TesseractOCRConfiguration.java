@@ -63,6 +63,7 @@ public final class TesseractOCRConfiguration extends OCRConfiguration<OCRAdapter
 
   private record LabelledTesseractResult(String label, TesseractResult result) {}
 
+  @Override
   public Result<BoxRecognitionOutput, RecognitionOpError> recognizeBox(BufferedImage img) {
     // Remove alpha channel
     if (img.getType() != BufferedImage.TYPE_INT_RGB) {
@@ -182,9 +183,9 @@ public final class TesseractOCRConfiguration extends OCRConfiguration<OCRAdapter
         continue;
       }
       switch (labelledResult.result) { // NOPMD - misidentifies as non-exhaustive
-        case TesseractResult.ExecutionFailed ignored ->
+        case TesseractResult.ExecutionFailed _ ->
           numExecutionFails++;
-        case TesseractResult.TimedOut ignored ->
+        case TesseractResult.TimedOut _ ->
           numTimeouts++;
         case TesseractResult.Error error -> {
           if (errorMsgs == null) {

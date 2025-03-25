@@ -60,7 +60,6 @@ import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.recognition.AutoBlockHeuristic;
 import io.github.kamitejp.recognition.OCRDirectoryWatcher;
 import io.github.kamitejp.recognition.OCRDirectoryWatcherCreationException;
-import io.github.kamitejp.recognition.OCREngine;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionConductor;
 import io.github.kamitejp.recognition.RecognizerEvent;
@@ -381,8 +380,10 @@ public class Kamite {
       return;
     }
     try {
-      platform.initOCR(new OCREngine.None());
-    } catch (PlatformOCRInitializationException e) {
+      // XXX
+      // platform.initOCR(new OCREngine.None());
+    //} catch (PlatformOCRInitializationException e) {
+    } catch (Exception e) {
       LOG.error("Could not init platform OCR for Region Helper Mode:", e);
     }
 

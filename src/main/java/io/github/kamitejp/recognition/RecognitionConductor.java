@@ -3,6 +3,7 @@ package io.github.kamitejp.recognition;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +18,7 @@ import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformOCRInitializationException;
 import io.github.kamitejp.recognition.configuration.MangaOCROCRConfiguration;
 import io.github.kamitejp.recognition.configuration.MangaOCROnlineOCRConfiguration;
+import io.github.kamitejp.recognition.configuration.OCRConfiguration;
 import io.github.kamitejp.recognition.configuration.TesseractOCRConfiguration;
 import io.github.kamitejp.status.ProgramStatus;
 
@@ -47,8 +49,15 @@ public class RecognitionConductor {
     this.updateAndSendRecognizerStatusFn = updateAndSendRecognizerStatusFn;
   }
 
+  // XXX: Move?
+  record OCRAdapterID(
+    Class<? extends OCRAdapter> adapterClass,
+    OCRAdapterInitParams initParams
+  ) {}
+
   public void initRecognizer(Config config) {
-    var configurations = config.ocr().configurations().stream().map(c ->
+    var configurations = config.ocr().configurations().stream()
+      .<OCRConfiguration<? extends OCRAdapterInitParams, ? extends OCRAdapter>>map(c ->
         switch (c.engine()) {
           case TESSERACT       -> new TesseractOCRConfiguration(c);
           case MANGAOCR        -> new MangaOCROCRConfiguration(c);
@@ -58,36 +67,45 @@ public class RecognitionConductor {
       )
         .toList();
 
-    var adapters = new HashMap<OCRAdapterInitParams, OCRAdapter>(8);
+    var adapters = new HashMap<OCRAdapterID, OCRAdapter>(8);
 
     for (var configuration : configurations) {
       var initParams = configuration.getAdapterInitParams();
       @SuppressWarnings("unlikely-arg-type") var maybeExistingAdapter = adapters.get(initParams);
       if (maybeExistingAdapter == null) {
         configuration.createAdapter(platform);
-        adapters.put(initParams, configuration.getAdapter());
+        var newAdapter = configuration.getAdapter();
+        adapters.put(
+          new OCRAdapterID(newAdapter.getClass(), initParams),
+          configuration.getAdapter()
+        );
       } else {
-        // QUAL: Is there a way to make this work?
-        //   var configurationToAdapter = Map.of(
-        //     TesseractOCRConfiguration.class, TesseractAdapter.class,
-        //     MangaOCROCRConfiguration.class, MangaOCRController.class,
-        //     MangaOCROnlineOCRConfiguration.class, MangaOCRHFAdapter.class
-        //   );
-        //   var adapterClass = configurationToAdapter.get(configuration.getClass());
-        //   if (adapterClass.isInstance(maybeExistingAdapter)) {
-        //     configuration.setAdapter(adapterClass.cast(maybeExistingAdapter));
-        //   } else {
-        //     throw new IllegalStateException("Configuration/Adapter mismatch");
-        //   }
-        switch (configuration) {
-          case TesseractOCRConfiguration c ->
-            c.setAdapter((TesseractAdapter) maybeExistingAdapter);
-          case MangaOCROCRConfiguration c ->
-            c.setAdapter((MangaOCRController) maybeExistingAdapter);
-          case MangaOCROnlineOCRConfiguration c ->
-            c.setAdapter((MangaOCRHFAdapter) maybeExistingAdapter);
-          default -> throw new IllegalStateException("Configuration/Adapter mismatch");
-        }
+          Map<Class<? extends OCRConfiguration<?, ?>>, Class<? extends OCRAdapter>>
+            configurationToAdapter = Map.of(
+              TesseractOCRConfiguration.class, TesseractAdapter.class,
+              MangaOCROCRConfiguration.class, MangaOCRController.class,
+              MangaOCROnlineOCRConfiguration.class, MangaOCRHFAdapter.class
+            );
+          Class<? extends OCRAdapter> adapterClass =
+            configurationToAdapter.get(configuration.getClass());
+          if (adapterClass.isInstance(maybeExistingAdapter)) {
+            @SuppressWarnings("unchecked")
+            OCRConfiguration<?, OCRAdapter> rawConfiguration =
+              (OCRConfiguration<?, OCRAdapter>) configuration;
+            rawConfiguration.setAdapter((OCRAdapter) maybeExistingAdapter);
+          } else {
+            throw new IllegalStateException("Configuration/Adapter mismatch");
+          }
+        // XXX: Remove if the above works
+        // switch (configuration) {
+        //   case TesseractOCRConfiguration c ->
+        //     c.setAdapter((TesseractAdapter) maybeExistingAdapter);
+        //   case MangaOCROCRConfiguration c ->
+        //     c.setAdapter((MangaOCRController) maybeExistingAdapter);
+        //   case MangaOCROnlineOCRConfiguration c ->
+        //     c.setAdapter((MangaOCRHFAdapter) maybeExistingAdapter);
+        //   default -> throw new IllegalStateException("Configuration/Adapter mismatch");
+        // }
       }
     }
 
@@ -109,21 +127,24 @@ public class RecognitionConductor {
 
       recognizer = new Recognizer(platform, configurations, status.isDebug(), recognizerEventCb);
       unavailable = false;
-    } catch (PlatformOCRInitializationException.MissingDependencies e) {
-      LOG.error(
-        "Text recognition will not be available due to missing dependencies: {}",
-        () -> String.join(", ", e.getDependencies())
-      );
-    } catch (PlatformOCRInitializationException e) {
-      throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
-    } catch (RecognizerInitializationException e) {
-      var message = e.getMessage();
-      if (message != null) {
-        LOG.error(message);
-      } else {
-        LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
-        e.printStackTrace();
-      }
+    // XXX
+    // } catch (PlatformOCRInitializationException.MissingDependencies e) {
+    } catch (Exception e) {
+      // XXX
+      // LOG.error(
+      //   "Text recognition will not be available due to missing dependencies: {}",
+      //   () -> String.join(", ", e.getDependencies())
+      // );
+    // } catch (PlatformOCRInitializationException e) {
+    //   throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
+    // } catch (RecognizerInitializationException e) {
+    //   var message = e.getMessage();
+    //   if (message != null) {
+    //     LOG.error(message);
+    //   } else {
+    //     LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
+    //     e.printStackTrace();
+    //   }
     }
     if (unavailable) {
       updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
@@ -312,18 +333,20 @@ public class RecognitionConductor {
   }
 
   private void doRecognizeBox(BufferedImage img, TextOrientation textOrientation) {
-    var recognitionRes = recognizer.recognizeBox(img, textOrientation);
-    if (recognitionRes.isErr()) {
-      var errorNotification = switch (recognitionRes.err()) {
-        case SELECTION_CANCELLED -> null;
-        case INPUT_TOO_SMALL     -> "Input image is too small";
-        case ZERO_VARIANTS       -> "Did not recognize any text";
-        default -> "OCR has failed.\nCheck control window or console for errors";
-      };
-      recognitionAbandon(errorNotification, recognitionRes.err());
-      return;
-    }
-    chunkVariantsCb.accept(recognitionRes.get().chunkVariants());
+    // XXX
+    LOG.error("RecognitionConductor.doRecognizeBox() stub called");
+    // var recognitionRes = recognizer.recognizeBox(img, textOrientation);
+    // if (recognitionRes.isErr()) {
+    //   var errorNotification = switch (recognitionRes.err()) {
+    //     case SELECTION_CANCELLED -> null;
+    //     case INPUT_TOO_SMALL     -> "Input image is too small";
+    //     case ZERO_VARIANTS       -> "Did not recognize any text";
+    //     default -> "OCR has failed.\nCheck control window or console for errors";
+    //   };
+    //   recognitionAbandon(errorNotification, recognitionRes.err());
+    //   return;
+    // }
+    // chunkVariantsCb.accept(recognitionRes.get().chunkVariants());
   }
 
   private void recognitionAbandon(String errorNotification, RecognitionOpError errorToLog) {

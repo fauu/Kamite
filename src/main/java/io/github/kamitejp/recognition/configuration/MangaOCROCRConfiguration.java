@@ -30,9 +30,12 @@ public final class MangaOCROCRConfiguration extends OCRConfiguration<OCRAdapterI
 
   @Override
   public void createAdapter(Platform platform/* XXX , Consumer<MangaOCREvent> eventCb*/) {
-    adapter = new MangaOCRController(platform, pythonPath, eventCb);
+    // XXX
+    // adapter = new MangaOCRController(platform, pythonPath, eventCb);
+    adapter = new MangaOCRController(platform, pythonPath);
   }
 
+  @Override
   public Result<BoxRecognitionOutput, RecognitionOpError> recognizeBox(BufferedImage img) {
     var maybeText = adapter.recognize(img);
     if (maybeText.isEmpty()) {
