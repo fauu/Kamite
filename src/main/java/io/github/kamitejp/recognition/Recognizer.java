@@ -10,7 +10,6 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -24,8 +23,6 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.kamitejp.chunk.UnprocessedChunkVariants;
-import io.github.kamitejp.config.Config.OCREngine;
 import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
@@ -33,10 +30,7 @@ import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.MangaOCREvent;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
-import io.github.kamitejp.recognition.configuration.MangaOCROCRConfiguration;
-import io.github.kamitejp.recognition.configuration.MangaOCROnlineOCRConfiguration;
 import io.github.kamitejp.recognition.configuration.OCRConfiguration;
-import io.github.kamitejp.recognition.configuration.TesseractOCRConfiguration;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
 import io.github.kamitejp.util.Maths;
@@ -51,11 +45,6 @@ public class Recognizer {
 
   // Minimum dimension size allowed for box recognition input image
   private static final int BOX_RECOGNITION_INPUT_MIN_DIMENSION = 16;
-
-  // How many seconds to wait before each retry of remote OCR request.
-  public static final List<Duration> REMOTE_OCR_RETRY_INTERVALS =
-    List.of(Duration.ofSeconds(4), Duration.ofSeconds(7));
-  public static final int REMOTE_OCR_MAX_ATTEMPTS = REMOTE_OCR_RETRY_INTERVALS.size() + 1;
 
   // Values of text block starting edge rotation in radians between which the text block is assumed
   // to be of vertical, rather than horizontal orientation
@@ -82,7 +71,6 @@ public class Recognizer {
     return configurations.get(0);
   }
 
-  @SuppressWarnings("unchecked")
   public Recognizer(
     Platform platform,
     List<OCRConfiguration<?, ?, ?>> configurations,
@@ -160,14 +148,6 @@ public class Recognizer {
   }
 
   private Result<BoxRecognitionOutput, RecognitionOpError> doRecognizeBox(BufferedImage img) {
-    // XXX
-    if (getCurrentOCRConfiguration().getAdapter() instanceof RemoteOCRAdapter remoteAdapter) {
-      return doRecognizeBoxRemote(remoteAdapter, img);
-    }
-
-    // !!!
-    // XXX: This must be done through Configuration so that the parameters are applied
-    // !!!
     var res = getCurrentOCRConfiguration().recognize(img);
     if (res.isErr()) {
       // XXX: TODO Preserve the error content
@@ -183,56 +163,6 @@ public class Recognizer {
 
     return Result.Ok(boxRecognitionOutput);
   }
-
-  private Result<BoxRecognitionOutput, RecognitionOpError> doRecognizeBoxRemote(
-    RemoteOCRAdapter adapter,
-    BufferedImage img
-  ) {
-    Result<String, RemoteOCRError> res = null;
-    var mightAttempt = true;
-    for (var attemptNo = 0; mightAttempt && attemptNo < REMOTE_OCR_MAX_ATTEMPTS; attemptNo++) {
-      if (attemptNo > 0) {
-        try {
-          Thread.sleep(REMOTE_OCR_RETRY_INTERVALS.get(attemptNo - 1));
-        } catch (InterruptedException e) {
-          LOG.debug("Interrupted while waiting to retry remote OCR request");
-        }
-        LOG.info("Retrying remote OCR request");
-      }
-      res = adapter.recognize(img);
-      mightAttempt = false;
-      if (res.isErr()) {
-        var msg = switch (res.err()) {
-          case RemoteOCRError.Timeout _ -> {
-            mightAttempt = true;
-            yield "HTTP request timed out";
-          }
-          case RemoteOCRError.SendFailed err -> {
-            mightAttempt = true;
-            yield "HTTP client send execution has failed: %s".formatted(err.exceptionMessage());
-          }
-          case RemoteOCRError.Unauthorized _ ->
-            "Received `Unauthorized` response. The provided API key is likely invalid";
-          case RemoteOCRError.UnexpectedStatusCode err ->
-            "Received unexpected status code: %s".formatted(err.code());
-          case RemoteOCRError.Other err ->
-            err.error();
-        };
-        LOG.error("Remote OCR service error: {}", msg);
-      }
-    }
-    if (res.isErr()) {
-      return Result.Err(RecognitionOpError.OCR_ERROR);
-    }
-
-    var text = res.get();
-    if (text.isBlank()) {
-      return Result.Err(RecognitionOpError.ZERO_VARIANTS);
-    }
-
-    return Result.Ok(new BoxRecognitionOutput(UnprocessedChunkVariants.singleFromString(text)));
-  }
-
 
   public Optional<BufferedImage> autoNarrowToTextBlock(
     BufferedImage img, AutoBlockHeuristic heuristic

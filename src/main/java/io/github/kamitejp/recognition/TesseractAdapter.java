@@ -228,9 +228,9 @@ public class TesseractAdapter implements OCRAdapter<OCRAdapterOCRParams.Tesserac
 
     var parsedVariants = UnprocessedChunkVariants.fromLabelledTesseractHOCROutputs(variants);
     // XXX: Move above
-    if (parsedVariants.isEmpty()) {
-      return Result.Err(RecognitionOpError.ZERO_VARIANTS);
-    }
+    //if (parsedVariants.isEmpty()) {
+    //  return Result.Err(RecognitionOpError.ZERO_VARIANTS);
+    //}
 
     parsedVariants.deduplicate();
     parsedVariants.sortByScore();

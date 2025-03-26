@@ -111,12 +111,13 @@ ocr: {
     name: string
     engine: OCREngine
 
+    # XXX: All params have to be optional so we must verify the non-actually-optional ones later
     # Tesseract options
     path: "string?" # Generalizable
-    tesseractModel: "string"
-    tesseractPSM: "int"
+    tesseractModel: "string?"
+    tesseractPSM: "int | 5"
     tesseractModelAlt: "string?"
-    tesseractPSMAlt: "int?"
+    tesseractPSMAlt: "int | 6"
 
     # "MangaOCR" (Local)
     pythonPath: "string?" # Generalizable
