@@ -22,18 +22,12 @@ public sealed interface Command
 
   sealed interface OCR extends Command
     permits OCR.ManualBlock,
-            OCR.ManualBlockVertical,
-            OCR.ManualBlockHorizontal,
             OCR.ManualBlockRotated,
             OCR.AutoBlock,
             OCR.AutoColumn,
             OCR.Region,
             OCR.Image {
     record ManualBlock() implements OCR {}
-
-    record ManualBlockVertical() implements OCR {}
-
-    record ManualBlockHorizontal() implements OCR {}
 
     record ManualBlockRotated() implements OCR {}
 
@@ -171,8 +165,6 @@ public sealed interface Command
       parsedCommand = switch (group) {
         case "ocr" -> switch (name) {
           case "manual-block"            -> new OCR.ManualBlock();
-          case "manual-block-vertical"   -> new OCR.ManualBlockVertical();
-          case "manual-block-horizontal" -> new OCR.ManualBlockHorizontal();
           case "manual-block-rotated"    -> new OCR.ManualBlockRotated();
 
           case "auto-block"              -> {

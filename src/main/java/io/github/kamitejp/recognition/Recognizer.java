@@ -245,7 +245,7 @@ public class Recognizer {
       blockRotation = BlockRotation.ABOVE_VERTICAL;
     }
 
-    TextOrientation textOrientation = TextOrientation.VERTICAL;
+    var textOrientation = TextOrientation.VERTICAL;
     if (theta < ROTATED_TEXT_VERTICAL_THETA_MIN || theta > ROTATED_TEXT_VERTICAL_THETA_MAX) {
       textOrientation = TextOrientation.HORIZONTAL;
     }

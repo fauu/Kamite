@@ -64,7 +64,6 @@ import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionConductor;
 import io.github.kamitejp.recognition.RecognizerEvent;
 import io.github.kamitejp.recognition.RecognizerStatus;
-import io.github.kamitejp.recognition.TextOrientation;
 import io.github.kamitejp.server.InMessage;
 import io.github.kamitejp.server.Server;
 import io.github.kamitejp.server.ServerEvent;
@@ -701,11 +700,7 @@ public class Kamite {
         }
         switch (cmd) { // NOPMD - misidentifies as non-exhaustive
           case Command.OCR.ManualBlock _ ->
-            recognitionConductor.recognizeManualBlockDefault();
-          case Command.OCR.ManualBlockVertical _ ->
-            recognitionConductor.recognizeManualBlock(TextOrientation.VERTICAL);
-          case Command.OCR.ManualBlockHorizontal _ ->
-            recognitionConductor.recognizeManualBlock(TextOrientation.HORIZONTAL);
+            recognitionConductor.recognizeManualBlock();
           case Command.OCR.ManualBlockRotated _ ->
             recognitionConductor.recognizeManualBlockRotated();
           case Command.OCR.AutoBlock cm ->
@@ -785,9 +780,7 @@ public class Kamite {
   private void handleOCRImageCommand(String bytesB64, Dimension size) {
     var bytes = Base64.getDecoder().decode(bytesB64);
     var img = ImageOps.arrayToBufferedImage(bytes, size.width(), size.height());
-    recognitionConductor.recognizeAutoBlockGivenImage(
-      img, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_FULL
-    );
+    recognitionConductor.recognizeAutoBlockGivenImage(img, AutoBlockHeuristic.MANGA_FULL);
   }
 
   private void runCustomCommand(String[] command) {
@@ -851,7 +844,7 @@ public class Kamite {
   private final Map<Function<Config.Keybindings.Global, String>, Supplier<Runnable>>
     baseGlobalKeybindings = Map.of(
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().manualBlock(),
-      () -> recognitionConductor::recognizeManualBlockDefault,
+      () -> recognitionConductor::recognizeManualBlock,
 
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().manualBlockRotated(),
       () -> recognitionConductor::recognizeManualBlockRotated,

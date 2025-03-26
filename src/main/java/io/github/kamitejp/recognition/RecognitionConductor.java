@@ -15,7 +15,7 @@ import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.MangaOCRController;
 import io.github.kamitejp.platform.Platform;
-import io.github.kamitejp.platform.PlatformOCRInitializationException;
+import io.github.kamitejp.platform.PlatformOCRInfrastructureInitializationException;
 import io.github.kamitejp.recognition.configuration.MangaOCROCRConfiguration;
 import io.github.kamitejp.recognition.configuration.MangaOCROnlineOCRConfiguration;
 import io.github.kamitejp.recognition.configuration.OCRConfiguration;
@@ -113,7 +113,7 @@ public class RecognitionConductor {
 
     var unavailable = true;
     try {
-      platform.initOCR();
+      platform.initOCRInfrastructure();
 
       for (var adapter : adapters.values()) {
         if (adapter instanceof StatefulOCRAdapter statefulAdapter) {
@@ -127,24 +127,24 @@ public class RecognitionConductor {
 
       recognizer = new Recognizer(platform, configurations, status.isDebug(), recognizerEventCb);
       unavailable = false;
-    // XXX
-    // } catch (PlatformOCRInitializationException.MissingDependencies e) {
-    } catch (Exception e) {
-      // XXX
-      // LOG.error(
-      //   "Text recognition will not be available due to missing dependencies: {}",
-      //   () -> String.join(", ", e.getDependencies())
-      // );
-    // } catch (PlatformOCRInitializationException e) {
-    //   throw new RuntimeException("Unhandled PlatformOCRInitializationException", e);
-    // } catch (RecognizerInitializationException e) {
-    //   var message = e.getMessage();
-    //   if (message != null) {
-    //     LOG.error(message);
-    //   } else {
-    //     LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
-    //     e.printStackTrace();
-    //   }
+    } catch (PlatformOCRInfrastructureInitializationException.MissingDependencies e) {
+      LOG.error(
+        "Text recognition will not be available due to missing dependencies: {}",
+        () -> String.join(", ", e.getDependencies())
+      );
+    } catch (PlatformOCRInfrastructureInitializationException e) {
+      throw new RuntimeException(
+        "Unhandled PlatformOCRInfrastructureInitializationException",
+        e
+      );
+    } catch (RecognizerInitializationException e) {
+      var message = e.getMessage();
+      if (message != null) {
+        LOG.error(message);
+      } else {
+        LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
+        e.printStackTrace();
+      }
     }
     if (unavailable) {
       updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
@@ -162,17 +162,12 @@ public class RecognitionConductor {
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
     doRecognizeRegion(
       region,
-      TextOrientation.HORIZONTAL,
       /* autoBlockHeuristic */ autoNarrow ? AutoBlockHeuristic.GAME_TEXTBOX : null
     );
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
-  private void doRecognizeRegion(
-    Rectangle region,
-    TextOrientation textOrientation,
-    AutoBlockHeuristic autoBlockHeuristic
-  ) {
+  private void doRecognizeRegion(Rectangle region, AutoBlockHeuristic autoBlockHeuristic) {
     var screenshotRes = platform.takeAreaScreenshot(region);
     if (screenshotRes.isErr()) {
       var errorNotification = switch (screenshotRes.err()) {
@@ -184,17 +179,13 @@ public class RecognitionConductor {
     }
 
     if (autoBlockHeuristic != null) {
-      doRecognizeAutoBlockGivenImage(screenshotRes.get(), textOrientation, autoBlockHeuristic);
+      doRecognizeAutoBlockGivenImage(screenshotRes.get(), autoBlockHeuristic);
     } else {
-      doRecognizeBox(screenshotRes.get(), textOrientation);
+      doRecognizeBox(screenshotRes.get());
     }
   }
 
-  public void recognizeManualBlockDefault() {
-    recognizeManualBlock(TextOrientation.UNKNOWN);
-  }
-
-  public void recognizeManualBlock(TextOrientation textOrientation) {
+  public void recognizeManualBlock() {
     LOG.debug("Handling manual block recognition request");
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.AWAITING_USER_INPUT);
 
@@ -209,7 +200,7 @@ public class RecognitionConductor {
     }
 
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeRegion(areaRes.get(), textOrientation, /* heuristic */ null);
+    doRecognizeRegion(areaRes.get(), /* heuristic */ null);
     // doRecognizeRegion(areaRes.get(), /* heuristic */ AutoBlockHeuristic.GAME_TEXTBOX); // DEV
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
@@ -252,29 +243,27 @@ public class RecognitionConductor {
     }
 
     var straightened = Recognizer.straightenRotatedBlockImage(rotatedBlock, screenshotRes.get());
-    doRecognizeBox(straightened, rotatedBlock.textOrientation());
+    doRecognizeBox(straightened);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
   public void recognizeAutoBlockDefault(PointSelectionMode mode) {
-    recognizeAutoBlock(mode, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_FULL);
+    recognizeAutoBlock(mode, AutoBlockHeuristic.MANGA_FULL);
   }
 
   public void recognizeAutoBlockColumnDefault(PointSelectionMode mode) {
-    recognizeAutoBlock(mode, TextOrientation.VERTICAL, AutoBlockHeuristic.MANGA_SINGLE_COLUMN);
+    recognizeAutoBlock(mode, AutoBlockHeuristic.MANGA_SINGLE_COLUMN);
   }
 
   public void recognizeGivenImage(BufferedImage img) {
     LOG.debug("Handling image given recognition request");
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeBox(img, TextOrientation.UNKNOWN);
+    doRecognizeBox(img);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
   @SuppressWarnings("SameParameterValue")
-  private void recognizeAutoBlock(
-    PointSelectionMode mode, TextOrientation textOrientation, AutoBlockHeuristic heuristic
-  ) {
+  private void recognizeAutoBlock(PointSelectionMode mode, AutoBlockHeuristic heuristic) {
     LOG.debug(
       "Handling auto block recognition request (mode = {}, heuristic = {})", mode, heuristic
     );
@@ -305,23 +294,19 @@ public class RecognitionConductor {
       return;
     }
 
-    doRecognizeAutoBlockGivenImage(screenshotRes.get(), textOrientation, heuristic);
+    doRecognizeAutoBlockGivenImage(screenshotRes.get(), heuristic);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
   @SuppressWarnings("SameParameterValue")
-  public void recognizeAutoBlockGivenImage(
-    BufferedImage img, TextOrientation textOrientation, AutoBlockHeuristic mode
-  ) {
+  public void recognizeAutoBlockGivenImage(BufferedImage img, AutoBlockHeuristic mode) {
     LOG.debug("Handling auto block image recognition request (mode = {})", mode);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeAutoBlockGivenImage(img, textOrientation, mode);
+    doRecognizeAutoBlockGivenImage(img, mode);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
-  private void doRecognizeAutoBlockGivenImage(
-    BufferedImage img, TextOrientation textOrientation, AutoBlockHeuristic heuristic
-  ) {
+  private void doRecognizeAutoBlockGivenImage(BufferedImage img, AutoBlockHeuristic heuristic) {
     var maybeBlockImg = recognizer.autoNarrowToTextBlock(img, heuristic);
     if (maybeBlockImg.isEmpty()) {
       var msg = "Text block detection has failed";
@@ -329,24 +314,22 @@ public class RecognitionConductor {
       LOG.info(msg);
       return;
     }
-    doRecognizeBox(maybeBlockImg.get(), textOrientation);
+    doRecognizeBox(maybeBlockImg.get());
   }
 
-  private void doRecognizeBox(BufferedImage img, TextOrientation textOrientation) {
-    // XXX
-    LOG.error("RecognitionConductor.doRecognizeBox() stub called");
-    // var recognitionRes = recognizer.recognizeBox(img, textOrientation);
-    // if (recognitionRes.isErr()) {
-    //   var errorNotification = switch (recognitionRes.err()) {
-    //     case SELECTION_CANCELLED -> null;
-    //     case INPUT_TOO_SMALL     -> "Input image is too small";
-    //     case ZERO_VARIANTS       -> "Did not recognize any text";
-    //     default -> "OCR has failed.\nCheck control window or console for errors";
-    //   };
-    //   recognitionAbandon(errorNotification, recognitionRes.err());
-    //   return;
-    // }
-    // chunkVariantsCb.accept(recognitionRes.get().chunkVariants());
+  private void doRecognizeBox(BufferedImage img) {
+    var recognitionRes = recognizer.recognizeBox(img);
+    if (recognitionRes.isErr()) {
+      var errorNotification = switch (recognitionRes.err()) {
+        case SELECTION_CANCELLED -> null;
+        case INPUT_TOO_SMALL     -> "Input image is too small";
+        case ZERO_VARIANTS       -> "Did not recognize any text";
+        default -> "OCR has failed.\nCheck control window or console for errors";
+      };
+      recognitionAbandon(errorNotification, recognitionRes.err());
+      return;
+    }
+    chunkVariantsCb.accept(recognitionRes.get().chunkVariants());
   }
 
   private void recognitionAbandon(String errorNotification, RecognitionOpError errorToLog) {
