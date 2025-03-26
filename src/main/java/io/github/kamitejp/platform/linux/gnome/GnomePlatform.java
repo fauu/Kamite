@@ -17,7 +17,7 @@ import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformDependentFeature;
-import io.github.kamitejp.platform.PlatformOCRInitializationException;
+import io.github.kamitejp.platform.PlatformOCRInfrastructureInitializationException;
 import io.github.kamitejp.platform.linux.WaylandPlatform;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionOpError;
@@ -46,9 +46,9 @@ public class GnomePlatform extends WaylandPlatform {
   }
 
   @Override
-  public void initOCR() throws PlatformOCRInitializationException {
+  public void initOCRInfrastructure() throws PlatformOCRInfrastructureInitializationException {
     if (dbusClient == null) {
-      throw new PlatformOCRInitializationException.ScreenshotAPICommunicationFailure(
+      throw new PlatformOCRInfrastructureInitializationException.ScreenshotAPICommunicationFailure(
         "DBusClient is null"
       );
     }
@@ -59,7 +59,7 @@ public class GnomePlatform extends WaylandPlatform {
       GnomeScreenshotDBusInterface.class
     );
     if (maybeObj.isEmpty()) {
-      throw new PlatformOCRInitializationException.ScreenshotAPICommunicationFailure(
+      throw new PlatformOCRInfrastructureInitializationException.ScreenshotAPICommunicationFailure(
         "Could not get DBus GNOME screenshot object"
       );
     }

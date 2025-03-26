@@ -14,7 +14,7 @@ import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
 import io.github.kamitejp.platform.PlatformCreationException;
-import io.github.kamitejp.platform.PlatformOCRInitializationException;
+import io.github.kamitejp.platform.PlatformOCRInfrastructureInitializationException;
 import io.github.kamitejp.platform.RobotScreenshoter;
 import io.github.kamitejp.platform.RobotScreenshoterUnavailableException;
 import io.github.kamitejp.platform.linux.LinuxPlatform;
@@ -41,12 +41,12 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
   }
 
   @Override
-  public void initOCR() throws PlatformOCRInitializationException {
+  public void initOCRInfrastructure() throws PlatformOCRInfrastructureInitializationException {
     slop = new Slop();
     var res = checkIfDependenciesAvailable(List.of(slop));
     if (res.isErr()) {
       slop = null;
-      throw new PlatformOCRInitializationException.MissingDependencies(res.err());
+      throw new PlatformOCRInfrastructureInitializationException.MissingDependencies(res.err());
     }
   }
 

@@ -2,14 +2,14 @@ package io.github.kamitejp.platform;
 
 import java.util.List;
 
-public class PlatformOCRInitializationException extends Exception {
-  private PlatformOCRInitializationException() {}
+public class PlatformOCRInfrastructureInitializationException extends Exception {
+  private PlatformOCRInfrastructureInitializationException() {}
 
-  private PlatformOCRInitializationException(String message) {
+  private PlatformOCRInfrastructureInitializationException(String message) {
     super(message);
   }
 
-  public static class MissingDependencies extends PlatformOCRInitializationException {
+  public static class MissingDependencies extends PlatformOCRInfrastructureInitializationException {
     private final List<String> dependencies;
 
     public MissingDependencies(String dependency) {
@@ -25,7 +25,7 @@ public class PlatformOCRInitializationException extends Exception {
     }
   }
 
-  public static class ScreenshotAPICommunicationFailure extends PlatformOCRInitializationException {
+  public static class ScreenshotAPICommunicationFailure extends PlatformOCRInfrastructureInitializationException {
     public ScreenshotAPICommunicationFailure(String message) {
       super(message);
     }

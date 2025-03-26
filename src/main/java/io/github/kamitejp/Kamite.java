@@ -50,7 +50,7 @@ import io.github.kamitejp.platform.InvalidKeyStrokeException;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformInitializationException;
-import io.github.kamitejp.platform.PlatformOCRInitializationException;
+import io.github.kamitejp.platform.PlatformOCRInfrastructureInitializationException;
 import io.github.kamitejp.platform.agent.AgentClient;
 import io.github.kamitejp.platform.linux.LinuxPlatform;
 import io.github.kamitejp.platform.mpv.MPVCommand;
@@ -380,10 +380,8 @@ public class Kamite {
       return;
     }
     try {
-      // XXX
-      // platform.initOCR(new OCREngine.None());
-    //} catch (PlatformOCRInitializationException e) {
-    } catch (Exception e) {
+      platform.initOCRInfrastructure();
+    } catch (PlatformOCRInfrastructureInitializationException e) {
       LOG.error("Could not init platform OCR for Region Helper Mode:", e);
     }
 
