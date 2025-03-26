@@ -8,21 +8,23 @@ import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.image.ImageOps;
-import io.github.kamitejp.recognition.OCRAdapter;
+import io.github.kamitejp.recognition.BoxRecognitionOutput;
+import io.github.kamitejp.recognition.LocalOCRAdapter;
+import io.github.kamitejp.recognition.LocalOCRError;
+import io.github.kamitejp.recognition.OCRAdapterOCRParams;
+import io.github.kamitejp.util.Result;
 
-public class MangaOCRController implements OCRAdapter {
+public class MangaOCRController implements LocalOCRAdapter<OCRAdapterOCRParams.Empty> {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String PIPX_DEFAULT_VENV_NAME = "manga-ocr";
@@ -128,7 +130,10 @@ public class MangaOCRController implements OCRAdapter {
     return null;
   };
 
-  public Optional<String> recognize(BufferedImage img) {
+  public Result<BoxRecognitionOutput, LocalOCRError> recognize(
+    BufferedImage img,
+    OCRAdapterOCRParams.Empty _params
+  ) {
     if (state != State.STARTED) {
       throw new IllegalStateException("Attempted to use \"Manga OCR\" while it was not ready");
     }
@@ -146,7 +151,7 @@ public class MangaOCRController implements OCRAdapter {
       var futureLine = CompletableFuture.supplyAsync(outputLineSupplier);
       var line = futureLine.get(RECOGNITION_TIMEOUT_S, TimeUnit.SECONDS);
       if (line == null) {
-        return Optional.empty();
+        return Result.Err(new LocalOCRError.Other("\"Manga OCR\" did not reply with text on time"));
       }
 
       if (line.startsWith("Traceback (most")) {
@@ -155,14 +160,20 @@ public class MangaOCRController implements OCRAdapter {
         while ((errLine = outputReader.readLine()) != null) {
           errBuilder.append(errLine);
         }
+        // XXX: Move the logging above and remove it from handleCrash()
         handleCrash("\"Manga OCR\" responded with an error: %s".formatted(errBuilder.toString()));
-        return Optional.empty();
+        return Result.Err(new LocalOCRError.Other(
+          "\"Manga OCR\" responded with an error: %s".formatted(errBuilder.toString())
+        ));
       }
 
-      return Optional.of(line);
+      return Result.Ok(BoxRecognitionOutput.fromString(line));
     } catch (IOException | InterruptedException | ExecutionException e) {
       handleCrash("Error while communicating with \"Manga OCR\". See stderr for stack trace");
       e.printStackTrace();
+      return Result.Err(new LocalOCRError.Other(
+        "Error while communicating with \"Manga OCR\". See stderr for stack trace"
+      ));
     } catch (TimeoutException e) {
       state = State.FAILED;
       // XXX
@@ -176,8 +187,10 @@ public class MangaOCRController implements OCRAdapter {
       } catch (Exception e1) {
         handleCrash("Error while restarting \"Manga OCR\": %s".formatted(e1.getMessage()));
       }
+      return Result.Err(
+        new LocalOCRError.Other("\"Manga OCR\" took too long to respond and was restarted")
+      );
     }
-    return Optional.empty();
   }
 
   private void handleCrash(String errorMsg) {

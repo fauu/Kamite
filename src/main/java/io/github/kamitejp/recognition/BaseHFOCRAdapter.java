@@ -17,7 +17,7 @@ import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.util.HTTP;
 import io.github.kamitejp.util.Result;
 
-public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
+public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.Empty> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -59,7 +59,10 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
 
   @Override
   @SuppressWarnings("MethodMayBeStatic")
-  public final Result<String, RemoteOCRRequestError> ocr(BufferedImage img) {
+  public final Result<BoxRecognitionOutput, RemoteOCRError> recognize(
+    BufferedImage img,
+    OCRAdapterOCRParams.Empty _params
+  ) {
     var reqBodyString = OCR_REQUEST_BODY_TPL.formatted(
       ImageOps.DEFAULT_IMAGE_FORMAT_MIMETYPE,
       ImageOps.convertToBase64(img),
@@ -76,14 +79,14 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
       var resFuture = HTTP.client().sendAsync(req, HttpResponse.BodyHandlers.ofString());
       res = resFuture.get(REQUEST_TIMEOUT_S, TimeUnit.SECONDS);
     } catch (TimeoutException e) {
-      return Result.Err(new RemoteOCRRequestError.Timeout());
+      return Result.Err(new RemoteOCRError.Timeout());
     } catch (ExecutionException | InterruptedException e) {
-      return Result.Err(new RemoteOCRRequestError.SendFailed(e.getMessage()));
+      return Result.Err(new RemoteOCRError.SendFailed(e.getMessage()));
     }
 
     var code = res.statusCode();
     if (code != HttpURLConnection.HTTP_OK) {
-      return Result.Err(new RemoteOCRRequestError.UnexpectedStatusCode(code));
+      return Result.Err(new RemoteOCRError.UnexpectedStatusCode(code));
     }
 
     String resBody = res.body();
@@ -91,7 +94,7 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
       var textStartMarkerIdx = res.body().indexOf(responseTrimStartMarker);
       if (textStartMarkerIdx == -1) {
         return Result.Err(
-          new RemoteOCRRequestError.Other("Response did not contain the expected text start marker")
+          new RemoteOCRError.Other("Response did not contain the expected text start marker")
         );
       }
       var textStartIdx = textStartMarkerIdx + responseTrimStartMarker.length();
@@ -100,7 +103,7 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
         : res.body().indexOf(responseTrimEndMarker, textStartIdx);
       if (textEndMarkerIdx == -1) {
         return Result.Err(
-          new RemoteOCRRequestError.Other("Response did not contain the expected text end marker")
+          new RemoteOCRError.Other("Response did not contain the expected text end marker")
         );
       }
       resBody = resBody.substring(textStartIdx, textEndMarkerIdx);
@@ -109,7 +112,7 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter {
     return trimmedResponseToOCRText(resBody);
   }
 
-  protected Result<String, RemoteOCRRequestError> trimmedResponseToOCRText(String res) {
-    return Result.Ok(res);
+  protected Result<BoxRecognitionOutput, RemoteOCRError> trimmedResponseToOCRText(String res) {
+    return Result.Ok(BoxRecognitionOutput.fromString(res));
   }
 }

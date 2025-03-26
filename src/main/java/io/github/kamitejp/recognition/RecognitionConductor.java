@@ -51,13 +51,13 @@ public class RecognitionConductor {
 
   // XXX: Move?
   record OCRAdapterID(
-    Class<? extends OCRAdapter> adapterClass,
+    Class<? extends OCRAdapter<?>> adapterClass,
     OCRAdapterInitParams initParams
   ) {}
 
   public void initRecognizer(Config config) {
     var configurations = config.ocr().configurations().stream()
-      .<OCRConfiguration<? extends OCRAdapterInitParams, ? extends OCRAdapter>>map(c ->
+      .<OCRConfiguration<?, ?, ?>>map(c ->
         switch (c.engine()) {
           case TESSERACT       -> new TesseractOCRConfiguration(c);
           case MANGAOCR        -> new MangaOCROCRConfiguration(c);
@@ -67,7 +67,7 @@ public class RecognitionConductor {
       )
         .toList();
 
-    var adapters = new HashMap<OCRAdapterID, OCRAdapter>(8);
+    var adapters = new HashMap<OCRAdapterID, OCRAdapter<? extends OCRAdapterOCRParams>>(8);
 
     for (var configuration : configurations) {
       var initParams = configuration.getAdapterInitParams();
@@ -76,23 +76,23 @@ public class RecognitionConductor {
         configuration.createAdapter(platform);
         var newAdapter = configuration.getAdapter();
         adapters.put(
-          new OCRAdapterID(newAdapter.getClass(), initParams),
+          new OCRAdapterID((Class<? extends OCRAdapter<?>>) newAdapter.getClass(), initParams),
           configuration.getAdapter()
         );
       } else {
-          Map<Class<? extends OCRConfiguration<?, ?>>, Class<? extends OCRAdapter>>
+          Map<Class<? extends OCRConfiguration<?, ?, ?>>, Class<? extends OCRAdapter<?>>>
             configurationToAdapter = Map.of(
               TesseractOCRConfiguration.class, TesseractAdapter.class,
               MangaOCROCRConfiguration.class, MangaOCRController.class,
               MangaOCROnlineOCRConfiguration.class, MangaOCRHFAdapter.class
             );
-          Class<? extends OCRAdapter> adapterClass =
+          Class<? extends OCRAdapter<?>> adapterClass =
             configurationToAdapter.get(configuration.getClass());
           if (adapterClass.isInstance(maybeExistingAdapter)) {
             @SuppressWarnings("unchecked")
-            OCRConfiguration<?, OCRAdapter> rawConfiguration =
-              (OCRConfiguration<?, OCRAdapter>) configuration;
-            rawConfiguration.setAdapter((OCRAdapter) maybeExistingAdapter);
+            OCRConfiguration<?, ?, OCRAdapter<?>> rawConfiguration =
+              (OCRConfiguration<?, ?, OCRAdapter<?>>) configuration;
+            rawConfiguration.setAdapter((OCRAdapter<?>) maybeExistingAdapter);
           } else {
             throw new IllegalStateException("Configuration/Adapter mismatch");
           }

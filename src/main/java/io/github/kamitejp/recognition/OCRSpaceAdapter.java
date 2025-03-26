@@ -30,7 +30,7 @@ import io.github.kamitejp.util.HTTP;
 import io.github.kamitejp.util.JSON;
 import io.github.kamitejp.util.Result;
 
-public class OCRSpaceAdapter implements RemoteOCRAdapter {
+public class OCRSpaceAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.Empty> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -59,7 +59,9 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter {
   // TODO: Don't send free API request if the image is over 1 MB
   // TODO: Don't send free API request if engine = 3 and an image dimension is over 1000 px
   @Override
-  public Result<String, RemoteOCRRequestError> ocr(BufferedImage img) {
+  public Result<BoxRecognitionOutput, RemoteOCRError> recognize(
+    BufferedImage img, OCRAdapterOCRParams.Empty _params
+  ) {
     var imgBytes = ImageOps.encodeIntoByteArrayOutputStream(img).toByteArray();
     var data = Map.of(
       "apikey", apiKey,
@@ -80,7 +82,7 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter {
         .build();
     } catch (IOException e) {
       return Result.Err(
-        new RemoteOCRRequestError.Other(
+        new RemoteOCRError.Other(
           "Failed to build HTTP request for OCR.space: %s".formatted(e)
         )
       );
@@ -92,16 +94,16 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter {
       var resFuture = HTTP.client().sendAsync(req, HttpResponse.BodyHandlers.ofString());
       res = resFuture.get(requestTimeout, TimeUnit.SECONDS);
     } catch (TimeoutException e) {
-      return Result.Err(new RemoteOCRRequestError.Timeout());
+      return Result.Err(new RemoteOCRError.Timeout());
     } catch (ExecutionException | InterruptedException e) {
-      return Result.Err(new RemoteOCRRequestError.SendFailed(e.getMessage()));
+      return Result.Err(new RemoteOCRError.SendFailed(e.getMessage()));
     }
 
     var code = res.statusCode();
     if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-      return Result.Err(new RemoteOCRRequestError.Unauthorized());
+      return Result.Err(new RemoteOCRError.Unauthorized());
     } else if (code != HttpURLConnection.HTTP_OK) {
-      return Result.Err(new RemoteOCRRequestError.UnexpectedStatusCode(code));
+      return Result.Err(new RemoteOCRError.UnexpectedStatusCode(code));
     }
 
     JsonNode root;
@@ -110,7 +112,7 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter {
       root = JSON.mapper().readTree(res.body());
     } catch (JsonProcessingException e) {
       return Result.Err(
-        new RemoteOCRRequestError.Other("Failed to read OCR.space response JSON: %s".formatted(e))
+        new RemoteOCRError.Other("Failed to read OCR.space response JSON: %s".formatted(e))
       );
     }
 
@@ -125,14 +127,15 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter {
     var errored = root.get("IsErroredOnProcessing").asBoolean();
     if (errored) {
       return Result.Err(
-        new RemoteOCRRequestError.Other(
+        new RemoteOCRError.Other(
           "OCR.space reported processing error: %s".formatted(root.get("ErrorMessage"))
         )
       );
     }
 
     if (parsedResultsEls == null) {
-      return Result.Ok("");
+      // XXX: Indicate empty
+      return Result.Ok(BoxRecognitionOutput.fromString(""));
     }
 
     var text = parsedResultsEls.stream()
@@ -147,7 +150,7 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter {
         .collect(joining());
     text = text.replace("\r\n", "\n");
 
-    return Result.Ok(text);
+    return Result.Ok(BoxRecognitionOutput.fromString(text));
   }
 
   // https://urvanov.ru/2020/08/18/java-11-httpclient-multipart-form-data/

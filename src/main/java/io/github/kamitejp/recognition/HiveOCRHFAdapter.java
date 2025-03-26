@@ -21,9 +21,9 @@ public class HiveOCRHFAdapter extends BaseHFOCRAdapter {
   }
 
   @Override
-  protected Result<String, RemoteOCRRequestError> trimmedResponseToOCRText(String res) {
+  protected Result<BoxRecognitionOutput, RemoteOCRError> trimmedResponseToOCRText(String res) {
     // QUAL: Ad-hoc fix
     res = res.replaceAll("\\\\n", "\n");
-    return Result.Ok(res);
+    return Result.Ok(BoxRecognitionOutput.fromString(res));
   }
 }

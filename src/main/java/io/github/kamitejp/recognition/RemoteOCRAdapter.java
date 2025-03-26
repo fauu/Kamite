@@ -4,6 +4,6 @@ import java.awt.image.BufferedImage;
 
 import io.github.kamitejp.util.Result;
 
-interface RemoteOCRAdapter extends OCRAdapter {
-  Result<String, RemoteOCRRequestError> ocr(BufferedImage img);
+public interface RemoteOCRAdapter<R extends OCRAdapterOCRParams> extends OCRAdapter<R> {
+  Result<BoxRecognitionOutput, RemoteOCRError> recognize(BufferedImage img, R params);
 }

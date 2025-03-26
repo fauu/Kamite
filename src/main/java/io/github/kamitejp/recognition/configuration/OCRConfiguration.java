@@ -7,12 +7,18 @@ import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.recognition.BoxRecognitionOutput;
 import io.github.kamitejp.recognition.OCRAdapter;
 import io.github.kamitejp.recognition.OCRAdapterInitParams;
-import io.github.kamitejp.recognition.RecognitionOpError;
+import io.github.kamitejp.recognition.OCRAdapterOCRParams;
+import io.github.kamitejp.recognition.OCRError;
 import io.github.kamitejp.util.Result;
 
-public abstract class OCRConfiguration<P extends OCRAdapterInitParams, A extends OCRAdapter> {
+public abstract class OCRConfiguration<
+    P extends OCRAdapterInitParams,
+    R extends OCRAdapterOCRParams,
+    A extends OCRAdapter
+  > {
   private String name;
   protected P adapterInitParams;
+  protected R adapterOCRParams;
   protected A adapter;
 
   protected OCRConfiguration(OCR.Configuration config) {
@@ -21,10 +27,16 @@ public abstract class OCRConfiguration<P extends OCRAdapterInitParams, A extends
 
   public abstract void createAdapter(Platform platform);
 
-  public abstract Result<BoxRecognitionOutput, RecognitionOpError> recognizeBox(BufferedImage img);
+  public Result<BoxRecognitionOutput, ? extends OCRError> recognize(BufferedImage img) {
+    return adapter.recognize(img, adapterOCRParams);
+  }
 
   public P getAdapterInitParams() {
     return adapterInitParams;
+  };
+
+  public R getAdapterOCRParams() {
+    return adapterOCRParams;
   };
 
   public A getAdapter() {

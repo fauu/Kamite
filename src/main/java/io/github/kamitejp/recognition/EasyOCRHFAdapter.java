@@ -24,12 +24,12 @@ public class EasyOCRHFAdapter extends BaseHFOCRAdapter {
   }
 
   @Override
-  protected Result<String, RemoteOCRRequestError> trimmedResponseToOCRText(String res) {
+  protected Result<BoxRecognitionOutput, RemoteOCRError> trimmedResponseToOCRText(String res) {
     var ocrTextBuilder = new StringBuilder();
     var m = OCR_RESPONSE_TEXT_FRAGMENT_RE.matcher(res);
     while (m.find()) {
       ocrTextBuilder.append(m.group(1));
     }
-    return Result.Ok(ocrTextBuilder.toString());
+    return Result.Ok(BoxRecognitionOutput.fromString(ocrTextBuilder.toString()));
   }
 }

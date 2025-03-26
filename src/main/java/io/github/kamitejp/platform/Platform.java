@@ -52,7 +52,7 @@ public interface Platform {
     return !getUnsupportedFeatures().contains(feature);
   }
 
-  void initOCRInfrastructure() throws PlatformOCRInfrastructureInitializationException;
+  default void initOCRInfrastructure() throws PlatformOCRInfrastructureInitializationException {};
 
   Path getGenericLibDirPath();
 
