@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
@@ -24,6 +23,7 @@ import io.github.kamitejp.recognition.LocalOCRAdapter;
 import io.github.kamitejp.recognition.LocalOCRError;
 import io.github.kamitejp.recognition.OCRAdapterEvent;
 import io.github.kamitejp.recognition.OCRAdapterOCRParams;
+import io.github.kamitejp.recognition.OCRAdapterPreinitializationException;
 import io.github.kamitejp.recognition.StatefulOCRAdapter;
 import io.github.kamitejp.util.Result;
 
@@ -35,21 +35,18 @@ public class MangaOCRController
   private static final String PIPX_DEFAULT_VENV_NAME = "manga-ocr";
   private static final int RECOGNITION_TIMEOUT_S = 8;
 
-  // XXX
-  // private final Consumer<MangaOCREvent> eventCb;
   private final String[] cmd;
   private Process process;
   private BufferedReader outputReader;
 
-  public MangaOCRController(Platform platform, String customPythonPath) {
-  // ) throws MangaOCRInitializationException {
+  public MangaOCRController(Platform platform, String customPythonPath)
+      throws OCRAdapterPreinitializationException {
     var pythonPath = effectivePythonPath(platform, customPythonPath);
     if (pythonPath == null) {
-    // XXX
-      // throw new MangaOCRInitializationException(
-      //   "pipx \"Manga OCR\" installation absent at default location."
-      //   + " Please specify `ocr.mangaocr.pythonPath` in the config"
-      // );
+      throw new OCRAdapterPreinitializationException(
+        "pipx \"Manga OCR\" installation absent at default location."
+        + " Please specify `ocr.mangaocr.pythonPath` in the config"
+      );
     }
 
     cmd = new String[] { pythonPath, platform.getMangaOCRAdapterPath().toString() };
@@ -152,10 +149,9 @@ public class MangaOCRController
         while ((errLine = outputReader.readLine()) != null) {
           errBuilder.append(errLine);
         }
-        // XXX: Move the logging above and remove it from handleCrash()
-        fatalFailure("\"Manga OCR\" responded with an error: %s".formatted(errBuilder.toString()));
+        fatalFailure("Responded with an error: %s".formatted(errBuilder.toString()));
         return Result.Err(new LocalOCRError.Other(
-          "\"Manga OCR\" responded with an error: %s".formatted(errBuilder.toString())
+          "Responded with an error: %s".formatted(errBuilder.toString())
         ));
       }
 

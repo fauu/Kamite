@@ -44,7 +44,7 @@ const RootClass = (p: { theme?: DefaultTheme }) => css`
   position: absolute;
   right: 0;
   ${!themeLayoutFlipped(p.theme) ? "bottom: 0" : "top: 0"};
-  z-index: 5;
+  z-index: 15;
   transition: opacity var(--fade-transition-duration-default) ease-in;
 `;
 

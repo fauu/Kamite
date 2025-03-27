@@ -1,4 +1,4 @@
-import { onCleanup, type JSX } from "solid-js";
+import { Accessor, createEffect, onCleanup, type JSX } from "solid-js";
 
 import { DEFAULT_TOOLTIP_SCALE, type Tooltip } from "~/common/floating";
 
@@ -8,6 +8,7 @@ export type TooltipAnchorParams = {
   body?: JSX.Element,
   delayMS?: number,
   scale?: number,
+  forceHide?: Accessor<boolean>,
 };
 
 export function tooltipAnchor(el: HTMLElement, value: () => TooltipAnchorParams | undefined) {
@@ -18,7 +19,16 @@ export function tooltipAnchor(el: HTMLElement, value: () => TooltipAnchorParams 
   const { tooltip, header, body, delayMS, scale } = val;
   const { setHeader, setBody, setScale, show, hide, floating } = tooltip;
 
+  createEffect(() => {
+    if (val.forceHide && val.forceHide()) {
+      hide();
+    }
+  });
+
   const wrappedShow = () => {
+    if (val.forceHide && val.forceHide()) {
+      return;
+    }
     show(delayMS, () => {
       setHeader(() => header);
       setBody(() => body);

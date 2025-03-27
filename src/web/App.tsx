@@ -56,6 +56,7 @@ import { createEventNotifier } from "./eventNotifier";
 import { SHOW_FURIGANA_DISABLED_MSG } from "./features";
 import { useGlobalTooltip } from "./GlobalTooltip";
 import { createTheme, themeLayoutFlipped } from "./theme";
+import { OcrConfigurationSelector } from "./status-panel/OcrConfigurationSelector";
 
 export const App: VoidComponent = () => {
 
@@ -867,6 +868,7 @@ export const App: VoidComponent = () => {
           concealUnlessHovered={concealStatusPanelUnlessHovered}
           ref={el => statusPanelEl = el}
         >
+          <OcrConfigurationSelector />
           <Show when={characterCounter()} keyed>{counter =>
             <CharacterCounter
               /* QUAL: Pass a unified state with reading pace accessor instead? */

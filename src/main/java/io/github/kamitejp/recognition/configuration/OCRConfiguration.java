@@ -8,6 +8,7 @@ import io.github.kamitejp.recognition.BoxRecognitionOutput;
 import io.github.kamitejp.recognition.OCRAdapter;
 import io.github.kamitejp.recognition.OCRAdapterInitParams;
 import io.github.kamitejp.recognition.OCRAdapterOCRParams;
+import io.github.kamitejp.recognition.OCRAdapterPreinitializationException;
 import io.github.kamitejp.recognition.OCRError;
 import io.github.kamitejp.recognition.RemoteOCRAdapter;
 import io.github.kamitejp.util.Result;
@@ -26,7 +27,7 @@ public abstract class OCRConfiguration<
     name = config.name();
   }
 
-  public abstract void createAdapter(Platform platform);
+  public abstract void createAdapter(Platform platform) throws OCRAdapterPreinitializationException;
 
   public Result<BoxRecognitionOutput, ? extends OCRError> recognize(BufferedImage img) {
     if (adapter instanceof RemoteOCRAdapter) {
@@ -35,6 +36,10 @@ public abstract class OCRConfiguration<
       return remoteAdapter.recognizeWithRetry(img, adapterOCRParams);
     }
     return  adapter.recognize(img, adapterOCRParams);
+  }
+
+  public String getName() {
+    return name;
   }
 
   public P getAdapterInitParams() {

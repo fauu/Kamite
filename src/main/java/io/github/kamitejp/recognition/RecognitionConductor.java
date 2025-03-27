@@ -98,40 +98,38 @@ public class RecognitionConductor {
 
     var adapters = new HashMap<OCRAdapterID, OCRAdapter<? extends OCRAdapterOCRParams>>(8);
 
-    // For each configuration, either create a new adapter or use an existing one (in case two
-    // configurations need the same adapter with the same init params)
-    for (var configuration : configurations) {
-      var adapterInitParams = configuration.getAdapterInitParams();
-      var adapterClass =
-        (Class<? extends OCRAdapter<?>>) extractThirdTypeParameter(configuration.getClass());
-      var existingAdapter = adapters.get(new OCRAdapterID(adapterClass, adapterInitParams));
-
-      if (existingAdapter == null) {
-        configuration.createAdapter(platform);
-        var newAdapter = configuration.getAdapter();
-        @SuppressWarnings("unchecked")
-        var newAdapterClass = (Class<? extends OCRAdapter<?>>) newAdapter.getClass();
-        adapters.put(new OCRAdapterID(newAdapterClass, adapterInitParams), configuration.getAdapter());
-      } else {
-        var rawConfiguration = (OCRConfiguration<?, ?, OCRAdapter<?>>) configuration;
-        rawConfiguration.setAdapter((OCRAdapter<?>) existingAdapter);
-        // XXX: Remove if the above works
-        // switch (configuration) {
-        //   case TesseractOCRConfiguration c ->
-        //     c.setAdapter((TesseractAdapter) maybeExistingAdapter);
-        //   case MangaOCROCRConfiguration c ->
-        //     c.setAdapter((MangaOCRController) maybeExistingAdapter);
-        //   case MangaOCROnlineOCRConfiguration c ->
-        //     c.setAdapter((MangaOCRHFAdapter) maybeExistingAdapter);
-        //   default -> throw new IllegalStateException("Configuration/Adapter mismatch");
-        // }
-      }
-    }
-
-    // XXX: Abort here when no configurations with validated adapter params (?)
-
     var unavailable = true;
+
     try {
+      // For each configuration, either create a new adapter or use an existing one (in case two
+      // configurations need the same adapter with the same init params)
+      for (var configuration : configurations) {
+        var adapterInitParams = configuration.getAdapterInitParams();
+        var adapterClass =
+          (Class<? extends OCRAdapter<?>>) extractThirdTypeParameter(configuration.getClass());
+        var existingAdapter = adapters.get(new OCRAdapterID(adapterClass, adapterInitParams));
+
+        if (existingAdapter == null) {
+          try {
+            configuration.createAdapter(platform);
+          } catch (OCRAdapterPreinitializationException e) {
+            throw new RecognizerInitializationException( // NOPMD
+              "Could not preinitialize the adapter for %s: %s"
+                .formatted(configuration.getName(), e.getMessage())
+            );
+          }
+          var newAdapter = configuration.getAdapter();
+          @SuppressWarnings("unchecked")
+          var newAdapterClass = (Class<? extends OCRAdapter<?>>) newAdapter.getClass();
+          adapters.put(new OCRAdapterID(newAdapterClass, adapterInitParams), configuration.getAdapter());
+        } else {
+          var rawConfiguration = (OCRConfiguration<?, ?, OCRAdapter<?>>) configuration;
+          rawConfiguration.setAdapter((OCRAdapter<?>) existingAdapter);
+        }
+      }
+
+      // XXX: Abort here when no configurations with validated adapter params (?)
+
       platform.initOCRInfrastructure();
 
       int currentId = 0;

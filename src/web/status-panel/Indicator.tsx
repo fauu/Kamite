@@ -1,4 +1,4 @@
-import { type JSX, type ParentComponent } from "solid-js";
+import { Accessor, type JSX, type ParentComponent } from "solid-js";
 import { css } from "solid-styled-components";
 
 import { ChromeClass } from "~/style";
@@ -11,6 +11,7 @@ import { useGlobalTooltip } from "~/GlobalTooltip";
 interface StatusPanelIndicatorProps {
   tooltipHeader: string,
   tooltipBody: JSX.Element,
+  forceHideTooltip?: Accessor<boolean>,
   onHoldClick?: () => void,
   onClick?: () => void,
   id: string,
@@ -30,7 +31,8 @@ export const StatusPanelIndicator: ParentComponent<StatusPanelIndicatorProps> = 
       use:tooltipAnchor={{
         tooltip,
         header: props.tooltipHeader,
-        body: props.tooltipBody
+        body: props.tooltipBody,
+        forceHide: props.forceHideTooltip
       }}
     >
       {props.children}

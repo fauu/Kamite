@@ -51,7 +51,7 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
   @Override
   public Optional<Path> getDefaultPipxVenvPythonPath(String venvName) {
     return getUserHomeDirPath().map(home ->
-      home.resolve(".local/pipx/venvs").resolve(venvName).resolve("bin/python")
+      home.resolve(".local/share/pipx/venvs").resolve(venvName).resolve("bin/python")
     );
   }
 
