@@ -1,13 +1,5 @@
 package io.github.kamitejp.recognition;
 
-// import java.util.function.Consumer;
-//
-// import io.github.kamitejp.platform.MangaOCRController;
-// import io.github.kamitejp.platform.MangaOCREvent;
-// import io.github.kamitejp.platform.MangaOCRInitializationException;
-// import io.github.kamitejp.platform.Platform;
-import io.github.kamitejp.util.Result;
-
 // public sealed interface OCREngine
   // permits OCREngine.Tesseract,
           // OCREngine.MangaOCR,

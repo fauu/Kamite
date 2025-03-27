@@ -29,7 +29,9 @@ public abstract class OCRConfiguration<
   public abstract void createAdapter(Platform platform);
 
   public Result<BoxRecognitionOutput, ? extends OCRError> recognize(BufferedImage img) {
-    if (adapter instanceof RemoteOCRAdapter remoteAdapter) {
+    if (adapter instanceof RemoteOCRAdapter) {
+      @SuppressWarnings("unchecked")
+      var remoteAdapter = (RemoteOCRAdapter<R>) adapter;
       return remoteAdapter.recognizeWithRetry(img, adapterOCRParams);
     }
     return  adapter.recognize(img, adapterOCRParams);
@@ -51,4 +53,3 @@ public abstract class OCRConfiguration<
     this.adapter = adapter;
   }
 }
-

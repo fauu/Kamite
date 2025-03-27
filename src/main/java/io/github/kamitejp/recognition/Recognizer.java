@@ -27,7 +27,6 @@ import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
-import io.github.kamitejp.platform.MangaOCREvent;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.recognition.configuration.OCRConfiguration;
@@ -476,22 +475,6 @@ public class Recognizer {
       );
     } else {
       return List.of();
-    }
-  }
-
-  private void handleMangaOCREvent(MangaOCREvent event) {
-    var transformedEvent = switch (event) {
-      case MangaOCREvent.Started _ ->
-        null;
-      case MangaOCREvent.StartedDownloadingModel _ ->
-        new RecognizerEvent.MangaOCRStartedDownloadingModel();
-      case MangaOCREvent.Crashed _ ->
-        new RecognizerEvent.Crashed();
-      case MangaOCREvent.TimedOutAndRestarting _ ->
-        new RecognizerEvent.Restarting(RecognizerRestartReason.MANGA_OCR_TIMED_OUT_AND_RESTARTING);
-    };
-    if (transformedEvent != null) {
-      eventCb.accept(transformedEvent);
     }
   }
 

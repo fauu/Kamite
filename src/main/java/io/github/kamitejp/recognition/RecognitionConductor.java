@@ -2,8 +2,9 @@ package io.github.kamitejp.recognition;
 
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
@@ -13,7 +14,6 @@ import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.config.Config;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
-import io.github.kamitejp.platform.MangaOCRController;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformOCRInfrastructureInitializationException;
 import io.github.kamitejp.recognition.configuration.MangaOCROCRConfiguration;
@@ -21,9 +21,38 @@ import io.github.kamitejp.recognition.configuration.MangaOCROnlineOCRConfigurati
 import io.github.kamitejp.recognition.configuration.OCRConfiguration;
 import io.github.kamitejp.recognition.configuration.TesseractOCRConfiguration;
 import io.github.kamitejp.status.ProgramStatus;
+import io.github.kamitejp.util.Executor;
 
 public class RecognitionConductor {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
+  private HashMap<Integer, StatefulOCRAdapter> statefulOCRAdapters = new HashMap<>();
+
+  // XXX
+  public static Class<?> extractThirdTypeParameter(Class<?> configClass) {
+    var genericSuperclass = configClass.getGenericSuperclass();
+    
+    if (!(genericSuperclass instanceof ParameterizedType)) {
+        throw new IllegalArgumentException("Class is not parameterized");
+    }
+    
+    ParameterizedType paramType = (ParameterizedType) genericSuperclass;
+    Type[] typeArgs = paramType.getActualTypeArguments();
+    
+    if (typeArgs.length < 3) {
+        throw new IllegalArgumentException("Class has fewer than 3 type parameters");
+    }
+    
+    var thirdArg = typeArgs[2];
+    
+    if (thirdArg instanceof Class) {
+        return (Class<?>) thirdArg;
+    } else if (thirdArg instanceof ParameterizedType) {
+        return (Class<?>) ((ParameterizedType) thirdArg).getRawType();
+    }
+    
+    throw new IllegalArgumentException("Third type parameter is not a Class");
+  }
 
   private final Platform platform;
   private final ProgramStatus status;
@@ -69,33 +98,23 @@ public class RecognitionConductor {
 
     var adapters = new HashMap<OCRAdapterID, OCRAdapter<? extends OCRAdapterOCRParams>>(8);
 
+    // For each configuration, either create a new adapter or use an existing one (in case two
+    // configurations need the same adapter with the same init params)
     for (var configuration : configurations) {
-      var initParams = configuration.getAdapterInitParams();
-      @SuppressWarnings("unlikely-arg-type") var maybeExistingAdapter = adapters.get(initParams);
-      if (maybeExistingAdapter == null) {
+      var adapterInitParams = configuration.getAdapterInitParams();
+      var adapterClass =
+        (Class<? extends OCRAdapter<?>>) extractThirdTypeParameter(configuration.getClass());
+      var existingAdapter = adapters.get(new OCRAdapterID(adapterClass, adapterInitParams));
+
+      if (existingAdapter == null) {
         configuration.createAdapter(platform);
         var newAdapter = configuration.getAdapter();
-        adapters.put(
-          new OCRAdapterID((Class<? extends OCRAdapter<?>>) newAdapter.getClass(), initParams),
-          configuration.getAdapter()
-        );
+        @SuppressWarnings("unchecked")
+        var newAdapterClass = (Class<? extends OCRAdapter<?>>) newAdapter.getClass();
+        adapters.put(new OCRAdapterID(newAdapterClass, adapterInitParams), configuration.getAdapter());
       } else {
-          Map<Class<? extends OCRConfiguration<?, ?, ?>>, Class<? extends OCRAdapter<?>>>
-            configurationToAdapter = Map.of(
-              TesseractOCRConfiguration.class, TesseractAdapter.class,
-              MangaOCROCRConfiguration.class, MangaOCRController.class,
-              MangaOCROnlineOCRConfiguration.class, MangaOCRHFAdapter.class
-            );
-          Class<? extends OCRAdapter<?>> adapterClass =
-            configurationToAdapter.get(configuration.getClass());
-          if (adapterClass.isInstance(maybeExistingAdapter)) {
-            @SuppressWarnings("unchecked")
-            OCRConfiguration<?, ?, OCRAdapter<?>> rawConfiguration =
-              (OCRConfiguration<?, ?, OCRAdapter<?>>) configuration;
-            rawConfiguration.setAdapter((OCRAdapter<?>) maybeExistingAdapter);
-          } else {
-            throw new IllegalStateException("Configuration/Adapter mismatch");
-          }
+        var rawConfiguration = (OCRConfiguration<?, ?, OCRAdapter<?>>) configuration;
+        rawConfiguration.setAdapter((OCRAdapter<?>) existingAdapter);
         // XXX: Remove if the above works
         // switch (configuration) {
         //   case TesseractOCRConfiguration c ->
@@ -115,13 +134,13 @@ public class RecognitionConductor {
     try {
       platform.initOCRInfrastructure();
 
+      int currentId = 0;
       for (var adapter : adapters.values()) {
         if (adapter instanceof StatefulOCRAdapter statefulAdapter) {
-          var res = statefulAdapter.init();
-          if (res.isErr()) {
-            LOG.error("Could not initialize Recognizer: {}", res.err());
-            return;
-          }
+          final var id = currentId;
+          Executor.get().execute(() -> statefulAdapter.init(id, this::handleOCRAdapterEvent));
+          statefulOCRAdapters.put(id, statefulAdapter);
+          currentId++;
         }
       }
 
@@ -148,6 +167,31 @@ public class RecognitionConductor {
     }
     if (unavailable) {
       updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
+    }
+  }
+
+  // XXX
+  private void handleOCRAdapterEvent(int adapterId, OCRAdapterEvent event) {
+    // XXX: TODO Different levels for different messages
+    LOG.error("{}: {}", statefulOCRAdapters.get(adapterId).getClass(), event); 
+
+    // XXX
+    var transformedEvent = switch (event) {
+      case OCRAdapterEvent.Launching _ ->
+        null;
+      case OCRAdapterEvent.Launched _ ->
+        null;
+      case OCRAdapterEvent.StartedExtraSetup _ ->
+        new RecognizerEvent.MangaOCRStartedDownloadingModel();
+      case OCRAdapterEvent.Initialized _ ->
+        null;
+      case OCRAdapterEvent.TimedOutAndRestarting _ ->
+        new RecognizerEvent.Restarting(RecognizerRestartReason.MANGA_OCR_TIMED_OUT_AND_RESTARTING);
+      case OCRAdapterEvent.FailedFatally _ ->
+        new RecognizerEvent.Crashed();
+    };
+    if (transformedEvent != null) {
+      recognizerEventCb.accept(transformedEvent);
     }
   }
 

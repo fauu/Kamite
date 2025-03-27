@@ -12,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,32 +22,27 @@ import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.recognition.BoxRecognitionOutput;
 import io.github.kamitejp.recognition.LocalOCRAdapter;
 import io.github.kamitejp.recognition.LocalOCRError;
+import io.github.kamitejp.recognition.OCRAdapterEvent;
 import io.github.kamitejp.recognition.OCRAdapterOCRParams;
+import io.github.kamitejp.recognition.StatefulOCRAdapter;
 import io.github.kamitejp.util.Result;
 
-public class MangaOCRController implements LocalOCRAdapter<OCRAdapterOCRParams.Empty> {
+public class MangaOCRController
+    extends StatefulOCRAdapter
+    implements LocalOCRAdapter<OCRAdapterOCRParams.Empty> {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String PIPX_DEFAULT_VENV_NAME = "manga-ocr";
   private static final int RECOGNITION_TIMEOUT_S = 8;
 
-  private State state;
   // XXX
   // private final Consumer<MangaOCREvent> eventCb;
   private final String[] cmd;
   private Process process;
   private BufferedReader outputReader;
 
-  public MangaOCRController(
-    // XXX
-    // Platform platform, String customPythonPath, Consumer<MangaOCREvent> eventCb
-    Platform platform, String customPythonPath
-    // XXX
+  public MangaOCRController(Platform platform, String customPythonPath) {
   // ) throws MangaOCRInitializationException {
-  ) {
-    // XXX
-    // this.eventCb = eventCb;
-
     var pythonPath = effectivePythonPath(platform, customPythonPath);
     if (pythonPath == null) {
     // XXX
@@ -57,9 +53,6 @@ public class MangaOCRController implements LocalOCRAdapter<OCRAdapterOCRParams.E
     }
 
     cmd = new String[] { pythonPath, platform.getMangaOCRAdapterPath().toString() };
-
-    // XXX
-    // start();
   }
 
   private String effectivePythonPath(Platform platform, String customPath) {
@@ -75,12 +68,12 @@ public class MangaOCRController implements LocalOCRAdapter<OCRAdapterOCRParams.E
     }
     return null;
   }
-
-  // XXX
-  //private void start() throws MangaOCRInitializationException {
-  private void start() {
-    state = State.STARTING;
-    LOG.info("Starting \"Manga OCR\" using `{}`", cmd[0]);
+  
+  @Override
+  public void doInit() {
+    dispatchEvent(
+      new OCRAdapterEvent.Launching("Starting using `{}`".formatted(cmd[0]))
+    );
     var pb = new ProcessBuilder(cmd);
     pb.redirectErrorStream(true); // Needed to catch the "Downloading" messages
     try {
@@ -88,17 +81,18 @@ public class MangaOCRController implements LocalOCRAdapter<OCRAdapterOCRParams.E
       outputReader = new BufferedReader(
         new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
       );
+      dispatchEvent(new OCRAdapterEvent.Launched(null));
 
       var ready = false;
-      var sentDownloadingEvent = false;
+      var dispatchedExtraSetupEvent = false;
       for (var line = outputReader.readLine(); line != null; line = outputReader.readLine()) {
-        LOG.debug("Received output line from \"Manga OCR\": {}", line);
-        if (!sentDownloadingEvent && line.startsWith("Downloading")) {
-          LOG.info("\"Manga OCR\" is downloading its base model. This might take a while");
+        LOG.debug("Received output line: {}", line);
+        if (!dispatchedExtraSetupEvent && line.startsWith("Downloading")) {
           //noinspection ObjectAllocationInLoop
-          // XXX
-          // eventCb.accept(new MangaOCREvent.StartedDownloadingModel());
-          sentDownloadingEvent = true;
+          dispatchEvent(
+            new OCRAdapterEvent.StartedExtraSetup("Downloading base model. This might take a while")
+          );
+          dispatchedExtraSetupEvent = true;
         }
         if ("READY".equals(line)) {
           ready = true;
@@ -106,25 +100,23 @@ public class MangaOCRController implements LocalOCRAdapter<OCRAdapterOCRParams.E
         }
       }
       if (!ready) {
-        state = State.FAILED;
-        // XXX
-        //throw new MangaOCRInitializationException("did not report readiness");
+        dispatchEvent(new OCRAdapterEvent.FailedFatally("Failed to report readiness"));
+        return;
       }
     } catch (IOException e) {
-      state = State.FAILED;
-        // XXX
-      //throw new MangaOCRInitializationException("error while reading initial output", e);
+      fatalFailure("Error while reading initial output: {}".formatted(e.getMessage()));
+      return;
     }
-    // XXX
-    // eventCb.accept(new MangaOCREvent.Started());
-    state = State.STARTED;
+
+    isReady = true;
+    dispatchEvent(new OCRAdapterEvent.Initialized(null));
   }
 
   private final Supplier<String> outputLineSupplier = () -> {
     try {
       return outputReader.readLine();
     } catch (IOException e) {
-      handleCrash("Error while reading \"Manga OCR\" output. See stderr for stack trace");
+      fatalFailure("Error while reading \"Manga OCR\" output. See stderr for stack trace");
       e.printStackTrace();
     }
     return null;
@@ -134,7 +126,7 @@ public class MangaOCRController implements LocalOCRAdapter<OCRAdapterOCRParams.E
     BufferedImage img,
     OCRAdapterOCRParams.Empty _params
   ) {
-    if (state != State.STARTED) {
+    if (!isReady) {
       throw new IllegalStateException("Attempted to use \"Manga OCR\" while it was not ready");
     }
     try {
@@ -161,7 +153,7 @@ public class MangaOCRController implements LocalOCRAdapter<OCRAdapterOCRParams.E
           errBuilder.append(errLine);
         }
         // XXX: Move the logging above and remove it from handleCrash()
-        handleCrash("\"Manga OCR\" responded with an error: %s".formatted(errBuilder.toString()));
+        fatalFailure("\"Manga OCR\" responded with an error: %s".formatted(errBuilder.toString()));
         return Result.Err(new LocalOCRError.Other(
           "\"Manga OCR\" responded with an error: %s".formatted(errBuilder.toString())
         ));
@@ -169,35 +161,25 @@ public class MangaOCRController implements LocalOCRAdapter<OCRAdapterOCRParams.E
 
       return Result.Ok(BoxRecognitionOutput.fromString(line));
     } catch (IOException | InterruptedException | ExecutionException e) {
-      handleCrash("Error while communicating with \"Manga OCR\". See stderr for stack trace");
+      fatalFailure("Error while communicating with \"Manga OCR\". See stderr for stack trace");
       e.printStackTrace();
       return Result.Err(new LocalOCRError.Other(
         "Error while communicating with \"Manga OCR\". See stderr for stack trace"
       ));
     } catch (TimeoutException e) {
-      state = State.FAILED;
-      // XXX
-      // eventCb.accept(new MangaOCREvent.TimedOutAndRestarting());
-      LOG.info("\"Manga OCR\" is taking too long to respond. Restarting");
+      isReady = false;
+      dispatchEvent(new OCRAdapterEvent.TimedOutAndRestarting(null));
       process.destroy();
-      try {
-        start();
-      // XXX
-      //} catch (MangaOCRInitializationException e1) {
-      } catch (Exception e1) {
-        handleCrash("Error while restarting \"Manga OCR\": %s".formatted(e1.getMessage()));
-      }
+      doInit();
       return Result.Err(
         new LocalOCRError.Other("\"Manga OCR\" took too long to respond and was restarted")
       );
     }
   }
 
-  private void handleCrash(String errorMsg) {
-    state = State.FAILED;
-    // XXX
-    // eventCb.accept(new MangaOCREvent.Crashed());
-    LOG.error(errorMsg);
+  private void fatalFailure(String errorMsg) {
+    isReady = false;
+    dispatchEvent(new OCRAdapterEvent.FailedFatally(errorMsg));
   }
 
   public void destroy() {
@@ -205,7 +187,4 @@ public class MangaOCRController implements LocalOCRAdapter<OCRAdapterOCRParams.E
       process.destroy();
     }
   }
-
-  private enum State { STARTING, STARTED, FAILED }
 }
-
