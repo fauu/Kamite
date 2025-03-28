@@ -5,13 +5,12 @@ import java.util.List;
 
 public sealed interface RecognizerEvent
   permits RecognizerEvent.Initialized,
-          RecognizerEvent.MangaOCRStartedDownloadingModel,
-          RecognizerEvent.Crashed,
-          RecognizerEvent.Restarting,
+          RecognizerEvent.OCRConfigurationListUpdated,
           RecognizerEvent.DebugImageSubmitted {
   record Initialized(List<String> availableCommands) implements RecognizerEvent {}
-  record MangaOCRStartedDownloadingModel() implements RecognizerEvent {}
-  record Crashed() implements RecognizerEvent {}
-  record Restarting(RecognizerRestartReason reason) implements RecognizerEvent {}
+
+  record OCRConfigurationListUpdated(List<OCRConfigurationInfo> configurations)
+    implements RecognizerEvent {}
+
   record DebugImageSubmitted(BufferedImage image) implements RecognizerEvent {}
 }

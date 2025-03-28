@@ -14,6 +14,10 @@ public abstract class StatefulOCRAdapter {
     doInit();
   };
 
+  public int getID() {
+    return id;
+  }
+
   protected abstract void doInit();
 
   protected final void dispatchEvent(OCRAdapterEvent event) {

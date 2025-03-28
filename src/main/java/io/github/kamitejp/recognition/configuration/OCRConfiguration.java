@@ -9,6 +9,7 @@ import io.github.kamitejp.recognition.OCRAdapter;
 import io.github.kamitejp.recognition.OCRAdapterInitParams;
 import io.github.kamitejp.recognition.OCRAdapterOCRParams;
 import io.github.kamitejp.recognition.OCRAdapterPreinitializationException;
+import io.github.kamitejp.recognition.OCRConfigurationStatus;
 import io.github.kamitejp.recognition.OCRError;
 import io.github.kamitejp.recognition.RemoteOCRAdapter;
 import io.github.kamitejp.util.Result;
@@ -18,10 +19,12 @@ public abstract class OCRConfiguration<
     R extends OCRAdapterOCRParams,
     A extends OCRAdapter<R>
   > {
-  private String name;
   protected P adapterInitParams;
   protected R adapterOCRParams;
   protected A adapter;
+
+  private String name;
+  private OCRConfigurationStatus status;
 
   protected OCRConfiguration(OCR.Configuration config) {
     name = config.name();
@@ -40,6 +43,14 @@ public abstract class OCRConfiguration<
 
   public String getName() {
     return name;
+  }
+
+  public OCRConfigurationStatus getStatus() {
+    return status;
+  }
+
+  public void setStatus(OCRConfigurationStatus status) {
+    this.status = status;
   }
 
   public P getAdapterInitParams() {

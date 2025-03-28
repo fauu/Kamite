@@ -11,10 +11,28 @@ const configurations = [
   { value: 'opt3', label: 'Option 3' },
 ];
 
-export const OcrConfigurationSelector: VoidComponent = () => {
-  const [selectedValue, setSelectedValue] = createSignal("opt1");
+interface OcrConfigurationSelectorProps {
+  recognizerStatus: Accessor<RecognizerStatus>,
+}
+
+export const OcrConfigurationSelector: VoidComponent = props => {
+  const [selectedValue, setSelectedValue] = createSignal();
 
   const [dropdownOpen, setDropdownOpen] = createSignal(false);
+
+  const options = () => {
+    const configurations = props.recognizerStatus().configurations;
+    if (!configurations) {
+      return [];
+    }
+    const res = configurations.map(c =>
+      ({ value: c.name, label: c.name, disabled: c.status.kind !== "available" })
+    );
+    if (res.length > 0) {
+      setSelectedValue(res[0].value);
+    }
+    return res;
+  }
 
   return <StatusPanelIndicator
     tooltipHeader="Active OCR configuration"
@@ -23,7 +41,7 @@ export const OcrConfigurationSelector: VoidComponent = () => {
     id="ocr-configuration-selector"
   >
     <Dropdown
-      options={configurations}
+      options={options()}
       value={selectedValue()}
       onChange={setSelectedValue}
       onOpen={() => setDropdownOpen(true)}

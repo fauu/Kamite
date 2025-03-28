@@ -33,7 +33,7 @@ export const Dropdown: Component<DropdownProps> = (props) => {
 	// Determine the displayed label
 	const displayLabel = createMemo(() => {
 		const currentVal = currentValue();
-		const selectedOption = props.options?.find((opt) => opt.value === currentVal);
+		const selectedOption = props.options?.find(opt => opt.value === currentVal);
 		return selectedOption
 			? selectedOption.label
 			: props.placeholder || "Select...";

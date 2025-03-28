@@ -101,6 +101,7 @@ export type UnavailableUniversalFeature =
 export type InRecognizerStatus = {
   kind: InRecognizerStatusKind,
   availableCommands: string[] | null,
+  configurations: InRecognizerConfiguration,
 };
 
 export type InRecognizerStatusKind =
@@ -109,6 +110,22 @@ export type InRecognizerStatusKind =
   | "IDLE"
   | "AWAITING_USER_INPUT"
   | "PROCESSING";
+
+export type InRecognizerConfiguration = {
+  name: string,
+  status: InRecognizerConfigurationStatus,
+};
+
+export type InRecognizerConfigurationStatus = {
+  kind: InRecognizerConfigurationStatusKind,
+  msg?: string,
+};
+
+export type InRecognizerConfigurationStatusKind =
+  | "INITIALIZING"
+  | "AVAILABLE"
+  | "TIMED_OUT_AND_REINITIALIZING"
+  | "FAILED_FATALLY";
 
 type PlayerStatus = "CONNECTED" | "DISCONNECTED" | "PAUSED" | "UNPAUSED";
 
