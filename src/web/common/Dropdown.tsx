@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { type Component, createSignal, createEffect, onCleanup, For, createMemo } from "solid-js";
+import { type Component, createSignal, createEffect, onCleanup, For, createMemo, Show } from "solid-js";
 import { css, styled } from "solid-styled-components";
 
 interface DropdownOption {
@@ -9,9 +9,10 @@ interface DropdownOption {
 }
 
 interface DropdownProps {
-	options: DropdownOption[];
-	placeholder?: string;
 	value?: any;
+	placeholder?: string;
+	options: DropdownOption[];
+  optionListHeader?: string;
 	onChange?: (value: any) => void;
 	onOpen?: () => void;
 	onClose?: () => void;
@@ -20,97 +21,108 @@ interface DropdownProps {
 }
 
 // XXX: Review
-export const Dropdown: Component<DropdownProps> = (props) => {
-	const [isOpen, setIsOpen] = createSignal(false);
+export const Dropdown: Component<DropdownProps> = props => {
+  const [isOpen, setIsOpen] = createSignal(false);
 
-	let dropdownRef: HTMLDivElement | undefined;
+  let dropdownRef: HTMLDivElement | undefined;
 
-	// Determine the current value (controlled or internal)
-	// Note: In Solid, directly using props.value in effects/memos is often sufficient
-	// as props are reactive. No separate internal signal strictly needed for controlled.
-	const currentValue = createMemo(() => props.value);
+  // XXX: Use props.value directly instead of currentValue?
+  // Determine the current value (controlled or internal)
+  // Note: In Solid, directly using props.value in effects/memos is often sufficient
+  // as props are reactive. No separate internal signal strictly needed for controlled.
+  const currentValue = createMemo(() => props.value);
 
-	// Determine the displayed label
-	const displayLabel = createMemo(() => {
-		const currentVal = currentValue();
-		const selectedOption = props.options?.find(opt => opt.value === currentVal);
-		return selectedOption
-			? selectedOption.label
-			: props.placeholder || "Select...";
-	});
+  const displayLabel = createMemo(() => {
+    const currentVal = currentValue();
+    const selectedOption = props.options?.find(opt => opt.value === currentVal);
+    return selectedOption
+      ? selectedOption.label
+      : props.placeholder || "Select...";
+  });
 
-	// Check if a value (other than placeholder) is actually selected
-	const isValueSelected = createMemo(() => {
-		// Check if props.value is defined and not null/undefined
-		// Or if using internal state, check that state.
-		return currentValue() !== undefined && currentValue() !== null;
-	});
+  const isValueSelected = createMemo(() => {
+    return currentValue() !== undefined && currentValue() !== null;
+  });
 
-	const toggleDropdown = (event: MouseEvent) => {
-		event.stopPropagation();
-		setIsOpen(!isOpen());
+  const canSelectionChange = () => (props.options.length >= 2) || !isValueSelected();
+
+  const handleSelectedValueDisplayClick = (event: MouseEvent) => {
+    event.stopPropagation();
+
+    setIsOpen(prev => {
+      if (prev) return false;
+      return canSelectionChange();
+    });
+  };
+
+  const handleOptionClick = (option: DropdownOption) => {
+    if (option.disabled) return;
+
+    if (props.onChange) {
+      props.onChange(option.value);
+    }
+
+    setIsOpen(false);
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (dropdownRef && !dropdownRef.contains(event.target as Node)) {
+      setIsOpen(false);
+    }
+  };
+
+  createEffect(() => {
     if (isOpen()) {
       props.onOpen && props.onOpen();
     } else {
       props.onClose && props.onClose();
     }
-	};
+  });
 
-	const handleOptionClick = (option: DropdownOption) => {
-		if (option.disabled) return;
+  createEffect(() => {
+    if (isOpen()) {
+      document.addEventListener("click", handleClickOutside, true);
+    } else {
+      document.removeEventListener("click", handleClickOutside, true);
+    }
 
-		if (props.onChange) {
-			props.onChange(option.value);
-		}
+    onCleanup(() => document.removeEventListener("click", handleClickOutside, true));
+  });
 
-		setIsOpen(false);
-	};
-
-	const handleClickOutside = (event: MouseEvent) => {
-		if (dropdownRef && !dropdownRef.contains(event.target as Node)) {
-			setIsOpen(false);
-		}
-	};
-
-	// Add/remove the global click listener for closing the dropdown
-	createEffect(() => {
-		if (isOpen()) {
-			document.addEventListener("click", handleClickOutside, true);
-		} else {
-			document.removeEventListener("click", handleClickOutside, true);
-		}
-
-		onCleanup(() => {
-			document.removeEventListener("click", handleClickOutside, true);
-		});
-	});
-
-	return (
-		<DropdownWrapper
-			ref={dropdownRef}
-			data-is-open={isOpen()}
-			class={props.class}
-			id={props.id}
-		>
-			<SelectedValueDisplay
-				class={classNames({
+  return (
+    <DropdownWrapper
+      ref={dropdownRef}
+      data-is-open={isOpen()}
+      class={props.class}
+      id={props.id}
+    >
+      <SelectedValueDisplay
+        class={classNames({
           [SelectedValuePlaceholder]: !isValueSelected() && !!props.placeholder,
+          [SelectedValueDisplayChangeable]: canSelectionChange(),
         })}
-				type="button"
-				onClick={toggleDropdown}
-				aria-haspopup="listbox"
-				aria-expanded={isOpen()}
-			>
-				{displayLabel()}
-				<Arrow />
-			</SelectedValueDisplay>
+        type="button"
+        onClick={handleSelectedValueDisplayClick}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen()}
+      >
+        {displayLabel()}
+        <Show when={canSelectionChange()}>
+          <Arrow />
+        </Show>
+      </SelectedValueDisplay>
 
-			<OptionsList role="listbox" aria-hidden={!isOpen()}>
-				<For each={props.options}>{option => (
+      <OptionsList role="listbox" aria-hidden={!isOpen()}>
+        <Show when={props.optionListHeader}>
+          <OptionListHeader>
+            {props.optionListHeader}
+          </OptionListHeader>
+        </Show>
+        <For each={props.options}>{option => (
           <OptionItem
             role="option"
             class={classNames({
-              [SelectedOptionClass]: option.value === currentValue,
+              [SelectedOptionClass]: option.value === currentValue(),
               [DisabledOptionClass]: option.disabled,
             })}
             onClick={() => handleOptionClick(option)}
@@ -118,10 +130,10 @@ export const Dropdown: Component<DropdownProps> = (props) => {
           >
             {option.label}
           </OptionItem>
-				)}</For>
-			</OptionsList>
-		</DropdownWrapper>
-	);
+        )}</For>
+      </OptionsList>
+    </DropdownWrapper>
+  );
 };
 
 const DropdownWrapper = styled.div`
@@ -135,13 +147,13 @@ const SelectedValueDisplay = styled.button`
   display: flex;
   width: 100%;
   margin: 0;
+  padding: 0;
   border: none;
 
   background-color: transparent;
   font: inherit;
   color: inherit;
   text-align: left;
-  cursor: pointer;
 
   align-items: center;
   justify-content: space-between;
@@ -157,6 +169,10 @@ const SelectedValueDisplay = styled.button`
     cursor: not-allowed;
     opacity: 0.6;
   }
+`;
+
+const SelectedValueDisplayChangeable = css`
+  cursor: pointer;
 `;
 
 const SelectedValuePlaceholder = css`
@@ -219,6 +235,11 @@ const OptionsList = styled.ul`
   }
 `;
 
+const OptionListHeader = styled.div`
+  font-size: 0.85rem;
+  padding: 0.5rem;
+`;
+
 const OptionItem = styled.li`
   padding: 10px;
   margin: 0;
@@ -235,16 +256,12 @@ const OptionItem = styled.li`
 `;
 
 const SelectedOptionClass = css`
-  background-color: var(--color-bg3);
-  font-weight: 500; /* Make selected item slightly bolder */
-  /* Optionally hide hover effect when selected */
-  /* &:hover { background-color: #e0e0e0; } */
+  background-color: var(--color-bg2-hl);
 `;
 
 const DisabledOptionClass = css`
-  color: #aaa; /* Dim text color */
+  color: var(--color-fg5);
   cursor: not-allowed;
-  background-color: transparent !important; /* Ensure no background on hover/selection */
-  /* pointer-events: none; */ /* Already handled by inline style in component logic */
+  background-color: transparent !important;
   pointer-events: none;
 `

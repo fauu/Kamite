@@ -1,4 +1,4 @@
-import { Accessor, type JSX, type ParentComponent } from "solid-js";
+import { Accessor, createEffect, type JSX, type ParentComponent } from "solid-js";
 import { css } from "solid-styled-components";
 
 import { ChromeClass } from "~/style";
@@ -47,13 +47,14 @@ const ContainerClass = css`
 `;
 
 const RootClass = css`
-  padding: 0.4rem 0.5rem 0.25rem 0.5rem;
+  padding: 0.4rem 0.5rem 0.32rem 0.5rem;
   font-weight: 500;
   background: var(--color-bg);
   color: var(--color-fg3);
   border: 1px solid var(--color-bg2);
   border-radius: var(--border-radius-default);
   width: max-content;
+  display: flex;
 
   box-shadow: inset 0px 0px 1px var(--color-bgm1);
   .${ChromeClass} & {

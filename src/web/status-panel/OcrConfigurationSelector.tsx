@@ -1,38 +1,41 @@
-import { createEffect, createSignal, type VoidComponent } from "solid-js";
-import { css } from "solid-styled-components";
+import { Accessor, createEffect, createSignal, type VoidComponent } from "solid-js";
+import { css, styled } from "solid-styled-components";
 
-import { Dropdown } from "~/common";
+import { DefaultIcon, Dropdown } from "~/common";
+import { RecognizerStatus } from "~/backend";
 
 import { StatusPanelIndicator } from "./Indicator";
 
-const configurations = [
-  { value: 'opt1', label: 'Option 1' },
-  { value: 'opt2', label: 'Option 2', disabled: true },
-  { value: 'opt3', label: 'Option 3' },
-];
-
 interface OcrConfigurationSelectorProps {
   recognizerStatus: Accessor<RecognizerStatus>,
+  onChange: (configurationName: string) => void,
 }
 
-export const OcrConfigurationSelector: VoidComponent = props => {
-  const [selectedValue, setSelectedValue] = createSignal();
+export const OcrConfigurationSelector: VoidComponent<OcrConfigurationSelectorProps> = props => {
+  const [selectedValue, setSelectedValue] = createSignal<string>();
 
   const [dropdownOpen, setDropdownOpen] = createSignal(false);
 
   const options = () => {
-    const configurations = props.recognizerStatus().configurations;
+    const configurations = props.recognizerStatus().ocrConfigurations;
     if (!configurations) {
       return [];
     }
     const res = configurations.map(c =>
       ({ value: c.name, label: c.name, disabled: c.status.kind !== "available" })
     );
-    if (res.length > 0) {
-      setSelectedValue(res[0].value);
+    if (!selectedValue() && res.length > 0) {
+      const val = res[0].value;
+      setSelectedValue(val);
+      props.onChange(val);
     }
     return res;
   }
+
+  createEffect(() => {
+    const val = selectedValue();
+    val && props.onChange(val);
+  });
 
   return <StatusPanelIndicator
     tooltipHeader="Active OCR configuration"
@@ -40,17 +43,20 @@ export const OcrConfigurationSelector: VoidComponent = props => {
     forceHideTooltip={dropdownOpen}
     id="ocr-configuration-selector"
   >
+    <Icon iconName="ocr-configurations" sizePx={18} />
     <Dropdown
       options={options()}
       value={selectedValue()}
       onChange={setSelectedValue}
       onOpen={() => setDropdownOpen(true)}
       onClose={() => setDropdownOpen(false)}
-      placeholder="Choose an option..."
       class={DropdownExtraClass}
     />
   </StatusPanelIndicator>;
 };
 
-// XXX
 const DropdownExtraClass = css``;
+
+const Icon = styled(DefaultIcon)`
+  margin-right: 0.5rem;
+`;

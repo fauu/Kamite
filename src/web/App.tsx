@@ -638,6 +638,10 @@ export const App: VoidComponent = () => {
     }
   }
 
+  function handleOcrConfigurationSelected(ocrConfigurationName: string) {
+    backend.command({ kind: "ocr-setup_set-active-configuration", params: { name: ocrConfigurationName } })
+  }
+
   window.addEventListener("resize", () => {
     mainSectionEl && notebook.syncHeight();
     statusPanelFader.setFadeInvalidated();
@@ -868,7 +872,10 @@ export const App: VoidComponent = () => {
           concealUnlessHovered={concealStatusPanelUnlessHovered}
           ref={el => statusPanelEl = el}
         >
-          <OcrConfigurationSelector recognizerStatus={recognizerStatus} />
+          <OcrConfigurationSelector
+            recognizerStatus={recognizerStatus}
+            onChange={handleOcrConfigurationSelected}
+          />
           <Show when={characterCounter()} keyed>{counter =>
             <CharacterCounter
               /* QUAL: Pass a unified state with reading pace accessor instead? */
@@ -876,7 +883,7 @@ export const App: VoidComponent = () => {
               timerState={sessionTimer}
               onClick={handleCharacterCounterClick}
               onHoldClick={handleCharacterCounterHoldClick}
-              />
+            />
           }</Show>
           <SessionTimer
             state={sessionTimer}

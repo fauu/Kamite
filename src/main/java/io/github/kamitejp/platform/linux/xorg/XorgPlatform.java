@@ -56,7 +56,7 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
       case INSTANT -> Result.Ok(Point.from(MouseInfo.getPointerInfo().getLocation()));
       case SELECT -> {
         if (slop == null) {
-          yield Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+          yield Result.Err(RecognitionOpError.OCR_SYSTEM_UNAVAILABLE);
         }
 
         var slopRunRes = runSlop();
@@ -72,7 +72,7 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
   @Override
   public Result<Rectangle, RecognitionOpError> getUserSelectedArea() {
     if (slop == null) {
-      return Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+      return Result.Err(RecognitionOpError.OCR_SYSTEM_UNAVAILABLE);
     }
 
     var slopRunRes = runSlop();
@@ -85,7 +85,7 @@ public class XorgPlatform extends LinuxPlatform implements GlobalKeybindingProvi
 
   private Result<Rectangle, RecognitionOpError> runSlop() {
     if (slop == null) {
-      return Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+      return Result.Err(RecognitionOpError.OCR_SYSTEM_UNAVAILABLE);
     }
 
     var slopRes = slop.getAreaSelectionFromUser();

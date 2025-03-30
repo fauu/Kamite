@@ -135,5 +135,10 @@ public abstract class Result<L, R> {
     public static <L, R> Err<L, R> of(R err) {
       return new Err<>(err);
     }
+
+    // XXX: Naming
+    public static <L, R> Err<L, R> from(Result<?, R> result) {
+      return new Err<>(result.err());
+    }
   }
 }

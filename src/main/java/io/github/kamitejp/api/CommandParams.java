@@ -5,10 +5,14 @@ import io.github.kamitejp.recognition.PointSelectionMode;
 
 public interface CommandParams {
   interface OCR {
-    record AutoBlock(PointSelectionMode mode) {}
-    record AutoColumn(PointSelectionMode mode) {}
-    record Region(int x, int y, int width, int height, boolean autoNarrow) {}
-    record Image(String bytesB64, int width, int height) {}
+    record AutoBlock(String configurationName, PointSelectionMode mode) {}
+    record AutoColumn(String configurationName, PointSelectionMode mode) {}
+    record Region(String configurationName, int x, int y, int width, int height, boolean autoNarrow) {}
+    record Image(String configurationName, String bytesB64, int width, int height) {}
+  }
+
+  interface OCRSetup {
+    record SetActiveOCRConfiguration(String name) {}
   }
 
   interface Chunk {

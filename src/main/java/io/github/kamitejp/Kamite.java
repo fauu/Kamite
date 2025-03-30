@@ -149,7 +149,9 @@ public class Kamite {
 
     if (preconfigArgs.regionHelper()) {
       Runtime.getRuntime().addShutdownHook(new Thread(platform::destroy));
-      runRegionHelperMode();
+      // XXX
+      // runRegionHelperMode();
+      MangaOCRONNXTest.run();
       System.exit(0);
       return;
     }
@@ -538,28 +540,20 @@ public class Kamite {
   private void handleRecognizerEvent(RecognizerEvent event) {
     switch (event) {
       case RecognizerEvent.Initialized e -> {
-        status.updateRecognizerStatus(RecognizerStatus.Kind.IDLE, e.availableCommands());
+        status.updateRecognizerStatus(RecognizerStatus.Kind.IDLE);
+        status.updateRecognizerStatusAvailableCommands(e.availableCommands());
         sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
       }
-      case RecognizerEvent.MangaOCRStartedDownloadingModel _ ->
-        notifyUserOfInfo("\"Manga OCR\" is downloading OCR model. This might take a while…");
-      case RecognizerEvent.Crashed _ -> {
-        LOG.info("Recognizer has crashed and will not be restarted");
-        notifyUserOfError("Recognizer has crashed. Text recognition will be unavailable");
-        updateAndSendRecognizerStatus(RecognizerStatus.Kind.UNAVAILABLE);
+
+      case RecognizerEvent.OCRConfigurationRecordsUpdated e -> {
+        status.updateRecognizerStatusOCRConfigurations(e.records());
+        sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
       }
-      case RecognizerEvent.Restarting e -> {
-        switch (e.reason()) {
-          case MANGA_OCR_TIMED_OUT_AND_RESTARTING -> {
-            updateAndSendRecognizerStatus(RecognizerStatus.Kind.INITIALIZING);
-            notifyUserOfError("\"Manga OCR\" is taking too long to answer. Restarting");
-          }
-          default -> throw new IllegalStateException("Unhandled recognizer restart reason");
-        }
-      }
+
       case RecognizerEvent.DebugImageSubmitted e ->
         server.send(new DebugImageOutMessage(ImageOps.convertToBase64(e.image())));
-      default -> throw new IllegalStateException("Unhandled recognizer event");
+
+      default -> throw new IllegalStateException("Unhandled Recognizer event");
     }
   }
 
@@ -699,18 +693,32 @@ public class Kamite {
           return;
         }
         switch (cmd) { // NOPMD - misidentifies as non-exhaustive
-          case Command.OCR.ManualBlock _ ->
-            recognitionConductor.recognizeManualBlock();
-          case Command.OCR.ManualBlockRotated _ ->
-            recognitionConductor.recognizeManualBlockRotated();
+          case Command.OCR.ManualBlock cm ->
+            recognitionConductor.recognizeManualBlock(cm.ocrConfigurationName());
+          case Command.OCR.ManualBlockRotated cm ->
+            recognitionConductor.recognizeManualBlockRotated(cm.ocrConfigurationName());
           case Command.OCR.AutoBlock cm ->
-            recognitionConductor.recognizeAutoBlockDefault(cm.mode());
+            recognitionConductor.recognizeAutoBlockDefault(cm.ocrConfigurationName(), cm.mode());
           case Command.OCR.AutoColumn cm ->
-            recognitionConductor.recognizeAutoBlockColumnDefault(cm.mode());
+            recognitionConductor.recognizeAutoBlockColumnDefault(
+              cm.ocrConfigurationName(),
+              cm.mode()
+            );
           case Command.OCR.Region cm ->
-            recognitionConductor.recognizeRegion(cm.region(), cm.autoNarrow());
+            recognitionConductor.recognizeRegion(
+              cm.ocrConfigurationName(),
+              cm.region(),
+              cm.autoNarrow()
+            );
           case Command.OCR.Image cm ->
-            handleOCRImageCommand(cm.bytesB64(), cm.size());
+            handleOCRImageCommand(cm.ocrConfigurationName(), cm.bytesB64(), cm.size());
+        }
+      }
+
+      case Command.OCRSetup cmd -> {
+        switch (cmd) {
+          case Command.OCRSetup.SetActiveOCRConfiguration cm ->
+            recognitionConductor.setActiveOCRConfiguration(cm.ocrConfigurationName());
         }
       }
 
@@ -777,10 +785,14 @@ public class Kamite {
     LOG.debug("Finished handling command: {}", command::getClass);
   }
 
-  private void handleOCRImageCommand(String bytesB64, Dimension size) {
+  private void handleOCRImageCommand(String ocrConfigurationName, String bytesB64, Dimension size) {
     var bytes = Base64.getDecoder().decode(bytesB64);
     var img = ImageOps.arrayToBufferedImage(bytes, size.width(), size.height());
-    recognitionConductor.recognizeAutoBlockGivenImage(img, AutoBlockHeuristic.MANGA_FULL);
+    recognitionConductor.recognizeAutoBlockGivenImage(
+      ocrConfigurationName,
+      img,
+      AutoBlockHeuristic.MANGA_FULL
+    );
   }
 
   private void runCustomCommand(String[] command) {
@@ -844,16 +856,22 @@ public class Kamite {
   private final Map<Function<Config.Keybindings.Global, String>, Supplier<Runnable>>
     baseGlobalKeybindings = Map.of(
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().manualBlock(),
-      () -> recognitionConductor::recognizeManualBlock,
+      () -> () -> recognitionConductor.recognizeManualBlock(/* ocrConfigurationName */ null),
 
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().manualBlockRotated(),
-      () -> recognitionConductor::recognizeManualBlockRotated,
+      () -> () -> recognitionConductor.recognizeManualBlockRotated(/* ocrConfigurationName */ null),
 
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().autoBlock(),
-      () -> () -> recognitionConductor.recognizeAutoBlockDefault(PointSelectionMode.INSTANT),
+      () -> () -> recognitionConductor.recognizeAutoBlockDefault(
+        /* ocrConfigurationName */ null,
+        PointSelectionMode.INSTANT
+      ),
 
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().autoBlockSelect(),
-      () -> () -> recognitionConductor.recognizeAutoBlockDefault(PointSelectionMode.SELECT)
+      () -> () -> recognitionConductor.recognizeAutoBlockDefault(
+        /* ocrConfigurationName */ null,
+        PointSelectionMode.SELECT
+      )
     );
 
   private void setupGlobalKeybindings(GlobalKeybindingProvider provider) {
@@ -894,6 +912,8 @@ public class Kamite {
       provider,
       regionBinding.key(),
       () -> recognitionConductor.recognizeRegion(
+        /* ocrConfigurationName */ null,
+
         // QUAL: (DRY) Copy-pasted from Command parsing
         Rectangle.ofStartAndDimensions(
           region.x(),

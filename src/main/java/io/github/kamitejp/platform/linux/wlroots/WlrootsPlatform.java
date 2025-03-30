@@ -139,7 +139,7 @@ public class WlrootsPlatform extends WaylandPlatform {
 
   private Result<SlurpResult, RecognitionOpError> runSlurp(SlurpMode mode, SlurpFade fade) {
     if (slurp == null) {
-      return Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+      return Result.Err(RecognitionOpError.OCR_SYSTEM_UNAVAILABLE);
     }
 
     var slurpRes = slurp.getSelectionFromUser(mode, fade);
@@ -189,7 +189,7 @@ public class WlrootsPlatform extends WaylandPlatform {
 
   private Result<BufferedImage, RecognitionOpError> runGrimWithArea(Rectangle a) {
     if (grim == null) {
-      return Result.Err(RecognitionOpError.OCR_UNAVAILABLE);
+      return Result.Err(RecognitionOpError.OCR_SYSTEM_UNAVAILABLE);
     }
     var selection = "%d,%d %dx%d".formatted(a.getLeft(), a.getTop(), a.getWidth(), a.getHeight());
     return switch (grim.takeScreenshotOfSlurpSelection(selection)) {

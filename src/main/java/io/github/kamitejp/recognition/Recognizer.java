@@ -60,61 +60,31 @@ public class Recognizer {
     new BasicStroke(3.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
   private final Platform platform;
-  private final List<OCRConfiguration<?, ?, ?>> configurations;
   private final boolean debug;
   private final Consumer<RecognizerEvent> eventCb;
+  private final List<OCRConfiguration<?, ?, ?>> ocrConfigurations;
+  private OCRConfiguration<?, ?, ?> activeOCRConfiguration;
   private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
-
-  // XXX
-  private OCRConfiguration<?, ?, ?> getCurrentOCRConfiguration() {
-    return configurations.get(0);
-  }
 
   public Recognizer(
     Platform platform,
-    List<OCRConfiguration<?, ?, ?>> configurations,
+    List<OCRConfiguration<?, ?, ?>> ocrConfigurations,
     boolean debug,
     Consumer<RecognizerEvent> eventCb
   ) throws RecognizerInitializationException {
     this.platform = platform;
-    this.configurations = configurations;
+    this.ocrConfigurations = ocrConfigurations;
+    activeOCRConfiguration = ocrConfigurations.getFirst();
     this.debug = debug;
     this.eventCb = eventCb;
     this.autoBlockDetectors = new HashMap<>();
 
-    // XXX Kept for reference
-    //this.engine = switch (uninitializedEngine) {
-    //  case OCREngine.Tesseract engine ->
-    //    engine;
-    //  case OCREngine.MangaOCR engine -> {
-    //    try {
-    //      yield engine.initialized(platform, this::handleMangaOCREvent);
-    //    } catch (MangaOCRInitializationException e) {
-    //      throw new RecognizerInitializationException( // NOPMD
-    //        "Could not initialize \"Manga OCR\": %s".formatted(e.getMessage())
-    //      );
-    //    }
-    //  }
-    //  case OCREngine.MangaOCROnline engine ->
-    //    engine.initialized();
-    //  case OCREngine.OCRSpace engine ->
-    //    engine.initialized();
-    //  case OCREngine.EasyOCROnline engine ->
-    //    engine.initialized();
-    //  case OCREngine.HiveOCROnline engine ->
-    //    engine.initialized();
-    //  case OCREngine.GLens engine ->
-    //    engine.initialized();
-    //  case OCREngine.None engine ->
-    //    engine;
-    //};
+    // XXX: List configurations?
 
-    // XXX
-    // var engine = this.configurations.get(0).getEngine();
+    // XXX: Make sure we can't get here if we have no configurations
 
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
-    LOG.info("Initialized recognizer");
-    // XXX: List configurations?
+    LOG.info("Initialized Recognizer");
   }
 
   public void destroy() {
@@ -125,7 +95,10 @@ public class Recognizer {
   // XXX: Move?
   public record LabelledTesseractHOCROutput(String label, String hocr) {}
 
-  public Result<BoxRecognitionOutput, RecognitionOpError> recognizeBox(BufferedImage img) {
+  public Result<BoxRecognitionOutput, RecognitionOpError> recognizeBox(
+    String ocrConfigurationName,
+    BufferedImage img
+  ) {
     if (
       img.getWidth() < BOX_RECOGNITION_INPUT_MIN_DIMENSION
       || img.getHeight() < BOX_RECOGNITION_INPUT_MIN_DIMENSION
@@ -133,21 +106,33 @@ public class Recognizer {
       return Result.Err(RecognitionOpError.INPUT_TOO_SMALL);
     }
 
-    if (debug) {
-      sendDebugImage(
-        img,
-        "%s OCR".formatted(
-          getCurrentOCRConfiguration().getAdapter() instanceof RemoteOCRAdapter ? "Remote" : "Local"
-        )
-      );
-    }
+    // XXX: Would have to find ocr configuration twice to keep it this way. Why aren't we doing this
+    //      in doRecognzieBox instead?
+    //
+    // if (debug) {
+    //   sendDebugImage(
+    //     img,
+    //     "%s OCR".formatted(
+    //       getCurrentOCRConfiguration().getAdapter() instanceof RemoteOCRAdapter ? "Remote" : "Local"
+    //     )
+    //   );
+    // }
 
     LOG.debug("Starting box recognition");
-    return doRecognizeBox(img);
+    return doRecognizeBox(ocrConfigurationName, img);
   }
 
-  private Result<BoxRecognitionOutput, RecognitionOpError> doRecognizeBox(BufferedImage img) {
-    var res = getCurrentOCRConfiguration().recognize(img);
+
+  private Result<BoxRecognitionOutput, RecognitionOpError> doRecognizeBox(
+    String ocrConfigurationName,
+    BufferedImage img
+  ) {
+    var sel = selectOCRConfiguation(ocrConfigurationName);
+    if (sel.isErr()) {
+      return Result.Err.from(sel);
+    }
+
+    var res = sel.get().recognize(img);
     if (res.isErr()) {
       // XXX: TODO Preserve the error content
       return Result.Err(RecognitionOpError.OCR_ERROR);
@@ -453,6 +438,10 @@ public class Recognizer {
     return lineRects;
   }
 
+  private Optional<OCRConfiguration<?, ?, ?>> findOCRConfigurationByName(String name) {
+    return ocrConfigurations.stream().filter(c -> c.getName() == name).findFirst();
+  }
+
   // XXX: We will probably be checking the engine of the active configuration here instead
   private List<String> getAvailableCommands() {
     if (platform.getUnsupportedFeatures().contains(PlatformDependentFeature.GLOBAL_OCR)) {
@@ -517,4 +506,26 @@ public class Recognizer {
     gfx2d.setRenderingHints(originalHints);
   }
 
+  public void setActiveOCRConfiguration(OCRConfiguration<?, ?, ?> configuration) {
+    activeOCRConfiguration = configuration;
+    LOG.info(
+      "Set Active OCR Configuration: '{}' ({})",
+      configuration.getName(),
+      configuration.getClass()
+    );
+  }
+
+  private Result<OCRConfiguration<?, ?, ?>, RecognitionOpError> selectOCRConfiguation(
+    String ocrConfigurationName
+  ) {
+    var ocrConfiguration = activeOCRConfiguration;
+    if (ocrConfigurationName != null) {
+      var foundConfiguation = findOCRConfigurationByName(ocrConfigurationName);
+      if (!foundConfiguation.isPresent()) {
+        return Result.Err(RecognitionOpError.OCR_CONFIGURATION_UNAVAILABLE);
+      }
+      ocrConfiguration = foundConfiguation.get();
+    }
+    return Result.Ok(ocrConfiguration);
+  }
 }

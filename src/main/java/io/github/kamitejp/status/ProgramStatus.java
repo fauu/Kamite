@@ -2,7 +2,7 @@ package io.github.kamitejp.status;
 
 import java.util.List;
 
-import io.github.kamitejp.recognition.OCRConfigurationInfo;
+import io.github.kamitejp.recognition.OCRConfigurationRecord;
 import io.github.kamitejp.recognition.RecognizerStatus;
 import io.github.kamitejp.universalfeature.UnavailableUniversalFeature;
 
@@ -68,16 +68,6 @@ public final class ProgramStatus {
     return subscribedEvents;
   }
 
-  public void updateRecognizerStatus(
-    RecognizerStatus.Kind kind,
-    List<String> availableCommands,
-    List<OCRConfigurationInfo> configurations
-  ) {
-    updateRecognizerStatus(kind);
-    updateRecognizerStatusAvailableCommands(availableCommands);
-    updateRecognizerStatusConfigurations(configurations);
-  }
-
   public void updateRecognizerStatus(RecognizerStatus.Kind kind) {
     recognizerStatus.setKind(kind);
   }
@@ -86,8 +76,8 @@ public final class ProgramStatus {
     recognizerStatus.setAvailableCommands(availableCommands);
   }
 
-  public void updateRecognizerStatusConfigurations(List<OCRConfigurationInfo> configurations) {
-    recognizerStatus.setConfigurations(configurations);
+  public void updateRecognizerStatusOCRConfigurations(List<OCRConfigurationRecord> configurations) {
+    recognizerStatus.setOcrConfigurations(configurations);
   }
 
   public void setPlayerStatus(PlayerStatus playerStatus) {

@@ -5,11 +5,11 @@ import java.util.List;
 
 public sealed interface RecognizerEvent
   permits RecognizerEvent.Initialized,
-          RecognizerEvent.OCRConfigurationListUpdated,
+          RecognizerEvent.OCRConfigurationRecordsUpdated,
           RecognizerEvent.DebugImageSubmitted {
   record Initialized(List<String> availableCommands) implements RecognizerEvent {}
 
-  record OCRConfigurationListUpdated(List<OCRConfigurationInfo> configurations)
+  record OCRConfigurationRecordsUpdated(List<OCRConfigurationRecord> records)
     implements RecognizerEvent {}
 
   record DebugImageSubmitted(BufferedImage image) implements RecognizerEvent {}

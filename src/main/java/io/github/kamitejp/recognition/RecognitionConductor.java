@@ -23,6 +23,7 @@ import io.github.kamitejp.recognition.configuration.OCRConfiguration;
 import io.github.kamitejp.recognition.configuration.TesseractOCRConfiguration;
 import io.github.kamitejp.status.ProgramStatus;
 import io.github.kamitejp.util.Executor;
+import io.github.kamitejp.util.Strings;
 
 public class RecognitionConductor {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
@@ -30,26 +31,26 @@ public class RecognitionConductor {
   // XXX
   public static Class<?> extractThirdTypeParameter(Class<?> configClass) {
     var genericSuperclass = configClass.getGenericSuperclass();
-    
+
     if (!(genericSuperclass instanceof ParameterizedType)) {
-        throw new IllegalArgumentException("Class is not parameterized");
+      throw new IllegalArgumentException("Class is not parameterized");
     }
-    
+
     ParameterizedType paramType = (ParameterizedType) genericSuperclass;
     Type[] typeArgs = paramType.getActualTypeArguments();
-    
+
     if (typeArgs.length < 3) {
-        throw new IllegalArgumentException("Class has fewer than 3 type parameters");
+      throw new IllegalArgumentException("Class has fewer than 3 type parameters");
     }
-    
+
     var thirdArg = typeArgs[2];
-    
+
     if (thirdArg instanceof Class) {
-        return (Class<?>) thirdArg;
+      return (Class<?>) thirdArg;
     } else if (thirdArg instanceof ParameterizedType) {
-        return (Class<?>) ((ParameterizedType) thirdArg).getRawType();
+      return (Class<?>) ((ParameterizedType) thirdArg).getRawType();
     }
-    
+
     throw new IllegalArgumentException("Third type parameter is not a Class");
   }
 
@@ -62,15 +63,14 @@ public class RecognitionConductor {
   private Recognizer recognizer;
   private List<OCRConfiguration<?, ?, ?>> ocrConfigurations;
   private HashMap<Integer, StatefulOCRAdapter> statefulOCRAdapters = new HashMap<>();
-  
+
   public RecognitionConductor(
-    Platform platform,
-    ProgramStatus status,
-    Consumer<RecognizerEvent> recognizerEventCb,
-    Consumer<UnprocessedChunkVariants> chunkVariantsCb,
-    Consumer<String> notifyUserOfErrorFn,
-    Consumer<RecognizerStatus.Kind> updateAndSendRecognizerStatusFn
-  ) {
+      Platform platform,
+      ProgramStatus status,
+      Consumer<RecognizerEvent> recognizerEventCb,
+      Consumer<UnprocessedChunkVariants> chunkVariantsCb,
+      Consumer<String> notifyUserOfErrorFn,
+      Consumer<RecognizerStatus.Kind> updateAndSendRecognizerStatusFn) {
     this.platform = platform;
     this.status = status;
     this.recognizerEventCb = recognizerEventCb;
@@ -81,34 +81,32 @@ public class RecognitionConductor {
 
   // XXX: Move?
   record OCRAdapterID(
-    Class<? extends OCRAdapter<?>> adapterClass,
-    OCRAdapterInitParams initParams
-  ) {}
+      Class<? extends OCRAdapter<?>> adapterClass,
+      OCRAdapterInitParams initParams) {
+  }
 
   public void initRecognizer(Config config) {
     ocrConfigurations = config.ocr().configurations().stream()
-      .<OCRConfiguration<?, ?, ?>>map(c ->
-        switch (c.engine()) {
-          case TESSERACT       -> new TesseractOCRConfiguration(c);
-          case MANGAOCR        -> new MangaOCROCRConfiguration(c);
+        .<OCRConfiguration<?, ?, ?>>map(c -> switch (c.engine()) {
+          case TESSERACT -> new TesseractOCRConfiguration(c);
+          case MANGAOCR -> new MangaOCROCRConfiguration(c);
           case MANGAOCR_ONLINE -> new MangaOCROnlineOCRConfiguration(c);
           default -> throw new IllegalStateException("XXX Unimplemented");
-        }
-      ).toList();
+        }).toList();
 
     var adapters = new HashMap<OCRAdapterID, OCRAdapter<? extends OCRAdapterOCRParams>>(8);
 
     var unavailable = true;
 
     try {
-      // For each configuration, either create a new adapter or use an existing one (in case two
+      // For each configuration, either create a new adapter or use an existing one
+      // (in case two
       // configurations need the same adapter with the same init params)
       for (var configuration : ocrConfigurations) {
         configuration.setStatus(new OCRConfigurationStatus.Initializing(null));
 
         var adapterInitParams = configuration.getAdapterInitParams();
-        var adapterClass =
-          (Class<? extends OCRAdapter<?>>) extractThirdTypeParameter(configuration.getClass());
+        var adapterClass = (Class<? extends OCRAdapter<?>>) extractThirdTypeParameter(configuration.getClass());
         var existingAdapter = adapters.get(new OCRAdapterID(adapterClass, adapterInitParams));
 
         if (existingAdapter == null) {
@@ -116,9 +114,8 @@ public class RecognitionConductor {
             configuration.createAdapter(platform);
           } catch (OCRAdapterPreinitializationException e) {
             throw new RecognizerInitializationException( // NOPMD
-              "Could not preinitialize the adapter for %s: %s"
-                .formatted(configuration.getName(), e.getMessage())
-            );
+                "Could not preinitialize the adapter for %s: %s"
+                    .formatted(configuration.getName(), e.getMessage()));
           }
           var newAdapter = configuration.getAdapter();
           @SuppressWarnings("unchecked")
@@ -137,7 +134,7 @@ public class RecognitionConductor {
 
       platform.initOCRInfrastructure();
 
-      sendOCRConfigurationsListUpdatedRecognizerEvent();
+      sendOCRConfigurationRecordsUpdatedRecognizerEvent();
 
       // Initialize stateful adapters
       int currentId = 0;
@@ -154,14 +151,12 @@ public class RecognitionConductor {
       unavailable = false;
     } catch (PlatformOCRInfrastructureInitializationException.MissingDependencies e) {
       LOG.error(
-        "Text recognition will not be available due to missing dependencies: {}",
-        () -> String.join(", ", e.getDependencies())
-      );
+          "Text recognition will not be available due to missing dependencies: {}",
+          () -> String.join(", ", e.getDependencies()));
     } catch (PlatformOCRInfrastructureInitializationException e) {
       throw new RuntimeException(
-        "Unhandled PlatformOCRInfrastructureInitializationException",
-        e
-      );
+          "Unhandled PlatformOCRInfrastructureInitializationException",
+          e);
     } catch (RecognizerInitializationException e) {
       var message = e.getMessage();
       if (message != null) {
@@ -176,16 +171,31 @@ public class RecognitionConductor {
     }
   }
 
+  public void setActiveOCRConfiguration(String ocrConfigurationName) {
+    if (Strings.isNullOrEmpty(ocrConfigurationName)) {
+      LOG.error("Tried to set the active OCR configuration with an empty configuration name");
+      return;
+    }
+    var configuration = ocrConfigurations.stream()
+        .filter(c -> c.getName().equals(ocrConfigurationName))
+        .findFirst();
+    if (!configuration.isPresent()) {
+      LOG.error(
+          "Tried to set the active OCR configuration but it was not found (name = '{}')",
+          ocrConfigurationName);
+      return;
+    }
+    recognizer.setActiveOCRConfiguration(configuration.get());
+  }
+
   // XXX
   private void handleOCRAdapterEvent(int adapterId, OCRAdapterEvent event) {
     var clazz = statefulOCRAdapters.get(adapterId).getClass();
-    if (
-      event instanceof OCRAdapterEvent.TimedOutAndRestarting
-      || event instanceof OCRAdapterEvent.FailedFatally
-    ) {
-      LOG.error("{}: {}", clazz, event); 
+    if (event instanceof OCRAdapterEvent.TimedOutAndRestarting
+        || event instanceof OCRAdapterEvent.FailedFatally) {
+      LOG.error("{}: {}", clazz, event);
     } else {
-      LOG.info("{}: {}", clazz, event); 
+      LOG.info("{}: {}", clazz, event);
     }
 
     var configurationsListUpdated = false;
@@ -194,7 +204,7 @@ public class RecognitionConductor {
       if (adapter instanceof StatefulOCRAdapter statefulAdapter) {
         if (adapterId == statefulAdapter.getID()) {
           var prevStatus = configuration.getStatus();
-          var newStatus = switch(event) {
+          var newStatus = switch (event) {
             case OCRAdapterEvent.Launching e ->
               new OCRConfigurationStatus.Initializing(e.msg());
             case OCRAdapterEvent.Launched _ ->
@@ -217,7 +227,7 @@ public class RecognitionConductor {
     }
 
     if (configurationsListUpdated) {
-      sendOCRConfigurationsListUpdatedRecognizerEvent();
+      sendOCRConfigurationRecordsUpdatedRecognizerEvent();
     }
   }
 
@@ -227,17 +237,20 @@ public class RecognitionConductor {
     }
   }
 
-  public void recognizeRegion(Rectangle region, boolean autoNarrow) {
+  public void recognizeRegion(String ocrConfigurationName, Rectangle region, boolean autoNarrow) {
     LOG.debug("Handling region recognition request ({})", region);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
     doRecognizeRegion(
-      region,
-      /* autoBlockHeuristic */ autoNarrow ? AutoBlockHeuristic.GAME_TEXTBOX : null
-    );
+        ocrConfigurationName,
+        region,
+        /* autoBlockHeuristic */ autoNarrow ? AutoBlockHeuristic.GAME_TEXTBOX : null);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
-  private void doRecognizeRegion(Rectangle region, AutoBlockHeuristic autoBlockHeuristic) {
+  private void doRecognizeRegion(
+      String ocrConfigurationName,
+      Rectangle region,
+      AutoBlockHeuristic autoBlockHeuristic) {
     var screenshotRes = platform.takeAreaScreenshot(region);
     if (screenshotRes.isErr()) {
       var errorNotification = switch (screenshotRes.err()) {
@@ -249,13 +262,13 @@ public class RecognitionConductor {
     }
 
     if (autoBlockHeuristic != null) {
-      doRecognizeAutoBlockGivenImage(screenshotRes.get(), autoBlockHeuristic);
+      doRecognizeAutoBlockGivenImage(ocrConfigurationName, screenshotRes.get(), autoBlockHeuristic);
     } else {
-      doRecognizeBox(screenshotRes.get());
+      doRecognizeBox(ocrConfigurationName, screenshotRes.get());
     }
   }
 
-  public void recognizeManualBlock() {
+  public void recognizeManualBlock(String ocrConfigurationName) {
     LOG.debug("Handling manual block recognition request");
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.AWAITING_USER_INPUT);
 
@@ -270,12 +283,13 @@ public class RecognitionConductor {
     }
 
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeRegion(areaRes.get(), /* heuristic */ null);
-    // doRecognizeRegion(areaRes.get(), /* heuristic */ AutoBlockHeuristic.GAME_TEXTBOX); // DEV
+    doRecognizeRegion(ocrConfigurationName, areaRes.get(), /* heuristic */ null);
+    // doRecognizeRegion(areaRes.get(), /* heuristic */
+    // AutoBlockHeuristic.GAME_TEXTBOX); // DEV
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
-  public void recognizeManualBlockRotated() {
+  public void recognizeManualBlockRotated(String ocrConfigurationName) {
     LOG.debug("Handling manual rotated block recognition request");
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.AWAITING_USER_INPUT);
 
@@ -313,30 +327,34 @@ public class RecognitionConductor {
     }
 
     var straightened = Recognizer.straightenRotatedBlockImage(rotatedBlock, screenshotRes.get());
-    doRecognizeBox(straightened);
+    doRecognizeBox(ocrConfigurationName, straightened);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
-  public void recognizeAutoBlockDefault(PointSelectionMode mode) {
-    recognizeAutoBlock(mode, AutoBlockHeuristic.MANGA_FULL);
+  public void recognizeAutoBlockDefault(String ocrConfigurationName, PointSelectionMode mode) {
+    recognizeAutoBlock(ocrConfigurationName, mode, AutoBlockHeuristic.MANGA_FULL);
   }
 
-  public void recognizeAutoBlockColumnDefault(PointSelectionMode mode) {
-    recognizeAutoBlock(mode, AutoBlockHeuristic.MANGA_SINGLE_COLUMN);
+  public void recognizeAutoBlockColumnDefault(
+      String ocrConfigurationName, PointSelectionMode mode) {
+    recognizeAutoBlock(ocrConfigurationName, mode, AutoBlockHeuristic.MANGA_SINGLE_COLUMN);
   }
 
   public void recognizeGivenImage(BufferedImage img) {
     LOG.debug("Handling image given recognition request");
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeBox(img);
+    // XXX ocrConfigurationName
+    doRecognizeBox(null, img);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
   @SuppressWarnings("SameParameterValue")
-  private void recognizeAutoBlock(PointSelectionMode mode, AutoBlockHeuristic heuristic) {
+  private void recognizeAutoBlock(
+      String ocrConfigurationName,
+      PointSelectionMode mode,
+      AutoBlockHeuristic heuristic) {
     LOG.debug(
-      "Handling auto block recognition request (mode = {}, heuristic = {})", mode, heuristic
-    );
+        "Handling auto block recognition request (mode = {}, heuristic = {})", mode, heuristic);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.AWAITING_USER_INPUT);
 
     var selectionRes = platform.getUserSelectedPoint(mode);
@@ -353,8 +371,7 @@ public class RecognitionConductor {
 
     var point = selectionRes.get();
     var screenshotRes = platform.takeAreaScreenshot(
-      Rectangle.around(point, Recognizer.AUTO_BLOCK_AREA_SIZE)
-    );
+        Rectangle.around(point, Recognizer.AUTO_BLOCK_AREA_SIZE));
     if (screenshotRes.isErr()) {
       var errorNotification = switch (screenshotRes.err()) {
         case SELECTION_CANCELLED -> null;
@@ -364,19 +381,25 @@ public class RecognitionConductor {
       return;
     }
 
-    doRecognizeAutoBlockGivenImage(screenshotRes.get(), heuristic);
+    doRecognizeAutoBlockGivenImage(ocrConfigurationName, screenshotRes.get(), heuristic);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
   @SuppressWarnings("SameParameterValue")
-  public void recognizeAutoBlockGivenImage(BufferedImage img, AutoBlockHeuristic mode) {
+  public void recognizeAutoBlockGivenImage(
+      String ocrConfigurationName,
+      BufferedImage img,
+      AutoBlockHeuristic mode) {
     LOG.debug("Handling auto block image recognition request (mode = {})", mode);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.PROCESSING);
-    doRecognizeAutoBlockGivenImage(img, mode);
+    doRecognizeAutoBlockGivenImage(ocrConfigurationName, img, mode);
     updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
   }
 
-  private void doRecognizeAutoBlockGivenImage(BufferedImage img, AutoBlockHeuristic heuristic) {
+  private void doRecognizeAutoBlockGivenImage(
+      String ocrConfigurationName,
+      BufferedImage img,
+      AutoBlockHeuristic heuristic) {
     var maybeBlockImg = recognizer.autoNarrowToTextBlock(img, heuristic);
     if (maybeBlockImg.isEmpty()) {
       var msg = "Text block detection has failed";
@@ -384,16 +407,16 @@ public class RecognitionConductor {
       LOG.info(msg);
       return;
     }
-    doRecognizeBox(maybeBlockImg.get());
+    doRecognizeBox(ocrConfigurationName, maybeBlockImg.get());
   }
 
-  private void doRecognizeBox(BufferedImage img) {
-    var recognitionRes = recognizer.recognizeBox(img);
+  private void doRecognizeBox(String ocrConfigurationName, BufferedImage img) {
+    var recognitionRes = recognizer.recognizeBox(ocrConfigurationName, img);
     if (recognitionRes.isErr()) {
       var errorNotification = switch (recognitionRes.err()) {
         case SELECTION_CANCELLED -> null;
-        case INPUT_TOO_SMALL     -> "Input image is too small";
-        case ZERO_VARIANTS       -> "Did not recognize any text";
+        case INPUT_TOO_SMALL -> "Input image is too small";
+        case ZERO_VARIANTS -> "Did not recognize any text";
         default -> "OCR has failed.\nCheck control window or console for errors";
       };
       recognitionAbandon(errorNotification, recognitionRes.err());
@@ -414,8 +437,10 @@ public class RecognitionConductor {
 
   private static void recognitionLogError(RecognitionOpError reason) {
     switch (reason) { // NOPMD - misidentifies as non-exhaustive
-      case OCR_UNAVAILABLE ->
-        LOG.error("No OCR engine is available for use");
+      case OCR_SYSTEM_UNAVAILABLE ->
+        LOG.error("OCR system setup has not successfully completed");
+      case OCR_CONFIGURATION_UNAVAILABLE ->
+        LOG.error("The specified OCR configuration is not available");
       case SCREENSHOT_API_COMMUNICATION_FAILED ->
         LOG.error("Failed to communicate with the screenshot API");
       case SELECTION_CANCELLED ->
@@ -435,14 +460,11 @@ public class RecognitionConductor {
     }
   }
 
-  private void sendOCRConfigurationsListUpdatedRecognizerEvent() {
+  private void sendOCRConfigurationRecordsUpdatedRecognizerEvent() {
     recognizerEventCb.accept(
-      new RecognizerEvent.OCRConfigurationListUpdated(
-        ocrConfigurations.stream()
-          .map(c -> new OCRConfigurationInfo(c.getName(), c.getStatus()))
-          .toList()
-      )
-    );
+        new RecognizerEvent.OCRConfigurationRecordsUpdated(
+            ocrConfigurations.stream()
+                .map(c -> new OCRConfigurationRecord(c.getName(), c.getStatus()))
+                .toList()));
   }
 }
-

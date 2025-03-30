@@ -19,16 +19,32 @@ export function tooltipAnchor(el: HTMLElement, value: () => TooltipAnchorParams 
   const { tooltip, header, body, delayMS, scale } = val;
   const { setHeader, setBody, setScale, show, hide, floating } = tooltip;
 
+  const mouseLeftSinceHideForced = false;
+
   createEffect(() => {
-    if (val.forceHide && val.forceHide()) {
-      hide();
+    if (val.forceHide) {
+      if (val.forceHide()) {
+        hide();
+      } else {
+        if (!mouseLeftSinceHideForced) {
+          doShow();
+        }
+      }
     }
   });
 
-  const wrappedShow = () => {
+  const handleMouseEnter = () => {
     if (val.forceHide && val.forceHide()) {
       return;
     }
+    doShow();
+  };
+
+  const handleMouseLeave = () => {
+    hide();
+  };
+
+  const doShow = () =>
     show(delayMS, () => {
       setHeader(() => header);
       setBody(() => body);
@@ -36,14 +52,13 @@ export function tooltipAnchor(el: HTMLElement, value: () => TooltipAnchorParams 
       floating.setReference(el);
       tooltip.floating.update();
     });
-  };
 
-  el.addEventListener("mouseenter", wrappedShow);
-  el.addEventListener("mouseleave", hide);
+  el.addEventListener("mouseenter", handleMouseEnter);
+  el.addEventListener("mouseleave", handleMouseLeave);
 
   onCleanup(() => {
-    el.removeEventListener("mouseenter", wrappedShow);
-    el.removeEventListener("mouseleave", hide);
+    el.removeEventListener("mouseenter", handleMouseEnter);
+    el.removeEventListener("mouseleave", handleMouseLeave);
     hide();
   });
 }

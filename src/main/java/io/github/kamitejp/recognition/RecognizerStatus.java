@@ -5,16 +5,16 @@ import java.util.List;
 public class RecognizerStatus {
   private Kind kind;
   private List<String> availableCommands;
-  private List<OCRConfigurationInfo> configurations;
+  private List<OCRConfigurationRecord> ocrConfigurations;
 
   public RecognizerStatus(
     Kind kind,
     List<String> availableCommands,
-    List<OCRConfigurationInfo> configurations
+    List<OCRConfigurationRecord> ocrConfigurations
   ) {
     this.kind = kind;
     this.availableCommands = availableCommands;
-    this.configurations = configurations;
+    this.ocrConfigurations = ocrConfigurations;
   }
 
   public Kind getKind() {
@@ -33,12 +33,12 @@ public class RecognizerStatus {
     this.availableCommands = availableCommands;
   }
 
-  public List<OCRConfigurationInfo> getConfigurations() {
-    return configurations;
+  public List<OCRConfigurationRecord> getOcrConfigurations() {
+    return ocrConfigurations;
   }
 
-  public void setConfigurations(List<OCRConfigurationInfo> configurations) {
-    this.configurations = configurations;
+  public void setOcrConfigurations(List<OCRConfigurationRecord> configurations) {
+    this.ocrConfigurations = configurations;
   }
 
   public enum Kind {

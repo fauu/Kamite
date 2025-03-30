@@ -1,6 +1,6 @@
 import type { ConfigCustomCommand, OCRRegion } from "..";
 
-type OCRCommand =
+export type OCRCommand =
   | typeof PARAMLESS_OCR_COMMANDS[number]
   | OCRAutoBlockCommand
   | OCRRegionCommand;
@@ -28,6 +28,15 @@ export type OCRRegionCommand = {
   },
 };
 
+type OCRSetupCommand = OCRSetupSetActiveConfigurationCommand;
+
+type OCRSetupSetActiveConfigurationCommand = {
+  kind: "ocr-setup_set-active-configuration",
+  params: {
+    name: string,
+  }
+};
+
 export const BASE_PLAYER_COMMANDS = [
   { kind: "player_playpause" },
 ];
@@ -53,18 +62,17 @@ type SessionTimerCommand =
 type ChunkCommand =
   { kind: "chunk_show", params: { chunk: string } };
 
-type OtherCommand = CustomCommand;
-
 export type CustomCommand =
   { kind: "misc_custom", params: { command: string[] } };
 
 export type Command =
   OCRCommand
+  | OCRSetupCommand
   | PlayerCommand
   | CharacterCounterCommand
   | SessionTimerCommand
   | ChunkCommand
-  | OtherCommand;
+  | CustomCommand;
 
 export function commandFromOCRRegion(r: OCRRegion): OCRRegionCommand {
   return {

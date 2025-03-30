@@ -101,7 +101,7 @@ export type UnavailableUniversalFeature =
 export type InRecognizerStatus = {
   kind: InRecognizerStatusKind,
   availableCommands: string[] | null,
-  configurations: InRecognizerConfiguration,
+  ocrConfigurations: InRecognizerOcrConfiguration[],
 };
 
 export type InRecognizerStatusKind =
@@ -111,17 +111,17 @@ export type InRecognizerStatusKind =
   | "AWAITING_USER_INPUT"
   | "PROCESSING";
 
-export type InRecognizerConfiguration = {
+export type InRecognizerOcrConfiguration = {
   name: string,
-  status: InRecognizerConfigurationStatus,
+  status: InRecognizerOcrConfigurationStatus,
 };
 
-export type InRecognizerConfigurationStatus = {
-  kind: InRecognizerConfigurationStatusKind,
+export type InRecognizerOcrConfigurationStatus = {
+  kind: InRecognizerOcrConfigurationStatusKind,
   msg?: string,
 };
 
-export type InRecognizerConfigurationStatusKind =
+export type InRecognizerOcrConfigurationStatusKind =
   | "INITIALIZING"
   | "AVAILABLE"
   | "TIMED_OUT_AND_REINITIALIZING"
