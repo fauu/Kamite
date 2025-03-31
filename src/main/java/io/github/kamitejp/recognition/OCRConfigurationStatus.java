@@ -11,18 +11,18 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 public sealed interface OCRConfigurationStatus
   permits OCRConfigurationStatus.Initializing,
           OCRConfigurationStatus.Available,
-          OCRConfigurationStatus.TimedOutAndReinitializing,
-          OCRConfigurationStatus.FailedFatally {
+          OCRConfigurationStatus.ReinitializingAfterAdapterTimeout,
+          OCRConfigurationStatus.AdapterFailedFatally {
   @JsonTypeName("INITIALIZING")
   record Initializing(String msg) implements OCRConfigurationStatus {}
 
   @JsonTypeName("AVAILABLE")
   record Available() implements OCRConfigurationStatus {}
 
-  @JsonTypeName("TIMED_OUT_AND_REINITIALIZING")
-  record TimedOutAndReinitializing(String msg) implements OCRConfigurationStatus {}
+  @JsonTypeName("REINITIALIZING_AFTER_ADAPTER_TIMEOUT")
+  record ReinitializingAfterAdapterTimeout(String msg) implements OCRConfigurationStatus {}
 
-  @JsonTypeName("FAILED_FATALLY")
-  record FailedFatally(String msg) implements OCRConfigurationStatus {}
+  @JsonTypeName("ADAPTER_FAILED_FATALLY")
+  record AdapterFailedFatally(String msg) implements OCRConfigurationStatus {}
 }
 

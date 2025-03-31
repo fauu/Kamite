@@ -11,6 +11,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,11 +23,11 @@ public class OCRDirectoryWatcher {
 
   private final Path dirPath;
   private final WatchService watchService;
-  private final Consumer<BufferedImage> recognizeImageFn;
+  private final BiConsumer<String, BufferedImage> recognizeImageFn;
   private final Thread worker;
 
   public OCRDirectoryWatcher(
-    String rawDirPath, Consumer<BufferedImage> recognizeImageFn
+    String rawDirPath, BiConsumer<String, BufferedImage> recognizeImageFn
   ) throws OCRDirectoryWatcherCreationException {
     this.recognizeImageFn = recognizeImageFn;
     try {
@@ -69,7 +70,7 @@ public class OCRDirectoryWatcher {
       .ifPresentOrElse(
         img -> {
           LOG.debug("Recognizing image from watched directory: {}", absolutePath);
-          recognizeImageFn.accept(img);
+          recognizeImageFn.accept(/* ocrConfigurationName */ null, img);
         },
         () -> LOG.error("OCR directory watcher did not receive image: {}", absolutePath)
       );

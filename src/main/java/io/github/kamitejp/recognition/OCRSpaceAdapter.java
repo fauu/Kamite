@@ -188,4 +188,7 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.Emp
 
     return HttpRequest.BodyPublishers.ofByteArrays(byteArrays);
   }
+
+  @Override
+  public void destroy() {}
 }

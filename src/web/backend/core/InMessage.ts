@@ -124,8 +124,8 @@ export type InRecognizerOcrConfigurationStatus = {
 export type InRecognizerOcrConfigurationStatusKind =
   | "INITIALIZING"
   | "AVAILABLE"
-  | "TIMED_OUT_AND_REINITIALIZING"
-  | "FAILED_FATALLY";
+  | "REINITIALIZING_AFTER_ADAPTER_TIMEOUT"
+  | "ADAPTER_FAILED_FATALLY";
 
 type PlayerStatus = "CONNECTED" | "DISCONNECTED" | "PAUSED" | "UNPAUSED";
 

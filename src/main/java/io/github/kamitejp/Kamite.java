@@ -2,6 +2,7 @@ package io.github.kamitejp;
 
 import static java.util.stream.Collectors.joining;
 
+import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -98,11 +99,10 @@ public class Kamite {
 
   // QUAL: Make neater
   public static final Map<String, String> PRECONFIG_ARGS = Map.of(
-    "debug", "debug",
-    "profile", "profile",
-    "regionHelper", "regionHelper",
-    "countChars", "countChars"
-  );
+      "debug", "debug",
+      "profile", "profile",
+      "regionHelper", "regionHelper",
+      "countChars", "countChars");
 
   private static final List<String> DEFAULT_SUBSCRIBED_EVENTS = List.of("chunk-add");
 
@@ -122,7 +122,7 @@ public class Kamite {
   private EventManager eventManager;
   private ProgramStatus status;
 
-  public void run(Map<String,String> args, BuildInfo buildInfo) {
+  public void run(Map<String, String> args, BuildInfo buildInfo) {
     LOG.info("Starting {} (version {})", () -> APP_NAME_DISPLAY, buildInfo::getVersion);
 
     var preconfigArgs = processPreconfigArgs(args);
@@ -149,9 +149,7 @@ public class Kamite {
 
     if (preconfigArgs.regionHelper()) {
       Runtime.getRuntime().addShutdownHook(new Thread(platform::destroy));
-      // XXX
-      // runRegionHelperMode();
-      MangaOCRONNXTest.run();
+      runRegionHelperMode();
       System.exit(0);
       return;
     }
@@ -163,8 +161,7 @@ public class Kamite {
       return;
     }
     configManager = new ConfigManager(this::handleConfigReload);
-    var configReadRes =
-      configManager.read(maybeConfigDirPath.get(), preconfigArgs.profileNames(), args);
+    var configReadRes = configManager.read(maybeConfigDirPath.get(), preconfigArgs.profileNames(), args);
     if (configReadRes.isErr()) {
       createControlGUIAndShowFatalError("Failed to read config", configReadRes.err());
       return;
@@ -177,36 +174,32 @@ public class Kamite {
     var kuromojiAdapter = new KuromojiAdapter(platform);
     if (!kuromojiAdapter.isKuromojiAvailable()) {
       unavailableUniversalFeatures.add(
-        new UnavailableAutoFurigana(UnavailableAutoFurigana.Reason.KUROMOJI_UNAVAILABLE)
-      );
+          new UnavailableAutoFurigana(UnavailableAutoFurigana.Reason.KUROMOJI_UNAVAILABLE));
       if (config.chunk().furigana().enable()) {
         LOG.warn(
-          "`chunk.furigana.enable` is turned on, but a library needed for generating furigana is"
-          + " not available"
-        );
+            "`chunk.furigana.enable` is turned on, but a library needed for generating furigana is"
+                + " not available");
       }
     }
 
     status = new ProgramStatus(
-      preconfigArgs.debug(),
-      preconfigArgs.profileNames(),
-      config.sessionTimer().startPaused()
-        ? SessionTimer.pausedAtZero()
-        : SessionTimer.startingNow(),
-      new CharacterCounter(),
-      unavailableUniversalFeatures,
-      RecognizerStatus.Kind.INITIALIZING,
-      PlayerStatus.DISCONNECTED,
-      DEFAULT_SUBSCRIBED_EVENTS
-    );
+        preconfigArgs.debug(),
+        preconfigArgs.profileNames(),
+        config.sessionTimer().startPaused()
+            ? SessionTimer.pausedAtZero()
+            : SessionTimer.startingNow(),
+        new CharacterCounter(),
+        unavailableUniversalFeatures,
+        RecognizerStatus.Kind.INITIALIZING,
+        PlayerStatus.DISCONNECTED,
+        DEFAULT_SUBSCRIBED_EVENTS);
 
     server = new Server(platform.getConfigDirPath().orElse(null));
     try {
       server.run(
-        config.server().port(),
-        config.dev().serveStaticInDevMode(),
-        this::handleServerEvent
-      );
+          config.server().port(),
+          config.dev().serveStaticInDevMode(),
+          this::handleServerEvent);
     } catch (ServerStartException e) {
       showFatalError("Failed to start backend web server", e.toString());
       return;
@@ -215,29 +208,27 @@ public class Kamite {
     if (config.controlWindow()) {
       createControlGUI();
       LOG.info(
-        "Created control window ({} version {})",
-        () -> APP_NAME_DISPLAY,
-        buildInfo::getVersion
-      );
+          "Created control window ({} version {})",
+          () -> APP_NAME_DISPLAY,
+          buildInfo::getVersion);
     }
 
-    // Unsupported platform features message deferred until control GUI potentially present
+    // Unsupported platform features message deferred until control GUI potentially
+    // present
     var unsupportedFeatures = platform.getUnsupportedFeatures();
     if (!unsupportedFeatures.isEmpty()) {
       LOG.warn(
-        "The current platform does not support the following features:\n{}",
-        () -> unsupportedFeatures.stream()
-          .map(f -> "– %s (%s)".formatted(f.getDisplayName(), f.getDescription()))
-          .collect(joining("\n"))
-      );
+          "The current platform does not support the following features:\n{}",
+          () -> unsupportedFeatures.stream()
+              .map(f -> "– %s (%s)".formatted(f.getDisplayName(), f.getDescription()))
+              .collect(joining("\n")));
     }
 
     // Config load message deferred until control GUI potentially present
     if (!configReadSuccess.loadedProfileNames().isEmpty()) {
       LOG.info(
-        "Loaded config profiles: {}",
-        () -> String.join(", ", configReadSuccess.loadedProfileNames())
-      );
+          "Loaded config profiles: {}",
+          () -> String.join(", ", configReadSuccess.loadedProfileNames()));
     }
 
     // Init DBus communication
@@ -250,9 +241,8 @@ public class Kamite {
     }
 
     chunkCheckpoint = new ChunkCheckpoint(
-      config.chunk().throttleMS(),
-      /* onAllowedThrough */ this::showChunkPostCheckpoint
-    );
+        config.chunk().throttleMS(),
+        /* onAllowedThrough */ this::showChunkPostCheckpoint);
 
     var chunkConfig = config.chunk();
     initOrDiscardChunkFilter(chunkConfig.filter());
@@ -261,30 +251,28 @@ public class Kamite {
     textProcessor = new TextProcessor(kuromojiAdapter);
 
     mpvController = MPVController.create(
-      platform, this::handlePlayerStatusUpdate, this::handlePlayerSubtitle
-    );
+        platform, this::handlePlayerStatusUpdate, this::handlePlayerSubtitle);
 
     initOrDiscardAgentClient(config.integrations().agent());
 
     recognitionConductor = new RecognitionConductor(
-      platform,
-      status,
-      /* recognizerEventCb */               this::handleRecognizerEvent,
-      /* chunkVariantsCb */                 this::handleChunkVariants,
-      /* notifyUserOfErrorFn */             this::notifyUserOfError,
-      /* updateAndSendRecognizerStatusFn */ this::updateAndSendRecognizerStatus
-    );
+        platform,
+        status,
+        /* recognizerEventCb */ this::handleRecognizerEvent,
+        /* chunkVariantsCb */ this::handleChunkVariants,
+        /* notifyUserOfErrorFn */ this::notifyUserOfError,
+        /* updateAndSendRecognizerStatusFn */ this::updateAndSendRecognizerStatus);
 
-    // NOTE: setupGlobalKeybindings() depends on recognitionConductor being present (but this can be
-    //       changed)
+    // NOTE: setupGlobalKeybindings() depends on recognitionConductor being present
+    // (but this can be
+    // changed)
     if (platform.supports(PlatformDependentFeature.GLOBAL_KEYBINDINGS)) {
       if (platform instanceof GlobalKeybindingProvider keybindingProvider) {
         setupGlobalKeybindings(keybindingProvider);
       } else {
         LOG.warn(
-          "Platform reported supporting global keybindings, yet it does not implement the required"
-          + " interface. Global keybindings will be unavailable"
-        );
+            "Platform reported supporting global keybindings, yet it does not implement the required"
+                + " interface. Global keybindings will be unavailable");
       }
     }
 
@@ -296,40 +284,39 @@ public class Kamite {
       }
     }
 
-    // Defer to here to have chunk logging initialized before recognizer, so that chunks received
+    // Defer to here to have chunk logging initialized before recognizer, so that
+    // chunks received
     // during a long manga-ocr initialization aren't missing from the log.
     Executor.get().execute(() -> recognitionConductor.initRecognizer(config));
 
-    // NOTE: OCRDirectoryWatcher constructor depends on recognitionConductor being present (but this
-    //       can be changed)
+    // NOTE: OCRDirectoryWatcher constructor depends on recognitionConductor being
+    // present (but this
+    // can be changed)
     var ocrWatchDir = config.ocr().watchDir();
     if (ocrWatchDir != null) {
       try {
         ocrDirectoryWatcher = new OCRDirectoryWatcher(
           ocrWatchDir,
-          /* recognizeImageFn */ recognitionConductor::recognizeGivenImage
-        );
+          /* recognizeImageFn */ (String /* ocrConfigurationName */ _, BufferedImage img) ->
+            recognitionConductor.recognizeGivenImage(null, img));
       } catch (OCRDirectoryWatcherCreationException e) {
         LOG.error("Failed to create OCR directory watcher: {}", e::toString);
       }
     }
 
     eventManager = new EventManager(
-      /* handlerDefinitions */ config.events().handlers(),
-      /* commandCb */ (IncomingCommand command) ->
-        handleCommand(command, CommandSource.EVENT_HANDLER),
-      /* handledEventsChangedCb */ (List<String> handledEvents) -> {
-        status.setSubscribedEvents(handledEvents);
-        sendStatus(ProgramStatusOutMessage.SubscribedEvents.class);
-      }
-    );
+        /* handlerDefinitions */ config.events().handlers(),
+        /* commandCb */ (IncomingCommand command) ->
+          handleCommand(command, CommandSource.EVENT_HANDLER),
+        /* handledEventsChangedCb */ (List<String> handledEvents) -> {
+          status.setSubscribedEvents(handledEvents);
+          sendStatus(ProgramStatusOutMessage.SubscribedEvents.class);
+        });
     if (chunkLogger != null) {
       eventManager.registerEventHandler(
-        Event.ChunkAdd.class,
-        EventHandler.internalOfConsumer(
-          event -> chunkLogger.log(((Event.ChunkAdd) event).chunkText())
-        )
-      );
+          Event.ChunkAdd.class,
+          EventHandler.internalOfConsumer(
+              event -> chunkLogger.log(((Event.ChunkAdd) event).chunkText())));
     }
 
     if (config.update().check()) {
@@ -360,24 +347,20 @@ public class Kamite {
   }
 
   private void notifyIfNewerVersionAvailable(BuildInfo buildInfo) {
-    if (
-      buildInfo.getVersion() instanceof Version.Release ver
-      && Releases.checkNewAvailable(ver) == Releases.NewCheckResult.AVAILABLE
-    ) {
+    if (buildInfo.getVersion() instanceof Version.Release ver
+        && Releases.checkNewAvailable(ver) == Releases.NewCheckResult.AVAILABLE) {
       LOG.info(
-        "There is a newer version of {} available at {}",
-        APP_NAME_DISPLAY,
-        Releases.PAGE_URL
-      );
+          "There is a newer version of {} available at {}",
+          APP_NAME_DISPLAY,
+          Releases.PAGE_URL);
     }
   }
 
   private void runRegionHelperMode() {
     if (platform.getUnsupportedFeatures().contains(PlatformDependentFeature.GLOBAL_OCR)) {
       LOG.error(
-        "The current platform does not support Global OCR."
-        + "The Region Helper mode is not available"
-      );
+          "The current platform does not support Global OCR."
+              + "The Region Helper mode is not available");
       return;
     }
     try {
@@ -387,8 +370,7 @@ public class Kamite {
     }
 
     System.out.println(
-      "\nStarted in Region Helper mode. Select to print region, cancel selection (Escape) to exit\n"
-    );
+        "\nStarted in Region Helper mode. Select to print region, cancel selection (Escape) to exit\n");
 
     while (true) {
       var areaRes = platform.getUserSelectedArea();
@@ -402,12 +384,11 @@ public class Kamite {
       }
       var area = areaRes.get();
       System.out.printf(
-        "    x = %s\n    y = %s\n    width = %s\n    height = %s\n%n",
-        area.getLeft(),
-        area.getTop(),
-        area.getWidth(),
-        area.getHeight()
-      );
+          "    x = %s\n    y = %s\n    width = %s\n    height = %s\n%n",
+          area.getLeft(),
+          area.getTop(),
+          area.getWidth(),
+          area.getHeight());
     }
   }
 
@@ -441,18 +422,18 @@ public class Kamite {
 
   private void initOrDiscardChunkFilter(Config.Chunk.Filter filterConfig) {
     var shouldInit = filterConfig != null
-      && filterConfig.rejectPatterns() != null
-      && !filterConfig.rejectPatterns().isEmpty();
+        && filterConfig.rejectPatterns() != null
+        && !filterConfig.rejectPatterns().isEmpty();
     chunkFilter = shouldInit
-      ? new ChunkFilter(filterConfig.rejectPatterns())
-      : null;
+        ? new ChunkFilter(filterConfig.rejectPatterns())
+        : null;
   }
 
   private void initOrDiscardChunkTransformer(List<Config.Chunk.Transform> transformsConfig) {
     var shouldInit = transformsConfig != null && !transformsConfig.isEmpty();
     chunkTransformer = shouldInit
-      ? new ChunkTransformer(transformsConfig)
-      : null;
+        ? new ChunkTransformer(transformsConfig)
+        : null;
   }
 
   private void initOrDiscardAgentClient(Config.Integrations.Agent agentConfig) {
@@ -460,18 +441,13 @@ public class Kamite {
       agentClient.destroy();
     }
     agentClient = agentConfig.enable()
-      ? new AgentClient(
-          agentConfig.host(),
-          /* connectCb */ () ->
-            notifyUserOfInfo("Connected to Agent"),
-          /* disconnectCb */ () ->
-            notifyUserOfInfo("Disconnected from Agent"),
-          /* chunkCb */ (String chunk) ->
-            chunkCheckpoint.register(IncomingChunkText.of(chunk)),
-          /* chunkTranslationCb */ (String chunkTranslation) ->
-            showChunkTranslation(chunkTranslation)
-        )
-      : null;
+        ? new AgentClient(
+            agentConfig.host(),
+            /* connectCb */ () -> notifyUserOfInfo("Connected to Agent"),
+            /* disconnectCb */ () -> notifyUserOfInfo("Disconnected from Agent"),
+            /* chunkCb */ (String chunk) -> chunkCheckpoint.register(IncomingChunkText.of(chunk)),
+            /* chunkTranslationCb */ (String chunkTranslation) -> showChunkTranslation(chunkTranslation))
+        : null;
   }
 
   private void handleConfigReload(Result<Config, String> configReloadRes) {
@@ -518,20 +494,18 @@ public class Kamite {
 
   private void handlePlayerSubtitle(Subtitle subtitle) {
     switch (subtitle.kind()) { // NOPMD - misidentifies as non-exhaustive
-      case PRIMARY   -> showChunkPostCheckpoint(subtitle.text(), subtitle.startTimeS());
+      case PRIMARY -> showChunkPostCheckpoint(subtitle.text(), subtitle.startTimeS());
       case SECONDARY -> showChunkTranslation(
-        subtitle.text(),
-        ChunkTranslationDestination.LATEST,
-        subtitle.startTimeS()
-      );
+          subtitle.text(),
+          ChunkTranslationDestination.LATEST,
+          subtitle.startTimeS());
     }
   }
 
   private void handleChunkVariants(UnprocessedChunkVariants variants) {
     var processedChunks = variants.process(
-      ChunkCorrectionPolicy.fromChunkConfig(config.chunk()),
-      chunkTransformer
-    );
+        ChunkCorrectionPolicy.fromChunkConfig(config.chunk()),
+        chunkTransformer);
     if (!processedChunks.isEmpty()) {
       server.send(new ChunkVariantsOutMessage(processedChunks));
     }
@@ -580,8 +554,9 @@ public class Kamite {
       }
       case ServerEvent.ClientConnected _ -> {
         LOG.info("Client connected");
-        // NOTE: The order is important so that unavailable settings can be disabled before
-        //       the config is applied
+        // NOTE: The order is important so that unavailable settings can be disabled
+        // before
+        // the config is applied
         sendStatus(ProgramStatusOutMessage.Full.class);
         server.send(new ConfigOutMessage(config));
       }
@@ -617,10 +592,9 @@ public class Kamite {
       return;
     }
     var processedChunks = UnprocessedChunkVariants.singleFromString(text)
-      .process(
-        ChunkCorrectionPolicy.fromChunkConfig(config.chunk()),
-        chunkTransformer
-      );
+        .process(
+            ChunkCorrectionPolicy.fromChunkConfig(config.chunk()),
+            chunkTransformer);
     if (!processedChunks.isEmpty()) {
       server.send(new ChunkVariantsOutMessage(processedChunks, playbackTimeS));
     }
@@ -631,25 +605,20 @@ public class Kamite {
   }
 
   private void showChunkTranslation(
-    String translation,
-    ChunkTranslationDestination destination,
-    Double playbackTimeS
-  ) {
+      String translation,
+      ChunkTranslationDestination destination,
+      Double playbackTimeS) {
     server.send(new ChunkTranslationOutMessage(
-      TextProcessor.correctForm(translation),
-      destination,
-      playbackTimeS
-    ));
+        TextProcessor.correctForm(translation),
+        destination,
+        playbackTimeS));
   }
 
   private void handleInMessage(InMessage message) {
     switch (message) { // NOPMD - misidentifies as non-exhaustive
-      case InMessage.Command msg
-        -> handleCommand(msg.incomingCommand(), CommandSource.CLIENT);
-      case InMessage.Request msg
-        -> handleRequest(msg.request());
-      case InMessage.EventNotification msg
-        -> handleEventNotification(msg.event());
+      case InMessage.Command msg -> handleCommand(msg.incomingCommand(), CommandSource.CLIENT);
+      case InMessage.Request msg -> handleRequest(msg.request());
+      case InMessage.EventNotification msg -> handleEventNotification(msg.event());
     }
   }
 
@@ -701,15 +670,13 @@ public class Kamite {
             recognitionConductor.recognizeAutoBlockDefault(cm.ocrConfigurationName(), cm.mode());
           case Command.OCR.AutoColumn cm ->
             recognitionConductor.recognizeAutoBlockColumnDefault(
-              cm.ocrConfigurationName(),
-              cm.mode()
-            );
+                cm.ocrConfigurationName(),
+                cm.mode());
           case Command.OCR.Region cm ->
             recognitionConductor.recognizeRegion(
-              cm.ocrConfigurationName(),
-              cm.region(),
-              cm.autoNarrow()
-            );
+                cm.ocrConfigurationName(),
+                cm.region(),
+                cm.autoNarrow());
           case Command.OCR.Image cm ->
             handleOCRImageCommand(cm.ocrConfigurationName(), cm.bytesB64(), cm.size());
         }
@@ -724,9 +691,9 @@ public class Kamite {
 
       case Command.Player cmd -> {
         var mpvCmd = switch (cmd) {
-          case Command.Player.PlayPause _    -> new MPVCommand.PlayPause();
-          case Command.Player.SeekBack _     -> new MPVCommand.Seek(-1);
-          case Command.Player.SeekForward _  -> new MPVCommand.Seek(1);
+          case Command.Player.PlayPause _ -> new MPVCommand.PlayPause();
+          case Command.Player.SeekBack _ -> new MPVCommand.Seek(-1);
+          case Command.Player.SeekForward _ -> new MPVCommand.Seek(1);
           case Command.Player.SeekStartSub _ -> new MPVCommand.SeekStartSub();
         };
         mpvController.sendCommand(mpvCmd);
@@ -764,16 +731,14 @@ public class Kamite {
         chunkCheckpoint.register(cmd.chunk());
       case Command.Chunk.ShowTranslation cmd ->
         showChunkTranslation(
-          cmd.translation().translation(),
-          cmd.translation().destination(),
-          cmd.translation().playbackTimeS()
-        );
+            cmd.translation().translation(),
+            cmd.translation().destination(),
+            cmd.translation().playbackTimeS());
 
       case Command.Misc.Custom cmd -> {
         if (source == CommandSource.API) {
           LOG.warn(
-            "Tried accessing command `misc_custom` through the API, but this is not allowed"
-          );
+              "Tried accessing command `misc_custom` through the API, but this is not allowed");
         } else {
           runCustomCommand(cmd.command());
         }
@@ -789,10 +754,9 @@ public class Kamite {
     var bytes = Base64.getDecoder().decode(bytesB64);
     var img = ImageOps.arrayToBufferedImage(bytes, size.width(), size.height());
     recognitionConductor.recognizeAutoBlockGivenImage(
-      ocrConfigurationName,
-      img,
-      AutoBlockHeuristic.MANGA_FULL
-    );
+        ocrConfigurationName,
+        img,
+        AutoBlockHeuristic.MANGA_FULL);
   }
 
   private void runCustomCommand(String[] command) {
@@ -815,8 +779,8 @@ public class Kamite {
             enhancements = switch (body.enhancements().get(0)) {
               case FURIGANA ->
                 textProcessor.addFurigana(body.text())
-                  .map(maybeRubies -> ChunkEnhancements.ofFuriganaMaybeRubies(maybeRubies))
-                  .orElse(null);
+                    .map(maybeRubies -> ChunkEnhancements.ofFuriganaMaybeRubies(maybeRubies))
+                    .orElse(null);
             };
           }
           default ->
@@ -844,17 +808,15 @@ public class Kamite {
     try {
       server.send(clazz.getConstructor(ProgramStatus.class).newInstance(status));
     } catch (
-      IllegalAccessException
-      | InstantiationException
-      | NoSuchMethodException
-      | InvocationTargetException e
-    ) {
+        IllegalAccessException
+        | InstantiationException
+        | NoSuchMethodException
+        | InvocationTargetException e) {
       throw new RuntimeException("Exception while instantiating Program Status message", e);
     }
   }
 
-  private final Map<Function<Config.Keybindings.Global, String>, Supplier<Runnable>>
-    baseGlobalKeybindings = Map.of(
+  private final Map<Function<Config.Keybindings.Global, String>, Supplier<Runnable>> baseGlobalKeybindings = Map.of(
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().manualBlock(),
       () -> () -> recognitionConductor.recognizeManualBlock(/* ocrConfigurationName */ null),
 
@@ -863,16 +825,13 @@ public class Kamite {
 
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().autoBlock(),
       () -> () -> recognitionConductor.recognizeAutoBlockDefault(
-        /* ocrConfigurationName */ null,
-        PointSelectionMode.INSTANT
-      ),
+          /* ocrConfigurationName */ null,
+          PointSelectionMode.INSTANT),
 
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().autoBlockSelect(),
       () -> () -> recognitionConductor.recognizeAutoBlockDefault(
-        /* ocrConfigurationName */ null,
-        PointSelectionMode.SELECT
-      )
-    );
+          /* ocrConfigurationName */ null,
+          PointSelectionMode.SELECT));
 
   private void setupGlobalKeybindings(GlobalKeybindingProvider provider) {
     var keybindings = config.keybindings().global();
@@ -888,74 +847,66 @@ public class Kamite {
     if (keybindings.ocr().region() != null) {
       var regions = config.ocr().regions();
       if (regions != null) {
-        keybindings.ocr().region().forEach(regionBinding ->
-          tryRegisterRegionBindingIfRegionPresent(provider, regionBinding, regions)
-        );
+        keybindings.ocr().region()
+            .forEach(regionBinding -> tryRegisterRegionBindingIfRegionPresent(provider, regionBinding, regions));
       }
     }
   }
 
   private void tryRegisterRegionBindingIfRegionPresent(
-    GlobalKeybindingProvider provider,
-    Config.Keybindings.Global.GlobalKeybindingsOCR.RegionBinding regionBinding,
-    List<Config.OCR.Region> regions
-  ) {
+      GlobalKeybindingProvider provider,
+      Config.Keybindings.Global.GlobalKeybindingsOCR.RegionBinding regionBinding,
+      List<Config.OCR.Region> regions) {
     var maybeRegion = regions.stream()
-      .filter(r -> r.symbol().equals(regionBinding.symbol()))
-      .findFirst();
+        .filter(r -> r.symbol().equals(regionBinding.symbol()))
+        .findFirst();
     if (maybeRegion.isEmpty()) {
       return;
     }
 
     var region = maybeRegion.get();
     tryRegisterGlobalKeybinding(
-      provider,
-      regionBinding.key(),
-      () -> recognitionConductor.recognizeRegion(
-        /* ocrConfigurationName */ null,
+        provider,
+        regionBinding.key(),
+        () -> recognitionConductor.recognizeRegion(
+            /* ocrConfigurationName */ null,
 
-        // QUAL: (DRY) Copy-pasted from Command parsing
-        Rectangle.ofStartAndDimensions(
-          region.x(),
-          region.y(),
-          region.width(),
-          region.height()
-        ),
-        region.autoNarrow()
-      )
-    );
+            // QUAL: (DRY) Copy-pasted from Command parsing
+            Rectangle.ofStartAndDimensions(
+                region.x(),
+                region.y(),
+                region.width(),
+                region.height()),
+            region.autoNarrow()));
   }
 
   private static void tryRegisterGlobalKeybinding(
-    GlobalKeybindingProvider provider, String binding, Runnable handler
-  ) {
+      GlobalKeybindingProvider provider, String binding, Runnable handler) {
     try {
       provider.registerKeybinding(binding, handler);
     } catch (InvalidKeyStrokeException e) {
       LOG.error(
-        "Could not register global keybinding: {} - does not represent a valid KeyStroke",
-        binding
-      );
+          "Could not register global keybinding: {} - does not represent a valid KeyStroke",
+          binding);
       return;
     }
     LOG.info("Registered global keybinding: {}", binding);
   }
 
   private record PreconfigArgs(
-    boolean debug,
-    List<String> profileNames,
-    boolean regionHelper,
-    boolean countChars
-  ) {}
+      boolean debug,
+      List<String> profileNames,
+      boolean regionHelper,
+      boolean countChars) {
+  }
 
   private static PreconfigArgs processPreconfigArgs(Map<String, String> args) {
     var rawDebug = args.get(PRECONFIG_ARGS.get("debug"));
     var debug = isArgValueTruthy(rawDebug);
     if (debug) {
-      var loggingExtent =
-        "all".equalsIgnoreCase(rawDebug)
-        ? DebugLoggingExtent.EVERYTHING
-        : DebugLoggingExtent.APP;
+      var loggingExtent = "all".equalsIgnoreCase(rawDebug)
+          ? DebugLoggingExtent.EVERYTHING
+          : DebugLoggingExtent.APP;
       enableDebugLogging(loggingExtent);
     }
 
@@ -979,7 +930,9 @@ public class Kamite {
     return value != null && !FALSY_STRINGS.contains(value);
   }
 
-  private enum DebugLoggingExtent { APP, EVERYTHING }
+  private enum DebugLoggingExtent {
+    APP, EVERYTHING
+  }
 
   private static void enableDebugLogging(DebugLoggingExtent extent) {
     var loggerCtx = (LoggerContext) LogManager.getContext(false);

@@ -23,7 +23,7 @@ import io.github.kamitejp.recognition.LocalOCRAdapter;
 import io.github.kamitejp.recognition.LocalOCRError;
 import io.github.kamitejp.recognition.OCRAdapterEvent;
 import io.github.kamitejp.recognition.OCRAdapterOCRParams;
-import io.github.kamitejp.recognition.OCRAdapterPreinitializationException;
+import io.github.kamitejp.recognition.OCRAdapterPreInitializationException;
 import io.github.kamitejp.recognition.StatefulOCRAdapter;
 import io.github.kamitejp.util.Result;
 
@@ -40,12 +40,11 @@ public class MangaOCRController
   private BufferedReader outputReader;
 
   public MangaOCRController(Platform platform, String customPythonPath)
-      throws OCRAdapterPreinitializationException {
+      throws OCRAdapterPreInitializationException {
     var pythonPath = effectivePythonPath(platform, customPythonPath);
     if (pythonPath == null) {
-      throw new OCRAdapterPreinitializationException(
-        "pipx \"Manga OCR\" installation absent at default location."
-        + " Please specify `ocr.mangaocr.pythonPath` in the config"
+      throw new OCRAdapterPreInitializationException(
+        "Could not find a pipx \"Manga OCR\" installation at the default location."
       );
     }
 
@@ -65,7 +64,7 @@ public class MangaOCRController
     }
     return null;
   }
-  
+
   @Override
   public void doInit() {
     dispatchEvent(
@@ -87,7 +86,7 @@ public class MangaOCRController
         if (!dispatchedExtraSetupEvent && line.startsWith("Downloading")) {
           //noinspection ObjectAllocationInLoop
           dispatchEvent(
-            new OCRAdapterEvent.StartedExtraSetup("Downloading base model. This might take a while")
+            new OCRAdapterEvent.StartedExtraSetup("Downloading model. This might take a while")
           );
           dispatchedExtraSetupEvent = true;
         }

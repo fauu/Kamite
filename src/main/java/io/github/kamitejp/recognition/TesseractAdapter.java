@@ -290,4 +290,7 @@ public class TesseractAdapter implements OCRAdapter<OCRAdapterOCRParams.Tesserac
         );
     };
   }
+
+  @Override
+  public void destroy() {}
 }

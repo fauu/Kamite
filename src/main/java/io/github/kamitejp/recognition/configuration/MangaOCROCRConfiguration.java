@@ -5,7 +5,7 @@ import io.github.kamitejp.platform.MangaOCRController;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.recognition.OCRAdapterInitParams;
 import io.github.kamitejp.recognition.OCRAdapterOCRParams;
-import io.github.kamitejp.recognition.OCRAdapterPreinitializationException;
+import io.github.kamitejp.recognition.OCRAdapterPreInitializationException;
 
 public final class MangaOCROCRConfiguration
     extends OCRConfiguration<
@@ -22,7 +22,8 @@ public final class MangaOCROCRConfiguration
   }
 
   @Override
-  public void createAdapter(Platform platform) throws OCRAdapterPreinitializationException {
+  public void createAdapter(Platform platform)
+      throws OCRAdapterPreInitializationException {
     adapter = new MangaOCRController(platform, pythonPath);
   }
 }

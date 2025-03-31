@@ -115,4 +115,7 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter<OCRAdapterOCR
   protected Result<BoxRecognitionOutput, RemoteOCRError> trimmedResponseToOCRText(String res) {
     return Result.Ok(BoxRecognitionOutput.fromString(res));
   }
+
+  @Override
+  public void destroy() {}
 }

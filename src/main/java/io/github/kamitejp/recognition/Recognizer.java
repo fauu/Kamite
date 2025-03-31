@@ -79,18 +79,18 @@ public class Recognizer {
     this.eventCb = eventCb;
     this.autoBlockDetectors = new HashMap<>();
 
-    // XXX: List configurations?
-
     // XXX: Make sure we can't get here if we have no configurations
 
+    var sb = new StringBuilder("Initialized Recognizer with the following OCR Configurations:\n");
+    for (var c : ocrConfigurations) {
+      sb.append("  - %s - %s - initParams: %s - %s\n"
+        .formatted(c.getName(), c.getClass().getName(), c.getAdapterInitParams(), c.getStatus()));
+    }
+    LOG.info(sb);
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
-    LOG.info("Initialized Recognizer");
   }
 
-  public void destroy() {
-    // XXX
-    // engine.destroy();
-  }
+  public void destroy() {}
 
   // XXX: Move?
   public record LabelledTesseractHOCROutput(String label, String hocr) {}
@@ -442,28 +442,16 @@ public class Recognizer {
     return ocrConfigurations.stream().filter(c -> c.getName() == name).findFirst();
   }
 
-  // XXX: We will probably be checking the engine of the active configuration here instead
   private List<String> getAvailableCommands() {
     if (platform.getUnsupportedFeatures().contains(PlatformDependentFeature.GLOBAL_OCR)) {
       return List.of();
-    // } else if (engine instanceof OCREngine.Tesseract) {
-      // return List.of(
-      //   "ocr_manual-block-vertical",
-      //   "ocr_manual-block-horizontal",
-      //   "ocr_auto-block",
-      //   "ocr_manual-block-rotated",
-      //   "ocr_region"
-      // );
-    // } else if (!(engine instanceof OCREngine.None)) {
-    } else if (true) { // XXX
+    } else {
       return List.of(
         "ocr_manual-block",
         "ocr_auto-block",
         "ocr_manual-block-rotated",
         "ocr_region"
       );
-    } else {
-      return List.of();
     }
   }
 
@@ -515,6 +503,7 @@ public class Recognizer {
     );
   }
 
+  // If `name` not null returns matching Configuration or Error, otherwise returns the default one
   private Result<OCRConfiguration<?, ?, ?>, RecognitionOpError> selectOCRConfiguation(
     String ocrConfigurationName
   ) {
