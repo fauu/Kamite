@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -30,6 +31,7 @@ import com.typesafe.config.ConfigOrigin;
 import com.typesafe.config.impl.ConfigImpl;
 
 import io.github.kamitejp.Kamite;
+import io.github.kamitejp.config.Config.OCREngine;
 import io.github.kamitejp.util.Result;
 
 public final class ConfigManager {
@@ -259,7 +261,7 @@ public final class ConfigManager {
 
     validateStringNullOrNonEmpty(config.integrations().agent().host(), "integrations.agent.host");
 
-    validateExtraList(config.lookup().targets(), "lookup.targets[%d]", (t, key) ->{
+    validateExtraList(config.lookup().targets(), "lookup.targets[%d]", (t, key) -> {
       validateSymbolLength(t.symbol(), key.apply("symbol"));
       validateStringNonEmpty(t.name(), key.apply("name"));
 
@@ -269,8 +271,8 @@ public final class ConfigManager {
     });
 
     validateStringNullOrNonEmpty(config.ocr().watchDir(), "ocr.watchDir");
-    validateStringNullOrNonEmpty(config.ocr().mangaocr().pythonPath(), "ocr.mangaocr.pythonPath");
-    validateIntOneOf(config.ocr().ocrspace().engine(), List.of(1, 3), "ocr.ocrspace.engine");
+
+    validateOCRConfigurations(config);
 
     validateExtraList(config.ocr().regions(), "ocr.regions[%d]", (r, key) -> {
       validateSymbolLength(r.symbol(), key.apply("symbol"));
@@ -287,6 +289,27 @@ public final class ConfigManager {
     );
   }
 
+  private static void validateOCRConfigurations(Config config) {
+    var visitedOCRConfigurationNames = new HashSet<>(16);
+    validateExtraList(config.ocr().configurations(), "ocr.configurations[%d]", (c, key) -> {
+      if (c.engine() == OCREngine.TESSERACT && c.tesseractModel() == null) {
+        throw new ConfigException.Missing(key.apply("tesseractModel"));
+      }
+
+      if (c.engine() == OCREngine.OCRSPACE && c.ocrspaceAPIKey() == null) {
+        throw new ConfigException.Missing(key.apply("apiKey"));
+      }
+
+      if (visitedOCRConfigurationNames.contains(c.name())) {
+        throw new ConfigException.BadValue(
+          key.apply("name"),
+          "must be unique but is the same as in an earlier OCR configuration entry"
+        );
+      }
+      visitedOCRConfigurationNames.add(c.name());
+    });
+  }
+
   @SuppressWarnings("SameParameterValue")
   private static void validateDurationNullOrNotLessThan(
     Long val, long min, TemporalUnit unit, String key
@@ -294,7 +317,7 @@ public final class ConfigManager {
     if (val != null && Duration.of(val, unit).compareTo(Duration.of(min, unit)) < 0) {
       throw new ConfigException.BadValue(
         key,
-        "if specified, should be at least %d %s".formatted(
+        "if specified, must be at least %d %s".formatted(
           min,
           unit.toString().toLowerCase(Locale.ENGLISH)
         )
@@ -319,13 +342,13 @@ public final class ConfigManager {
   private static void validateSymbolLength(CharSequence symbol, String key) {
     var len = symbol.length();
     if (len < 1 || len > 3) {
-      throw new ConfigException.BadValue(key, "should be between 1 and 3 characters");
+      throw new ConfigException.BadValue(key, "must be between 1 and 3 characters");
     }
   }
 
   private static void validateStringNonEmpty(CharSequence s, String key) {
     if (s.isEmpty()) {
-      throw new ConfigException.BadValue(key, "should not be empty");
+      throw new ConfigException.BadValue(key, "must not be empty");
     }
   }
 
@@ -338,23 +361,23 @@ public final class ConfigManager {
   @SuppressWarnings("SameParameterValue")
   private static void validateStringContains(String s, String substring, String key) {
     if (!s.contains(substring)) {
-      throw new ConfigException.BadValue(key, "should contain '%s'".formatted(substring));
+      throw new ConfigException.BadValue(key, "must contain '%s'".formatted(substring));
     }
   }
 
-  @SuppressWarnings("SameParameterValue")
+  @SuppressWarnings({"SameParameterValue", "unused"})
   // NOTE: Uses List instead of Set because that way the error message displays the numbers in
   //       order without extra intervention
   private static void validateIntOneOf(int val, List<Integer> allowed, String key) {
     if (!allowed.contains(val)) {
-      throw new ConfigException.BadValue(key, "should be one of: %s".formatted(allowed.toString()));
+      throw new ConfigException.BadValue(key, "must be one of: %s".formatted(allowed.toString()));
     }
   }
 
   @SuppressWarnings("rawtypes")
   private static void validateListNonEmpty(List list, String key) {
     if (list.isEmpty()) {
-      throw new ConfigException.BadValue(key, "should not be empty");
+      throw new ConfigException.BadValue(key, "must not be empty");
     }
   }
 }

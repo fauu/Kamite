@@ -238,7 +238,32 @@ public class TesseractAdapter implements OCRAdapter<OCRAdapterOCRParams.Tesserac
     return Result.Ok(new BoxRecognitionOutput(parsedVariants));
   }
 
-  private TesseractResult doRecognize(BufferedImage img, String binPath, String lang, int psm) {
+  private record LabelledTesseractResult(String label, TesseractResult result) {}
+
+  private TesseractResult doRecognize(
+    BufferedImage img,
+    TesseractModelType modelType,
+    OCRAdapterOCRParams.Tesseract params
+  ) {
+    return switch (modelType) {
+      case DEFAULT ->
+        doDoRecognize(
+          img,
+          params.binPath(),
+          params.model(),
+          params.psm()
+        );
+      case ALT ->
+        doDoRecognize(
+          img,
+          params.binPath(),
+          params.modelAlt(),
+          params.psmAlt() != null ? params.psmAlt() : params.psm()
+        );
+    };
+  }
+
+  private TesseractResult doDoRecognize(BufferedImage img, String binPath, String lang, int psm) {
     var imgOS = ImageOps.encodeIntoByteArrayOutputStream(img);
     var res = ProcessHelper.run(
       ProcessRunParams.ofCmd(
@@ -264,31 +289,6 @@ public class TesseractAdapter implements OCRAdapter<OCRAdapterOCRParams.Tesserac
     } else {
       return new TesseractResult.ExecutionFailed();
     }
-  }
-
-  private record LabelledTesseractResult(String label, TesseractResult result) {}
-
-  private TesseractResult doRecognize(
-    BufferedImage img,
-    TesseractModelType modelType,
-    OCRAdapterOCRParams.Tesseract params
-  ) {
-    return switch (modelType) {
-      case DEFAULT ->
-        doRecognize(
-          img,
-          params.binPath(),
-          params.model(),
-          params.psm()
-        );
-      case ALT ->
-        doRecognize(
-          img,
-          params.binPath(),
-          params.modelAlt(),
-          params.psmAlt() != null ? params.psmAlt() : params.psm()
-        );
-    };
   }
 
   @Override

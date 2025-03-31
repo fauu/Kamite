@@ -18,11 +18,11 @@ public final class TesseractOCRConfiguration
     super(config);
     adapterInitParams = new OCRAdapterInitParams.Empty();
     adapterOCRParams = new OCRAdapterOCRParams.Tesseract(
-      /* binPath */  config.path() != null ? config.path() : DEFAULT_BIN_PATH,
-      /* model */    config.tesseractModel(),
-      /* psm */      config.tesseractPSM(),
-      /* modelAlt */ config.tesseractModelAlt(),
-      /* psmAlt */   config.tesseractPSMAlt()
+      config.tesseractBinPath() != null ? config.tesseractBinPath() : DEFAULT_BIN_PATH,
+      config.tesseractModel(),
+      config.tesseractPSM(),
+      config.tesseractModelAlt(),
+      config.tesseractPSMAlt()
     );
   }
 

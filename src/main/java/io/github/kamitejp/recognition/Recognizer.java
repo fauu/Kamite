@@ -81,13 +81,22 @@ public class Recognizer {
 
     // XXX: Make sure we can't get here if we have no configurations
 
-    var sb = new StringBuilder("Initialized Recognizer with the following OCR Configurations:\n");
-    for (var c : ocrConfigurations) {
-      sb.append("  - %s - %s - initParams: %s - %s\n"
-        .formatted(c.getName(), c.getClass().getName(), c.getAdapterInitParams(), c.getStatus()));
-    }
-    LOG.info(sb);
+    LOG.info(makeInitializationLogMessage(ocrConfigurations));
+
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
+  }
+
+  private String makeInitializationLogMessage(List<OCRConfiguration<?, ?, ?>> ocrConfigurations) {
+    var sb = new StringBuilder("Initialized Recognizer with the following OCR Configurations:\n");
+    for (var i = 0; i < ocrConfigurations.size(); i++) {
+      var c = ocrConfigurations.get(i);
+      sb.append("  - %s\n    %s(%s)\n    %s"
+        .formatted(c.getName(), c.getClass().getName(), c.getAdapterInitParams(), c.getStatus()));
+      if (i < ocrConfigurations.size() - 1) {
+        sb.append("\n");
+      }
+    }
+    return sb.toString();
   }
 
   public void destroy() {}

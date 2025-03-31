@@ -34,7 +34,8 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.Emp
   @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int REQUEST_TIMEOUT_BASE_S = 10;
+  private static final int ENGINE = 1;
+  private static final int REQUEST_TIMEOUT_S = 10;
   private static final String MULTIPART_BOUNDARY = "apUaO5xP8REdGOEJnoAy";
 
   private static final URI API_ENDPOINT = URI.create("https://api.ocr.space/parse/image");
@@ -45,13 +46,9 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.Emp
   private static final String PARAM_IMAGE_MIMETYPE = "image/png";
 
   private final String apiKey;
-  private final String engineParam;
-  private final int requestTimeout;
 
-  OCRSpaceAdapter(String apiKey, OCRSpaceSubengine engine) {
+  OCRSpaceAdapter(String apiKey) {
     this.apiKey = apiKey;
-    engineParam = String.valueOf(engine.toNumber());
-    requestTimeout = REQUEST_TIMEOUT_BASE_S * ((engine == OCRSpaceSubengine.ENGINE_3) ? 2 : 1);
   }
 
   private record ImageUpload(String filename, String mimeType, byte[] bytes) {}
@@ -65,7 +62,7 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.Emp
     var imgBytes = ImageOps.encodeIntoByteArrayOutputStream(img).toByteArray();
     var data = Map.of(
       "apikey", apiKey,
-      "OCREngine", engineParam,
+      "OCREngine", ENGINE,
       "language", PARAM_LANGUAGE,
       "scale", PARAM_SCALE,
       "filetype", PARAM_FILETYPE,
@@ -92,7 +89,7 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.Emp
     HttpResponse<String> res;
     try {
       var resFuture = HTTP.client().sendAsync(req, HttpResponse.BodyHandlers.ofString());
-      res = resFuture.get(requestTimeout, TimeUnit.SECONDS);
+      res = resFuture.get(REQUEST_TIMEOUT_S, TimeUnit.SECONDS);
     } catch (TimeoutException e) {
       return Result.Err(new RemoteOCRError.Timeout());
     } catch (ExecutionException | InterruptedException e) {
@@ -146,8 +143,7 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.Emp
         } else {
           return "";
         }
-      })
-        .collect(joining());
+      }).collect(joining());
     text = text.replace("\r\n", "\n");
 
     return Result.Ok(BoxRecognitionOutput.fromString(text));

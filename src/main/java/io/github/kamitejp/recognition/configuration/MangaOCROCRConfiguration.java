@@ -17,7 +17,7 @@ public final class MangaOCROCRConfiguration
 
   public MangaOCROCRConfiguration(OCR.Configuration config) {
     super(config);
-    pythonPath = config.pythonPath();
+    pythonPath = config.mangaocrPythonPath();
     adapterInitParams = new OCRAdapterInitParams.MangaOCR(pythonPath);
   }
 

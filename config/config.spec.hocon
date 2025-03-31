@@ -2,7 +2,9 @@
 UILayout: [STANDARD, STANDARD_FLIPPED]
 
 #@define enum
-OCREngine: [TESSERACT, MANGAOCR, MANGAOCR_ONLINE, OCRSPACE, EASYOCR_ONLINE, HIVEOCR_ONLINE, GLENS, NONE]
+OCREngine: [
+  NONE, TESSERACT, MANGAOCR, MANGAOCR_ONLINE, OCRSPACE, EASYOCR_ONLINE, HIVEOCR_ONLINE, GLENS
+]
 
 controlWindow: "boolean | true"
 launchBrowser: "boolean | true"
@@ -111,36 +113,19 @@ ocr: {
     name: string
     engine: OCREngine
 
-    # XXX: All params have to be optional so we must verify the non-actually-optional ones later
-    # Tesseract options
-    path: "string?" # Generalizable
+    # Tesseract
+    tesseractBinPath: "string?"
     tesseractModel: "string?"
     tesseractPSM: "int | 5"
     tesseractModelAlt: "string?"
     tesseractPSMAlt: "int | 6"
 
     # "MangaOCR" (Local)
-    pythonPath: "string?" # Generalizable
+    mangaocrPythonPath: "string?"
 
     # OCRSpace
-    ocrspaceEngine: "int | 1"
-    apiKey: "string?" # Generalizable
+    ocrspaceAPIKey: "string?"
   }]
-
-  # XXX: Remove
-  tesseract: {
-    path: "string | tesseract"
-  }
-
-  # XXX: Remove
-  mangaocr: {
-    pythonPath: "string?"
-  }
-
-  # XXX: Remove
-  ocrspace: {
-    engine: "int | 1"
-  }
 
   #@optional
   regions: [{
