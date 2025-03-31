@@ -30,11 +30,10 @@ import io.github.kamitejp.util.HTTP;
 import io.github.kamitejp.util.JSON;
 import io.github.kamitejp.util.Result;
 
-public class OCRSpaceAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.Empty> {
+public class OCRSpaceAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.OCRSpace> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final int ENGINE = 1;
   private static final int REQUEST_TIMEOUT_S = 10;
   private static final String MULTIPART_BOUNDARY = "apUaO5xP8REdGOEJnoAy";
 
@@ -45,24 +44,17 @@ public class OCRSpaceAdapter implements RemoteOCRAdapter<OCRAdapterOCRParams.Emp
   private static final String PARAM_IMAGE_FILENAME = "image.png";
   private static final String PARAM_IMAGE_MIMETYPE = "image/png";
 
-  private final String apiKey;
-
-  OCRSpaceAdapter(String apiKey) {
-    this.apiKey = apiKey;
-  }
-
   private record ImageUpload(String filename, String mimeType, byte[] bytes) {}
 
   // TODO: Don't send free API request if the image is over 1 MB
   // TODO: Don't send free API request if engine = 3 and an image dimension is over 1000 px
   @Override
   public Result<BoxRecognitionOutput, RemoteOCRError> recognize(
-    BufferedImage img, OCRAdapterOCRParams.Empty _params
-  ) {
+      BufferedImage img,
+      OCRAdapterOCRParams.OCRSpace params) {
     var imgBytes = ImageOps.encodeIntoByteArrayOutputStream(img).toByteArray();
     var data = Map.of(
-      "apikey", apiKey,
-      "OCREngine", ENGINE,
+      "apikey", params.apiKey(),
       "language", PARAM_LANGUAGE,
       "scale", PARAM_SCALE,
       "filetype", PARAM_FILETYPE,

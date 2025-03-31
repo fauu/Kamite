@@ -207,7 +207,7 @@ const OptionsList = styled.ul`
   transform: translateX(-50%) translateY(-5px); /* Start slightly up */
   border: 1px solid var(--color-bg2-hl);
   border-radius: var(--border-radius-default);
-  max-height: 200px; /* Limit height and enable scrolling */
+  max-height: 600px;
 
   background-color: var(--color-bg2);
   color: var(--color-fg);

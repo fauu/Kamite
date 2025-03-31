@@ -9,15 +9,14 @@ import io.github.kamitejp.recognition.OCRAdapterPreInitializationException;
 
 public final class MangaOCROCRConfiguration
     extends OCRConfiguration<
-      OCRAdapterInitParams.MangaOCR,
-      OCRAdapterOCRParams.Empty,
-      MangaOCRController
-    > {
+        OCRAdapterInitParams.MangaOCR,
+        OCRAdapterOCRParams.Empty,
+        MangaOCRController> {
   private final String pythonPath;
 
   public MangaOCROCRConfiguration(OCR.Configuration config) {
     super(config);
-    pythonPath = config.mangaocrPythonPath();
+    pythonPath = config.pythonPath();
     adapterInitParams = new OCRAdapterInitParams.MangaOCR(pythonPath);
   }
 

@@ -1,6 +1,10 @@
 package io.github.kamitejp.recognition.configuration;
 
 import java.awt.image.BufferedImage;
+import java.lang.invoke.MethodHandles;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.config.Config.OCR;
 import io.github.kamitejp.platform.Platform;
@@ -15,10 +19,11 @@ import io.github.kamitejp.recognition.RemoteOCRAdapter;
 import io.github.kamitejp.util.Result;
 
 public abstract class OCRConfiguration<
-    P extends OCRAdapterInitParams,
-    R extends OCRAdapterOCRParams,
-    A extends OCRAdapter<R>
-  > {
+      P extends OCRAdapterInitParams,
+      R extends OCRAdapterOCRParams,
+      A extends OCRAdapter<R>> {
+  private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
   protected P adapterInitParams;
   protected R adapterOCRParams;
   protected A adapter;
@@ -33,6 +38,7 @@ public abstract class OCRConfiguration<
   public abstract void createAdapter(Platform platform) throws OCRAdapterPreInitializationException;
 
   public Result<BoxRecognitionOutput, ? extends OCRError> recognize(BufferedImage img) {
+    LOG.debug("Current recognition operation is using configuration '{}'", getClass().getName());
     if (adapter instanceof RemoteOCRAdapter) {
       @SuppressWarnings("unchecked")
       var remoteAdapter = (RemoteOCRAdapter<R>) adapter;

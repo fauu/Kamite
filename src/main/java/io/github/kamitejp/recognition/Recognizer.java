@@ -505,11 +505,10 @@ public class Recognizer {
 
   public void setActiveOCRConfiguration(OCRConfiguration<?, ?, ?> configuration) {
     activeOCRConfiguration = configuration;
-    LOG.info(
-      "Set Active OCR Configuration: '{}' ({})",
-      configuration.getName(),
-      configuration.getClass()
-    );
+    LOG.debug(
+        "Setting active OCR Configuration to '{}' ({})",
+        configuration.getName(),
+        configuration.getClass().getName());
   }
 
   // If `name` not null returns matching Configuration or Error, otherwise returns the default one

@@ -16,11 +16,10 @@ public class EasyOCRHFAdapter extends BaseHFOCRAdapter {
 
   public EasyOCRHFAdapter() {
     super(
-      /* hfSpaceID */               "tomofi-easyocr",
-      /* requestExtraPayload */     ", [\"ja\"]",
-      /* responseTrimStartMarker */ "\"data\":[[",
-      /* responseTrimEndMarker */   "]]}]"
-    );
+        /* hfSpaceID */               "tomofi-easyocr",
+        /* requestExtraPayload */     ", [\"ja\"]",
+        /* responseTrimStartMarker */ "\"data\":[[",
+        /* responseTrimEndMarker */   "]]}]");
   }
 
   @Override

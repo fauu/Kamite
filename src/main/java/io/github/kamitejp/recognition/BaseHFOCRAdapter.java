@@ -23,7 +23,7 @@ public abstract class BaseHFOCRAdapter implements RemoteOCRAdapter<OCRAdapterOCR
 
   private static final int REQUEST_TIMEOUT_S = 8;
 
-  private static final String DEFAULT_API_ENDPOINT_PATH = "/api/predict";
+  private static final String DEFAULT_API_ENDPOINT_PATH = "/api/predict/";
   private static final String API_ENDPOINT_TPL = "https://%s.hf.space%s";
   private static final String OCR_REQUEST_BODY_TPL = "{\"data\": [\"data:%s;base64,%s\"%s]}";
 

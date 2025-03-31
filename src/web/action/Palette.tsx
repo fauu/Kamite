@@ -121,28 +121,31 @@ export const ActionPalette: VoidComponent<ActionPaletteProps> = (props) => {
           }}
           use:holdClickEvent={
             action.disabled
-            ? undefined
-            : {
-              durationMS: 400,
-              holdClickCb: actionKind.hasAlternativeInvocation
-                ? () => handleButtonClick(action, "alternative")
-                : undefined,
-              regularClickCb: () => handleButtonClick(action, "base"),
+              ? undefined
+              : {
+                durationMS: 400,
+                holdClickCb: actionKind.hasAlternativeInvocation
+                  ? () => handleButtonClick(action, "alternative")
+                  : undefined,
+                regularClickCb: () => handleButtonClick(action, "base"),
             }
           }
           data-tooltip-placement-override="right"
           use:tooltipAnchor={
             (!action.disabled && actionKind.description)
-            ? {
-              tooltip,
-              header: hasIcon ? labelText(action, props.targetText) : undefined,
-              body: actionKind.description,
-            }
-            : undefined
+              ? {
+                tooltip,
+                header: hasIcon ? labelText(action, props.targetText) : undefined,
+                body: actionKind.description,
+              }
+              : undefined
           }
         >
-          <Show when={hasIcon} fallback={<PaletteButtonLabel innerHTML={labelText(action, props.targetText)} />}>
-            <DefaultIcon iconName={action.kind} sizePx={34} />
+          <Show
+            when={hasIcon}
+            fallback={<PaletteButtonLabel innerHTML={labelText(action, props.targetText)} />}
+          >
+            <Icon iconName={action.kind} sizePx={34} />
           </Show>
         </div>;
       }}</For>
@@ -174,6 +177,7 @@ const FadeIconRoot = styled(DefaultIcon)`
   background: var(--color-med);
   position: absolute;
   right: 0;
+  height: 100%;
 `;
 
 const LeftFade = styled(Fade)`
@@ -213,6 +217,10 @@ const ButtonClass = css`
     cursor: default;
     pointer-events: none;
   }
+`;
+
+const Icon = styled(DefaultIcon)`
+  height: 100%;
 `;
 
 function labelText(action: Action, targetText?: string): string {

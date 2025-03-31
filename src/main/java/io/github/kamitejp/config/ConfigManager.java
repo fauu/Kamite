@@ -292,11 +292,11 @@ public final class ConfigManager {
   private static void validateOCRConfigurations(Config config) {
     var visitedOCRConfigurationNames = new HashSet<>(16);
     validateExtraList(config.ocr().configurations(), "ocr.configurations[%d]", (c, key) -> {
-      if (c.engine() == OCREngine.TESSERACT && c.tesseractModel() == null) {
-        throw new ConfigException.Missing(key.apply("tesseractModel"));
+      if (c.engine() == OCREngine.TESSERACT && c.model() == null) {
+        throw new ConfigException.Missing(key.apply("model"));
       }
 
-      if (c.engine() == OCREngine.OCRSPACE && c.ocrspaceAPIKey() == null) {
+      if (c.engine() == OCREngine.OCRSPACE && c.apiKey() == null) {
         throw new ConfigException.Missing(key.apply("apiKey"));
       }
 

@@ -13,11 +13,10 @@ public class HiveOCRHFAdapter extends BaseHFOCRAdapter {
 
   public HiveOCRHFAdapter() {
     super(
-      /* hfSpaceID */               "seaoctopusredchicken-hive-ocr-simple",
-      /* requestExtraPayload */     "",
-      /* responseTrimStartMarker */ "\"data\":[\"",
-      /* responseTrimEndMarker */   "\",[{\"text"
-    );
+        /* hfSpaceID */               "seaoctopusredchicken-hive-ocr-simple",
+        /* requestExtraPayload */     "",
+        /* responseTrimStartMarker */ "\"data\":[\"",
+        /* responseTrimEndMarker */   "\",[{\"text");
   }
 
   @Override

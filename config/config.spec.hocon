@@ -104,27 +104,26 @@ lookup: {
 }
 
 ocr: {
-  # XXX: Remove
-  engine: OCREngine
   watchDir: "string?"
 
   #@optional
   configurations: [{
     name: string
     engine: OCREngine
+    enabled: "boolean | true"
 
     # Tesseract
-    tesseractBinPath: "string?"
-    tesseractModel: "string?"
-    tesseractPSM: "int | 5"
-    tesseractModelAlt: "string?"
-    tesseractPSMAlt: "int | 6"
+    binPath: "string?"
+    model: "string?"
+    psm: "int | 5"
+    modelAlt: "string?"
+    psmAlt: "int | 6"
 
     # "MangaOCR" (Local)
-    mangaocrPythonPath: "string?"
+    pythonPath: "string?"
 
     # OCRSpace
-    ocrspaceAPIKey: "string?"
+    apiKey: "string?"
   }]
 
   #@optional

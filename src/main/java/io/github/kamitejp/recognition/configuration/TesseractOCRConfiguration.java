@@ -8,21 +8,20 @@ import io.github.kamitejp.recognition.TesseractAdapter;
 
 public final class TesseractOCRConfiguration
     extends OCRConfiguration<
-      OCRAdapterInitParams.Empty,
-      OCRAdapterOCRParams.Tesseract,
-      TesseractAdapter
-    > {
+        OCRAdapterInitParams.Empty,
+        OCRAdapterOCRParams.Tesseract,
+        TesseractAdapter> {
   private static final String DEFAULT_BIN_PATH = "tesseract";
 
   public TesseractOCRConfiguration(OCR.Configuration config) {
     super(config);
     adapterInitParams = new OCRAdapterInitParams.Empty();
     adapterOCRParams = new OCRAdapterOCRParams.Tesseract(
-      config.tesseractBinPath() != null ? config.tesseractBinPath() : DEFAULT_BIN_PATH,
-      config.tesseractModel(),
-      config.tesseractPSM(),
-      config.tesseractModelAlt(),
-      config.tesseractPSMAlt()
+      config.binPath() != null ? config.binPath() : DEFAULT_BIN_PATH,
+      config.model(),
+      config.psm(),
+      config.modelAlt(),
+      config.psmAlt()
     );
   }
 

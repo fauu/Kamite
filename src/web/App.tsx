@@ -80,7 +80,7 @@ export const App: VoidComponent = () => {
     createSignal(false);
   const [movingMouseWhilePrimaryDown, setMovingMouseWhilePrimaryDown] =
     createSignal(false);
-  const [ impedeClickMoveChunkTextSelect, setImpedeClickMoveChunkTextSelect ] = createSignal(false);
+  const [impedeClickMoveChunkTextSelect, setImpedeClickMoveChunkTextSelect] = createSignal(false);
   const [debugMode, setDebugMode] =
     createSignal(false);
 
@@ -639,7 +639,10 @@ export const App: VoidComponent = () => {
   }
 
   function handleOcrConfigurationSelected(ocrConfigurationName: string) {
-    backend.command({ kind: "ocr-setup_set-active-configuration", params: { name: ocrConfigurationName } })
+    backend.command({
+      kind: "ocr-setup_set-active-configuration",
+      params: { name: ocrConfigurationName },
+    });
   }
 
   window.addEventListener("resize", () => {
@@ -872,10 +875,12 @@ export const App: VoidComponent = () => {
           concealUnlessHovered={concealStatusPanelUnlessHovered}
           ref={el => statusPanelEl = el}
         >
-          <OcrConfigurationSelector
-            recognizerStatus={recognizerStatus}
-            onChange={handleOcrConfigurationSelected}
-          />
+          <Show when={!!recognizerStatus().ocrConfigurations?.length}>
+            <OcrConfigurationSelector
+              recognizerStatus={recognizerStatus}
+              onChange={handleOcrConfigurationSelected}
+            />
+          </Show>
           <Show when={characterCounter()} keyed>{counter =>
             <CharacterCounter
               /* QUAL: Pass a unified state with reading pace accessor instead? */

@@ -255,17 +255,8 @@ public class Kamite {
 
     initOrDiscardAgentClient(config.integrations().agent());
 
-    recognitionConductor = new RecognitionConductor(
-        platform,
-        status,
-        /* recognizerEventCb */ this::handleRecognizerEvent,
-        /* chunkVariantsCb */ this::handleChunkVariants,
-        /* notifyUserOfErrorFn */ this::notifyUserOfError,
-        /* updateAndSendRecognizerStatusFn */ this::updateAndSendRecognizerStatus);
-
     // NOTE: setupGlobalKeybindings() depends on recognitionConductor being present
-    // (but this can be
-    // changed)
+    // (but this can be changed)
     if (platform.supports(PlatformDependentFeature.GLOBAL_KEYBINDINGS)) {
       if (platform instanceof GlobalKeybindingProvider keybindingProvider) {
         setupGlobalKeybindings(keybindingProvider);
@@ -284,10 +275,14 @@ public class Kamite {
       }
     }
 
-    // Defer to here to have chunk logging initialized before recognizer, so that
-    // chunks received
-    // during a long manga-ocr initialization aren't missing from the log.
-    Executor.get().execute(() -> recognitionConductor.initRecognizer(config));
+    recognitionConductor = new RecognitionConductor(
+      platform,
+      status,
+      config,
+      /* recognizerEventCb */ this::handleRecognizerEvent,
+      /* chunkVariantsCb */ this::handleChunkVariants,
+      /* notifyUserOfErrorFn */ this::notifyUserOfError,
+      /* updateAndSendRecognizerStatusFn */ this::updateAndSendRecognizerStatus);
 
     // NOTE: OCRDirectoryWatcher constructor depends on recognitionConductor being
     // present (but this
@@ -638,7 +633,7 @@ public class Kamite {
       return;
     }
     var command = cmdParseRes.get();
-    LOG.debug("Handling command: {}", command::getClass);
+    LOG.debug("Handling command: {}", () -> command.getClass().getName());
     switch (command) { // NOPMD - misidentifies as non-exhaustive
       case Command.OCR cmd -> {
         var refuseMsg = switch (status.getRecognizerStatus().getKind()) {
@@ -775,6 +770,7 @@ public class Kamite {
         switch (body.enhancements().size()) {
           case 0 ->
             LOG.warn("Received an empty chunk enhancements request");
+
           case 1 -> {
             enhancements = switch (body.enhancements().get(0)) {
               case FURIGANA ->
@@ -783,6 +779,7 @@ public class Kamite {
                     .orElse(null);
             };
           }
+
           default ->
             LOG.error("Requested multiple chunk enhancements, which is not yet implemented");
         }
@@ -816,7 +813,8 @@ public class Kamite {
     }
   }
 
-  private final Map<Function<Config.Keybindings.Global, String>, Supplier<Runnable>> baseGlobalKeybindings = Map.of(
+  private final Map<Function<Config.Keybindings.Global, String>, Supplier<Runnable>>
+    baseGlobalKeybindings = Map.of(
       (Config.Keybindings.Global keybindings) -> keybindings.ocr().manualBlock(),
       () -> () -> recognitionConductor.recognizeManualBlock(/* ocrConfigurationName */ null),
 
@@ -847,8 +845,8 @@ public class Kamite {
     if (keybindings.ocr().region() != null) {
       var regions = config.ocr().regions();
       if (regions != null) {
-        keybindings.ocr().region()
-            .forEach(regionBinding -> tryRegisterRegionBindingIfRegionPresent(provider, regionBinding, regions));
+        keybindings.ocr().region().forEach(regionBinding ->
+            tryRegisterRegionBindingIfRegionPresent(provider, regionBinding, regions));
       }
     }
   }
@@ -877,6 +875,7 @@ public class Kamite {
                 region.y(),
                 region.width(),
                 region.height()),
+
             region.autoNarrow()));
   }
 
@@ -897,8 +896,7 @@ public class Kamite {
       boolean debug,
       List<String> profileNames,
       boolean regionHelper,
-      boolean countChars) {
-  }
+      boolean countChars) {}
 
   private static PreconfigArgs processPreconfigArgs(Map<String, String> args) {
     var rawDebug = args.get(PRECONFIG_ARGS.get("debug"));
