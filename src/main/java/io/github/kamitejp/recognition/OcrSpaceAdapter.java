@@ -54,27 +54,24 @@ public class OcrSpaceAdapter implements RemoteOcrAdapter<OcrAdapterOcrParams.OCR
       OcrAdapterOcrParams.OCRSpace params) {
     var imgBytes = ImageOps.encodeIntoByteArrayOutputStream(img).toByteArray();
     var data = Map.of(
-      "apikey", params.apiKey(),
-      "language", PARAM_LANGUAGE,
-      "scale", PARAM_SCALE,
-      "filetype", PARAM_FILETYPE,
-      "file", new ImageUpload(PARAM_IMAGE_FILENAME, PARAM_IMAGE_MIMETYPE, imgBytes)
-      // "detectOrientation", "true", TODO: Test this
-    );
+        "apikey", params.apiKey(),
+        "language", PARAM_LANGUAGE,
+        "scale", PARAM_SCALE,
+        "filetype", PARAM_FILETYPE,
+        "file", new ImageUpload(PARAM_IMAGE_FILENAME, PARAM_IMAGE_MIMETYPE, imgBytes)
+        /* "detectOrientation", "true", TODO: Test this */);
 
     HttpRequest req;
     try {
       req = HttpRequest.newBuilder()
-        .uri(API_ENDPOINT)
-        .headers("Content-Type", "multipart/form-data; boundary=%s".formatted(MULTIPART_BOUNDARY))
-        .POST(multipartBodyPublisher(data, MULTIPART_BOUNDARY))
-        .build();
+          .uri(API_ENDPOINT)
+          .headers("Content-Type", "multipart/form-data; boundary=%s".formatted(MULTIPART_BOUNDARY))
+          .POST(multipartBodyPublisher(data, MULTIPART_BOUNDARY))
+          .build();
     } catch (IOException e) {
       return Result.Err(
         new RemoteOcrError.Other(
-          "Failed to build HTTP request for OCR.space: %s".formatted(e)
-        )
-      );
+            "Failed to build HTTP request for OCR.space: %s".formatted(e)));
     }
 
     // QUAL: (DRY) Same segment in BaseHFOCRAdapter
@@ -101,16 +98,15 @@ public class OcrSpaceAdapter implements RemoteOcrAdapter<OcrAdapterOcrParams.OCR
       root = Json.mapper().readTree(res.body());
     } catch (JsonProcessingException e) {
       return Result.Err(
-        new RemoteOcrError.Other("Failed to read OCR.space response JSON: %s".formatted(e))
-      );
+          new RemoteOcrError.Other("Failed to read OCR.space response JSON: %s".formatted(e)));
     }
 
     List<JsonNode> parsedResultsEls = null;
     var parsedResultsRoot = root.get("ParsedResults");
     if (parsedResultsRoot != null) {
       parsedResultsEls = StreamSupport
-        .stream(parsedResultsRoot.spliterator(), false)
-        .collect(toList());
+          .stream(parsedResultsRoot.spliterator(), false)
+          .collect(toList());
     }
 
     var errored = root.get("IsErroredOnProcessing").asBoolean();
@@ -128,14 +124,14 @@ public class OcrSpaceAdapter implements RemoteOcrAdapter<OcrAdapterOcrParams.OCR
     }
 
     var text = parsedResultsEls.stream()
-      .map(node -> {
-        var t = node.get("ParsedText");
-        if (t != null && !t.isNull()) {
-          return t.textValue();
-        } else {
-          return "";
-        }
-      }).collect(joining());
+        .map(node -> {
+          var t = node.get("ParsedText");
+          if (t != null && !t.isNull()) {
+            return t.textValue();
+          } else {
+            return "";
+          }
+        }).collect(joining());
     text = text.replace("\r\n", "\n");
 
     return Result.Ok(BoxRecognitionOutput.fromString(text));
@@ -149,8 +145,8 @@ public class OcrSpaceAdapter implements RemoteOcrAdapter<OcrAdapterOcrParams.OCR
     var byteArrays = new ArrayList<byte[]>(40);
 
     var separator = "--%s\r\nContent-Disposition: form-data; name="
-      .formatted(boundary)
-      .getBytes(StandardCharsets.UTF_8);
+        .formatted(boundary)
+        .getBytes(StandardCharsets.UTF_8);
     for (var entry : data.entrySet()) {
       byteArrays.add(separator);
 
@@ -158,16 +154,14 @@ public class OcrSpaceAdapter implements RemoteOcrAdapter<OcrAdapterOcrParams.OCR
       var value = entry.getValue();
       if (value instanceof String s) {
         byteArrays.add(
-          "\"%s\"\r\n\r\n%s\r\n"
-            .formatted(key, s)
-            .getBytes(StandardCharsets.UTF_8)
-        );
+            "\"%s\"\r\n\r\n%s\r\n"
+              .formatted(key, s)
+              .getBytes(StandardCharsets.UTF_8));
       } else if (value instanceof ImageUpload image) {
         byteArrays.add(
-          "\"%s\"; filename=\"%s\"\r\nContent-Type: %s\r\n\r\n"
-            .formatted(key, image.filename(), image.mimeType())
-            .getBytes(StandardCharsets.UTF_8)
-        );
+            "\"%s\"; filename=\"%s\"\r\nContent-Type: %s\r\n\r\n"
+              .formatted(key, image.filename(), image.mimeType())
+              .getBytes(StandardCharsets.UTF_8));
         byteArrays.add(image.bytes());
         byteArrays.add("\r\n".getBytes(StandardCharsets.UTF_8));
       }
