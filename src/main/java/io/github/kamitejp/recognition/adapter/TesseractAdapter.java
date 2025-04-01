@@ -1,4 +1,4 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.adapter;
 
 import static java.util.stream.Collectors.joining;
 
@@ -12,6 +12,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import io.github.kamitejp.recognition.BoxRecognitionOutput;
+import io.github.kamitejp.recognition.LocalOcrError;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -222,8 +224,9 @@ public class TesseractAdapter implements OcrAdapter<OcrAdapterOcrParams.Tesserac
     }
     if (variants == null) {
       // XXX: Move logging above?
-      LOG.debug("All of the Tesseract calls have failed");
-      return Result.Err(new LocalOcrError.Other("All of the Tesseract calls have failed"));
+      var msg = "All of the Tesseract calls have failed";
+      LOG.debug(msg);
+      return Result.Err(new LocalOcrError.Other(msg));
     }
 
     var parsedVariants = UnprocessedChunkVariants.fromLabelledTesseractHOCROutputs(variants);
@@ -240,42 +243,42 @@ public class TesseractAdapter implements OcrAdapter<OcrAdapterOcrParams.Tesserac
 
   private record LabelledTesseractResult(String label, TesseractResult result) {}
 
-  private TesseractResult doRecognize(
-    BufferedImage img,
-    TesseractModelType modelType,
-    OcrAdapterOcrParams.Tesseract params
-  ) {
+  private static TesseractResult doRecognize(
+      BufferedImage img,
+      TesseractModelType modelType,
+      OcrAdapterOcrParams.Tesseract params) {
     return switch (modelType) {
       case DEFAULT ->
         doDoRecognize(
-          img,
-          params.binPath(),
-          params.model(),
-          params.psm()
-        );
+            img,
+            params.binPath(),
+            params.model(),
+            params.psm());
       case ALT ->
         doDoRecognize(
-          img,
-          params.binPath(),
-          params.modelAlt(),
-          params.psmAlt() != null ? params.psmAlt() : params.psm()
-        );
+            img,
+            params.binPath(),
+            params.modelAlt(),
+            params.psmAlt() != null ? params.psmAlt() : params.psm());
     };
   }
 
-  private TesseractResult doDoRecognize(BufferedImage img, String binPath, String lang, int psm) {
+  private static TesseractResult doDoRecognize(
+      BufferedImage img,
+      String binPath,
+      String lang,
+      int psm) {
     var imgOS = ImageOps.encodeIntoByteArrayOutputStream(img);
     var res = ProcessHelper.run(
       ProcessRunParams.ofCmd(
-        binPath,
-        "stdin", "stdout",
-        "-l", lang,
-        "--dpi", DPI,
-        "--oem", OEM,
-        "--psm", Integer.toString(psm),
-        "-c", "tessedit_create_hocr=1",
-        "-c", "hocr_font-info=0"
-      )
+          binPath,
+          "stdin", "stdout",
+          "-l", lang,
+          "--dpi", DPI,
+          "--oem", OEM,
+          "--psm", Integer.toString(psm),
+          "-c", "tessedit_create_hocr=1",
+          "-c", "hocr_font-info=0")
         .withEnv(ENV)
         .withInputBytes(imgOS.toByteArray())
         .withTimeout(PROCESS_TIMEOUT_MS)

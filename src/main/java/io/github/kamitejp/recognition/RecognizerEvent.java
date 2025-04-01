@@ -1,5 +1,7 @@
 package io.github.kamitejp.recognition;
 
+import io.github.kamitejp.recognition.configuration.OcrConfigurationRecord;
+
 import java.awt.image.BufferedImage;
 import java.util.List;
 

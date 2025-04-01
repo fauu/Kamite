@@ -1,4 +1,4 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.adapter;
 
 public class MangaOcrHfAdapter extends BaseHfOcrAdapter {
   public MangaOcrHfAdapter() {

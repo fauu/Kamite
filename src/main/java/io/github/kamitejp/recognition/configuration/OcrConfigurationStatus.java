@@ -1,4 +1,4 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.configuration;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -9,10 +9,10 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
   property = "kind"
 )
 public sealed interface OcrConfigurationStatus
-  permits OcrConfigurationStatus.Initializing,
-          OcrConfigurationStatus.Available,
-          OcrConfigurationStatus.ReinitializingAfterAdapterTimeout,
-          OcrConfigurationStatus.AdapterFailedFatally {
+    permits OcrConfigurationStatus.Initializing,
+            OcrConfigurationStatus.Available,
+            OcrConfigurationStatus.ReinitializingAfterAdapterTimeout,
+            OcrConfigurationStatus.AdapterFailedFatally {
   @JsonTypeName("INITIALIZING")
   record Initializing(String msg) implements OcrConfigurationStatus {}
 

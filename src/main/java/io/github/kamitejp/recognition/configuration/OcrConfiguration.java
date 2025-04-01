@@ -9,13 +9,12 @@ import org.apache.logging.log4j.Logger;
 import io.github.kamitejp.config.Config.Ocr;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.recognition.BoxRecognitionOutput;
-import io.github.kamitejp.recognition.OcrAdapter;
-import io.github.kamitejp.recognition.OcrAdapterInitParams;
-import io.github.kamitejp.recognition.OcrAdapterOcrParams;
-import io.github.kamitejp.recognition.OcrAdapterPreInitializationException;
-import io.github.kamitejp.recognition.OcrConfigurationStatus;
+import io.github.kamitejp.recognition.adapter.OcrAdapter;
+import io.github.kamitejp.recognition.adapter.OcrAdapterInitParams;
+import io.github.kamitejp.recognition.adapter.OcrAdapterOcrParams;
+import io.github.kamitejp.recognition.adapter.OcrAdapterPreInitializationException;
 import io.github.kamitejp.recognition.OcrError;
-import io.github.kamitejp.recognition.RemoteOcrAdapter;
+import io.github.kamitejp.recognition.adapter.RemoteOcrAdapter;
 import io.github.kamitejp.util.Result;
 
 public abstract class OcrConfiguration<

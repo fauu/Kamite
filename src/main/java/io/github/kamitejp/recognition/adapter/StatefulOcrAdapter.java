@@ -1,4 +1,4 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.adapter;
 
 import java.util.function.BiConsumer;
 

@@ -1,4 +1,4 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.adapter;
 
 public class GLensHfAdapter extends BaseHfOcrAdapter {
   public GLensHfAdapter() {

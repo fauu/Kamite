@@ -19,12 +19,12 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.recognition.BoxRecognitionOutput;
-import io.github.kamitejp.recognition.LocalOcrAdapter;
+import io.github.kamitejp.recognition.adapter.LocalOcrAdapter;
 import io.github.kamitejp.recognition.LocalOcrError;
-import io.github.kamitejp.recognition.OcrAdapterEvent;
-import io.github.kamitejp.recognition.OcrAdapterOcrParams;
-import io.github.kamitejp.recognition.OcrAdapterPreInitializationException;
-import io.github.kamitejp.recognition.StatefulOcrAdapter;
+import io.github.kamitejp.recognition.adapter.OcrAdapterEvent;
+import io.github.kamitejp.recognition.adapter.OcrAdapterOcrParams;
+import io.github.kamitejp.recognition.adapter.OcrAdapterPreInitializationException;
+import io.github.kamitejp.recognition.adapter.StatefulOcrAdapter;
 import io.github.kamitejp.util.Result;
 
 public class MangaOcrController

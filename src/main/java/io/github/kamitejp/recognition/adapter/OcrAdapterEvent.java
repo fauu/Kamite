@@ -1,4 +1,4 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.adapter;
 
 // XXX: Log the events somewhere
 public sealed interface OcrAdapterEvent

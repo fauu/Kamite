@@ -1,7 +1,9 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.adapter;
 
 import java.awt.image.BufferedImage;
 
+import io.github.kamitejp.recognition.BoxRecognitionOutput;
+import io.github.kamitejp.recognition.OcrError;
 import io.github.kamitejp.util.Result;
 
 public interface OcrAdapter<R extends OcrAdapterOcrParams> {

@@ -1,7 +1,9 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.adapter;
 
 import java.lang.invoke.MethodHandles;
 
+import io.github.kamitejp.recognition.BoxRecognitionOutput;
+import io.github.kamitejp.recognition.RemoteOcrError;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

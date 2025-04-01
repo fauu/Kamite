@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import io.github.kamitejp.recognition.adapter.*;
+import io.github.kamitejp.recognition.configuration.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,15 +18,7 @@ import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformOcrInfrastructureInitializationException;
-import io.github.kamitejp.recognition.OcrConfigurationStatus.ReinitializingAfterAdapterTimeout;
-import io.github.kamitejp.recognition.configuration.EasyOcrOnlineOcrConfiguration;
-import io.github.kamitejp.recognition.configuration.GLensOcrConfiguration;
-import io.github.kamitejp.recognition.configuration.HiveOcrOcrConfiguration;
-import io.github.kamitejp.recognition.configuration.MangaOcrOcrConfiguration;
-import io.github.kamitejp.recognition.configuration.MangaOcrOnlineOcrConfiguration;
-import io.github.kamitejp.recognition.configuration.OcrConfiguration;
-import io.github.kamitejp.recognition.configuration.OcrSpaceOcrConfiguration;
-import io.github.kamitejp.recognition.configuration.TesseractOcrConfiguration;
+import io.github.kamitejp.recognition.configuration.OcrConfigurationStatus.ReinitializingAfterAdapterTimeout;
 import io.github.kamitejp.status.ProgramStatus;
 import io.github.kamitejp.util.Executor;
 import io.github.kamitejp.util.Reflection;

@@ -2,7 +2,7 @@ package io.github.kamitejp.status;
 
 import java.util.List;
 
-import io.github.kamitejp.recognition.OcrConfigurationRecord;
+import io.github.kamitejp.recognition.configuration.OcrConfigurationRecord;
 import io.github.kamitejp.recognition.RecognizerStatus;
 import io.github.kamitejp.universalfeature.UnavailableUniversalFeature;
 

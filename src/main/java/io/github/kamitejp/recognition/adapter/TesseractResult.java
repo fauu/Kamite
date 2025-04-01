@@ -1,10 +1,10 @@
-package io.github.kamitejp.recognition;
+package io.github.kamitejp.recognition.adapter;
 
 public sealed interface TesseractResult
-  permits TesseractResult.ExecutionFailed,
-          TesseractResult.TimedOut,
-          TesseractResult.Error,
-          TesseractResult.HOCR {
+    permits TesseractResult.ExecutionFailed,
+            TesseractResult.TimedOut,
+            TesseractResult.Error,
+            TesseractResult.HOCR {
   record ExecutionFailed() implements TesseractResult {}
   record TimedOut() implements TesseractResult {}
   record Error(String error) implements TesseractResult {}
