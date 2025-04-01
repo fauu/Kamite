@@ -1,8 +1,8 @@
 export interface Config {
   controlWindow: boolean,
   launchBrowser: boolean,
-  ocr: OCR,
-  ui: UI,
+  ocr: Ocr,
+  ui: Ui,
   commands: Commands,
   server: Server,
   chunk: Chunk,
@@ -12,16 +12,16 @@ export interface Config {
   sessionTimer: SessionTimer,
 }
 
-export type UILayout = "STANDARD" | "STANDARD_FLIPPED";
+export type UiLayout = "STANDARD" | "STANDARD_FLIPPED";
 
-export type OCREngine = "TESSERACT" | "MANGAOCR";
+export type OcrEngine = "TESSERACT" | "MANGAOCR";
 
-interface OCR {
-  engine: OCREngine,
-  regions: OCRRegion[] | null,
+interface Ocr {
+  engine: OcrEngine,
+  regions: OcrRegion[] | null,
 }
 
-export interface OCRRegion {
+export interface OcrRegion {
   symbol: string,
   description: string | null,
   x: number,
@@ -31,9 +31,9 @@ export interface OCRRegion {
   autoNarrow: boolean,
 }
 
-interface UI {
+interface Ui {
   focusMode: boolean,
-  layout: UILayout,
+  layout: UiLayout,
   notebook: Notebook,
 }
 
@@ -57,10 +57,10 @@ interface Keybindings {
 }
 
 interface Global {
-  ocr: KeybindingsOCR,
+  ocr: KeybindingsOcr,
 }
 
-interface KeybindingsOCR {
+interface KeybindingsOcr {
   manualBlock: string | null,
   manualBlockRotated: string | null,
   autoBlock: string | null,

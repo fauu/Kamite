@@ -35,7 +35,7 @@ import io.github.kamitejp.chunk.IncomingChunkText;
 import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.config.Config;
 import io.github.kamitejp.config.ConfigManager;
-import io.github.kamitejp.controlgui.ControlGUI;
+import io.github.kamitejp.controlgui.ControlGui;
 import io.github.kamitejp.dbus.DBusEvent;
 import io.github.kamitejp.event.Event;
 import io.github.kamitejp.event.EventHandler;
@@ -51,16 +51,16 @@ import io.github.kamitejp.platform.InvalidKeyStrokeException;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.platform.PlatformInitializationException;
-import io.github.kamitejp.platform.PlatformOCRInfrastructureInitializationException;
+import io.github.kamitejp.platform.PlatformOcrInfrastructureInitializationException;
 import io.github.kamitejp.platform.agent.AgentClient;
 import io.github.kamitejp.platform.linux.LinuxPlatform;
-import io.github.kamitejp.platform.mpv.MPVCommand;
-import io.github.kamitejp.platform.mpv.MPVController;
+import io.github.kamitejp.platform.mpv.MpvCommand;
+import io.github.kamitejp.platform.mpv.MpvController;
 import io.github.kamitejp.platform.mpv.Subtitle;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.recognition.AutoBlockHeuristic;
-import io.github.kamitejp.recognition.OCRDirectoryWatcher;
-import io.github.kamitejp.recognition.OCRDirectoryWatcherCreationException;
+import io.github.kamitejp.recognition.OcrDirectoryWatcher;
+import io.github.kamitejp.recognition.OcrDirectoryWatcherCreationException;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionConductor;
 import io.github.kamitejp.recognition.RecognizerEvent;
@@ -111,9 +111,9 @@ public class Kamite {
   private ConfigManager configManager;
   private Config config;
   private RecognitionConductor recognitionConductor;
-  private OCRDirectoryWatcher ocrDirectoryWatcher;
+  private OcrDirectoryWatcher ocrDirectoryWatcher;
   private TextProcessor textProcessor;
-  private MPVController mpvController;
+  private MpvController mpvController;
   private AgentClient agentClient;
   private ChunkCheckpoint chunkCheckpoint;
   private ChunkFilter chunkFilter;
@@ -250,7 +250,7 @@ public class Kamite {
 
     textProcessor = new TextProcessor(kuromojiAdapter);
 
-    mpvController = MPVController.create(
+    mpvController = MpvController.create(
         platform, this::handlePlayerStatusUpdate, this::handlePlayerSubtitle);
 
     initOrDiscardAgentClient(config.integrations().agent());
@@ -290,11 +290,11 @@ public class Kamite {
     var ocrWatchDir = config.ocr().watchDir();
     if (ocrWatchDir != null) {
       try {
-        ocrDirectoryWatcher = new OCRDirectoryWatcher(
+        ocrDirectoryWatcher = new OcrDirectoryWatcher(
           ocrWatchDir,
           /* recognizeImageFn */ (String /* ocrConfigurationName */ _, BufferedImage img) ->
             recognitionConductor.recognizeGivenImage(null, img));
-      } catch (OCRDirectoryWatcherCreationException e) {
+      } catch (OcrDirectoryWatcherCreationException e) {
         LOG.error("Failed to create OCR directory watcher: {}", e::toString);
       }
     }
@@ -359,8 +359,8 @@ public class Kamite {
       return;
     }
     try {
-      platform.initOCRInfrastructure();
-    } catch (PlatformOCRInfrastructureInitializationException e) {
+      platform.initOcrInfrastructure();
+    } catch (PlatformOcrInfrastructureInitializationException e) {
       LOG.error("Could not init platform OCR for Region Helper Mode:", e);
     }
 
@@ -398,7 +398,7 @@ public class Kamite {
   }
 
   private void createControlGUI() {
-    new ControlGUI(platform);
+    new ControlGui(platform);
   }
 
   private void createControlGUIAndShowFatalError(String message) {
@@ -514,8 +514,8 @@ public class Kamite {
         sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
       }
 
-      case RecognizerEvent.OCRConfigurationRecordsUpdated e -> {
-        status.updateRecognizerStatusOCRConfigurations(e.records());
+      case RecognizerEvent.OcrConfigurationRecordsUpdated e -> {
+        status.updateRecognizerStatusOcrConfigurations(e.records());
         sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
       }
 
@@ -635,7 +635,7 @@ public class Kamite {
     var command = cmdParseRes.get();
     LOG.debug("Handling command: {}", () -> command.getClass().getName());
     switch (command) { // NOPMD - misidentifies as non-exhaustive
-      case Command.OCR cmd -> {
+      case Command.Ocr cmd -> {
         var refuseMsg = switch (status.getRecognizerStatus().getKind()) {
           case UNAVAILABLE ->
             "Text recognition is not available in this session";
@@ -644,8 +644,8 @@ public class Kamite {
           case AWAITING_USER_INPUT, PROCESSING ->
             "Another text recognition operation is already in progress";
           default -> {
-            var noGlobalOCR = !platform.supports(PlatformDependentFeature.GLOBAL_OCR);
-            if (noGlobalOCR && cmd.isGlobalOCRCommand()) {
+            var noGlobalOcr = !platform.supports(PlatformDependentFeature.GLOBAL_OCR);
+            if (noGlobalOcr && cmd.isGlobalOCRCommand()) {
               yield "The current platform does not support global OCR commands";
             }
             yield null;
@@ -657,39 +657,39 @@ public class Kamite {
           return;
         }
         switch (cmd) { // NOPMD - misidentifies as non-exhaustive
-          case Command.OCR.ManualBlock cm ->
+          case Command.Ocr.ManualBlock cm ->
             recognitionConductor.recognizeManualBlock(cm.ocrConfigurationName());
-          case Command.OCR.ManualBlockRotated cm ->
+          case Command.Ocr.ManualBlockRotated cm ->
             recognitionConductor.recognizeManualBlockRotated(cm.ocrConfigurationName());
-          case Command.OCR.AutoBlock cm ->
+          case Command.Ocr.AutoBlock cm ->
             recognitionConductor.recognizeAutoBlockDefault(cm.ocrConfigurationName(), cm.mode());
-          case Command.OCR.AutoColumn cm ->
+          case Command.Ocr.AutoColumn cm ->
             recognitionConductor.recognizeAutoBlockColumnDefault(
                 cm.ocrConfigurationName(),
                 cm.mode());
-          case Command.OCR.Region cm ->
+          case Command.Ocr.Region cm ->
             recognitionConductor.recognizeRegion(
                 cm.ocrConfigurationName(),
                 cm.region(),
                 cm.autoNarrow());
-          case Command.OCR.Image cm ->
+          case Command.Ocr.Image cm ->
             handleOCRImageCommand(cm.ocrConfigurationName(), cm.bytesB64(), cm.size());
         }
       }
 
-      case Command.OCRSetup cmd -> {
+      case Command.OcrSetup cmd -> {
         switch (cmd) {
-          case Command.OCRSetup.SetActiveOCRConfiguration cm ->
-            recognitionConductor.setActiveOCRConfiguration(cm.ocrConfigurationName());
+          case Command.OcrSetup.SetActiveOcrConfiguration cm ->
+            recognitionConductor.setActiveOcrConfiguration(cm.ocrConfigurationName());
         }
       }
 
       case Command.Player cmd -> {
         var mpvCmd = switch (cmd) {
-          case Command.Player.PlayPause _ -> new MPVCommand.PlayPause();
-          case Command.Player.SeekBack _ -> new MPVCommand.Seek(-1);
-          case Command.Player.SeekForward _ -> new MPVCommand.Seek(1);
-          case Command.Player.SeekStartSub _ -> new MPVCommand.SeekStartSub();
+          case Command.Player.PlayPause _ -> new MpvCommand.PlayPause();
+          case Command.Player.SeekBack _ -> new MpvCommand.Seek(-1);
+          case Command.Player.SeekForward _ -> new MpvCommand.Seek(1);
+          case Command.Player.SeekStartSub _ -> new MpvCommand.SeekStartSub();
         };
         mpvController.sendCommand(mpvCmd);
       }
@@ -853,8 +853,8 @@ public class Kamite {
 
   private void tryRegisterRegionBindingIfRegionPresent(
       GlobalKeybindingProvider provider,
-      Config.Keybindings.Global.GlobalKeybindingsOCR.RegionBinding regionBinding,
-      List<Config.OCR.Region> regions) {
+      Config.Keybindings.Global.GlobalKeybindingsOcr.RegionBinding regionBinding,
+      List<Config.Ocr.Region> regions) {
     var maybeRegion = regions.stream()
         .filter(r -> r.symbol().equals(regionBinding.symbol()))
         .findFirst();

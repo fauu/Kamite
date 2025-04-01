@@ -25,7 +25,7 @@ import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.GenericPlatform;
 import io.github.kamitejp.platform.GlobalKeybindingProvider;
-import io.github.kamitejp.platform.OS;
+import io.github.kamitejp.platform.Os;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.ScreenSelector;
@@ -49,7 +49,7 @@ public class WindowsPlatform extends GenericPlatform implements Platform, Global
 
   public WindowsPlatform() throws PlatformCreationException {
     super("win");
-    if (getOS() != OS.WINDOWS) {
+    if (getOs() != Os.WINDOWS) {
       throw new PlatformCreationException("Detected OS is not Windows");
     }
 

@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 
-import io.github.kamitejp.controlgui.ControlGUI;
+import io.github.kamitejp.controlgui.ControlGui;
 
 public class MessageArea extends JPanel implements Scrollable {
   private static final int MAX_MESSAGES = 100;
@@ -21,11 +21,11 @@ public class MessageArea extends JPanel implements Scrollable {
 
   public MessageArea() {
     setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-    setBackground(ControlGUI.COLOR_BG2);
-    setBorder(ControlGUI.MESSAGE_AREA_BORDER);
+    setBackground(ControlGui.COLOR_BG2);
+    setBorder(ControlGui.MESSAGE_AREA_BORDER);
 
     scrollPane = new JScrollPane(this);
-    scrollPane.setBorder(BorderFactory.createLineBorder(ControlGUI.COLOR_BG2_HL));
+    scrollPane.setBorder(BorderFactory.createLineBorder(ControlGui.COLOR_BG2_HL));
     // QUAL: A hack to hide the fact that MessageArea doesn't fill the height of the scrollPane
     scrollPane.getViewport().setBackground(getBackground());
   }

@@ -7,8 +7,8 @@ import org.apache.logging.log4j.spi.StandardLevel;
 
 public enum MessageType {
   INFO("Info", ""),
-  WARNING("Warning", colorToHexString(ControlGUI.COLOR_WARNING)),
-  ERROR("Error", colorToHexString(ControlGUI.COLOR_ERROR2));
+  WARNING("Warning", colorToHexString(ControlGui.COLOR_WARNING)),
+  ERROR("Error", colorToHexString(ControlGui.COLOR_ERROR2));
 
   private String displayString;
   private String colorHex;

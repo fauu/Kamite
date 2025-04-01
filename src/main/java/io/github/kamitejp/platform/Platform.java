@@ -16,7 +16,7 @@ import io.github.kamitejp.platform.linux.gnome.GnomePlatform;
 import io.github.kamitejp.platform.linux.kde.PlasmaPlatform;
 import io.github.kamitejp.platform.linux.wlroots.WlrootsPlatform;
 import io.github.kamitejp.platform.linux.xorg.XorgPlatform;
-import io.github.kamitejp.platform.macos.MacOSPlatform;
+import io.github.kamitejp.platform.macos.MacOsPlatform;
 import io.github.kamitejp.platform.windows.WindowsPlatform;
 import io.github.kamitejp.recognition.PointSelectionMode;
 import io.github.kamitejp.recognition.RecognitionOpError;
@@ -29,20 +29,20 @@ public interface Platform {
   List<Class<? extends Platform>> KNOWN_PLATFORMS =
     List.of(
       WindowsPlatform.class,
-      MacOSPlatform.class,
+      MacOsPlatform.class,
       GnomePlatform.class,
       PlasmaPlatform.class,
       WlrootsPlatform.class,
       XorgPlatform.class
     );
 
-  List<Class<? extends Platform>> UNSUPPORTED_PLATFORMS = List.of(MacOSPlatform.class);
+  List<Class<? extends Platform>> UNSUPPORTED_PLATFORMS = List.of(MacOsPlatform.class);
 
   void init() throws PlatformInitializationException;
 
   String getName();
 
-  OS getOS();
+  Os getOs();
 
   default List<PlatformDependentFeature> getUnsupportedFeatures() {
     return List.of();
@@ -52,7 +52,7 @@ public interface Platform {
     return !getUnsupportedFeatures().contains(feature);
   }
 
-  default void initOCRInfrastructure() throws PlatformOCRInfrastructureInitializationException {};
+  default void initOcrInfrastructure() throws PlatformOcrInfrastructureInitializationException {};
 
   Path getGenericLibDirPath();
 
@@ -76,7 +76,7 @@ public interface Platform {
 
   void destroy();
 
-  default String getPlatformSpecificDirName(CPUArchitecture forCPUArch) {
+  default String getPlatformSpecificDirName(CpuArchitecture forCPUArch) {
     return "%s-%s".formatted(getName(), forCPUArch == null ? "generic" : forCPUArch);
   }
 

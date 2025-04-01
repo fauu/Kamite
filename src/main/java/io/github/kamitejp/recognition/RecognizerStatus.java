@@ -5,12 +5,12 @@ import java.util.List;
 public class RecognizerStatus {
   private Kind kind;
   private List<String> availableCommands;
-  private List<OCRConfigurationRecord> ocrConfigurations;
+  private List<OcrConfigurationRecord> ocrConfigurations;
 
   public RecognizerStatus(
     Kind kind,
     List<String> availableCommands,
-    List<OCRConfigurationRecord> ocrConfigurations
+    List<OcrConfigurationRecord> ocrConfigurations
   ) {
     this.kind = kind;
     this.availableCommands = availableCommands;
@@ -33,11 +33,11 @@ public class RecognizerStatus {
     this.availableCommands = availableCommands;
   }
 
-  public List<OCRConfigurationRecord> getOcrConfigurations() {
+  public List<OcrConfigurationRecord> getOcrConfigurations() {
     return ocrConfigurations;
   }
 
-  public void setOcrConfigurations(List<OCRConfigurationRecord> configurations) {
+  public void setOcrConfigurations(List<OcrConfigurationRecord> configurations) {
     this.ocrConfigurations = configurations;
   }
 

@@ -15,7 +15,7 @@ import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformDependentFeature;
-import io.github.kamitejp.platform.PlatformOCRInfrastructureInitializationException;
+import io.github.kamitejp.platform.PlatformOcrInfrastructureInitializationException;
 import io.github.kamitejp.platform.linux.WaylandPlatform;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.grim.Grim;
 import io.github.kamitejp.platform.linux.wlroots.dependencies.grim.GrimResult;
@@ -51,7 +51,7 @@ public class WlrootsPlatform extends WaylandPlatform {
 
   @SuppressWarnings("OverlyBroadThrowsClause")
   @Override
-  public void initOCRInfrastructure() throws PlatformOCRInfrastructureInitializationException {
+  public void initOcrInfrastructure() throws PlatformOcrInfrastructureInitializationException {
     slurp = new Slurp();
     grim = new Grim();
     wlrctl = new Wlrctl();
@@ -65,7 +65,7 @@ public class WlrootsPlatform extends WaylandPlatform {
         slurp = null;
         grim = null;
         wlrctl = null;
-        throw new PlatformOCRInfrastructureInitializationException.MissingDependencies(
+        throw new PlatformOcrInfrastructureInitializationException.MissingDependencies(
           checkRes.err()
         );
       }

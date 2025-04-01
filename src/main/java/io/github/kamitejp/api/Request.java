@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.github.kamitejp.chunk.ChunkEnhancement;
-import io.github.kamitejp.util.JSON;
+import io.github.kamitejp.util.Json;
 import io.github.kamitejp.util.Result;
 
 public record Request(long timestamp, Body body) {
@@ -29,7 +29,7 @@ public record Request(long timestamp, Body body) {
       case "get-chunk-enhancements" -> {
         try {
           var text = bodyNode.get("text").textValue();
-          List<ChunkEnhancement> enhancements = JSON.mapper()
+          List<ChunkEnhancement> enhancements = Json.mapper()
             .readerForListOf(ChunkEnhancement.class)
             .readValue(bodyNode.get("enhancements"));
           yield new Request.Body.GetChunkEnhancements(text, enhancements);

@@ -11,9 +11,9 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.dbus.DBusClient;
 import io.github.kamitejp.dbus.DBusClientInitializationException;
-import io.github.kamitejp.platform.CPUArchitecture;
+import io.github.kamitejp.platform.CpuArchitecture;
 import io.github.kamitejp.platform.GenericPlatform;
-import io.github.kamitejp.platform.OS;
+import io.github.kamitejp.platform.Os;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformCreationException;
 import io.github.kamitejp.platform.PlatformInitializationException;
@@ -22,12 +22,12 @@ import io.github.kamitejp.platform.process.ProcessHelper;
 public abstract class LinuxPlatform extends GenericPlatform implements Platform {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
-  private CPUArchitecture cpuArchitecture;
+  private CpuArchitecture cpuArchitecture;
   protected DBusClient dbusClient;
 
   protected LinuxPlatform() throws PlatformCreationException {
     super("linux");
-    if (getOS() != OS.LINUX) {
+    if (getOs() != Os.LINUX) {
       throw new PlatformCreationException("Detected OS is not Linux");
     }
   }
@@ -94,7 +94,7 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
   }
 
   @SuppressWarnings("unused")
-  private CPUArchitecture getCPUArchitecture() {
+  private CpuArchitecture getCPUArchitecture() {
     if (cpuArchitecture == null) {
       cpuArchitecture = determineCPUArchitecture().orElse(null);
     }
@@ -102,11 +102,11 @@ public abstract class LinuxPlatform extends GenericPlatform implements Platform 
   }
 
   // ROBUSTNESS: Possibly returns AMD64 on a 32-bit system running on an AMD64 processor
-  private Optional<CPUArchitecture> determineCPUArchitecture() {
+  private Optional<CpuArchitecture> determineCPUArchitecture() {
     var res =  ProcessHelper.run("uname", "-m").getStdout();
-    CPUArchitecture arch = null;
+    CpuArchitecture arch = null;
     if ("x86_64".equalsIgnoreCase(res) || "amd64".equalsIgnoreCase(res)) {
-      arch = CPUArchitecture.AMD64;
+      arch = CpuArchitecture.AMD64;
     }
     return Optional.ofNullable(arch);
   }

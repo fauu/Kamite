@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.Kamite;
-import io.github.kamitejp.controlgui.ControlGUI;
+import io.github.kamitejp.controlgui.ControlGui;
 import io.github.kamitejp.controlgui.MessageAppender;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.linux.gnome.GnomePlatform;
@@ -33,7 +33,7 @@ public class Frame extends JFrame {
     setTitle(Kamite.APP_NAME_DISPLAY);
     setSize(DEFAULT_WINDOW_SIZE);
     setMinimumSize(DEFAULT_WINDOW_SIZE);
-    setIconImages(ControlGUI.ICON_IMAGES);
+    setIconImages(ControlGui.ICON_IMAGES);
     setLocationRelativeTo(null);
     setDefaultCloseOperation(EXIT_ON_CLOSE);
 

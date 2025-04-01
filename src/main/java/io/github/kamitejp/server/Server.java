@@ -17,7 +17,7 @@ import io.github.kamitejp.Env;
 import io.github.kamitejp.api.IncomingCommand;
 import io.github.kamitejp.server.outmessage.OutMessage;
 import io.github.kamitejp.server.outmessage.UserNotificationOutMessage;
-import io.github.kamitejp.util.JSON;
+import io.github.kamitejp.util.Json;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
@@ -98,7 +98,7 @@ public class Server {
 
     String messageJson = null;
     try {
-      messageJson = JSON.mapper().writeValueAsString(message);
+      messageJson = Json.mapper().writeValueAsString(message);
     } catch(JsonProcessingException e) {
       LOG.debug("Error while serializing message: {}", e::toString);
     }
@@ -199,7 +199,7 @@ public class Server {
     eventCb.accept(new ServerEvent.CommandReceived(
       new IncomingCommand.Segmented(
         new IncomingCommand.Kind.Segmented(group, name),
-        new IncomingCommand.Params.RawJSON(params)
+        new IncomingCommand.Params.RawJson(params)
       )
     ));
   }

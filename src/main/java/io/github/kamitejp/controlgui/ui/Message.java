@@ -7,7 +7,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import io.github.kamitejp.controlgui.ControlGUI;
+import io.github.kamitejp.controlgui.ControlGui;
 import io.github.kamitejp.controlgui.MessageType;
 import io.github.kamitejp.platform.Platform;
 
@@ -26,7 +26,7 @@ public class Message extends JPanel {
   public Message(String timeString, MessageType type, String content) {
     var layout = new GroupLayout(this);
     setLayout(layout);
-    setBackground(ControlGUI.COLOR_BG2);
+    setBackground(ControlGui.COLOR_BG2);
 
     var contentURLMatcher = BASIC_URL_RE.matcher(content);
     var url = new String[1];
@@ -38,7 +38,7 @@ public class Message extends JPanel {
     }
 
     var timeLabel = new JLabel(timeString);
-    timeLabel.setFont(ControlGUI.getFontMonospacedDefault());
+    timeLabel.setFont(ControlGui.getFontMonospacedDefault());
     var mainLabel = new JLabel(MAIN_LABEL_FORMAT.formatted(mainLabelTypePart(type), content));
 
     if (url[0] != null) {
@@ -50,15 +50,15 @@ public class Message extends JPanel {
     layout.setHorizontalGroup(
       layout.createSequentialGroup()
         .addComponent(timeLabel, PREF, PREF, PREF)
-        .addGap(ControlGUI.MESSAGE_HORIZONTAL_GAP)
+        .addGap(ControlGui.MESSAGE_HORIZONTAL_GAP)
         .addComponent(mainLabel, DEF, DEF, MAX)
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(Alignment.LEADING, false)
         .addComponent(timeLabel, PREF, PREF, PREF)
-        .addGap(ControlGUI.MESSAGE_VERTICAL_GAP)
+        .addGap(ControlGui.MESSAGE_VERTICAL_GAP)
         .addComponent(mainLabel, PREF, PREF, MAX)
-        .addGap(ControlGUI.MESSAGE_VERTICAL_GAP)
+        .addGap(ControlGui.MESSAGE_VERTICAL_GAP)
     );
   }
 

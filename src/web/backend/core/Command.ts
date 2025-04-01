@@ -1,23 +1,23 @@
-import type { ConfigCustomCommand, OCRRegion } from "..";
+import type { ConfigCustomCommand, OCRRegion as OcrRegion } from "..";
 
-export type OCRCommand =
+export type OcrCommand =
   | typeof PARAMLESS_OCR_COMMANDS[number]
-  | OCRAutoBlockCommand
-  | OCRRegionCommand;
+  | OcrAutoBlockCommand
+  | OcrRegionCommand;
 
 export const PARAMLESS_OCR_COMMANDS = [
   { kind: "ocr_manual-block" },
   { kind: "ocr_manual-block-rotated" },
 ] as const;
 
-export type OCRAutoBlockCommand = {
+export type OcrAutoBlockCommand = {
   kind: "ocr_auto-block",
   params: {
     mode: "select" | "instant",
   },
 };
 
-export type OCRRegionCommand = {
+export type OcrRegionCommand = {
   kind: "ocr_region",
   params?: {
     x: number,
@@ -28,9 +28,9 @@ export type OCRRegionCommand = {
   },
 };
 
-type OCRSetupCommand = OCRSetupSetActiveConfigurationCommand;
+type OcrSetupCommand = OcrSetupSetActiveConfigurationCommand;
 
-type OCRSetupSetActiveConfigurationCommand = {
+type OcrSetupSetActiveConfigurationCommand = {
   kind: "ocr-setup_set-active-configuration",
   params: {
     name: string,
@@ -66,15 +66,15 @@ export type CustomCommand =
   { kind: "misc_custom", params: { command: string[] } };
 
 export type Command =
-  OCRCommand
-  | OCRSetupCommand
+  OcrCommand
+  | OcrSetupCommand
   | PlayerCommand
   | CharacterCounterCommand
   | SessionTimerCommand
   | ChunkCommand
   | CustomCommand;
 
-export function commandFromOCRRegion(r: OCRRegion): OCRRegionCommand {
+export function commandFromOCRRegion(r: OcrRegion): OcrRegionCommand {
   return {
     kind: "ocr_region" as const,
     params: {

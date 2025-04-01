@@ -56,7 +56,7 @@ public class DBusClient implements Receiver {
     eventCb.accept(new DBusEvent.CommandReceived(
       new IncomingCommand.Segmented(
         new IncomingCommand.Kind.Joined(kind),
-        new IncomingCommand.Params.RawJSON(paramsJSON)
+        new IncomingCommand.Params.RawJson(paramsJSON)
       )
     ));
   }

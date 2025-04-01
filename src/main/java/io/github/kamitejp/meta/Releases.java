@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.kamitejp.util.HTTP;
+import io.github.kamitejp.util.Http;
 
 public final class Releases {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
@@ -37,7 +37,7 @@ public final class Releases {
       .build();
 
     try {
-      var res = HTTP.client().send(req, BodyHandlers.ofString());
+      var res = Http.client().send(req, BodyHandlers.ofString());
       var m = RESPONSE_VERSION_RE.matcher(res.body());
       if (!m.find()) {
         throw new IllegalArgumentException("Could not find version string in network response");

@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.github.kamitejp.config.Config;
-import io.github.kamitejp.util.JSON;
+import io.github.kamitejp.util.Json;
 
 public final class EventHandler {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
@@ -73,7 +73,7 @@ public final class EventHandler {
       switch (seg) {
         case "{eventData}" -> {
           try {
-            yield JSON.mapper().writeValueAsString(event);
+            yield Json.mapper().writeValueAsString(event);
           } catch (JsonProcessingException e) {
             LOG.debug("Error while serializing event data: {}", e::toString);
           }

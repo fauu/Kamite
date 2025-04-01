@@ -2,7 +2,7 @@ package io.github.kamitejp.status;
 
 import java.util.List;
 
-import io.github.kamitejp.recognition.OCRConfigurationRecord;
+import io.github.kamitejp.recognition.OcrConfigurationRecord;
 import io.github.kamitejp.recognition.RecognizerStatus;
 import io.github.kamitejp.universalfeature.UnavailableUniversalFeature;
 
@@ -76,7 +76,7 @@ public final class ProgramStatus {
     recognizerStatus.setAvailableCommands(availableCommands);
   }
 
-  public void updateRecognizerStatusOCRConfigurations(List<OCRConfigurationRecord> configurations) {
+  public void updateRecognizerStatusOcrConfigurations(List<OcrConfigurationRecord> configurations) {
     recognizerStatus.setOcrConfigurations(configurations);
   }
 

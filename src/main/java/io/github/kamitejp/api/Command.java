@@ -9,50 +9,50 @@ import io.github.kamitejp.chunk.IncomingChunkTranslation;
 import io.github.kamitejp.geometry.Dimension;
 import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.recognition.PointSelectionMode;
-import io.github.kamitejp.util.JSON;
+import io.github.kamitejp.util.Json;
 import io.github.kamitejp.util.Result;
 
 public sealed interface Command
-    permits Command.OCR,
-    Command.OCRSetup,
+    permits Command.Ocr,
+    Command.OcrSetup,
     Command.Player,
     Command.CharacterCounter,
     Command.SessionTimer,
     Command.Chunk,
     Command.Misc {
 
-  sealed interface OCR extends Command
-      permits OCR.ManualBlock,
-      OCR.ManualBlockRotated,
-      OCR.AutoBlock,
-      OCR.AutoColumn,
-      OCR.Region,
-      OCR.Image {
+  sealed interface Ocr extends Command
+      permits Ocr.ManualBlock,
+      Ocr.ManualBlockRotated,
+      Ocr.AutoBlock,
+      Ocr.AutoColumn,
+      Ocr.Region,
+      Ocr.Image {
     String ocrConfigurationName();
 
-    record ManualBlock(String ocrConfigurationName) implements OCR {
+    record ManualBlock(String ocrConfigurationName) implements Ocr {
     }
 
-    record ManualBlockRotated(String ocrConfigurationName) implements OCR {
+    record ManualBlockRotated(String ocrConfigurationName) implements Ocr {
     }
 
-    record AutoBlock(String ocrConfigurationName, PointSelectionMode mode) implements OCR {
+    record AutoBlock(String ocrConfigurationName, PointSelectionMode mode) implements Ocr {
     }
 
-    record AutoColumn(String ocrConfigurationName, PointSelectionMode mode) implements OCR {
+    record AutoColumn(String ocrConfigurationName, PointSelectionMode mode) implements Ocr {
     }
 
     record Region(
         String ocrConfigurationName,
         Rectangle region,
-        boolean autoNarrow) implements OCR {
+        boolean autoNarrow) implements Ocr {
       @Override
       public boolean isGlobalOCRCommand() {
         return false;
       }
     }
 
-    record Image(String ocrConfigurationName, String bytesB64, Dimension size) implements OCR {
+    record Image(String ocrConfigurationName, String bytesB64, Dimension size) implements Ocr {
       @Override
       public boolean isGlobalOCRCommand() {
         return false;
@@ -64,9 +64,9 @@ public sealed interface Command
     }
   }
 
-  sealed interface OCRSetup extends Command
-      permits OCRSetup.SetActiveOCRConfiguration {
-    record SetActiveOCRConfiguration(String ocrConfigurationName) implements OCRSetup {
+  sealed interface OcrSetup extends Command
+      permits OcrSetup.SetActiveOcrConfiguration {
+    record SetActiveOcrConfiguration(String ocrConfigurationName) implements OcrSetup {
     };
   }
 
@@ -143,7 +143,7 @@ public sealed interface Command
     JsonNode paramsNode;
 
     switch (incoming) {
-      case IncomingCommand.CombinedJSON cmd -> {
+      case IncomingCommand.CombinedJson cmd -> {
         var kindParseRes = CommandKind.fromString(cmd.root().get("kind").textValue());
         if (kindParseRes.isErr()) {
           return Result.Err("parsing command kind");
@@ -169,16 +169,16 @@ public sealed interface Command
         }
 
         switch (cmd.params()) {
-          case IncomingCommand.Params.RawJSON p -> {
+          case IncomingCommand.Params.RawJson p -> {
             try {
-              paramsNode = p.paramsJSON() != null
-                  ? JSON.mapper().readTree(p.paramsJSON())
+              paramsNode = p.paramsJson() != null
+                  ? Json.mapper().readTree(p.paramsJson())
                   : null;
             } catch (JsonProcessingException e) {
               return Result.Err("parsing command params: %s".formatted(e));
             }
           }
-          case IncomingCommand.Params.JSONNode p ->
+          case IncomingCommand.Params.JsonNode p ->
             paramsNode = p.paramsNode();
           default -> throw new IllegalStateException("Unhandled incoming command params type");
         }
@@ -207,14 +207,14 @@ public sealed interface Command
             : null;
 
           yield switch (name) {
-            case "manual-block" -> new OCR.ManualBlock(ocrConfigurationName);
-            case "manual-block-rotated" -> new OCR.ManualBlockRotated(ocrConfigurationName);
+            case "manual-block" -> new Ocr.ManualBlock(ocrConfigurationName);
+            case "manual-block-rotated" -> new Ocr.ManualBlockRotated(ocrConfigurationName);
 
             case "auto-block" -> {
               // QUAL: We could maybe remove `ocrConfigurationName` from CommandParams but maybe the
               //       auto conversion breaks without it
-              var p = JSON.mapper().treeToValue(paramsNode, CommandParams.OCR.AutoBlock.class);
-              yield new OCR.AutoBlock(
+              var p = Json.mapper().treeToValue(paramsNode, CommandParams.Ocr.AutoBlock.class);
+              yield new Ocr.AutoBlock(
                   ocrConfigurationName,
                   p == null || p.mode() == null
                       ? PointSelectionMode.INSTANT
@@ -222,8 +222,8 @@ public sealed interface Command
             }
 
             case "auto-column" -> {
-              var p = JSON.mapper().treeToValue(paramsNode, CommandParams.OCR.AutoColumn.class);
-              yield new OCR.AutoColumn(
+              var p = Json.mapper().treeToValue(paramsNode, CommandParams.Ocr.AutoColumn.class);
+              yield new Ocr.AutoColumn(
                   ocrConfigurationName,
                   p == null || p.mode() == null
                       ? PointSelectionMode.INSTANT
@@ -231,24 +231,24 @@ public sealed interface Command
             }
 
             case "region" -> {
-              var p = JSON.mapper().treeToValue(paramsNode, CommandParams.OCR.Region.class);
+              var p = Json.mapper().treeToValue(paramsNode, CommandParams.Ocr.Region.class);
               if (p == null) {
                 paramsMissing = true;
                 yield null;
               }
-              yield new OCR.Region(
+              yield new Ocr.Region(
                   ocrConfigurationName,
                   Rectangle.ofStartAndDimensions(p.x(), p.y(), p.width(), p.height()),
                   p.autoNarrow());
             }
 
             case "image" -> {
-              var p = JSON.mapper().treeToValue(paramsNode, CommandParams.OCR.Image.class);
+              var p = Json.mapper().treeToValue(paramsNode, CommandParams.Ocr.Image.class);
               if (p == null) {
                 paramsMissing = true;
                 yield null;
               }
-              yield new OCR.Image(
+              yield new Ocr.Image(
                   ocrConfigurationName,
                   p.bytesB64(),
                   new Dimension(p.width(), p.height()));
@@ -260,15 +260,15 @@ public sealed interface Command
 
         case "ocr-setup" -> switch (name) {
           case "set-active-configuration" -> {
-            var p = JSON.mapper().treeToValue(
+            var p = Json.mapper().treeToValue(
               paramsNode,
-              CommandParams.OCRSetup.SetActiveOCRConfiguration.class
+              CommandParams.OcrSetup.SetActiveOcrConfiguration.class
             );
             if (p == null) {
               paramsMissing = true;
               yield null;
             }
-            yield new OCRSetup.SetActiveOCRConfiguration(p.name());
+            yield new OcrSetup.SetActiveOcrConfiguration(p.name());
           }
           default -> null;
         };
@@ -297,7 +297,7 @@ public sealed interface Command
 
         case "chunk" -> switch (name) {
           case "show" -> {
-            var p = JSON.mapper().treeToValue(paramsNode, CommandParams.Chunk.Show.class);
+            var p = Json.mapper().treeToValue(paramsNode, CommandParams.Chunk.Show.class);
             if (p == null) {
               paramsMissing = true;
               yield null;
@@ -306,7 +306,7 @@ public sealed interface Command
           }
 
           case "show-translation" -> {
-            var p = JSON.mapper()
+            var p = Json.mapper()
                 .treeToValue(paramsNode, CommandParams.Chunk.ShowTranslation.class);
             if (p == null) {
               paramsMissing = true;
@@ -325,7 +325,7 @@ public sealed interface Command
 
         case "misc" -> switch (name) {
           case "custom" -> {
-            var p = JSON.mapper().treeToValue(paramsNode, CommandParams.Misc.Custom.class);
+            var p = Json.mapper().treeToValue(paramsNode, CommandParams.Misc.Custom.class);
             if (p == null) {
               paramsMissing = true;
               yield null;
@@ -334,7 +334,7 @@ public sealed interface Command
           }
 
           case "lookup" -> {
-            var p = JSON.mapper().treeToValue(paramsNode, CommandParams.Misc.Lookup.class);
+            var p = Json.mapper().treeToValue(paramsNode, CommandParams.Misc.Lookup.class);
             if (p == null || p.targetSymbol() == null) {
               paramsMissing = true;
               yield null;

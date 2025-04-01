@@ -74,7 +74,7 @@ public final class EventManager {
         // PERF: Could cache parsed params JSON
         commandCb.accept(new IncomingCommand.Segmented(
           new IncomingCommand.Kind.Joined(command.kind()),
-          new IncomingCommand.Params.RawJSON(command.paramsJSON())
+          new IncomingCommand.Params.RawJson(command.paramsJSON())
         ));
       });
       handler.getConsumer().ifPresent(consumer -> consumer.accept(event));

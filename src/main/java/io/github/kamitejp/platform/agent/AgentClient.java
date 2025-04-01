@@ -18,7 +18,7 @@ import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
 
-import io.github.kamitejp.util.JSON;
+import io.github.kamitejp.util.Json;
 
 // TODO: While connected, show status panel indicator in the client
 public class AgentClient extends WebSocketAdapter {
@@ -82,7 +82,7 @@ public class AgentClient extends WebSocketAdapter {
   @Override
   public void onTextMessage(WebSocket unusedWS, String msgJSON) {
     try {
-      var msg = JSON.mapper().readValue(msgJSON, AgentSentenceMessage.class);
+      var msg = Json.mapper().readValue(msgJSON, AgentSentenceMessage.class);
       switch (msg.type()) {
         case "copyText"  -> chunkCb.accept(msg.sentence());
         case "translate" -> chunkTranslationCb.accept(msg.sentence());

@@ -29,7 +29,7 @@ import io.github.kamitejp.geometry.Rectangle;
 import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
-import io.github.kamitejp.recognition.configuration.OCRConfiguration;
+import io.github.kamitejp.recognition.configuration.OcrConfiguration;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
 import io.github.kamitejp.util.Maths;
@@ -62,13 +62,13 @@ public class Recognizer {
   private final Platform platform;
   private final boolean debug;
   private final Consumer<RecognizerEvent> eventCb;
-  private final List<OCRConfiguration<?, ?, ?>> ocrConfigurations;
-  private OCRConfiguration<?, ?, ?> activeOCRConfiguration;
+  private final List<OcrConfiguration<?, ?, ?>> ocrConfigurations;
+  private OcrConfiguration<?, ?, ?> activeOCRConfiguration;
   private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
 
   public Recognizer(
     Platform platform,
-    List<OCRConfiguration<?, ?, ?>> ocrConfigurations,
+    List<OcrConfiguration<?, ?, ?>> ocrConfigurations,
     boolean debug,
     Consumer<RecognizerEvent> eventCb
   ) throws RecognizerInitializationException {
@@ -86,7 +86,7 @@ public class Recognizer {
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
   }
 
-  private String makeInitializationLogMessage(List<OCRConfiguration<?, ?, ?>> ocrConfigurations) {
+  private String makeInitializationLogMessage(List<OcrConfiguration<?, ?, ?>> ocrConfigurations) {
     var sb = new StringBuilder("Initialized Recognizer with the following OCR Configurations:\n");
     for (var i = 0; i < ocrConfigurations.size(); i++) {
       var c = ocrConfigurations.get(i);
@@ -447,7 +447,7 @@ public class Recognizer {
     return lineRects;
   }
 
-  private Optional<OCRConfiguration<?, ?, ?>> findOCRConfigurationByName(String name) {
+  private Optional<OcrConfiguration<?, ?, ?>> findOCRConfigurationByName(String name) {
     return ocrConfigurations.stream().filter(c -> c.getName() == name).findFirst();
   }
 
@@ -503,7 +503,7 @@ public class Recognizer {
     gfx2d.setRenderingHints(originalHints);
   }
 
-  public void setActiveOCRConfiguration(OCRConfiguration<?, ?, ?> configuration) {
+  public void setActiveOCRConfiguration(OcrConfiguration<?, ?, ?> configuration) {
     activeOCRConfiguration = configuration;
     LOG.debug(
         "Setting active OCR Configuration to '{}' ({})",
@@ -512,7 +512,7 @@ public class Recognizer {
   }
 
   // If `name` not null returns matching Configuration or Error, otherwise returns the default one
-  private Result<OCRConfiguration<?, ?, ?>, RecognitionOpError> selectOCRConfiguation(
+  private Result<OcrConfiguration<?, ?, ?>, RecognitionOpError> selectOCRConfiguation(
     String ocrConfigurationName
   ) {
     var ocrConfiguration = activeOCRConfiguration;

@@ -23,7 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.kamitejp.Kamite;
-import io.github.kamitejp.controlgui.ControlGUI;
+import io.github.kamitejp.controlgui.ControlGui;
 import io.github.kamitejp.geometry.Point;
 import io.github.kamitejp.geometry.Rectangle;
 
@@ -68,7 +68,7 @@ public final class ScreenSelector extends JFrame {
     setBackground(FRAME_BG_COLOR);
     setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     // POLISH: Should have its own modified icon
-    setIconImages(ControlGUI.ICON_IMAGES);
+    setIconImages(ControlGui.ICON_IMAGES);
 
     var mouseListener = new MouseListener();
     addMouseListener(mouseListener);

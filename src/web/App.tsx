@@ -118,9 +118,9 @@ export const App: VoidComponent = () => {
     allowedToFlash: () => config()?.chunk.flash || false,
     onChunkAdded: handleChunkAdded,
   });
-  const sessionTimer  = createSessionTimerState();
-  const notebook      = createNotebookState({ chunks, settings });
-  const debug         = createDebugState();
+  const sessionTimer = createSessionTimerState();
+  const notebook = createNotebookState({ chunks, settings });
+  const debug = createDebugState();
   const eventNotifier = createEventNotifier({ backend });
 
   const statusPanelFader = createStatusPanelFader({
@@ -357,10 +357,10 @@ export const App: VoidComponent = () => {
           // Set the chunk selection to include the hovered character
           const anchor =
             chunks.textSelection.inProgress()
-            ? chunks.textSelection.get()!.anchor! // Use the existing anchor
-            : event.movementY > 0
-              ? 0 // New selection from above, use 1st char as anchor
-              : chunks.current().text.length - 1; // New sel. from below, use last char as anchor
+              ? chunks.textSelection.get()!.anchor! // Use the existing anchor
+              : event.movementY > 0
+                ? 0 // New selection from above, use 1st char as anchor
+                : chunks.current().text.length - 1; // New sel. from below, use last char as anchor
           const range = [ChunkLabel.charIdxOfElement(el), anchor] as [number, number];
           range.sort((a, b) => a - b);
           chunks.textSelection.set({ range, anchor });
@@ -861,7 +861,7 @@ export const App: VoidComponent = () => {
             onAction={handleActionRequested}
             ref={el => actionPaletteEl = el}
           />
-          <YomichanSentenceDelimiter/>
+          <YomichanSentenceDelimiter />
         </div>
         <ChunkView
           chunksState={chunks}
@@ -906,7 +906,7 @@ export const App: VoidComponent = () => {
             debug={debugMode()}
             onPick={handleChunkVariantPick}
             ref={chunkPickerEl}
-            />
+          />
         }
         chunkHistory={
           <ChunkHistory
@@ -914,14 +914,14 @@ export const App: VoidComponent = () => {
             availableSelectionActions={availableChunkHistoryActions()}
             onEntryClick={handleChunkHistoryEntryClick}
             onAction={handleChunkHistoryAction}
-            />
+          />
         }
         settings={
           <Settings store={settings} onSettingChangeRequested={handleSettingChangeRequest} />
         }
         debug={<Debug state={debug} />}
         concealUnlessHovered={() => !notebook.resizing() && focusMode()}
-        />
+      />
       <TooltipView state={globalTooltip} />
     </Root>
   </ThemeProvider>;

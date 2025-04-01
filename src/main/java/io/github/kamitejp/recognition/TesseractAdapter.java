@@ -24,7 +24,7 @@ import io.github.kamitejp.util.Executor;
 import io.github.kamitejp.util.Result;
 import io.github.kamitejp.util.Strings;
 
-public class TesseractAdapter implements OCRAdapter<OCRAdapterOCRParams.Tesseract> {
+public class TesseractAdapter implements OcrAdapter<OcrAdapterOcrParams.Tesseract> {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String DPI = "70";
@@ -40,9 +40,9 @@ public class TesseractAdapter implements OCRAdapter<OCRAdapterOCRParams.Tesserac
   private static final int WITH_BORDER_VARIANT_WHITE_BORDER_SIZE = 10;
 
   @Override
-  public Result<BoxRecognitionOutput, LocalOCRError> recognize(
+  public Result<BoxRecognitionOutput, LocalOcrError> recognize(
     BufferedImage img,
-    OCRAdapterOCRParams.Tesseract params
+    OcrAdapterOcrParams.Tesseract params
   ) {
     // Remove alpha channel
     if (img.getType() != BufferedImage.TYPE_INT_RGB) {
@@ -223,7 +223,7 @@ public class TesseractAdapter implements OCRAdapter<OCRAdapterOCRParams.Tesserac
     if (variants == null) {
       // XXX: Move logging above?
       LOG.debug("All of the Tesseract calls have failed");
-      return Result.Err(new LocalOCRError.Other("All of the Tesseract calls have failed"));
+      return Result.Err(new LocalOcrError.Other("All of the Tesseract calls have failed"));
     }
 
     var parsedVariants = UnprocessedChunkVariants.fromLabelledTesseractHOCROutputs(variants);
@@ -243,7 +243,7 @@ public class TesseractAdapter implements OCRAdapter<OCRAdapterOCRParams.Tesserac
   private TesseractResult doRecognize(
     BufferedImage img,
     TesseractModelType modelType,
-    OCRAdapterOCRParams.Tesseract params
+    OcrAdapterOcrParams.Tesseract params
   ) {
     return switch (modelType) {
       case DEFAULT ->

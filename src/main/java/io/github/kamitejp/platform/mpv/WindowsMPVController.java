@@ -16,7 +16,7 @@ import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class WindowsMPVController extends BaseMPVController {
+public final class WindowsMPVController extends BaseMpvController {
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String PIPE_NAME = "\\\\.\\pipe\\%s".formatted(IPC_MEDIUM_FILENAME);
@@ -37,7 +37,7 @@ public final class WindowsMPVController extends BaseMPVController {
     pipeChannel.write(ByteBuffer.wrap(bytes), 0);
   }
 
-  public void sendCommand(MPVCommand cmd) {
+  public void sendCommand(MpvCommand cmd) {
     super.sendCommand(cmd);
   }
 
@@ -51,7 +51,7 @@ public final class WindowsMPVController extends BaseMPVController {
     }
   }
 
-  private class Worker extends BaseMPVController.BaseWorker {
+  private class Worker extends BaseMpvController.BaseWorker {
     private final ByteBuffer readBuffer;
     private final CharBuffer charBuffer;
     private final CharsetDecoder charsetDecoder;

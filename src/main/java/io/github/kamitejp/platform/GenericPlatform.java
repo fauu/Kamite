@@ -36,7 +36,7 @@ public abstract class GenericPlatform {
     List.of("target/java", "lib/generic", "lib\\generic");
 
   private String binName;
-  private OS os;
+  private Os os;
   private Path programPath;
 
   protected GenericPlatform(String binName) {
@@ -55,25 +55,25 @@ public abstract class GenericPlatform {
     return binName;
   }
 
-  public final OS getOS() {
+  public final Os getOs() {
     if (os == null) {
       os = detectOS();
     }
     return os;
   }
 
-  public static OS detectOS() {
-    OS os = null;
+  public static Os detectOS() {
+    Os os = null;
     var osName = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH);
     if (osName.contains("win")) {
-      os = OS.WINDOWS;
+      os = Os.WINDOWS;
     } else if (osName.contains("lin")) {
-      os = OS.LINUX;
+      os = Os.LINUX;
     } else if (osName.contains("mac")) {
-      os = OS.MACOS;
+      os = Os.MACOS;
     } else {
       LOG.warn("OS detection failed. Assuming Linux");
-      os = OS.LINUX;
+      os = Os.LINUX;
     }
     return os;
   }

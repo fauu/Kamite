@@ -1,7 +1,7 @@
 export {
   BASE_PLAYER_COMMANDS, PARAMLESS_OCR_COMMANDS, PLAYER_COMMANDS, commandFromConfigCustomCommand,
   commandFromOCRRegion, type Command, type CustomCommand,
-  type OCRCommand, type OCRRegionCommand
+  type OcrCommand as OCRCommand, type OcrRegionCommand as OCRRegionCommand
 } from "./Command";
 export {
   makeMouseEventNotificationData, type DOMEventTarget, type EventName, type EventNotification

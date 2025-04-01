@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import io.github.kamitejp.api.IncomingCommand;
 import io.github.kamitejp.event.Event;
-import io.github.kamitejp.util.JSON;
+import io.github.kamitejp.util.Json;
 import io.github.kamitejp.util.Result;
 
 public sealed interface InMessage
@@ -20,7 +20,7 @@ public sealed interface InMessage
   static Result<InMessage, String> fromJSON(String json) {
     JsonNode root = null;
     try {
-      root = JSON.mapper().readTree(json);
+      root = Json.mapper().readTree(json);
     } catch (JsonProcessingException e) {
       return Result.Err("parsing message JSON");
     }
@@ -28,7 +28,7 @@ public sealed interface InMessage
     var bodyNode = root.get("body");
     var kind = root.get("kind").textValue();
     return switch (kind) {
-      case "command" -> Result.Ok(new Command(new IncomingCommand.CombinedJSON(bodyNode)));
+      case "command" -> Result.Ok(new Command(new IncomingCommand.CombinedJson(bodyNode)));
       case "request" -> {
         var requestParseRes = io.github.kamitejp.api.Request.fromJSON(bodyNode);
         if (requestParseRes.isErr()) {

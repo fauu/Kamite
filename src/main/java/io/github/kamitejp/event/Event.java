@@ -7,7 +7,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import io.github.kamitejp.util.JSON;
+import io.github.kamitejp.util.Json;
 import io.github.kamitejp.util.Result;
 
 public sealed interface Event
@@ -28,16 +28,16 @@ public sealed interface Event
     NAME_TO_CLASS.entrySet().stream().collect(toMap(Map.Entry::getValue, Map.Entry::getKey));
 
   record ChunkAdd(String chunkText) implements Event {}
-  record TabMouseenter(EventDOMElement target, EventDOMElement relatedTarget) implements Event {}
-  record TabMouseleave(EventDOMElement target, EventDOMElement relatedTarget) implements Event {}
-  record ApprootMouseenter(EventDOMElement target, EventDOMElement relatedTarget)
+  record TabMouseenter(EventDomElement target, EventDomElement relatedTarget) implements Event {}
+  record TabMouseleave(EventDomElement target, EventDomElement relatedTarget) implements Event {}
+  record ApprootMouseenter(EventDomElement target, EventDomElement relatedTarget)
     implements Event {}
-  record ApprootMouseleave(EventDOMElement target, EventDOMElement relatedTarget)
+  record ApprootMouseleave(EventDomElement target, EventDomElement relatedTarget)
     implements Event {}
 
   static Result<Event, String> fromJSON(JsonNode root) {
     try {
-      var m = JSON.mapper();
+      var m = Json.mapper();
       var dataNode = root.get("data");
       var event = switch (root.get("name").textValue()) {
         case "chunk-add" ->
@@ -45,26 +45,26 @@ public sealed interface Event
 
         case "tab-mouseenter" ->
           new Event.TabMouseenter(
-            m.treeToValue(dataNode.get("target"), EventDOMElement.class),
-            m.treeToValue(dataNode.get("relatedTarget"), EventDOMElement.class)
+            m.treeToValue(dataNode.get("target"), EventDomElement.class),
+            m.treeToValue(dataNode.get("relatedTarget"), EventDomElement.class)
           );
 
         case "tab-mouseleave" ->
           new Event.TabMouseleave(
-            m.treeToValue(dataNode.get("target"), EventDOMElement.class),
-            m.treeToValue(dataNode.get("relatedTarget"), EventDOMElement.class)
+            m.treeToValue(dataNode.get("target"), EventDomElement.class),
+            m.treeToValue(dataNode.get("relatedTarget"), EventDomElement.class)
           );
 
         case "approot-mouseenter" ->
           new Event.ApprootMouseenter(
-            m.treeToValue(dataNode.get("target"), EventDOMElement.class),
-            m.treeToValue(dataNode.get("relatedTarget"), EventDOMElement.class)
+            m.treeToValue(dataNode.get("target"), EventDomElement.class),
+            m.treeToValue(dataNode.get("relatedTarget"), EventDomElement.class)
           );
 
         case "approot-mouseleave" ->
           new Event.ApprootMouseleave(
-            m.treeToValue(dataNode.get("target"), EventDOMElement.class),
-            m.treeToValue(dataNode.get("relatedTarget"), EventDOMElement.class)
+            m.treeToValue(dataNode.get("target"), EventDomElement.class),
+            m.treeToValue(dataNode.get("relatedTarget"), EventDomElement.class)
           );
 
         default -> null;
