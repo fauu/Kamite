@@ -136,6 +136,7 @@ outdated:
 	pnpm outdated
 	set -e
 	mvn versions:display-dependency-updates
+	mvn versions:display-plugin-updates
 .PHONY: outdated
 
 runtime-linux:

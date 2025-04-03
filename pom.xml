@@ -8,6 +8,7 @@
 
 <properties>
   <maven.compiler.release>24</maven.compiler.release>
+  <log4j.version>2.24.3</log4j.version>
 </properties>
 
 <repositories>
@@ -65,18 +66,18 @@
   </dependency>
   <dependency>
     <groupId>org.apache.logging.log4j</groupId>
-    <artifactId>log4j-slf4j-impl</artifactId>
-    <version>2.24.3</version>
+    <artifactId>log4j-core</artifactId>
+    <version>${log4j.version}</version>
   </dependency>
   <dependency>
     <groupId>org.apache.logging.log4j</groupId>
     <artifactId>log4j-api</artifactId>
-    <version>2.24.3</version>
+    <version>${log4j.version}</version>
   </dependency>
   <dependency>
     <groupId>org.apache.logging.log4j</groupId>
-    <artifactId>log4j-core</artifactId>
-    <version>2.24.3</version>
+    <artifactId>log4j-slf4j-impl</artifactId>
+    <version>${log4j.version}</version>
   </dependency>
   <dependency>
     <groupId>com.typesafe</groupId>
@@ -106,7 +107,7 @@
   <dependency>
     <groupId>com.microsoft.onnxruntime</groupId>
     <artifactId>onnxruntime</artifactId>
-    <version>1.17.1</version>
+    <version>1.21.0</version>
   </dependency>
 </dependencies>
 
@@ -140,7 +141,7 @@
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-enforcer-plugin</artifactId>
-      <version>3.1.0</version>
+      <version>3.5.0</version>
       <executions>
         <execution>
           <id>enforce-maven</id>
@@ -150,7 +151,7 @@
           <configuration>
             <rules>
               <requireMavenVersion>
-                <version>3.3.1</version>
+                <version>3.6.3</version>
               </requireMavenVersion>
             </rules>
           </configuration>
@@ -160,7 +161,7 @@
     <plugin>
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>exec-maven-plugin</artifactId>
-      <version>3.1.0</version>
+      <version>3.5.0</version>
       <configuration>
         <mainClass>io.github.kamitejp.Main</mainClass>
       </configuration>
@@ -168,9 +169,9 @@
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-compiler-plugin</artifactId>
-      <version>3.10.1</version>
+      <version>3.14.0</version>
       <configuration>
-        <compilerArgs>--enable-preview</compilerArgs>
+        <compilerArgs><arg>--enable-preview</arg></compilerArgs>
       </configuration>
       <executions>
         <execution>
@@ -185,7 +186,7 @@
               <path>
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-core</artifactId>
-                <version>2.24.3</version>
+                <version>${log4j.version}</version>
               </path>
             </annotationProcessorPaths>
             <annotationProcessors>
@@ -198,25 +199,25 @@
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-shade-plugin</artifactId>
-      <version>3.3.0</version>
+      <version>3.6.0</version>
       <configuration>
         <createDependencyReducedPom>false</createDependencyReducedPom>
       </configuration>
       <executions>
         <execution>
+          <id>shade-jar-with-dependencies</id>
           <phase>package</phase>
           <goals>
             <goal>shade</goal>
           </goals>
           <configuration>
             <transformers>
+              <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer" />
               <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                 <mainClass>io.github.kamitejp.Main</mainClass>
                 <manifestEntries>
                   <Multi-Release>true</Multi-Release>
                 </manifestEntries>
-              </transformer>
-              <transformer implementation="io.github.edwgiz.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer">
               </transformer>
             </transformers>
           </configuration>
@@ -224,16 +225,16 @@
       </executions>
       <dependencies>
         <dependency>
-          <groupId>io.github.edwgiz</groupId>
-          <artifactId>log4j-maven-shade-plugin-extensions</artifactId>
-          <version>2.20.0</version>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
+          <version>0.2.0</version>
         </dependency>
       </dependencies>
     </plugin>
     <plugin>
       <groupId>io.github.git-commit-id</groupId>
       <artifactId>git-commit-id-maven-plugin</artifactId>
-      <version>5.0.0</version>
+      <version>9.0.1</version>
       <executions>
         <execution>
           <id>get-the-git-infos</id>
@@ -257,7 +258,7 @@
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-site-plugin</artifactId>
-      <version>3.12.1</version>
+      <version>3.21.0</version>
     </plugin>
   </plugins>
 </build>
@@ -267,13 +268,13 @@
     <plugin>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-maven-plugin</artifactId>
-      <version>4.7.3.0</version>
+      <version>4.9.3.0</version>
       <configuration>
         <plugins>
           <plugin>
             <groupId>com.mebigfatguy.sb-contrib</groupId>
             <artifactId>sb-contrib</artifactId>
-            <version>7.4.7</version>
+            <version>7.6.9</version>
           </plugin>
         </plugins>
       </configuration>
