@@ -12,9 +12,7 @@ public final class GLensOcrConfiguration
         OcrAdapterOcrParams.Empty,
         GLensHfAdapter> {
   public GLensOcrConfiguration(Ocr.Configuration config) {
-    super(config);
-    adapterInitParams = new OcrAdapterInitParams.Empty();
-    adapterOcrParams = new OcrAdapterOcrParams.Empty();
+    super(config, new OcrAdapterInitParams.Empty(), new OcrAdapterOcrParams.Empty());
   }
 
   @Override

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
+import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -28,8 +29,9 @@ public class GameTextboxAutoBlockDetector implements AutoBlockDetector {
   //       refactored/deduplicated, since it is to be reworked
   @Override
   public Optional<Rectangle> detect(
-    BufferedImage img, boolean debug, BiConsumer<BufferedImage, String> sendDebugImage
-  ) {
+      BufferedImage img,
+      boolean debug,
+      BiConsumer<BufferedImage, String> sendDebugImage) {
     if (img.getType() != BufferedImage.TYPE_INT_RGB) {
       img = ImageOps.withoutAlphaChannel(img);
     }
@@ -53,7 +55,7 @@ public class GameTextboxAutoBlockDetector implements AutoBlockDetector {
     var ccExtractor = new ConnectedComponentExtractor();
     var ccs = Arrays.stream(ccExtractor.extract(imgArr, img.getWidth(), img.getHeight()))
       .skip(1)
-      .map(cc -> cc.rectangle())
+      .map(ConnectedComponent::rectangle)
       .filter(cc -> cc.dimensionsWithin(2, 150) && cc.getArea() < 4000)
       .toList();
 

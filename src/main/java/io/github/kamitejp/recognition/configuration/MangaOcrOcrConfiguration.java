@@ -12,17 +12,16 @@ public final class MangaOcrOcrConfiguration
         OcrAdapterInitParams.MangaOCR,
         OcrAdapterOcrParams.Empty,
         MangaOcrController> {
-  private final String pythonPath;
-
   public MangaOcrOcrConfiguration(Ocr.Configuration config) {
-    super(config);
-    pythonPath = config.pythonPath();
-    adapterInitParams = new OcrAdapterInitParams.MangaOCR(pythonPath);
+    super(
+        config,
+        new OcrAdapterInitParams.MangaOCR(config.pythonPath()),
+        new OcrAdapterOcrParams.Empty());
   }
 
   @Override
   public void createAdapter(Platform platform)
       throws OcrAdapterPreInitializationException {
-    adapter = new MangaOcrController(platform, pythonPath);
+    adapter = new MangaOcrController(platform, adapterInitParams.pythonPath());
   }
 }

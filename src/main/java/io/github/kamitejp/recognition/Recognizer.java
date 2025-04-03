@@ -10,13 +10,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -47,8 +41,8 @@ public class Recognizer {
 
   // Values of text block starting edge rotation in radians between which the text block is assumed
   // to be of vertical, rather than horizontal orientation
-  private static double ROTATED_TEXT_VERTICAL_THETA_MIN = Maths.DEGREES_45_IN_RADIANS;
-  private static double ROTATED_TEXT_VERTICAL_THETA_MAX = 3 * Maths.DEGREES_45_IN_RADIANS;
+  private static final double ROTATED_TEXT_VERTICAL_THETA_MIN = Maths.DEGREES_45_IN_RADIANS;
+  private static final double ROTATED_TEXT_VERTICAL_THETA_MAX = 3 * Maths.DEGREES_45_IN_RADIANS;
   // Size of the margin preserved when cropping a derotated text block. Necessary because the user
   // selection tends to not perfectly correspond to the actual angle of the rotated text block
   private static final int DEROTATED_CROP_SAFETY_MARGIN = 10;
@@ -64,34 +58,33 @@ public class Recognizer {
   private final Consumer<RecognizerEvent> eventCb;
   private final List<OcrConfiguration<?, ?, ?>> ocrConfigurations;
   private OcrConfiguration<?, ?, ?> activeOCRConfiguration;
-  private final Map<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
+  private final AbstractMap<AutoBlockHeuristic, AutoBlockDetector> autoBlockDetectors;
 
   public Recognizer(
-    Platform platform,
-    List<OcrConfiguration<?, ?, ?>> ocrConfigurations,
-    boolean debug,
-    Consumer<RecognizerEvent> eventCb
-  ) throws RecognizerInitializationException {
+      Platform platform,
+      List<OcrConfiguration<?, ?, ?>> ocrConfigurations,
+      boolean debug,
+      Consumer<RecognizerEvent> eventCb) throws RecognizerInitializationException {
     this.platform = platform;
+    //noinspection AssignmentOrReturnOfFieldWithMutableType
     this.ocrConfigurations = ocrConfigurations;
     activeOCRConfiguration = ocrConfigurations.getFirst();
     this.debug = debug;
     this.eventCb = eventCb;
-    this.autoBlockDetectors = new HashMap<>();
-
-    // XXX: Make sure we can't get here if we have no configurations
+    autoBlockDetectors = new EnumMap<>(AutoBlockHeuristic.class);
 
     LOG.info(makeInitializationLogMessage(ocrConfigurations));
 
     eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
   }
 
-  private String makeInitializationLogMessage(List<OcrConfiguration<?, ?, ?>> ocrConfigurations) {
+  private static String makeInitializationLogMessage(
+      List<OcrConfiguration<?, ?, ?>> ocrConfigurations) {
     var sb = new StringBuilder("Initialized Recognizer with the following OCR Configurations:\n");
     for (var i = 0; i < ocrConfigurations.size(); i++) {
       var c = ocrConfigurations.get(i);
       sb.append("  - %s\n    %s(%s)\n    %s"
-        .formatted(c.getName(), c.getClass().getName(), c.getAdapterInitParams(), c.getStatus()));
+          .formatted(c.getName(), c.getClass().getName(), c.getAdapterInitParams(), c.getStatus()));
       if (i < ocrConfigurations.size() - 1) {
         sb.append("\n");
       }
@@ -101,17 +94,11 @@ public class Recognizer {
 
   public void destroy() {}
 
-  // XXX: Move?
-  public record LabelledTesseractHOCROutput(String label, String hocr) {}
-
-  public Result<BoxRecognitionOutput, RecognitionOpError> recognizeBox(
-    String ocrConfigurationName,
-    BufferedImage img
-  ) {
-    if (
-      img.getWidth() < BOX_RECOGNITION_INPUT_MIN_DIMENSION
-      || img.getHeight() < BOX_RECOGNITION_INPUT_MIN_DIMENSION
-    ) {
+  Result<BoxRecognitionOutput, RecognitionOpError> recognizeBox(
+      String ocrConfigurationName,
+      BufferedImage img) {
+    if (img.getWidth() < BOX_RECOGNITION_INPUT_MIN_DIMENSION
+        || img.getHeight() < BOX_RECOGNITION_INPUT_MIN_DIMENSION) {
       return Result.Err(RecognitionOpError.INPUT_TOO_SMALL);
     }
 
@@ -127,7 +114,7 @@ public class Recognizer {
     //   );
     // }
 
-    LOG.debug("Starting box recognition");
+    LOG.debug("Starting Box Recognition");
     return doRecognizeBox(ocrConfigurationName, img);
   }
 
@@ -138,12 +125,12 @@ public class Recognizer {
   ) {
     var sel = selectOCRConfiguation(ocrConfigurationName);
     if (sel.isErr()) {
-      return Result.Err.from(sel);
+      return Result.Err.propagateFrom(sel);
     }
 
     var res = sel.get().recognize(img);
     if (res.isErr()) {
-      // XXX: TODO Preserve the error content
+      LOG.error("Error during Box Recognition: {}", res.err());
       return Result.Err(RecognitionOpError.OCR_ERROR);
     }
 
@@ -157,16 +144,11 @@ public class Recognizer {
     return Result.Ok(boxRecognitionOutput);
   }
 
-  public Optional<BufferedImage> autoNarrowToTextBlock(
-    BufferedImage img, AutoBlockHeuristic heuristic
-  ) {
+  Optional<BufferedImage> autoNarrowToTextBlock(BufferedImage img, AutoBlockHeuristic heuristic) {
     LOG.debug("Detecting a text block");
     var detector = autoBlockDetectors.get(heuristic);
     if (detector == null) {
       detector = AutoBlockDetector.fromHeuristic(heuristic);
-    }
-    if (detector == null) {
-      return Optional.empty();
     }
     var block = detector.detect(img, debug, this::sendDebugImage);
     return block.map(b -> ImageOps.cropped(img, b));
@@ -179,14 +161,13 @@ public class Recognizer {
   }
 
   public record RotatedBlockInfo(
-    double theta,
-    double edgeLength,
-    double crossSection,
-    TextOrientation textOrientation,
-    Rectangle boundingRectangle
-  ) {}
+      double theta,
+      double edgeLength,
+      double crossSection,
+      TextOrientation textOrientation,
+      Rectangle boundingRectangle) {}
 
-  public static Optional<RotatedBlockInfo> computeRotatedBlock(Point[] selectedPoints) {
+  static Optional<RotatedBlockInfo> computeRotatedBlock(Point[] selectedPoints) {
    /*
     *  ~~ - text in the block
     *  a, b, c, d, z - points defined below
@@ -211,10 +192,10 @@ public class Recognizer {
     // character)
     var z = selectedPoints[2];
 
-    // Angle of the text block (of its starting, i.e. top or right, edge) to the x axis:
+    // Angle of the text block (of its starting, i.e. top or right, edge) to the x-axis:
     //   < 0       - slanting left towards top
     //   0         - perfectly horizontal
-    //   π/2 rad   - perfecly vertical
+    //   π/2 rad   - perfectly vertical
     //   > π/2 rad - slanted right
     var theta = a.angleWith(b);
 
@@ -291,8 +272,8 @@ public class Recognizer {
   }
 
   public static BufferedImage straightenRotatedBlockImage(
-    RotatedBlockInfo block, BufferedImage img
-  ) {
+    RotatedBlockInfo block,
+    BufferedImage img) {
     var rotation = -block.theta;
     if (block.textOrientation == TextOrientation.VERTICAL) {
       rotation += Maths.DEGREES_90_IN_RADIANS;
@@ -324,7 +305,7 @@ public class Recognizer {
     private int maxY = Integer.MIN_VALUE;
     private final List<Rectangle> rects = new ArrayList<>();
 
-    public void add(Rectangle rect) {
+    void add(Rectangle rect) {
       var center = rect.getCenter();
       var n = rects.size();
       avgX = n == 0 ? center.x() : ((avgX * n) + center.x()) / (n + 1); // NOPMD
@@ -333,7 +314,7 @@ public class Recognizer {
       rects.add(rect);
     }
 
-    public List<Rectangle> getRects() {
+    List<Rectangle> getRects() {
       return rects;
     }
   }
@@ -358,14 +339,14 @@ public class Recognizer {
     var ccExtractor = new ConnectedComponentExtractor();
     final var ccMetrics = new Object() { int totalWidth; int totalHeight; };
     var ccs = Arrays.stream(ccExtractor.extract(imgArr, img.getWidth(), img.getHeight()))
-      .skip(1)
-      .map(ConnectedComponent::rectangle)
-      .filter(cc -> cc.dimensionsWithin(1, 150) && cc.getArea() < 4000)
-      .peek(cc -> {
-        ccMetrics.totalWidth += cc.getWidth();
-        ccMetrics.totalHeight += cc.getHeight();
-      })
-      .toList();
+        .skip(1)
+        .map(ConnectedComponent::rectangle)
+        .filter(cc -> cc.dimensionsWithin(1, 150) && cc.getArea() < 4000)
+        .peek(cc -> {
+          ccMetrics.totalWidth += cc.getWidth();
+          ccMetrics.totalHeight += cc.getHeight();
+        })
+        .toList();
     if (ccs.isEmpty()) {
       return lineRects;
     }
@@ -448,7 +429,9 @@ public class Recognizer {
   }
 
   private Optional<OcrConfiguration<?, ?, ?>> findOCRConfigurationByName(String name) {
-    return ocrConfigurations.stream().filter(c -> c.getName() == name).findFirst();
+    return ocrConfigurations.stream()
+        .filter(c -> c.getName().equals(name))
+        .findFirst();
   }
 
   private List<String> getAvailableCommands() {
@@ -456,11 +439,10 @@ public class Recognizer {
       return List.of();
     } else {
       return List.of(
-        "ocr_manual-block",
-        "ocr_auto-block",
-        "ocr_manual-block-rotated",
-        "ocr_region"
-      );
+          "ocr_manual-block",
+          "ocr_auto-block",
+          "ocr_manual-block-rotated",
+          "ocr_region");
     }
   }
 
@@ -477,7 +459,7 @@ public class Recognizer {
   }
 
   // https://stackoverflow.com/a/35222059/2498764
-  private void drawDebugLabel(Graphics gfx, String text) {
+  private static void drawDebugLabel(Graphics gfx, String text) {
     var gfx2d = (Graphics2D) gfx;
 
     var originalStroke = gfx2d.getStroke();
@@ -503,7 +485,7 @@ public class Recognizer {
     gfx2d.setRenderingHints(originalHints);
   }
 
-  public void setActiveOCRConfiguration(OcrConfiguration<?, ?, ?> configuration) {
+   void setActiveOcrConfiguration(OcrConfiguration<?, ?, ?> configuration) {
     activeOCRConfiguration = configuration;
     LOG.debug(
         "Setting active OCR Configuration to '{}' ({})",
@@ -517,11 +499,11 @@ public class Recognizer {
   ) {
     var ocrConfiguration = activeOCRConfiguration;
     if (ocrConfigurationName != null) {
-      var foundConfiguation = findOCRConfigurationByName(ocrConfigurationName);
-      if (!foundConfiguation.isPresent()) {
+      var foundConfiguration = findOCRConfigurationByName(ocrConfigurationName);
+      if (foundConfiguration.isEmpty()) {
         return Result.Err(RecognitionOpError.OCR_CONFIGURATION_UNAVAILABLE);
       }
-      ocrConfiguration = foundConfiguation.get();
+      ocrConfiguration = foundConfiguration.get();
     }
     return Result.Ok(ocrConfiguration);
   }

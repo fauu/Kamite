@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import io.github.kamitejp.recognition.Recognizer;
+import io.github.kamitejp.recognition.adapter.LabelledTesseractHocrOutput;
 
 public final class UnprocessedChunkVariants {
   private static final int CHUNK_SCORE_BONUS_PER_DUPLICATE = 5;
@@ -24,8 +24,8 @@ public final class UnprocessedChunkVariants {
     return new UnprocessedChunkVariants(Stream.of(new Chunk(s, "single", 150)).collect(toList()));
   }
 
-  public static UnprocessedChunkVariants fromLabelledTesseractHOCROutputs(
-      List<Recognizer.LabelledTesseractHOCROutput> outputs) {
+  public static UnprocessedChunkVariants fromLabelledTesseractHocrOutputs(
+      List<LabelledTesseractHocrOutput> outputs) {
     return new UnprocessedChunkVariants(
       outputs.stream()
         .map(o -> Chunk.fromHOCRWithLabel(o.hocr(), o.label()))

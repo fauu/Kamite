@@ -13,11 +13,13 @@ public sealed interface OcrConfigurationStatus
             OcrConfigurationStatus.Available,
             OcrConfigurationStatus.ReinitializingAfterAdapterTimeout,
             OcrConfigurationStatus.AdapterFailedFatally {
+  String msg();
+
   @JsonTypeName("INITIALIZING")
   record Initializing(String msg) implements OcrConfigurationStatus {}
 
   @JsonTypeName("AVAILABLE")
-  record Available() implements OcrConfigurationStatus {}
+  record Available(String msg) implements OcrConfigurationStatus {}
 
   @JsonTypeName("REINITIALIZING_AFTER_ADAPTER_TIMEOUT")
   record ReinitializingAfterAdapterTimeout(String msg) implements OcrConfigurationStatus {}

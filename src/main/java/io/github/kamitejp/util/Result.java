@@ -136,8 +136,7 @@ public abstract class Result<L, R> {
       return new Err<>(err);
     }
 
-    // XXX: Naming
-    public static <L, R> Err<L, R> from(Result<?, R> result) {
+    public static <L, R> Err<L, R> propagateFrom(Result<?, R> result) {
       return new Err<>(result.err());
     }
   }

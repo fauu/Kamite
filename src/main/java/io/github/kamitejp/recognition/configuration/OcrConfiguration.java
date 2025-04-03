@@ -27,11 +27,16 @@ public abstract class OcrConfiguration<
   protected R adapterOcrParams;
   protected A adapter;
 
-  private String name;
+  private final String name;
   private OcrConfigurationStatus status;
 
-  protected OcrConfiguration(Ocr.Configuration config) {
+  protected OcrConfiguration(
+      Ocr.Configuration config,
+      P adapterInitParams,
+      R adapterOcrParams) {
     name = config.name();
+    this.adapterInitParams = adapterInitParams;
+    this.adapterOcrParams = adapterOcrParams;
   }
 
   public abstract void createAdapter(Platform platform) throws OcrAdapterPreInitializationException;

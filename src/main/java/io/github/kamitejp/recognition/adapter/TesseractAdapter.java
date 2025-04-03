@@ -21,7 +21,7 @@ import io.github.kamitejp.chunk.UnprocessedChunkVariants;
 import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.process.ProcessHelper;
 import io.github.kamitejp.platform.process.ProcessRunParams;
-import io.github.kamitejp.recognition.Recognizer.LabelledTesseractHOCROutput;
+import io.github.kamitejp.recognition.adapter.LabelledTesseractHocrOutput;
 import io.github.kamitejp.util.Executor;
 import io.github.kamitejp.util.Result;
 import io.github.kamitejp.util.Strings;
@@ -43,9 +43,8 @@ public class TesseractAdapter implements OcrAdapter<OcrAdapterOcrParams.Tesserac
 
   @Override
   public Result<BoxRecognitionOutput, LocalOcrError> recognize(
-    BufferedImage img,
-    OcrAdapterOcrParams.Tesseract params
-  ) {
+      BufferedImage img,
+      OcrAdapterOcrParams.Tesseract params) {
     // Remove alpha channel
     if (img.getType() != BufferedImage.TYPE_INT_RGB) {
       img = ImageOps.withoutAlphaChannel(img);
@@ -53,13 +52,12 @@ public class TesseractAdapter implements OcrAdapter<OcrAdapterOcrParams.Tesserac
     }
 
     // If we detect background features that are likely to ruin text detection, try to get rid of
-    // them by flood filling the image with white and then applying otsu threshold
+    // them by flood filling the image with white and then applying Otsu threshold
     if (!ImageOps.isMostlyColorless(img) || ImageOps.hasBusyEdges(img)) {
       img = ImageOps.withWhiteFloodFilledBackground(
-        img,
-        BG_REMOVAL_FLOODFILL_NUM_EDGE_FLOOD_POINTS,
-        BG_REMOVAL_FLOODFILL_THRESHOLD
-      );
+          img,
+          BG_REMOVAL_FLOODFILL_NUM_EDGE_FLOOD_POINTS,
+          BG_REMOVAL_FLOODFILL_THRESHOLD);
       var imgArr = ImageOps.toGrayArray(img);
       ImageOps.otsuThreshold(imgArr);
       img = ImageOps.grayArrayToBufferedImage(imgArr, img.getWidth(), img.getHeight());
@@ -173,7 +171,7 @@ public class TesseractAdapter implements OcrAdapter<OcrAdapterOcrParams.Tesserac
     var numExecutionFails = 0;
     var numTimeouts = 0;
     ArrayList<String> errorMsgs = null;
-    ArrayList<LabelledTesseractHOCROutput> variants = null;
+    ArrayList<LabelledTesseractHocrOutput> variants = null;
     for (var labelledResultFuture : tesseractResultFutures) {
       LabelledTesseractResult labelledResult = null;
       try {
@@ -198,7 +196,7 @@ public class TesseractAdapter implements OcrAdapter<OcrAdapterOcrParams.Tesserac
           if (variants == null) {
             variants = new ArrayList<>();
           }
-          variants.add(new LabelledTesseractHOCROutput(labelledResult.label, hocr.hocr()));
+          variants.add(new LabelledTesseractHocrOutput(labelledResult.label, hocr.hocr()));
         }
       }
     }
@@ -206,30 +204,24 @@ public class TesseractAdapter implements OcrAdapter<OcrAdapterOcrParams.Tesserac
     // Handle failures
     if (numExecutionFails > 0) {
       LOG.error(
-        "Some of the Tesseract calls have failed to execute ({}/{})",
-        numExecutionFails, numExecutions
-      );
+          "Some of the Tesseract calls have failed to execute ({}/{})",
+          numExecutionFails, numExecutions);
     }
     if (numTimeouts > 0) {
       LOG.error(
-        "Some of the Tesseract calls have timed out ({}/{})",
-        numTimeouts, numExecutions
-      );
+          "Some of the Tesseract calls have timed out ({}/{})",
+          numTimeouts, numExecutions);
     }
     if (errorMsgs != null) {
       LOG.error( // NOPMD
-        "Some of the Tesseract calls have returned errors:\n{}",
-        errorMsgs.stream().distinct().collect(joining("\n"))
-      );
+          "Some of the Tesseract calls have returned errors:\n{}",
+          errorMsgs.stream().distinct().collect(joining("\n")));
     }
     if (variants == null) {
-      // XXX: Move logging above?
-      var msg = "All of the Tesseract calls have failed";
-      LOG.debug(msg);
-      return Result.Err(new LocalOcrError.Other(msg));
+      return Result.Err(new LocalOcrError.Other("All of the Tesseract calls have failed"));
     }
 
-    var parsedVariants = UnprocessedChunkVariants.fromLabelledTesseractHOCROutputs(variants);
+    var parsedVariants = UnprocessedChunkVariants.fromLabelledTesseractHocrOutputs(variants);
     // XXX: Move above
     //if (parsedVariants.isEmpty()) {
     //  return Result.Err(RecognitionOpError.ZERO_VARIANTS);
@@ -249,17 +241,13 @@ public class TesseractAdapter implements OcrAdapter<OcrAdapterOcrParams.Tesserac
       OcrAdapterOcrParams.Tesseract params) {
     return switch (modelType) {
       case DEFAULT ->
-        doDoRecognize(
-            img,
-            params.binPath(),
-            params.model(),
-            params.psm());
+          doDoRecognize(img, params.binPath(), params.model(), params.psm());
       case ALT ->
-        doDoRecognize(
-            img,
-            params.binPath(),
-            params.modelAlt(),
-            params.psmAlt() != null ? params.psmAlt() : params.psm());
+          doDoRecognize(
+              img,
+              params.binPath(),
+              params.modelAlt(),
+              params.psmAlt() != null ? params.psmAlt() : params.psm());
     };
   }
 

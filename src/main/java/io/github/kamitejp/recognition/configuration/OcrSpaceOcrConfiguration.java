@@ -12,9 +12,10 @@ public final class OcrSpaceOcrConfiguration
         OcrAdapterOcrParams.OCRSpace,
         OcrSpaceAdapter> {
   public OcrSpaceOcrConfiguration(Ocr.Configuration config) {
-    super(config);
-    adapterInitParams = new OcrAdapterInitParams.Empty();
-    adapterOcrParams = new OcrAdapterOcrParams.OCRSpace(config.apiKey());
+    super(
+        config,
+        new OcrAdapterInitParams.Empty(),
+        new OcrAdapterOcrParams.OCRSpace(config.apiKey()));
   }
 
   @Override

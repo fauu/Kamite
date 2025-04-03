@@ -21,7 +21,7 @@ import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.recognition.BoxRecognitionOutput;
 import io.github.kamitejp.recognition.adapter.LocalOcrAdapter;
 import io.github.kamitejp.recognition.LocalOcrError;
-import io.github.kamitejp.recognition.adapter.OcrAdapterEvent;
+import io.github.kamitejp.recognition.adapter.StatefulOcrAdapterEvent;
 import io.github.kamitejp.recognition.adapter.OcrAdapterOcrParams;
 import io.github.kamitejp.recognition.adapter.OcrAdapterPreInitializationException;
 import io.github.kamitejp.recognition.adapter.StatefulOcrAdapter;
@@ -33,7 +33,7 @@ public class MangaOcrController
   private static final Logger LOG = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String PIPX_DEFAULT_VENV_NAME = "manga-ocr";
-  private static final int RECOGNITION_TIMEOUT_S = 8;
+  private static final int RECOGNITION_TIMEOUT_S = 1; // XXX Back to 8
 
   private final String[] cmd;
   private Process process;
@@ -67,9 +67,7 @@ public class MangaOcrController
 
   @Override
   public void doInit() {
-    dispatchEvent(
-      new OcrAdapterEvent.Launching("Starting using `{}`".formatted(cmd[0]))
-    );
+    dispatchEvent(new StatefulOcrAdapterEvent.Launching("Starting using `%s`".formatted(cmd[0])));
     var pb = new ProcessBuilder(cmd);
     pb.redirectErrorStream(true); // Needed to catch the "Downloading" messages
     try {
@@ -77,7 +75,7 @@ public class MangaOcrController
       outputReader = new BufferedReader(
         new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
       );
-      dispatchEvent(new OcrAdapterEvent.Launched(null));
+      dispatchEvent(new StatefulOcrAdapterEvent.Launched(null));
 
       var ready = false;
       var dispatchedExtraSetupEvent = false;
@@ -86,7 +84,7 @@ public class MangaOcrController
         if (!dispatchedExtraSetupEvent && line.startsWith("Downloading")) {
           //noinspection ObjectAllocationInLoop
           dispatchEvent(
-            new OcrAdapterEvent.StartedExtraSetup("Downloading model. This might take a while")
+            new StatefulOcrAdapterEvent.StartedExtraSetup("Downloading model. This might take a while")
           );
           dispatchedExtraSetupEvent = true;
         }
@@ -96,7 +94,7 @@ public class MangaOcrController
         }
       }
       if (!ready) {
-        dispatchEvent(new OcrAdapterEvent.FailedFatally("Failed to report readiness"));
+        dispatchEvent(new StatefulOcrAdapterEvent.FailedFatally("Failed to report readiness"));
         return;
       }
     } catch (IOException e) {
@@ -105,7 +103,7 @@ public class MangaOcrController
     }
 
     isReady = true;
-    dispatchEvent(new OcrAdapterEvent.Initialized(null));
+    dispatchEvent(new StatefulOcrAdapterEvent.Initialized(null));
   }
 
   private final Supplier<String> outputLineSupplier = () -> {
@@ -150,8 +148,7 @@ public class MangaOcrController
         }
         fatalFailure("Responded with an error: %s".formatted(errBuilder.toString()));
         return Result.Err(new LocalOcrError.Other(
-          "Responded with an error: %s".formatted(errBuilder.toString())
-        ));
+            "Responded with an error: %s".formatted(errBuilder.toString())));
       }
 
       return Result.Ok(BoxRecognitionOutput.fromString(line));
@@ -159,22 +156,20 @@ public class MangaOcrController
       fatalFailure("Error while communicating with \"Manga OCR\". See stderr for stack trace");
       e.printStackTrace();
       return Result.Err(new LocalOcrError.Other(
-        "Error while communicating with \"Manga OCR\". See stderr for stack trace"
-      ));
+          "Error while communicating with \"Manga OCR\". See stderr for stack trace"));
     } catch (TimeoutException e) {
       isReady = false;
-      dispatchEvent(new OcrAdapterEvent.TimedOutAndRestarting(null));
+      dispatchEvent(new StatefulOcrAdapterEvent.TimedOutAndRestarting(null));
       process.destroy();
       doInit();
       return Result.Err(
-        new LocalOcrError.Other("\"Manga OCR\" took too long to respond and was restarted")
-      );
+          new LocalOcrError.Other("\"Manga OCR\" took too long to respond and was restarted"));
     }
   }
 
   private void fatalFailure(String errorMsg) {
     isReady = false;
-    dispatchEvent(new OcrAdapterEvent.FailedFatally(errorMsg));
+    dispatchEvent(new StatefulOcrAdapterEvent.FailedFatally(errorMsg));
   }
 
   public void destroy() {

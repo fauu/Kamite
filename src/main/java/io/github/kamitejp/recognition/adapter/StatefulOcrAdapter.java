@@ -6,9 +6,9 @@ public abstract class StatefulOcrAdapter {
   protected boolean isReady;
 
   private int id;
-  private BiConsumer<Integer, OcrAdapterEvent> eventCb;
+  private BiConsumer<Integer, StatefulOcrAdapterEvent> eventCb;
 
-  public void init(int id, BiConsumer<Integer, OcrAdapterEvent> eventCb) {
+  public void init(int id, BiConsumer<Integer, StatefulOcrAdapterEvent> eventCb) {
     this.id = id;
     this.eventCb = eventCb;
     doInit();
@@ -20,7 +20,7 @@ public abstract class StatefulOcrAdapter {
 
   protected abstract void doInit();
 
-  protected final void dispatchEvent(OcrAdapterEvent event) {
+  protected final void dispatchEvent(StatefulOcrAdapterEvent event) {
     eventCb.accept(id, event);
   }
 }

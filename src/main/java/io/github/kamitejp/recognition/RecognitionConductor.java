@@ -9,6 +9,8 @@ import java.util.function.Consumer;
 
 import io.github.kamitejp.recognition.adapter.*;
 import io.github.kamitejp.recognition.configuration.*;
+
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,6 +44,7 @@ public class RecognitionConductor {
       String adapterClassName,
       OcrAdapterInitParams initParams) {}
 
+  @SuppressWarnings("ObjectAllocationInLoop")
   public RecognitionConductor(
       Platform platform,
       ProgramStatus status,
@@ -58,7 +61,7 @@ public class RecognitionConductor {
     this.updateAndSendRecognizerStatusFn = updateAndSendRecognizerStatusFn;
 
     var configOcrConfigurations = config.ocr().configurations();
-    if (configOcrConfigurations == null || configOcrConfigurations.size() == 0) {
+    if (configOcrConfigurations == null || configOcrConfigurations.isEmpty()) {
       updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
       LOG.info("OCR will not be available because no OCR Configurations have been specified in the"
           + " config");
@@ -66,7 +69,7 @@ public class RecognitionConductor {
     }
 
     ocrConfigurations = configOcrConfigurations.stream()
-        .filter(c -> c.enabled())
+        .filter(Config.Ocr.Configuration::enabled)
         .<OcrConfiguration<?, ?, ?>>map(c -> switch (c.engine()) {
           case TESSERACT       -> new TesseractOcrConfiguration(c);
           case MANGAOCR        -> new MangaOcrOcrConfiguration(c);
@@ -106,9 +109,8 @@ public class RecognitionConductor {
                 new OcrAdapterId(newAdapter.getClass().getName(), adapterInitParams),
                 newAdapter);
           } catch (OcrAdapterPreInitializationException e) {
-            var failedMsg = "Could not preinitialize Adapter for OCR configuration '%s': %s"
+            var failedMsg = "Could not pre-initialize Adapter for OCR configuration '%s': %s"
                 .formatted(configuration.getName(), e.getMessage());
-            // XXX: Make sure this is logged downstream
             configuration.setStatus(new OcrConfigurationStatus.AdapterFailedFatally(failedMsg));
           }
         }
@@ -117,7 +119,7 @@ public class RecognitionConductor {
             !(configuration.getStatus() instanceof OcrConfigurationStatus.AdapterFailedFatally)
             && !(configuration.getAdapter() instanceof StatefulOcrAdapter);
         if (isWithNonFailedStatelessAdapter) {
-          configuration.setStatus(new OcrConfigurationStatus.Available());
+          configuration.setStatus(new OcrConfigurationStatus.Available(null));
           hasAvailableStatelessConfigurations = true;
           // Stateful Adapters need an initialization step (below)
         }
@@ -132,7 +134,8 @@ public class RecognitionConductor {
       for (var adapter : ocrAdapters.values()) {
         if (adapter instanceof StatefulOcrAdapter statefulAdapter) {
           final var id = currentId;
-          Executor.get().execute(() -> statefulAdapter.init(id, this::handleOCRAdapterEvent));
+          Executor.get().execute(
+              () -> statefulAdapter.init(id, this::handleStatefulOcrAdapterEvent));
           statefulOcrAdapters.put(id, statefulAdapter);
           currentId++;
         }
@@ -162,6 +165,7 @@ public class RecognitionConductor {
         LOG.error(message);
       } else {
         LOG.error("Could not initialize Recognizer. See stderr for the stack trace");
+        //noinspection CallToPrintStackTrace
         e.printStackTrace();
       }
     }
@@ -172,31 +176,29 @@ public class RecognitionConductor {
       LOG.error("Tried to set Active OCR Configuration with empty configuration name");
       return;
     }
-    // NOTE: We could use a HashMap but it's probably not worth it given the tiny number of
+    // NOTE: We could use a HashMap, but it's probably not worth it, given the tiny number of
     //       Configurations
     var configuration = ocrConfigurations.stream()
         .filter(c -> c.getName().equals(ocrConfigurationName))
         .findFirst();
-    if (!configuration.isPresent()) {
+    if (configuration.isEmpty()) {
       LOG.error(
           "Tried to set the active OCR configuration but it was not found (name = '{}')",
           ocrConfigurationName);
       return;
     }
-    recognizer.setActiveOCRConfiguration(configuration.get());
+    recognizer.setActiveOcrConfiguration(configuration.get());
   }
 
-  // Only applies to Stateful Adapters
-  private void handleOCRAdapterEvent(int adapterId, OcrAdapterEvent event) {
-    var adapterClass = statefulOcrAdapters.get(adapterId).getClass();
-    if (event instanceof OcrAdapterEvent.TimedOutAndRestarting
-        || event instanceof OcrAdapterEvent.FailedFatally) {
-      LOG.error("{}: {}", adapterClass, event);
-    } else {
-      LOG.info("{}: {}", adapterClass, event);
-    }
+  private void handleStatefulOcrAdapterEvent(int adapterId, StatefulOcrAdapterEvent event) {
+    updateOcrConfigurationsStatusForStatefulOcrAdapterEvent(adapterId, event);
+    updateRecognizerStatusForOcrConfigurationList();
+  }
 
-    // Update Configuration Status according to the Event
+  @SuppressWarnings("ObjectAllocationInLoop")
+  private void updateOcrConfigurationsStatusForStatefulOcrAdapterEvent(
+      int adapterId,
+      StatefulOcrAdapterEvent event) {
     var configurationsListUpdated = false;
     for (var configuration : ocrConfigurations) {
       if (configuration.getAdapter() instanceof StatefulOcrAdapter statefulAdapter) {
@@ -205,35 +207,37 @@ public class RecognitionConductor {
         }
         var prevStatus = configuration.getStatus();
         var newStatus = switch (event) {
-          case OcrAdapterEvent.Launching e ->
+          case StatefulOcrAdapterEvent.Launching e ->
             new OcrConfigurationStatus.Initializing(e.msg());
 
-          case OcrAdapterEvent.Launched _ ->
+          case StatefulOcrAdapterEvent.Launched _ ->
             prevStatus;
 
-          case OcrAdapterEvent.StartedExtraSetup e ->
+          case StatefulOcrAdapterEvent.StartedExtraSetup e ->
             new OcrConfigurationStatus.Initializing(e.msg());
 
-          case OcrAdapterEvent.Initialized _ ->
-            new OcrConfigurationStatus.Available();
+          case StatefulOcrAdapterEvent.Initialized e ->
+            new OcrConfigurationStatus.Available(e.msg());
 
-          case OcrAdapterEvent.TimedOutAndRestarting e ->
+          case StatefulOcrAdapterEvent.TimedOutAndRestarting e ->
             new OcrConfigurationStatus.ReinitializingAfterAdapterTimeout(e.msg());
 
-          case OcrAdapterEvent.FailedFatally e ->
+          case StatefulOcrAdapterEvent.FailedFatally e ->
             new OcrConfigurationStatus.AdapterFailedFatally(e.msg());
         };
         if (!newStatus.equals(prevStatus)) {
           configuration.setStatus(newStatus);
+          handleOcrConfigurationStatusChange(configuration, newStatus);
           configurationsListUpdated = true;
         }
       }
     }
-
     if (configurationsListUpdated) {
       sendOCRConfigurationRecordsUpdatedRecognizerEvent();
     }
+  }
 
+  private void updateRecognizerStatusForOcrConfigurationList() {
     var hasNonFailedConfigurations = false;
     var hasNonReinitializingConfigurations = false;
     for (var configuration : ocrConfigurations) {
@@ -251,13 +255,50 @@ public class RecognitionConductor {
       LOG.info("OCR will not be available because all OCR Configurations' Adapters have failed");
     } else if (!hasNonReinitializingConfigurations) {
       // Reinitializing
-      // XXX: Verify that this works properly (including the else if below)
+      // XXX: Show message in client if reinitializing
+      // XXX: Switch to other configuration while reinitializing (what if no other available)?
       updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.INITIALIZING);
     } else if (status.getRecognizerStatus().getKind() == RecognizerStatus.Kind.INITIALIZING) {
-      // Done reinitializing
       updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
-      // XXX: Need to update `availableCommands`?
     }
+  }
+
+  private static void handleOcrConfigurationStatusChange(
+      OcrConfiguration<?, ?, ?> configuration,
+      OcrConfigurationStatus status) {
+    String description;
+    Level level;
+    switch (status) {
+      case OcrConfigurationStatus.Initializing _ -> {
+        description = "is initializing";
+        level = Level.DEBUG;
+      }
+      case OcrConfigurationStatus.Available _ -> {
+        description = "is now available";
+        level = Level.DEBUG;
+      }
+      case OcrConfigurationStatus.ReinitializingAfterAdapterTimeout _ -> {
+        description = "had an Adapter timeout an is now reinitializing";
+        level = Level.ERROR;
+      }
+      case OcrConfigurationStatus.AdapterFailedFatally _ -> {
+        description = "will be unavailable because of Adapter failure";
+        level = Level.ERROR;
+      }
+    }
+    logOcrConfigurationStatusChange(configuration, description, level, status.msg());
+  }
+
+  private static void logOcrConfigurationStatusChange(
+      OcrConfiguration<?, ?, ?> configuration,
+      String description,
+      Level level,
+      String detail) {
+    LOG.atLevel(level).log(
+        "OCR Configuration '{}' {}: {}",
+        configuration.getName(),
+        description,
+        detail);
   }
 
   public void destroy() {
