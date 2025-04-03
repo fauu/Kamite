@@ -35,9 +35,11 @@ Target
 Region\$Elm
 RegionBinding
 Ocr2
-OCR
+PLACEHOLDER
 Ocr
-GlobalKeybindingsOCR
+GlobalKeybindingsOcr
+PLACEHOLDER
+Ocr
 Regions\$Elm
 Region
 Configurations\$Elm
