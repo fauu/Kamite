@@ -24,6 +24,7 @@ import io.github.kamitejp.image.ImageOps;
 import io.github.kamitejp.platform.Platform;
 import io.github.kamitejp.platform.PlatformDependentFeature;
 import io.github.kamitejp.recognition.configuration.OcrConfiguration;
+import io.github.kamitejp.recognition.configuration.OcrConfigurationStatus;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponent;
 import io.github.kamitejp.recognition.imagefeature.ConnectedComponentExtractor;
 import io.github.kamitejp.util.Maths;
@@ -75,7 +76,8 @@ public class Recognizer {
 
     LOG.info(makeInitializationLogMessage(ocrConfigurations));
 
-    eventCb.accept(new RecognizerEvent.Initialized(getAvailableCommands()));
+    eventCb.accept(new RecognizerEvent.Initialized());
+    eventCb.accept(new RecognizerEvent.AvailableCommandsChanged(getAvailableCommands()));
   }
 
   private static String makeInitializationLogMessage(
@@ -434,8 +436,11 @@ public class Recognizer {
         .findFirst();
   }
 
-  private List<String> getAvailableCommands() {
+  List<String> getAvailableCommands() {
     if (platform.getUnsupportedFeatures().contains(PlatformDependentFeature.GLOBAL_OCR)) {
+      return List.of();
+    } else if (!ocrConfigurations.stream()
+        .anyMatch(c -> c.getStatus() instanceof OcrConfigurationStatus.Available)) {
       return List.of();
     } else {
       return List.of(

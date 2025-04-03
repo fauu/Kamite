@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import io.github.kamitejp.recognition.RecognizerEvent.Initialized;
 import io.github.kamitejp.recognition.adapter.*;
 import io.github.kamitejp.recognition.configuration.*;
 
@@ -142,8 +143,8 @@ public class RecognitionConductor {
       }
 
       if (!hasAvailableStatelessConfigurations && currentId == 0) {
-        // This is only for the case of no Configuration using a Stateful Adapter because the latter
-        // could still be in the process of initializing
+        // This is only for the case of having no Configuration using a Stateful Adapter because
+        // such a configuration would likely still be in the process of initializing here
         updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
         LOG.info("OCR will not be available because there are no available OCR Configurations");
       } else {
@@ -238,28 +239,47 @@ public class RecognitionConductor {
   }
 
   private void updateRecognizerStatusForOcrConfigurationList() {
+    // XXX: This is too convoluted. Redesign
+
+    // XXX: Test killing mangaocr
+
     var hasNonFailedConfigurations = false;
     var hasNonReinitializingConfigurations = false;
+    var hasUnavailableConfiguration = false;
+
     for (var configuration : ocrConfigurations) {
       var configurationStatus = configuration.getStatus();
       if (!(configurationStatus instanceof OcrConfigurationStatus.AdapterFailedFatally)) {
         hasNonFailedConfigurations = true;
       }
-      if (!(configurationStatus instanceof ReinitializingAfterAdapterTimeout)) {
+      if (!(configurationStatus instanceof
+              OcrConfigurationStatus.ReinitializingAfterAdapterTimeout)) {
         hasNonReinitializingConfigurations = true;
+      }
+      if (!(configurationStatus instanceof OcrConfigurationStatus.Available)) {
+        hasUnavailableConfiguration = true;
       }
       if (hasNonReinitializingConfigurations && hasNonFailedConfigurations) break;
     }
+
     if (!hasNonFailedConfigurations) {
+      // XXX: Should this rather be done through RecognizerEvents handled in Kamite?
       updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.UNAVAILABLE);
       LOG.info("OCR will not be available because all OCR Configurations' Adapters have failed");
     } else if (!hasNonReinitializingConfigurations) {
       // Reinitializing
       // XXX: Show message in client if reinitializing
       // XXX: Switch to other configuration while reinitializing (what if no other available)?
+      // XXX: Should this rather be done through RecognizerEvents handled in Kamite?
       updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.INITIALIZING);
+    } else if (!hasUnavailableConfiguration && ocrConfigurations.size() == 1) {
+      recognizerEventCb.accept(new RecognizerEvent.Initialized());
+      recognizerEventCb.accept(
+         new RecognizerEvent.AvailableCommandsChanged(recognizer.getAvailableCommands()));
     } else if (status.getRecognizerStatus().getKind() == RecognizerStatus.Kind.INITIALIZING) {
-      updateAndSendRecognizerStatusFn.accept(RecognizerStatus.Kind.IDLE);
+      recognizerEventCb.accept(new RecognizerEvent.Initialized());
+      recognizerEventCb.accept(
+         new RecognizerEvent.AvailableCommandsChanged(recognizer.getAvailableCommands()));
     }
   }
 

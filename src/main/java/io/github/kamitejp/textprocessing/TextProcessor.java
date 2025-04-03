@@ -78,7 +78,7 @@ public class TextProcessor {
     try {
       kuromojiTokens = kuromoji.tokenize(s);
     } catch (KuromojiLoadingException e) {
-      LOG.error("Could not add furigana because of Kuromoji loading failure", e);
+      LOG.error("Could not add furigana because of Kuromoji loading failure", e.getMessage());
       return Optional.empty();
     }
 

@@ -68,13 +68,14 @@ public class MangaOcrController
   @Override
   public void doInit() {
     dispatchEvent(new StatefulOcrAdapterEvent.Launching("Starting using `%s`".formatted(cmd[0])));
+
     var pb = new ProcessBuilder(cmd);
     pb.redirectErrorStream(true); // Needed to catch the "Downloading" messages
+
     try {
       process = pb.start();
       outputReader = new BufferedReader(
-        new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
-      );
+          new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
       dispatchEvent(new StatefulOcrAdapterEvent.Launched(null));
 
       var ready = false;
@@ -89,6 +90,9 @@ public class MangaOcrController
           dispatchedExtraSetupEvent = true;
         }
         if ("READY".equals(line)) {
+          try {
+            Thread.sleep(5000); // XXX: DEV
+          } catch (Exception e) { }
           ready = true;
           break;
         }

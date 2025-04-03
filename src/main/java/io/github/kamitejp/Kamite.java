@@ -508,8 +508,12 @@ public class Kamite {
 
   private void handleRecognizerEvent(RecognizerEvent event) {
     switch (event) {
-      case RecognizerEvent.Initialized e -> {
+      case RecognizerEvent.Initialized _ -> {
         status.updateRecognizerStatus(RecognizerStatus.Kind.IDLE);
+        sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
+      }
+
+      case RecognizerEvent.AvailableCommandsChanged e -> {
         status.updateRecognizerStatusAvailableCommands(e.availableCommands());
         sendStatus(ProgramStatusOutMessage.RecognizerStatus.class);
       }
