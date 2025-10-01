@@ -1,4 +1,4 @@
-package io.github.kamitejp.platform.linux.wlroots.dependencies.slurp;
+package io.github.kamitejp.platform.linux.dependencies.slurp;
 
 import io.github.kamitejp.geometry.Rectangle;
 

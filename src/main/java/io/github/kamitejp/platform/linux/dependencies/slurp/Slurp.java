@@ -1,4 +1,4 @@
-package io.github.kamitejp.platform.linux.wlroots.dependencies.slurp;
+package io.github.kamitejp.platform.linux.dependencies.slurp;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
